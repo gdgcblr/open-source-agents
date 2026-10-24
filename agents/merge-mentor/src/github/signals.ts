@@ -1,5 +1,5 @@
 import { GitHubClient } from './client.js';
-import type { ClaimResult, Issue, RepoHealth, Repository, ScoreResult } from '../types.js';
+import type { ClaimResult, Issue, RepoHealth, Repository, ScorePart, ScoreResult } from '../types.js';
 import { CLAIM_PATTERNS, CLAIM_WINDOW_DAYS, CLOSED_PRS_SAMPLE, DAY_MS, MAINTAINER_ROLES, MAX_TIMELINE_PAGES, MERGE_CHANCE, TIMELINE_PAGE_SIZE } from '../constants.js';
 
 export function isClaimComment(body: string): boolean {
@@ -56,23 +56,77 @@ function bandPoints<T extends { points: number }>(bands: readonly T[], fits: (ba
   return bands.find(fits)?.points ?? 0;
 }
 
-/** Merge Chance 0-100. The weights and bands live in MERGE_CHANCE (constants.ts). */
-export function scoreMergeChance(health: RepoHealth, repoPushedAt: string, issueComments: number, claim: ClaimResult, now: number): number {
+const round1 = (n: number) => Math.round(n * 10) / 10;
+const maxPoints = (bands: readonly { points: number }[]) => Math.max(...bands.map((b) => b.points));
+
+/**
+ * Merge Chance 0-100, built line by line so it can be explained to the user.
+ * The weights and bands live in MERGE_CHANCE (constants.ts).
+ */
+export function explainMergeChance(
+  health: RepoHealth,
+  repoPushedAt: string,
+  issueComments: number,
+  claim: ClaimResult,
+  now: number,
+): { total: number; parts: ScorePart[] } {
   const W = MERGE_CHANCE;
-  let score = 0;
-  if (health.mergedPRs > 0) score += (health.outsideMerged / health.mergedPRs) * W.outsideContributorPoints;
-  if (health.closedPRs > 0) score += (health.mergedPRs / health.closedPRs) * W.mergeRatePoints;
+  const parts: ScorePart[] = [];
+
+  const outside = health.mergedPRs > 0 ? (health.outsideMerged / health.mergedPRs) * W.outsideContributorPoints : 0;
+  parts.push({
+    label: 'Outside contributors get merged',
+    points: outside,
+    max: W.outsideContributorPoints,
+    note: health.mergedPRs > 0 ? `${health.outsideMerged} of ${health.mergedPRs} recent merged PRs came from outside the team` : 'no recent merged PRs to learn from',
+  });
+
+  const rate = health.closedPRs > 0 ? (health.mergedPRs / health.closedPRs) * W.mergeRatePoints : 0;
+  parts.push({
+    label: 'Most PRs get merged',
+    points: rate,
+    max: W.mergeRatePoints,
+    note: health.closedPRs > 0 ? `${health.mergedPRs} of ${health.closedPRs} recently closed PRs were merged` : 'no recently closed PRs',
+  });
 
   const median = health.medianDaysToMerge;
-  if (median !== null) score += bandPoints(W.mergeSpeedBands, (b) => median <= b.maxDays);
+  parts.push({
+    label: 'PRs merge quickly',
+    points: median !== null ? bandPoints(W.mergeSpeedBands, (b) => median <= b.maxDays) : 0,
+    max: maxPoints(W.mergeSpeedBands),
+    note: median !== null ? `median ${round1(median)} days from opening to merge` : 'no merge times to measure',
+  });
 
   const daysSincePush = (now - new Date(repoPushedAt).getTime()) / DAY_MS;
-  score += bandPoints(W.repoActivityBands, (b) => daysSincePush <= b.maxDays);
-  score += bandPoints(W.quietIssueBands, (b) => issueComments <= b.maxComments);
+  parts.push({
+    label: 'The project is active',
+    points: bandPoints(W.repoActivityBands, (b) => daysSincePush <= b.maxDays),
+    max: maxPoints(W.repoActivityBands),
+    note: `last push ${Math.max(0, Math.round(daysSincePush))} days ago`,
+  });
 
-  if (claim.status === 'Taken' || claim.status === 'Fixed') score = Math.min(score, W.takenCap);
-  if (claim.status === 'Claimed') score -= W.claimedPenalty;
-  return Math.max(0, Math.min(100, Math.round(score)));
+  parts.push({
+    label: 'The issue is quiet',
+    points: bandPoints(W.quietIssueBands, (b) => issueComments <= b.maxComments),
+    max: maxPoints(W.quietIssueBands),
+    note: `${issueComments} comment${issueComments === 1 ? '' : 's'} so far`,
+  });
+
+  let total = parts.reduce((sum, p) => sum + p.points, 0);
+  if ((claim.status === 'Taken' || claim.status === 'Fixed') && total > W.takenCap) {
+    parts.push({ label: 'Capped: open PR or already fixed', points: W.takenCap - total, max: 0, note: `${claim.reason ?? ''}`.trim() || 'someone else has this covered' });
+    total = W.takenCap;
+  }
+  if (claim.status === 'Claimed') {
+    parts.push({ label: 'Recently claimed', points: -W.claimedPenalty, max: 0, note: claim.reason ?? 'someone asked to work on it' });
+    total -= W.claimedPenalty;
+  }
+  return { total: Math.max(0, Math.min(100, Math.round(total))), parts: parts.map((p) => ({ ...p, points: round1(p.points) })) };
+}
+
+/** Merge Chance 0-100 (just the number). */
+export function scoreMergeChance(health: RepoHealth, repoPushedAt: string, issueComments: number, claim: ClaimResult, now: number): number {
+  return explainMergeChance(health, repoPushedAt, issueComments, claim, now).total;
 }
 
 export function scoreBand(score: number): 'High' | 'Medium' | 'Low' {
@@ -110,5 +164,6 @@ export async function getMergeChance(
     healthCache.get(repo.full_name)!,
   ]);
   const claim = detectClaim(timeline, now, repo.full_name);
-  return { ...claim, health, score: scoreMergeChance(health, repo.pushed_at, issue.comments, claim, now) };
+  const { total, parts } = explainMergeChance(health, repo.pushed_at, issue.comments, claim, now);
+  return { ...claim, health, score: total, parts };
 }

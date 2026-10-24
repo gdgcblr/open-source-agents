@@ -8,7 +8,7 @@
 
 ![The mentor's 8-section explanation, with automatic checks at the bottom](docs/ui-explanation.png)
 
-*Screenshots of the web UI in demo mode (recorded data).*
+*Screenshots of the web UI in demo mode (recorded data). Top: free issues with the "Why this score?" breakdown. Bottom: the full explanation with the automatic checks.*
 
 ---
 
@@ -35,7 +35,7 @@ Most issue finders stop at a ranked list. merge-mentor goes further, and it chec
 ### Key Features
 - **Language + level search**: finds active repos written mainly in your language, and their open, unassigned issues for your level.
 - **Claim check**: hides issues that already have an open PR or that a merged PR already references (probably fixed), and flags a recent "can I work on this?" comment.
-- **Merge Chance score**: ranks issues by how often the repo merges outside contributors, how fast, and how active it is.
+- **Merge Chance score, fully explained**: ranks issues by how often the repo merges outside contributors, how fast, and how active it is. Click an issue and a "Why this score?" box shows every line with its points and a plain-English reason (for example "36 of 41 recent merged PRs came from outside the team"), plus why the difficulty was rated as it was.
 - **Automatic checks**: every `file:line` citation and suggested diff is compared with the code the agent really read, with one repair round if something is off.
 - **AI code mentor**: a Gemini agent reads the repo with read-only tools and explains the issue, where it happens, its impact, the concept and code flow, how to solve it, a suggested fix, how to test it, and a ready-to-use PR description.
 
@@ -105,7 +105,7 @@ agents/merge-mentor/
 │       ├── mentor.ts      the agent loop and its read-only tools
 │       └── guardrails.ts  automatic checks on the AI's answer
 ├── web/index.html         the web UI (one file, no build step)
-├── test/                  65 tests, no network or keys needed
+├── test/                  125 tests, no network or keys needed
 ├── fixtures/demo.json     recorded data for offline demo mode
 └── docs/                  screenshots
 ```
@@ -215,7 +215,7 @@ In this run the first draft guessed a file it had never opened; the automatic ch
 ## How to Test
 
 ```bash
-npm test       # 65 tests, no network and no API keys
+npm test       # 125 tests, no network and no API keys
 npm run demo   # end-to-end run on recorded data
 ```
 
@@ -223,13 +223,17 @@ What the tests cover:
 
 | Area | What is checked |
 |---|---|
-| **Scoring** | claim detection (open PR, merged PR meaning probably fixed, recent claim, bots, PRs from other repos); hidden issues cost no Gemini quota, Merge Chance weights, repo health, bot PRs ignored |
-| **Guardrails** | citations must point at lines the agent was shown; diffs are compared with the real file; risky additions; prompt-injection phrases; problems sent back for repair |
-| **Security** | path traversal blocked, search qualifiers stripped, repo names validated, only `api.github.com` reachable, secrets masked |
-| **Mentor loop** | a fake Gemini drives the real agent loop: a good answer is accepted at once; a vague one is repaired exactly once; hostile tool arguments (path traversal, unknown tools, junk line numbers) only produce errors; cancelling stops further model calls |
+| **Scoring** | claim detection (open PR, merged PR meaning probably fixed, recent claim, bots, PRs from other repos); the Merge Chance breakdown adds up to the total, caps and penalties show as their own lines, and the weights add up to 100 |
+| **Finding** | the exact GitHub searches (language, star range, activity, level labels, no linked PR, quietest first), per-project limits, paging, pull requests and foreign repos dropped |
+| **Pipeline** | issues with an open PR or a merged fix are hidden, hidden issues spend no Gemini quota, never more than 4 GitHub requests in flight |
+| **AI-answer checks** | citations must point at lines the agent was shown; diffs are compared with the real file; risky additions; prompt-injection phrases; problems are sent back for repair exactly once |
+| **Agent loop and tools** | a fake Gemini drives the real loop; `list_files`, `read_file` and `search_code` are exercised directly (qualifiers stripped, 400-line limit, missing files, step limit); hostile arguments only produce errors; cancelling stops further calls |
+| **Gemini wrapper** | falls back to lighter models on quota, overload or timeout; skips a failed model during its cooldown; real errors are not hidden; the per-run call budget stops runaway loops |
 | **GitHub client** | GET only and only `api.github.com` (including look-alike hosts); waits and retries once on a secondary rate limit, never loops; tokens never appear in URLs or errors |
-| **Web server (real HTTP)** | wrong Host, cross-site and foreign-origin requests refused; POST refused; parameters validated; CSP nonce changes per response and the page cannot be framed; a runaway client is rate limited |
-| **End to end (offline)** | the real pipeline replayed on recorded data: project search, one project scored and ranked, the recorded explanation has all 8 sections and no warnings, other languages refused with a clear message, no secrets in the recording |
+| **Web server (real HTTP)** | wrong Host, cross-site and foreign-origin requests refused; POST refused; parameters validated; CSP nonce changes per response; a runaway client is rate limited; demo flags which issue has a recording |
+| **The page itself** | the page's real rendering code is run against hostile input: HTML and script injection is shown as text, links only ever point at github.com, diffs are colour-coded |
+| **CLI (as a real process)** | help, bad level, missing language, malformed `--issue`/`--repo`, demo refusal, and the whole offline flow ending in the explanation with its checks |
+| **End to end (offline)** | the real pipeline replayed on recorded data: project search, one project scored and ranked, the recorded explanation has all 8 sections and no warnings, no secrets in the recording |
 
 `npm run record-demo` re-records the demo from live GitHub and Gemini (about 1 Gemini call for ratings plus one explanation); `npm run record-demo:mentor` refreshes only the explanation.
 
@@ -249,6 +253,21 @@ What the tests cover:
 ---
 
 ## Security & Privacy Considerations
+
+### Threat model
+
+| Threat | What stops it | Proven by |
+|---|---|---|
+| A stranger's issue text tries to hijack the AI (prompt injection) | Issue text, comments and file contents are marked as untrusted data; injection phrases raise a warning; the tools are read-only, so there is nothing destructive to hijack | agent-loop and AI-answer-check tests |
+| The AI invents a file, a line number, or a diff that does not match | Every citation and diff is checked against the code the agent actually read; one repair round; leftovers are shown as warnings | AI-answer-check and agent-loop tests |
+| The AI is steered to other repos or local files | Tools reach only the chosen repository; path traversal and search qualifiers are blocked; the GitHub client talks only to `api.github.com` | tool, finder and GitHub-client tests |
+| A website you visit tries to drive your local server and spend your quota | Wrong Host, cross-site and foreign-origin requests are refused; `GET` only; localhost only | web-server tests |
+| AI or issue text injects script into the page | Everything is escaped before display; links only point at github.com; a strict CSP with a per-request nonce; the page cannot be framed | page and web-server tests |
+| A runaway loop or client burns quota | 8 tool calls per run (plus 4 for repair), 120 Gemini calls per process, 2 explanations at once, 90 requests per minute, closing the tab cancels the run | Gemini-wrapper, tool, and web-server tests |
+| GitHub rate limits or bursts | 4 requests in flight, one polite retry, a clear message | GitHub-client and pipeline tests |
+| Keys end up in the repository or in output | Keys live in a git-ignored `.env`; secret-looking strings are masked everywhere; every commit is scanned before it is pushed | agent-loop test (masking), demo-replay test (no secrets in recordings) |
+
+### Details
 
 - **Secrets Handling**: keys are read from a git-ignored `.env` file, never printed or saved, and secret-looking strings are masked in output.
 - **Data Privacy**: only public GitHub data is read. Issue text and public code are sent to Gemini.

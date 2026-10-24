@@ -62,9 +62,20 @@ export interface RepoHealth {
   medianDaysToMerge: number | null;
 }
 
+/** One line of the Merge Chance breakdown: what it measured, the points it earned, and why. */
+export interface ScorePart {
+  label: string;
+  points: number;
+  /** The most this line can earn (0 for penalties and caps). */
+  max: number;
+  note: string;
+}
+
 export interface ScoreResult extends ClaimResult {
   score: number;
   health: RepoHealth;
+  /** How the score was built, so the number can be explained. */
+  parts: ScorePart[];
 }
 
 export interface DifficultyResult {

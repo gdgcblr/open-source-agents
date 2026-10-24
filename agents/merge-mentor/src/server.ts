@@ -87,6 +87,7 @@ function toJson(row: Row) {
     difficulty: difficulty?.difficulty ?? null,
     difficultyReason: difficulty?.reason ?? null,
     health: score.health,
+    parts: score.parts,
   };
 }
 

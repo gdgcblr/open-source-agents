@@ -8,9 +8,10 @@ export class Gemini {
   private readonly deadUntil = new Map<string, number>();
   private calls = 0;
 
-  constructor(apiKey: string, preferredModel: string) {
+  /** `client` is only passed by tests. */
+  constructor(apiKey: string, preferredModel: string, client?: Pick<GoogleGenAI, 'models'>) {
     // One attempt per model: the SDK's default retries can stall for minutes on a daily-quota 429.
-    this.ai = new GoogleGenAI({ apiKey, httpOptions: { timeout: GEMINI_TIMEOUT_MS, retryOptions: { attempts: 1 } } });
+    this.ai = (client as GoogleGenAI | undefined) ?? new GoogleGenAI({ apiKey, httpOptions: { timeout: GEMINI_TIMEOUT_MS, retryOptions: { attempts: 1 } } });
     this.models = [preferredModel, ...FALLBACK_MODELS.filter((m) => m !== preferredModel)];
   }
 

@@ -59,6 +59,13 @@
   .detail .panel > h2 { margin: 0 0 4px; font-size: 20px; letter-spacing: -0.01em; }
   .detail .sub { color: var(--muted); margin-bottom: 14px; }
   .detail .sub a { color: var(--accent); }
+  .why { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; background: var(--bg); }
+  .why summary { cursor: pointer; font-weight: 600; }
+  .part { display: grid; grid-template-columns: minmax(0, 1fr) 90px 76px; gap: 8px 12px; align-items: center; margin-top: 8px; }
+  .part .lbl { min-width: 0; } .part .note { display: block; font-size: 12px; color: var(--muted); }
+  .part .pts { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+  .part.penalty .pts { color: var(--red); }
+  .why .diff { margin-top: 10px; font-size: 13px; color: var(--muted); }
   .notice { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
   .steps { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); margin: 8px 0 0; padding-left: 0; list-style: none; }
   .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: s .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
@@ -204,6 +211,16 @@ document.addEventListener('input', (e) => {
   if (v) { state.lang = v; document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', 'false')); }
 });
 
+function breakdownHtml(issue) {
+  if (!issue.parts?.length) return '';
+  const rows = issue.parts.map((p) => {
+    const bar = p.max > 0 ? `<span class="bar ${p.points / p.max >= 0.7 ? '' : p.points / p.max >= 0.35 ? 'mid' : 'low'}"><i style="width:${Math.round((p.points / p.max) * 100)}%"></i></span>` : '<span></span>';
+    return `<div class="part ${p.max === 0 ? 'penalty' : ''}"><span class="lbl">${esc(p.label)}<span class="note">${esc(p.note)}</span></span>${bar}<span class="pts">${p.points > 0 && p.max === 0 ? '+' : ''}${esc(p.points)}${p.max ? ' / ' + esc(p.max) : ''}</span></div>`;
+  }).join('');
+  const diff = issue.difficulty ? `<div class="diff">Difficulty ${esc(issue.difficulty)}/5${issue.difficultyReason ? ': ' + esc(issue.difficultyReason) : ''}</div>` : '';
+  return `<details class="why" open><summary>Why this score? Merge Chance ${esc(issue.score)} / 100</summary>${rows}${diff}</details>`;
+}
+
 function dots(n) { return n ? '●'.repeat(n) + '○'.repeat(5 - n) : '–'; }
 function card(i) {
   const cls = i.status === 'Available' ? 'b-ok' : i.status === 'Claimed' || i.status === 'Fixed' ? 'b-claimed' : 'b-taken';
@@ -327,7 +344,7 @@ function openIssue(key) {
     ? `<div class="notice b-taken">Someone already has an open pull request for this issue (${esc(issue.reason || '')}). Consider picking another one.</div>`
     : issue.status === 'Claimed' ? `<div class="notice b-claimed">Someone recently asked to work on this (${esc(issue.reason || '')}). Check the thread before you start.</div>` : '';
   const head = `<h2 class="sec">Explanation</h2><div class="panel"><h2>${esc(issue.title)}</h2>
-    <div class="sub">${esc(issue.repo)} #${issue.number} · <a href="${esc(safeUrl(issue.url))}" target="_blank" rel="noopener noreferrer">open on GitHub</a></div>${notice}<div id="out">
+    <div class="sub">${esc(issue.repo)} #${issue.number} · <a href="${esc(safeUrl(issue.url))}" target="_blank" rel="noopener noreferrer">open on GitHub</a></div>${notice}${breakdownHtml(issue)}<div id="out">
     <div><span class="spin"></span>Mentor is reading the code…</div><ul class="steps" id="steps"></ul></div></div>`;
   $('detail').innerHTML = head;
   if (window.innerWidth <= 860) $('detail').scrollIntoView({ behavior: 'smooth' });
