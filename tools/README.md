@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`lifeadmin-mcp/`](lifeadmin-mcp/README.md) | Local-first personal reminder CLI and MCP server with SQLite, safe title-based updates, an optional Gemma 4 agent, model-backed workflow evaluations, and a live AI demo. | CLI / MCP / Google ADK | Rasika |

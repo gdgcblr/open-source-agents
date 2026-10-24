@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lifeadmin-mcp"
+version = "0.1.0"
+description = "A local-first personal deadline assistant exposed over MCP and Google ADK."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["mcp>=1.30,<2"]
+
+[project.optional-dependencies]
+agent = ["google-adk[mcp]>=2.13,<3", "litellm>=1.96,<2"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+lifeadmin = "lifeadmin_mcp.cli:main"
+lifeadmin-mcp = "lifeadmin_mcp.server:main"
+lifeadmin-eval = "lifeadmin_agent.evaluate:main"
+lifeadmin-demo = "lifeadmin_agent.demo:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lifeadmin_mcp*", "lifeadmin_agent*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

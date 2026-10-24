@@ -1,0 +1,278 @@
+{
+  "name": "LifeAdmin local agent evaluation",
+  "description": "Checks tool choice, tool arguments, user-facing responses, and persisted reminder state.",
+  "cases": [
+    {
+      "id": "save_explicit_deadline",
+      "prompt": "Remind me to renew my vehicle insurance on 10 November 2030.",
+      "expected_tool_calls": [
+        {
+          "name": "add_reminder",
+          "args": {
+            "title": {
+              "contains": "vehicle insurance"
+            },
+            "due_date": "2030-11-10"
+          }
+        }
+      ],
+      "expected_reminders": [
+        {
+          "title": {
+            "contains": "vehicle insurance"
+          },
+          "due_date": "2030-11-10",
+          "status": "open"
+        }
+      ],
+      "expected_reminder_count": 1,
+      "response_contains": [
+        "vehicle insurance",
+        "2030"
+      ]
+    },
+    {
+      "id": "resolve_yearless_upcoming_date",
+      "prompt": "Remind me to renew my vehicle insurance on 10 November.",
+      "expected_tool_calls": [
+        {
+          "name": "add_reminder",
+          "args": {
+            "title": {
+              "contains": "vehicle insurance"
+            },
+            "due_date": {
+              "next_occurrence": "11-10"
+            }
+          }
+        }
+      ],
+      "expected_reminders": [
+        {
+          "due_date": {
+            "next_occurrence": "11-10"
+          },
+          "status": "open"
+        }
+      ],
+      "expected_reminder_count": 1,
+      "response_contains": [
+        "vehicle insurance"
+      ]
+    },
+    {
+      "id": "list_upcoming_without_mutation",
+      "prompt": "What reminders are coming up?",
+      "setup_reminders": [
+        {
+          "title": "Dentist appointment",
+          "due_date": "2030-05-10"
+        },
+        {
+          "title": "Pay electricity bill",
+          "due_date": "2030-05-15"
+        }
+      ],
+      "expected_tool_calls": [
+        {
+          "name": "list_reminders",
+          "args": {
+            "status": "upcoming"
+          }
+        }
+      ],
+      "expected_reminders": [
+        {
+          "title": "Dentist appointment",
+          "status": "open"
+        },
+        {
+          "title": "Pay electricity bill",
+          "status": "open"
+        }
+      ],
+      "expected_reminder_count": 2,
+      "response_contains": [
+        "Dentist",
+        "electricity"
+      ]
+    },
+    {
+      "id": "list_overdue",
+      "prompt": "Which reminders are overdue?",
+      "setup_reminders": [
+        {
+          "title": "Pay electricity bill",
+          "days_from_today": -1
+        }
+      ],
+      "expected_tool_calls": [
+        {
+          "name": "list_reminders",
+          "args": {
+            "status": "overdue"
+          }
+        }
+      ],
+      "expected_reminders": [
+        {
+          "title": "Pay electricity bill",
+          "status": "open"
+        }
+      ],
+      "expected_reminder_count": 1,
+      "response_contains": [
+        "electricity"
+      ]
+    },
+    {
+      "id": "update_identified_reminder",
+      "prompt": "Find my reminder titled 'Dentist appointment' and change its due date to 12 May 2030.",
+      "setup_reminders": [
+        {
+          "title": "Dentist appointment",
+          "due_date": "2030-05-10"
+        }
+      ],
+      "expected_tool_sequences": [
+        [
+          {
+            "name": "update_reminder",
+            "args": {
+              "match_title": {
+                "contains": "dentist"
+              },
+              "due_date": "2030-05-12"
+            }
+          }
+        ],
+        [
+          {
+            "name": "find_reminders",
+            "args": {
+              "query": {
+                "contains": "dentist"
+              }
+            }
+          },
+          {
+            "name": "update_reminder",
+            "args": {
+              "due_date": "2030-05-12"
+            }
+          }
+        ]
+      ],
+      "expected_reminders": [
+        {
+          "title": "Dentist appointment",
+          "due_date": "2030-05-12",
+          "status": "open"
+        }
+      ],
+      "expected_reminder_count": 1,
+      "response_contains": [
+        "2030-05-12",
+        "2030"
+      ]
+    },
+    {
+      "id": "complete_identified_reminder",
+      "prompt": "Mark my dentist appointment as completed.",
+      "setup_reminders": [
+        {
+          "title": "Dentist appointment",
+          "due_date": "2030-05-10"
+        }
+      ],
+      "expected_tool_sequences": [
+        [
+          {
+            "name": "mark_completed",
+            "args": {
+              "match_title": {
+                "contains": "dentist"
+              }
+            }
+          }
+        ],
+        [
+          {
+            "name": "find_reminders",
+            "args": {
+              "query": {
+                "contains": "dentist"
+              }
+            }
+          },
+          {
+            "name": "mark_completed",
+            "args": {}
+          }
+        ]
+      ],
+      "expected_reminders": [
+        {
+          "title": "Dentist appointment",
+          "status": "completed"
+        }
+      ],
+      "expected_reminder_count": 1,
+      "response_contains": [
+        "completed"
+      ]
+    },
+    {
+      "id": "clarify_missing_date_without_writing",
+      "prompt": "Remind me about the insurance renewal.",
+      "expected_tool_sequences": [
+        [],
+        [
+          {
+            "name": "find_reminders",
+            "args": {
+              "query": {
+                "contains": "insurance"
+              }
+            }
+          }
+        ]
+      ],
+      "expected_reminders": [],
+      "expected_reminder_count": 0,
+      "response_contains_any": [
+        [
+          "when",
+          "date",
+          "what day"
+        ]
+      ]
+    },
+    {
+      "id": "clarify_vague_date_without_writing",
+      "prompt": "Remind me to renew the insurance sometime next month.",
+      "expected_tool_sequences": [
+        [],
+        [
+          {
+            "name": "find_reminders",
+            "args": {
+              "query": {
+                "contains": "insurance"
+              }
+            }
+          }
+        ]
+      ],
+      "expected_reminders": [],
+      "expected_reminder_count": 0,
+      "response_contains_any": [
+        [
+          "when",
+          "date",
+          "specific day"
+        ]
+      ]
+    }
+  ]
+}
