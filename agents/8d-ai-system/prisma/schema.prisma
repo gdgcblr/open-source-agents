@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Case {
+  id          String   @id @default(cuid())
+  title       String
+  plant       String
+  product     String
+  reportedBy  String
+  status      String   @default("D1")
+  priority    String   @default("Medium")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  steps    DStep[]
+  auditLogs AuditLog[]
+}
+
+model DStep {
+  id          String    @id @default(cuid())
+  caseId      String
+  stepNumber  Int
+  content     String    @default("{}")
+  aiSuggested String?
+  approved    Boolean   @default(false)
+  approvedBy  String?
+  approvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, stepNumber])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  caseId    String
+  stepNum   Int
+  action    String
+  before    String?
+  after     String?
+  userId    String   @default("Quality Engineer")
+  createdAt DateTime @default(now())
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+}
