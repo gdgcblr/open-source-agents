@@ -391,13 +391,13 @@ npx playwright install chromium
 npm test
 ```
 
-52 tests, all passing on Windows 11 / Node 24.20 / ffmpeg 8.0.1:
+61 tests, all passing on Windows 11 / Node 24.20 / ffmpeg 8.0.1:
 
 ```
-ℹ tests 52
-ℹ pass 52
+ℹ tests 61
+ℹ pass 61
 ℹ fail 0
-ℹ duration_ms 15503.8542
+ℹ duration_ms 15051.9604
 ```
 
 What they cover:
@@ -416,6 +416,11 @@ What they cover:
   honours `excludeMatch`, stays inside `region`, gives up cleanly), that a
   failed `drag` still releases the mouse button, and that a failed step is
   skipped while the rest of the scene runs.
+- **`test/security.test.mjs`** — the constraints on config-supplied input: a
+  `chromePath` that is not a browser binary or that sits inside the config
+  directory is refused, `output.file` and screenshot names cannot escape the
+  output directory, and clearing a previous run removes only autodemo's own
+  media while leaving every other file in place.
 - **`test/integration.test.mjs`** — renders a real three-scene MP4 of the
   bundled example app with `voice.engine: none` and asserts the file exists,
   carries exactly one h264 video stream and one aac audio stream, runs within
@@ -484,11 +489,30 @@ Honest ones, from building and running this:
   consideration. If you record against production data, the customer names, email
   addresses and record IDs visible during the walkthrough are in the MP4. Record
   against seeded data.
-- **Safety**: the engine executes no shell commands. It does run two things you
-  control: the `js` step type (`page.evaluate`) and `probeClick`'s regex, both
-  taken from your own config file — treat a config from an untrusted source the
-  way you would treat a script from one. The config is schema-validated before
-  anything runs.
+- **Safety**: a config file looks like data, but it drives a browser, so it is
+  treated as partly-trusted input and constrained before anything runs:
+  - The config is **schema-validated** on load; unknown keys and unknown step
+    types are rejected rather than ignored.
+  - `output.file` and a `screenshot` step's `name` must be bare filenames, so
+    output cannot be written outside `output.dir`.
+  - `app.chromePath` can only name something that **looks like a browser
+    binary** and **cannot live inside the config's own directory** — otherwise a
+    config shipped next to a payload would be native code execution. The
+    `CHROME_PATH` environment variable is exempt, because whoever ran the
+    command typed it.
+  - Clearing a previous run **never recursively deletes a directory**. Only
+    files autodemo produces (`.mp3 .wav .m4a .webm .mp4`) are removed, so a
+    mistyped `output.dir` cannot destroy anything.
+  - Over MCP, `autodemo_describe_app` accepts **only `http` and `https`** URLs,
+    so an agent cannot be steered into reading local files through `file://`.
+  - On Linux, `--no-sandbox` is **opt-in** (`CI` or `AUTODEMO_NO_SANDBOX`)
+    rather than always on.
+
+  Two things remain deliberately unrestricted, because restricting them would
+  break the tool: the `js` step type is an `page.evaluate` escape hatch, and the
+  CLI will write its output wherever you point `--out`. Both are ordinary
+  developer-tool behaviour — but it does mean **a config from an untrusted
+  source should be read before it is run**, exactly like a script.
 - **The map example targets a live third-party site** (`bwssb.vijaykumarkk.in`,
   a deployment by this project's author). It only reads and clicks a public
   page. It needs a Mapbox token — but that token belongs to *that app*, not to

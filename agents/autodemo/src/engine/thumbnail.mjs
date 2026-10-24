@@ -67,7 +67,7 @@ export async function makeThumbnail(cfg, { videoFile, atSec = null } = {}) {
   const htmlFile = path.join(outDir, 'thumbnail.html')
   writeFileSync(htmlFile, html, 'utf8')
 
-  const executablePath = findChrome(cfg.app.chromePath)
+  const executablePath = findChrome(cfg.app.chromePath, { configDir: cfg.configDir })
   const browser = await chromium.launch({
     ...(executablePath ? { executablePath } : {}),
     headless: true, args: launchArgs(),

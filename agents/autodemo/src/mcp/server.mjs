@@ -72,7 +72,21 @@ const TOOLS = [
 const text = s => ({ content: [{ type: 'text', text: typeof s === 'string' ? s : JSON.stringify(s, null, 2) }] })
 const fail = msg => ({ content: [{ type: 'text', text: msg }], isError: true })
 
+// `describe_app` takes a URL from whatever is driving this server, which may
+// be an agent acting on text it read somewhere. A browser will happily open
+// file:// and data: URLs, and the accessibility tree would then hand back the
+// contents of a local file. Only real web requests are allowed here.
+function assertWebUrl(url) {
+  let parsed
+  try { parsed = new URL(url) } catch { throw new Error(`Not a valid URL: ${url}`) }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error(`Only http and https URLs can be described, not ${parsed.protocol}`)
+  }
+  return parsed.href
+}
+
 async function describeApp({ url, waitForSelector, waitMs = 2500 }) {
+  url = assertWebUrl(url)
   const executablePath = findChrome('auto')
   const browser = await chromium.launch({
     ...(executablePath ? { executablePath } : {}), headless: true, args: launchArgs(),

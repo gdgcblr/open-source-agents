@@ -8,7 +8,7 @@
 //   3. Mix the clips onto that video at their offsets and encode an MP4.
 
 import { chromium } from 'playwright'
-import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs'
+import { mkdirSync, rmSync, existsSync, writeFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { synthesizeAll, ffprobeDur } from './tts.mjs'
 import { setStage } from './overlay.mjs'
@@ -17,10 +17,22 @@ import { padMs } from './timing.mjs'
 import { mix } from './mix.mjs'
 import { findChrome, launchArgs } from './preflight.mjs'
 
-/** Remove a directory, tolerating a shell holding it open on Windows. */
+// Clear out the artefacts of a previous run without ever recursively deleting
+// a directory. `output.dir` is user-supplied, and a recursive delete of a
+// mistyped path is not a mistake you can take back — so we remove only the
+// files we ourselves produce, by extension, and never touch anything else
+// that happens to be in there.
+const OURS = /\.(mp3|wav|m4a|webm|mp4)$/i
+
 function resetDir(dir) {
-  try { if (existsSync(dir)) rmSync(dir, { recursive: true, force: true }) } catch { /* reused in place */ }
   mkdirSync(dir, { recursive: true })
+  try {
+    for (const name of readdirSync(dir)) {
+      if (OURS.test(name)) {
+        try { rmSync(path.join(dir, name), { force: true }) } catch { /* locked; overwritten below */ }
+      }
+    }
+  } catch { /* unreadable; the run will fail later with a clearer error */ }
 }
 
 /**
@@ -56,7 +68,7 @@ export async function render(cfg, { dryRun = false, only = null, log = console.l
 
   // ---- 2. record ----------------------------------------------------------
   log('\n[2/3] Recording the walkthrough...')
-  const executablePath = findChrome(cfg.app.chromePath)
+  const executablePath = findChrome(cfg.app.chromePath, { configDir: cfg.configDir })
   const browser = await chromium.launch({
     ...(executablePath ? { executablePath } : {}),
     headless: cfg.app.headless !== false,

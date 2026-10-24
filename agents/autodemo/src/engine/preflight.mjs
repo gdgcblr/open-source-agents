@@ -4,6 +4,7 @@
 
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import path from 'node:path'
 import { hasEdgeTts } from './tts.mjs'
 
 const IS_WIN = process.platform === 'win32'
@@ -28,16 +29,50 @@ export function chromeCandidates() {
   ]
 }
 
+// A config file looks like data, and people copy them between projects. But
+// `chromePath` names an executable that we then launch, so a hostile config
+// shipped alongside a payload would be native code execution on the host.
+// These two rules block the realistic version of that without taking the
+// option away: the binary has to look like a browser, and it cannot live
+// inside the config's own directory tree (where a payload would travel).
+//
+// CHROME_PATH is exempt — it was typed by whoever ran the command.
+const BROWSER_NAME = /^(google-)?chrome(-stable|-beta|-dev|-headless-shell)?(\.exe)?$|^chromium(-browser)?(\.exe)?$|^msedge(\.exe)?$|^(Google Chrome|Chromium|Microsoft Edge)$/i
+
+function assertLaunchable(file, configDir) {
+  if (!existsSync(file)) throw new Error(`chromePath does not exist: ${file}`)
+  if (!BROWSER_NAME.test(path.basename(file))) {
+    throw new Error(
+      `Refusing to launch "${path.basename(file)}" as a browser.\n` +
+      `  app.chromePath must name a Chrome, Chromium or Edge binary.\n` +
+      `  If this really is one, set CHROME_PATH in your environment instead.`)
+  }
+  if (configDir) {
+    const rel = path.relative(path.resolve(configDir), path.resolve(file))
+    if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) {
+      throw new Error(
+        `Refusing to launch a browser from inside the config directory: ${file}\n` +
+        `  A config should not carry its own executable. Use an installed\n` +
+        `  browser, set CHROME_PATH, or use chromePath: auto.`)
+    }
+  }
+}
+
 /**
  * Find a browser executable.
  * `null` is a success, not a failure: it means "use Playwright's bundled
  * chromium", which is what CI does.
  */
-export function findChrome(configured = 'auto') {
-  const explicit = process.env.CHROME_PATH || (configured !== 'auto' ? configured : null)
-  if (explicit) {
-    if (!existsSync(explicit)) throw new Error(`chromePath does not exist: ${explicit}`)
-    return explicit
+export function findChrome(configured = 'auto', { configDir = null } = {}) {
+  if (process.env.CHROME_PATH) {
+    if (!existsSync(process.env.CHROME_PATH)) {
+      throw new Error(`CHROME_PATH does not exist: ${process.env.CHROME_PATH}`)
+    }
+    return process.env.CHROME_PATH
+  }
+  if (configured && configured !== 'auto') {
+    assertLaunchable(configured, configDir)
+    return configured
   }
   return chromeCandidates().find(p => p && existsSync(p)) || null
 }
@@ -47,8 +82,11 @@ export function launchArgs() {
   const common = ['--hide-scrollbars', '--mute-audio', '--force-device-scale-factor=1']
   if (IS_WIN) return ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', ...common]
   if (IS_MAC) return ['--use-angle=metal', '--enable-gpu', ...common]
-  // Linux/CI: software GL is the only thing reliably present on a headless runner.
-  return ['--use-gl=angle', '--use-angle=swiftshader', '--no-sandbox', ...common]
+  // Linux/CI: software GL is the only thing reliably present on a headless
+  // runner. --no-sandbox is gated: it is needed to run as root in a container,
+  // but it drops a real protection layer, so it is opt-in rather than always on.
+  const sandbox = process.env.CI || process.env.AUTODEMO_NO_SANDBOX ? ['--no-sandbox'] : []
+  return ['--use-gl=angle', '--use-angle=swiftshader', ...sandbox, ...common]
 }
 
 function binOk(bin) {
