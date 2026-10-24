@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`contrib-sentinel`](contrib-sentinel/README.md) | Audits a submission to this repo against CONTRIBUTING.md's standards (naming, manifest, secrets, README coverage, scope) plus an optional Claude review pass. | Python / Anthropic SDK | personal use |
