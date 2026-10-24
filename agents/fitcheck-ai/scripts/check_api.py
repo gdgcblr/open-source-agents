@@ -46,7 +46,7 @@ def main() -> int:
     print(f"\n→ Test call to {model} …")
     t = time.time()
     try:
-        cfg = types.GenerateContentConfig(temperature=0.2, max_output_tokens=200)
+        cfg = types.GenerateContentConfig(temperature=0.2, max_output_tokens=1024)
         if not model.startswith("gemma-3"):
             cfg.system_instruction = "You are a concise fashion stylist."
         resp = client.models.generate_content(
@@ -55,8 +55,12 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"✗ Call failed: {exc}")
         return 1
-    answer = "".join(p.text or "" for p in resp.candidates[0].content.parts if not p.thought)
+    cand = resp.candidates[0]
+    answer = "".join(p.text or "" for p in cand.content.parts if not p.thought)
     print(f"✓ {time.time() - t:.1f}s → {answer.strip()}")
+    if str(cand.finish_reason).endswith("MAX_TOKENS"):
+        print("  ⚠ Answer was cut off by the token limit (Gemma 4 thinking shares it). "
+              "If agent replies look truncated, raise FITCHECK_MAX_TOKENS or set FITCHECK_THINKING=minimal.")
     print("\nAll good — run `python server.py` and open http://127.0.0.1:8000")
     return 0
 
