@@ -5,6 +5,8 @@ unplanned restaurant meals, missing pantry ingredients, cooking time crunch, and
 Ensures adjustments are sustainable and non-punitive (never recommends crash fasting).
 """
 
+import json
+import logging
 from typing import List, Dict, Any, Optional
 from nutriloop.agents.base import BaseAgent
 from nutriloop.models import (
@@ -21,12 +23,108 @@ from nutriloop.nutrition_engine import (
 )
 from nutriloop.database import list_foods_by_diet, get_food
 
+logger = logging.getLogger("nutriloop.agent")
+
 
 class AdaptiveReplannerAgent(BaseAgent):
     """Dynamically recalculates remaining daily meals to meet targets without extreme restriction."""
 
     def __init__(self):
         super().__init__(name="AdaptiveReplannerAgent", role="Closed-Loop Meal Replanner")
+
+    def _consult_gemini_replanner(
+        self,
+        profile: UserProfile,
+        disruptions: List[DisruptionEvent],
+        remaining: Dict[str, float],
+        unavailable_items: set,
+        max_prep_time: int
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Consult Google GenAI SDK (Gemini) for context-aware replanning and coaching rationale
+        under strict nutrition guardrails.
+        """
+        client = self.get_gemini_client()
+        if not client:
+            return None
+
+        # Build list of eligible database candidate dishes compliant with profile diet and constraints
+        eligible_foods = list_foods_by_diet(profile.diet_type)
+        user_allergies = [a.lower().strip() for a in profile.allergies]
+        eligible_candidates = [
+            f.id for f in eligible_foods
+            if not any(u in f.name.lower() or u in f.id.lower() for u in unavailable_items)
+            and f.prep_time_minutes <= max_prep_time
+            and not any(a in [al.lower() for al in f.allergens] for a in user_allergies)
+        ]
+
+        if not eligible_candidates:
+            return None
+
+        system_instruction = (
+            "You are NutriLoop AI, an adaptive clinical nutrition agent adhering strictly to ICMR-NIN dietary guidelines.\n"
+            "STRICT GUARDRAILS:\n"
+            "1. NEVER advise skipping meals, extreme caloric deficit, or compensatory fasting.\n"
+            f"2. User Diet: {profile.diet_type.value.upper()}. Never recommend non-compliant items.\n"
+            f"3. User Allergies: {user_allergies}. Never recommend allergens.\n"
+            f"4. Maximum prep time: {max_prep_time} minutes.\n"
+            f"5. Candidate dinner dishes MUST be chosen from this verified catalog list: {eligible_candidates[:25]}.\n"
+        )
+
+        prompt = f"""
+Disruptions: {[d.description for d in disruptions]}
+Remaining Calorie Target: {remaining['remaining_calories']:.1f} kcal
+Remaining Protein Target: {remaining['remaining_protein_g']:.1f}g
+Remaining Daily Budget: ₹{remaining.get('remaining_budget_inr', 100):.1f}
+
+Provide:
+1. "coaching_insight": Empathetic, scientifically sound advice explaining how dinner is balanced without guilt or starvation.
+2. "recommended_dish_ids": List of 2 to 3 dish IDs from the verified list for dinner.
+
+Output pure JSON with keys 'coaching_insight' (string) and 'recommended_dish_ids' (array of strings).
+"""
+        try:
+            from google.genai import types
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.2,
+                    response_mime_type="application/json"
+                )
+            )
+            data = json.loads(response.text.strip())
+            dish_ids = data.get("recommended_dish_ids", [])
+            valid_items = []
+            for did in dish_ids:
+                if did in eligible_candidates:
+                    valid_items.append(create_meal_item(did))
+
+            dinner_cal = sum(i.calories for i in valid_items)
+            # Anti-starvation guardrail check: dinner must provide at least 250 kcal
+            if dinner_cal >= 250.0:
+                self.record_trace(
+                    action="GeminiReplanned",
+                    reasoning=f"Google GenAI recommended {len(valid_items)} verified dishes: {[i.name for i in valid_items]}.",
+                    details={"coaching_insight": data.get("coaching_insight"), "dinner_calories": dinner_cal}
+                )
+                return {
+                    "items": valid_items,
+                    "coaching_insight": data.get("coaching_insight", "")
+                }
+            else:
+                self.record_trace(
+                    action="GeminiGuardrailTriggered",
+                    reasoning=f"Gemini proposed {dinner_cal:.1f} kcal for dinner which violated minimum safe threshold (250 kcal). Safely fell back to deterministic engine."
+                )
+        except Exception as e:
+            logger.warning(f"[{self.name}] Gemini replanning consultation failed: {e}")
+            self.record_trace(
+                action="GeminiReplannerFallback",
+                reasoning=f"Gemini replanning consultation error ({e}); safely fell back to deterministic replanning."
+            )
+        return None
 
     def replan(
         self,
@@ -99,6 +197,8 @@ class AdaptiveReplannerAgent(BaseAgent):
 
         revised_meals: List[Meal] = []
 
+        coaching_note = None
+
         # 2. Re-construct the day: retain logged meals as consumed, adapt future unconsumed slots
         for original_meal in current_plan.meals:
             m_type = original_meal.meal_type.lower()
@@ -117,12 +217,24 @@ class AdaptiveReplannerAgent(BaseAgent):
             # This is an upcoming meal that can be adapted!
             # Example: Adapting Dinner after an unplanned heavy snack or lunch
             if m_type == "dinner":
-                adapted_dinner_items = self._build_adaptive_dinner(
+                gemini_res = self._consult_gemini_replanner(
                     profile=profile,
+                    disruptions=disruptions,
                     remaining=remaining,
                     unavailable_items=unavailable_items,
                     max_prep_time=max_prep_time
                 )
+                if gemini_res and gemini_res.get("items"):
+                    adapted_dinner_items = gemini_res["items"]
+                    if gemini_res.get("coaching_insight"):
+                        coaching_note = gemini_res["coaching_insight"]
+                else:
+                    adapted_dinner_items = self._build_adaptive_dinner(
+                        profile=profile,
+                        remaining=remaining,
+                        unavailable_items=unavailable_items,
+                        max_prep_time=max_prep_time
+                    )
                 revised_meals.append(Meal(
                     meal_type="dinner",
                     items=adapted_dinner_items,
@@ -157,6 +269,8 @@ class AdaptiveReplannerAgent(BaseAgent):
             f"Adjusted for {len(food_logs)} logged meal(s) and {len(disruptions)} lifestyle disruption(s).",
             "Maintained minimum 1200+ kcal floor and adequate fiber for healthy satiety."
         ]
+        if coaching_note:
+            plan_notes.append(f"AI Coaching Guidance: {coaching_note}")
         if feedback_notes:
             plan_notes.append(f"Repair cycle adjustment: {feedback_notes}")
 

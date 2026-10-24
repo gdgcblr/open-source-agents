@@ -169,6 +169,22 @@ class IndependentVerificationEngine(BaseAgent):
         if plan.total_protein_g < 30.0:
             safety_flags.append(f"Inadequate daily protein: {plan.total_protein_g:.1f}g is below safe baseline.")
 
+        # Check meal-level anti-starvation: adapted main meals should have at least 250 kcal
+        meal_starvation_found = False
+        for meal in plan.meals:
+            if meal.meal_type.lower() in ("lunch", "dinner") and meal.total_calories < 250.0:
+                meal_starvation_found = True
+                safety_flags.append(f"Meal '{meal.meal_type}' contains only {meal.total_calories:.0f} kcal, below minimum safe threshold (250 kcal).")
+                violations.append(f"Anti-starvation violation: {meal.meal_type} calories too low ({meal.total_calories:.0f} kcal).")
+
+        anti_extremity_passed = (plan.total_calories >= 1000.0) and (plan.total_protein_g >= 30.0) and not meal_starvation_found
+        checks.append(VerificationCheck(
+            check_name="Anti-Starvation & Safety Guard",
+            passed=anti_extremity_passed,
+            severity="critical" if not anti_extremity_passed else "info",
+            details="Plan satisfies safe caloric floor (>=1000 kcal), protein baseline (>=30g), and non-punitive meal portions." if anti_extremity_passed else "Plan triggers anti-starvation or nutritional safety guardrails."
+        ))
+
         is_valid = len(violations) == 0
 
         ver_notes = "Plan successfully passed all deterministic safety and constraint checks." if is_valid else f"Audit flagged {len(violations)} issues requiring plan adjustment."

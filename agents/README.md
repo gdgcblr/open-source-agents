@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`nutriloop-ai`](nutriloop-ai/) | Evidence-grounded, closed-loop adaptive nutrition multi-agent system verified deterministically against ICMR-NIN food composition data with anti-starvation guardrails. | Google GenAI SDK (`google-genai`) / Python Multi-Agent | [@Luqmaan29](https://github.com/Luqmaan29) |

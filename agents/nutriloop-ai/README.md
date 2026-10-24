@@ -22,11 +22,12 @@
 ## Technical Stack
 
 - **Language & Runtime**: Python 3.10+ (tested on Python 3.13)
-- **Agent Framework / Core Library**: Custom state-machine multi-agent orchestrator with typed Pydantic v2 schemas and inspectable execution traces.
+- **Agent Framework & LLM Runtime**: Google GenAI SDK (`google-genai>=2.0.0` for Gemini 2.5 Flash) combined with an adaptive state-machine multi-agent orchestrator with typed Pydantic v2 schemas and inspectable execution traces.
+- **Safety & Guardrail Architecture**: Multi-layered deterministic guardrail layer checking calorie arithmetic (< 1% error), dietary & religious rules (Jain, Vegan, Veg), allergen safety, prep time feasibility, and anti-punitive starvation floors.
 - **Data & Nutritional Standards**: ICMR-NIN Indian Food Composition Tables (IFCT 2017) and USDA FoodData Central.
-- **Verification & Testing**: Pytest test suite, deterministic rule-based auditing engine.
+- **Verification & Testing**: Pytest test suite (16 unit and integration tests), deterministic rule-based auditing engine.
 - **User Interface**: Streamlit web dashboard with interactive persona simulation and trace visualization.
-- **Dependencies**: `pydantic>=2.4.0`, `streamlit>=1.31.0`, `pandas>=2.0.0`, `pytest>=7.4.0`, `python-dotenv>=1.0.0`, `tabulate>=0.9.0`.
+- **Dependencies**: `google-genai>=2.0.0`, `pydantic>=2.4.0`, `streamlit>=1.31.0`, `pandas>=2.0.0`, `pytest>=7.4.0`, `python-dotenv>=1.0.0`, `tabulate>=0.9.0`.
 
 ---
 
@@ -200,7 +201,7 @@ pantry_status = "No paneer available; only 15 minutes to cook dinner"
 
 ## How to Test
 
-NutriLoop AI includes automated unit and integration tests covering the nutrition engine, verifier, replanner, and orchestrator.
+NutriLoop AI includes an automated unit and integration test suite covering the nutrition engine, independent verifier, Google GenAI guardrails, replanner, and orchestrator.
 
 Run the test suite using `pytest`:
 ```bash
@@ -211,6 +212,10 @@ Expected output:
 ```
 tests/test_adaptive_replanner.py::test_replanner_handles_missing_paneer PASSED
 tests/test_adaptive_replanner.py::test_replanner_handles_unplanned_snack PASSED
+tests/test_gemini_guardrails.py::test_gemini_client_initialization_offline PASSED
+tests/test_gemini_guardrails.py::test_food_analyzer_fallback_and_guardrails PASSED
+tests/test_gemini_guardrails.py::test_anti_starvation_guardrail_intercepts_low_calories PASSED
+tests/test_gemini_guardrails.py::test_dietary_guardrails_jain_and_vegan PASSED
 tests/test_nutrition_engine.py::test_create_meal_item_exact_scaling PASSED
 tests/test_nutrition_engine.py::test_portion_parsing_katori_and_counts PASSED
 tests/test_nutrition_engine.py::test_calculate_meal_totals PASSED
@@ -221,7 +226,7 @@ tests/test_orchestrator.py::test_all_benchmark_scenarios_pass PASSED
 tests/test_verifier.py::test_verifier_flags_diet_violation PASSED
 tests/test_verifier.py::test_verifier_flags_allergen PASSED
 tests/test_verifier.py::test_verifier_passes_compliant_plan PASSED
-============================== 12 passed in 0.23s ==============================
+============================== 16 passed in 0.55s ==============================
 ```
 
 ---
@@ -231,3 +236,26 @@ tests/test_verifier.py::test_verifier_passes_compliant_plan PASSED
 - **Dataset Breadth**: The current evidence database contains 25+ curated everyday Indian and global foods grounded in IFCT 2017. Complex restaurant multi-course recipes rely on standard portion estimates.
 - **Portion Estimation Ambiguity**: Free-text estimates (e.g., "1 bowl of dal") assume standard household volumes (150ml/g katori). Users logging non-standard serving bowls may experience minor portion variance.
 - **Non-Clinical Scope**: NutriLoop AI is designed for healthy everyday lifestyle nutrition and dietary balance. It is not intended for clinical medical diagnoses, eating disorder treatment, or disease-specific medical nutrition therapy.
+
+---
+
+## Security & Privacy Considerations
+
+- **Secrets Handling**: API keys (`GEMINI_API_KEY`) are loaded strictly via environment variables or sanitized `.env` files via `python-dotenv`. Keys are never hardcoded or logged.
+- **Data Privacy**: No personal health records, profiles, or food logs are permanently retained on third-party servers. When offline, all computation occurs 100% locally on device.
+- **Safety & Code Execution**: The system executes purely deterministic mathematical logic and controlled LLM structured JSON generation. It executes zero arbitrary shell commands or untrusted code.
+
+---
+
+## Future Improvements
+
+- [ ] Add multimodal image recognition with Gemini to analyze food photos and canteen plates directly.
+- [ ] Expand ICMR-NIN IFCT dataset catalog to over 200+ regional Indian dishes.
+- [ ] Integrate wearable health metrics (Apple Health, Google Fit) for dynamic real-time expenditure adjustment.
+- [ ] Support local open-weight models via Ollama for zero-cost edge deployment.
+
+---
+
+## License
+
+This project is contributed under the repository's open-source [MIT License](../../LICENSE) &copy; 2026 GDG Cloud Bengaluru Community.
