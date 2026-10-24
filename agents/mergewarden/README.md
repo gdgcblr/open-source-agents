@@ -331,6 +331,14 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 - **The AI layer can be wrong or noisy.** Grounding stops invented quotes but not every bad judgement. Two reviewers can occasionally raise overlapping points. AI findings are labelled `AI review` for this reason.
 - **Rate limits.** GitHub's unauthenticated API allows 60 requests/hour. Triage of large repos needs `GITHUB_TOKEN`. Free Gemini tiers can return 429/503; the model chain falls back and finally runs deterministic-only.
 - **Coach scale.** It uses single-host SQLite and in-process sessions, which is fine for an event or a club, not for thousands of concurrent students. Real WhatsApp needs a Twilio account and a public URL (ngrok); the real-phone round trip is still pending. The coach's GitHub matching makes about 4 search calls per student journey (2 s spacing, 30-minute cache, Retry-After backoff, falling back to event challenges). One `gh` login shared by every student can still hit GitHub's secondary rate limit at a big event, so give the coach its own `GITHUB_TOKEN`. Voice quality depends on Gemini's support for the language and on audio quality.
+- **False positives on real PRs.** On the 20 newest event PRs (2026-10-24), several blocking findings were wrong:
+  - fake keys inside other projects' own test fixtures
+  - prompt-injection strings inside their security tests and sample data
+  - code expressions like `api_key = existing.openai_api_key`, read as secrets
+  - a storage key *name* ending in `_auth_token`
+  - an ordinary UTF-8 byte-order mark (BOM), read as hidden characters
+
+  Treat secret and injection findings in `tests/`, `evals/`, fixtures and sample data as "confirm this is fake", not as proof of a leak. The setup and documentation findings (undocumented env vars, README commands that fail, missing sections) held up.
 - **Known detector gaps.** The red-team script's bypasses are now closed (21/22, the last is a design note covered by its own test). Static scanning still has limits a determined attacker can use: keys assembled at runtime (`"".join(...)`, `chr()` codes, fetched from a URL), injection phrased in ways no pattern anticipates (the Gemini reviewers are the second line), and code paths only an LLM reading every file would notice. Treat MergeWarden as a strong first pass, not as a security boundary.
 - **Tested on macOS (Python 3.12).** Linux is expected to work. Windows is untested.
 
