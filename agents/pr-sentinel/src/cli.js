@@ -54,6 +54,31 @@ Examples:
   const isJson = args.includes('--json');
   const isMarkdown = args.includes('--markdown');
 
+  // Direct API Key health check
+  if (args.includes('--check-key')) {
+    banner();
+    console.log(`${colors.cyan}Testing Google Gemini API Key connection...${colors.reset}\n`);
+    if (!config.geminiApiKey) {
+      console.log(`❌ ${colors.brightRed}No GEMINI_API_KEY configured in .env!${colors.reset}`);
+      process.exit(1);
+    }
+    try {
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
+      const res = await ai.models.generateContent({
+        model: config.geminiModel,
+        contents: 'Respond with the exact word: CONNECTED',
+      });
+      console.log(`✅ ${colors.brightGreen}Gemini API Key is ACTIVE and verified!${colors.reset}`);
+      console.log(`   Model:    ${colors.bold}${config.geminiModel}${colors.reset}`);
+      console.log(`   Response: ${colors.dim}${res.text.trim()}${colors.reset}\n`);
+      process.exit(0);
+    } catch (err) {
+      console.log(`❌ ${colors.brightRed}Gemini API Key verification failed:${colors.reset} ${err.message}\n`);
+      process.exit(1);
+    }
+  }
+
   // Parse output file
   let outputFile = null;
   const outIdx = args.indexOf('--output') !== -1 ? args.indexOf('--output') : args.indexOf('-o');

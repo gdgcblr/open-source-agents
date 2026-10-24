@@ -27,7 +27,7 @@ for (const envPath of possibleEnvPaths) {
 export const config = {
   // LLM Provider Settings
   geminiApiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
-  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
   
   // Execution Mode
   mockMode: process.env.MOCK_MODE === 'true' || process.env.DEMO_MODE === 'true',
