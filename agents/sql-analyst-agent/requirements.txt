@@ -1,0 +1,4 @@
+google-genai>=0.1.1
+python-dotenv>=1.0.1
+pydantic>=2.0.0
+**Model:** Gemini 3.8 Flash via `google-genai` SDK
