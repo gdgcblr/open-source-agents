@@ -10,8 +10,14 @@ import java.util.regex.Pattern;
 public final class BuildDoctorTools {
   private static final int MAX_INPUT_CHARS = 200_000;
   private static final int MAX_OUTPUT_CHARS = 200_000;
+  private static final Pattern BEARER_PATTERN =
+      Pattern.compile("(?i)(authorization\\s*:\\s*bearer\\s+)[^\\s,;]+");
   private static final Pattern SECRET_PATTERN =
       Pattern.compile("(?i)([\\\"']?(?:api[_-]?key|token|password|secret|client_secret)[\\\"']?\\s*[:=]\\s*[\\\"']?)[^\\\"'\\s,;}]+");
+  private static final Pattern PRIVATE_KEY_PATTERN =
+      Pattern.compile("(?i)(-----BEGIN [A-Z ]+ PRIVATE KEY-----).*?(-----END [A-Z ]+ PRIVATE KEY-----)", Pattern.DOTALL);
+  private static final Pattern PROMPT_INJECTION_PATTERN =
+      Pattern.compile("(?i)(ignore (?:all )?previous instructions|system message:|you are now |reveal (?:the )?secret)");
 
   private BuildDoctorTools() {}
 
@@ -24,12 +30,21 @@ public final class BuildDoctorTools {
   }
 
   public static String analyzeBuildLog(String log, String projectRoot) throws IOException {
+    if (!isToolAllowed("analyzeBuildLog")) {
+      throw new IOException("tool 'analyzeBuildLog' is disabled by BUILD_DOCTOR_ALLOWED_TOOLS");
+    }
     String boundedLog = redact(log == null ? "" : log.substring(0, Math.min(log.length(), MAX_INPUT_CHARS)));
     Path root = projectRoot == null || projectRoot.isBlank() ? null : safeRoot(projectRoot);
     return new BuildDoctorEngine().analyze(boundedLog, root).toText();
   }
 
   public static String inspectProject(String projectRoot) throws IOException {
+    if (!isToolAllowed("inspectProject")) {
+      throw new IOException("tool 'inspectProject' is disabled by BUILD_DOCTOR_ALLOWED_TOOLS");
+    }
+    if (projectRoot == null || projectRoot.isBlank()) {
+      return "Project evidence: no project root was provided.";
+    }
     Path root = safeRoot(projectRoot);
     List<String> manifests = List.of(
         "pom.xml", "build.gradle", "build.gradle.kts", "package.json", "pyproject.toml",
@@ -53,7 +68,23 @@ public final class BuildDoctorTools {
     return found ? result.toString() : "Project evidence: no supported manifest was found at the selected project root.";
   }
 
+  private static boolean isToolAllowed(String name) {
+    String allowed = System.getenv("BUILD_DOCTOR_ALLOWED_TOOLS");
+    if (allowed == null || allowed.isBlank()) {
+      return true;
+    }
+    for (String item : allowed.split(",")) {
+      if (item.trim().equalsIgnoreCase(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static Path safeRoot(String projectRoot) throws IOException {
+    if (projectRoot == null || projectRoot.isBlank()) {
+      throw new IOException("invalid project root");
+    }
     try {
       Path requested = Path.of(projectRoot);
       if (Files.isSymbolicLink(requested)) {
@@ -81,6 +112,12 @@ public final class BuildDoctorTools {
   }
 
   private static String redact(String value) {
-    return SECRET_PATTERN.matcher(value).replaceAll("$1=[REDACTED]");
+    if (value == null) {
+      return "";
+    }
+    String result = BEARER_PATTERN.matcher(value).replaceAll("$1[REDACTED]");
+    result = SECRET_PATTERN.matcher(result).replaceAll("$1=[REDACTED]");
+    result = PRIVATE_KEY_PATTERN.matcher(result).replaceAll("$1[REDACTED]$2");
+    return PROMPT_INJECTION_PATTERN.matcher(result).replaceAll("[UNTRUSTED_TEXT]");
   }
 }
