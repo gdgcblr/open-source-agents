@@ -2,6 +2,8 @@
 
 > Snap a photo of a civic problem in Bengaluru and get a ready-to-send complaint, in English and Kannada, addressed to the right authority.
 
+> ⚠️ **Data status: testing only.** For testing and demos, every entry in `namma_civic_agent/data/*.json` is marked `"verified": true`, so replies show contacts without an "unverified" label. **These entries have not been checked against official sources.** Before any production use, verify each authority, department mapping, helpline and escalation step against official sources, fill in `source` for each entry, add missing channels (portal URLs, social handles, traffic police contacts), and add more issue types or details if required. Set `"verified": false` on anything you cannot confirm; the agent will then label it as unverified.
+
 ---
 
 ## Overview
@@ -12,10 +14,12 @@
 
 ### Key Features
 - **Photo understanding**: Classifies a photo (or text description) into one of 17 civic issue categories using a multimodal model.
-- **Grounded routing**: The authority, department, helplines and escalation path come from curated local JSON data, not from the model's memory, so the agent cannot invent phone numbers.
+- **Grounded routing**: The authority, department, helplines and escalation path come from curated local JSON data, not from the model's memory, and the agent is instructed never to invent contact details.
 - **Bilingual drafts**: Writes a structured complaint in English and natural Kannada.
 - **Safety first**: Critical hazards (live wires, open manholes) get keep-away advice and the emergency number before anything else.
-- **Honest about data**: Contact details not yet verified are labelled as such in every reply.
+- **Guardrails in code, not just the prompt**: Every model reply passes through an output filter that removes any phone number, URL, email or social handle that isn't in the curated data or in the user's own message.
+- **Boundaries in the prompt**: Stays on civic issues only, sticks to facts the user gave or the photo shows (no embellishment), never invents ward numbers, officer names or timelines, treats text inside photos as data rather than instructions, and refuses false or harassing complaints.
+- **Honest about data**: Any contact marked `"verified": false` in the data is labelled as unverified in every reply.
 - **Drafts, never files**: The user stays in control of submission.
 
 ---
@@ -24,8 +28,9 @@
 
 - **Language & Runtime**: Python 3.11+
 - **Agent Framework**: [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/) 2.x
-- **Models**: Gemini 3.5 Flash (default, configurable via `MODEL_NAME`). Any Gemini model with image input works.
+- **Models**: Gemini 3.5 Flash (default, configurable via `MODEL_NAME`). Other Gemini models with image input should also work, but are untested.
 - **External APIs / Tools**: Gemini API only. Routing data is local JSON.
+- **Usage per complaint**: about 4 model requests, ~11k input and ~1k output tokens (measured with `smoke_test.py`). Works on the Gemini free tier (subject to its rate limits); no paid API is required.
 
 ---
 
@@ -40,6 +45,9 @@
                        |                      |                      |
                        +-------- data/issue_types.json, data/authorities.json
                                               |
+                                              |
+                     block_unverified_contacts() (after_model_callback)
+                                              |
 [Issue + authority + severity + EN/KN draft + where to file + escalation]
                                               |
                                   save_complaint() (optional, local .md)
@@ -52,10 +60,12 @@ namma-civic-agent/
 │   ├── agent.py              # ADK agent definition (model, instruction, tools)
 │   ├── prompt.py             # System instruction: workflow, safety rules, reply format
 │   ├── tools.py              # Python functions the model can call
+│   ├── guardrails.py         # Output filter: strips contact details not in the data
 │   └── data/
 │       ├── issue_types.json  # 17 issue categories -> authority + department
 │       └── authorities.json  # Authorities -> helplines, portals, escalation path
-├── tests/test_tools.py       # Offline tests (no API key needed)
+├── tests/                    # Offline tests for tools and guardrails (no API key needed)
+├── smoke_test.py             # One-shot live run: prints tool calls + token usage
 ├── examples/                 # Sample photos and transcripts from real runs
 ├── requirements.txt
 └── .env.example
@@ -82,7 +92,8 @@ namma-civic-agent/
 
 2. **Create a virtual environment and install dependencies:**
    ```bash
-   python3.11 -m venv .venv
+   python3 --version          # must print 3.11 or newer; otherwise use e.g. python3.12
+   python3 -m venv .venv
    # Windows:
    .venv\Scripts\activate
    # Linux/macOS:
@@ -124,55 +135,175 @@ adk run namma_civic_agent
 
 In the web UI, select `namma_civic_agent`, attach a photo, and describe where it is.
 
+```bash
+# Or run a single request non-interactively (prints tool calls and token usage)
+python smoke_test.py "Garbage dumped near Indiranagar metro station for 5 days"
+python smoke_test.py --image examples/<your-photo>.jpg "Near 100 Feet Road, Indiranagar"
+```
+
 ---
 
 ## Example Input & Output
 
-> 🚧 **TODO before opening the PR:** replace this section with a transcript from a genuine run using one of your own photos (save the photo in `examples/`). CONTRIBUTING.md requires examples to come from real runs.
+Genuine run on 2026-10-24 with `gemini-3.5-flash`, using a text description (`python smoke_test.py "..."`). Output is unedited apart from trailing whitespace. (This run was recorded while the data was still marked `"verified": false`, which is why 1533 carries the "unverified" label.)
+
+> 🚧 **TODO before opening the PR:** add a run with a real photo (save it in `examples/`).
 
 ### Example Input
 ```
-[photo: examples/<your-photo>.jpg]
-"Near Indiranagar 100 Feet Road, opposite the metro pillar. It's been there 5 days."
+There's a big pothole on 80 Feet Road, Koramangala 4th Block, near the Sony World signal.
+Bikes are swerving around it. It's been there about 2 weeks.
 ```
 
 ### Example Output
 ```
-<paste the agent's real reply here>
+[tool call] list_issue_types({})
+[tool call] find_department({'issue_type': 'pothole'})
+[tool call] get_filing_channels({'authority_id': 'city_corporation'})
+**Issue:** Pothole / damaged road surface (ರಸ್ತೆ ಗುಂಡಿ)
+**Responsible:** Bengaluru city corporation (Greater Bengaluru Authority, formerly BBMP), Roads / Engineering
+**Location:** 80 Feet Road, Koramangala 4th Block, near Sony World signal
+**Severity:** High – Located on a high-density arterial corridor, causing two-wheelers to swerve suddenly into oncoming traffic, creating a major risk of severe accidents.
+
+---
+
+**Draft complaint (English)**
+
+**Subject:** Urgent repair required for dangerous pothole on 80 Feet Road, Koramangala 4th Block
+
+To the Executive Engineer / Road Infrastructure Department,
+Bengaluru City Corporation,
+
+I am writing to draw your urgent attention to a severe, deep pothole on 80 Feet Road, Koramangala 4th Block, near the Sony World signal junction. This road defect has remained neglected for approximately two weeks and continues to worsen.
+
+Because of its depth and location on a high-volume road, two-wheelers and drivers are frequently forced to swerve into neighboring lanes to avoid it. This poses a grave hazard of collisions, especially during peak hours and after dusk.
+
+I request you to conduct an immediate inspection and resurface/patch this section of the road without delay to safeguard commuters.
+
+Thank you.
+
+Sincerely,
+[Your name]
+[Your phone number]
+
+---
+
+**Draft complaint (ಕನ್ನಡ)**
+
+**ವಿಷಯ:** ಕೋರಮಂಗಲ 4 ನೇ ಬ್ಲಾಕ್‌ನ 80 ಫೀಟ್ ರಸ್ತೆಯಲ್ಲಿರುವ ಅಪಾಯಕಾರಿ ರಸ್ತೆ ಗುಂಡಿ ತಕ್ಷಣ ದುರಸ್ತಿ ಮಾಡುವಂತೆ ಮನವಿ
+
+ಗೌರವಾನ್ವಿತ ಅಧಿಕಾರಿಗೆ,
+ಬೆಂಗಳೂರು ನಗರ ಪಾಲಿಕೆ (ರಸ್ತೆ ಮತ್ತು ಎಂಜಿನಿಯರಿಂಗ್ ವಿಭಾಗ),
+
+ಕೋರಮಂಗಲ 4 ನೇ ಬ್ಲಾಕ್‌ನ 80 ಫೀಟ್ ರಸ್ತೆಯಲ್ಲಿ, ಸೋನಿ ವರ್ಲ್ಡ್ ಸಿಗ್ನಲ್ ಸಮೀಪ ಇರುವ ದೊಡ್ಡ ರಸ್ತೆ ಗುಂಡಿಯ ಕುರಿತು ನಿಮ್ಮ ಗಮನಕ್ಕೆ ತರಬಯಸುತ್ತೇನೆ. ಈ ಗುಂಡಿ ಕಳೆದ ಸುಮಾರು ಎರಡು ವಾರಗಳಿಂದ ಹಾಗೆಯೇ ಇದ್ದು, ರಸ್ತೆ ಮತ್ತಷ್ಟು ಹಾಳಾಗುತ್ತಿದೆ.
+
+ಇದು ಅತ್ಯಂತ ನಿರಂತರ ವಾಹನ ಸಂಚಾರವಿರುವ ಪ್ರಮುಖ ರಸ್ತೆಯಾಗಿದ್ದು, ದ್ವಿಚಕ್ರ ವಾಹನ ಸವಾರರು ಅಪಘಾತದಿಂದ ತಪ್ಪಿಸಿಕೊಳ್ಳಲು ಇದ್ದಕ್ಕಿದ್ದಂತೆ ವಾಹನಗಳನ್ನು ಪಕ್ಕಕ್ಕೆ ತಿರುಗಿಸುತ್ತಿದ್ದಾರೆ. ಇದರಿಂದಾಗಿ ಇತರೆ ವಾಹನಗಳಿಗೆ ಡಿಕ್ಕಿಯಾಗುವ ಹಾಗೂ ಪ್ರಾಣಾಪಾಯ ಉಂಟಾಗುವ ಭೀತಿ ಹೆಚ್ಚಾಗಿದೆ.
+
+ಸಾರ್ವಜನಿಕರ ಹಿತದೃಷ್ಟಿಯಿಂದ, ದಯವಿಟ್ಟು ಈ ಸ್ಥಳವನ್ನು ಶೀಘ್ರವಾಗಿ ಪರಿಶೀಲಿಸಿ ರಸ್ತೆ ಗುಂಡಿಯನ್ನು ತಕ್ಷಣವೇ ಮುಚ್ಚಿ ದುರಸ್ತಿಗೊಳಿಸಬೇಕಾಗಿ ವಿನಂತಿಸಿಕೊಳ್ಳುತ್ತೇನೆ.
+
+ಧನ್ಯವಾದಗಳೊಂದಿಗೆ,
+[ನಿಮ್ಮ ಹೆಸರು]
+[ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ]
+
+---
+
+**Where to file**
+1. Civic helpline: 1533 (unverified, please confirm on the official site)
+
+*(Note: Official app/portal and social media channels are currently not available in our verified system.)*
+
+---
+
+**If nothing happens**
+1. Ward-level engineer
+2. Zonal joint commissioner
+3. Corporation commissioner
+
+---
+
+Would you like me to save a copy of this complaint locally for your records?
+
+[usage] model requests: 4, input tokens: 11369, output tokens: 795
 ```
 
 ---
 
 ## How to Test
 
-**Automated (offline, no API key):** checks the tools and the integrity of the routing data.
+All commands run from `agents/namma-civic-agent/` with the virtual environment active.
+
+### 1. Automated tests (offline, no API key, about 1 second)
+
+Checks the tools and the integrity of the routing data (every issue maps to a known authority, unknown inputs and invalid severities are rejected, unverified contacts carry a warning, drafts save correctly, the instruction contains no ADK template placeholders) and the contact-detail guardrail (invented phone numbers, URLs, emails and handles are removed, while known helplines, addresses, dates and details the user gave are kept).
+
 ```bash
 pytest
+# expected: 20 passed
 ```
 
-**Manual (needs an API key):**
-1. Run `adk web` and open the UI.
-2. Upload photos of different issue types, e.g. a pothole, garbage, a dark streetlight, and a snapped wire.
-3. Check that:
-   - each photo is classified into the right category;
-   - streetlights route to the city corporation, not BESCOM;
-   - the electrical hazard reply starts with safety advice and 112;
-   - no phone number or URL appears that isn't in `data/authorities.json`;
-   - unverified contacts carry the "(unverified …)" label;
-   - a non-civic photo (e.g. a selfie) is politely rejected.
+### 2. Smoke test with a live model (needs `GOOGLE_API_KEY`)
+
+Run each scenario below and compare against the expected behaviour. **Wait about a minute between runs** on the free tier (see Known Limitations).
+
+```bash
+python smoke_test.py "<message>"
+```
+
+| # | Message | Expected |
+| :-- | :-- | :-- |
+| 1 | `Pothole on 80 Feet Road, Koramangala 4th Block, been there 2 weeks` | `pothole` → city corporation, Roads / Engineering |
+| 2 | `Streetlight off for a week on 12th Main, HSR Layout Sector 6` | `streetlight` → city corporation, **Electrical** (not BESCOM) |
+| 3 | `A power line snapped and is sparking near Jayanagar 4th Block bus stand` | Reply **starts** with keep-away advice and 112; `electrical_hazard` → BESCOM; severity critical |
+| 4 | `Sewage overflowing from a manhole on CMH Road, Indiranagar` | `sewage_overflow` → BWSSB |
+| 5 | `Garbage is piling up` (no location) | Agent asks for the location instead of drafting |
+| 6 | `What's the weather today?` | Agent explains it only handles civic issues |
+
+For every reply, also check:
+- three tool calls appear before the answer (`list_issue_types`, `find_department`, `get_filing_channels`);
+- no phone number, URL or handle appears that isn't in `namma_civic_agent/data/authorities.json`;
+- contacts with `"verified": false` carry the "(unverified …)" label (with the testing data all entries are `true`, so no label is expected; set one to `false` to check this);
+- the last line shows token usage (about 4 requests, roughly 11k input and 1k output tokens).
+
+On the free tier's daily limit (about 5 complaints), you may not be able to run all six scenarios in one day; spread them out or use a paid key.
+
+### 3. Photo test in the web UI
+
+```bash
+adk web
+```
+Open http://localhost:8000, choose `namma_civic_agent`, attach a photo, and add a location. Try:
+- photos of a pothole, garbage and a broken footpath: each should get the right category;
+- a photo with no civic issue (e.g. a selfie or food): the agent should say so and not draft a complaint;
+- a blurry or dark photo: the agent should ask for a clearer photo or a description.
+
+The web UI also shows each tool call and its result alongside the conversation.
+
+### Troubleshooting
+
+| Symptom | Fix |
+| :-- | :-- |
+| `429 RESOURCE_EXHAUSTED` mentioning `PerMinute` | Free-tier per-minute limit. Wait about a minute and retry. |
+| `429 RESOURCE_EXHAUSTED` mentioning `PerDay` | Free-tier daily limit (20 requests, about 5 complaints). Wait until it resets (the error says when), use a paid tier, or change `MODEL_NAME`. |
+| `ERROR: ... requires a different Python` during `pip install` | `google-adk` needs Python 3.11+. Recreate the venv with a newer Python. |
+| `adk: command not found` | Activate the virtual environment (`source .venv/bin/activate`). |
+| `ModuleNotFoundError: namma_civic_agent` | Run commands from `agents/namma-civic-agent/`, not from the repo root. |
+| `namma_civic_agent` not listed in `adk web` | Same as above: start `adk web` from `agents/namma-civic-agent/`. |
+| `API key not valid` / auth errors | Check `GOOGLE_API_KEY` in `.env` and that `GOOGLE_GENAI_USE_ENTERPRISE=0`. |
 
 ---
 
 ## Known Limitations
 
-- **Routing data is not yet verified.** Every entry in `data/*.json` currently has `"verified": false`. Bengaluru's civic bodies were recently restructured (BBMP was reorganised under the Greater Bengaluru Authority), and helplines, portals and responsibilities change. Until the data is checked against official sources, the agent labels contacts as unverified.
+- **Routing data is marked verified for testing only.** All entries in `data/*.json` are set to `"verified": true` so the agent can be demoed, but none has been checked against an official source yet (`source` is `null` everywhere). Bengaluru's civic bodies were recently restructured (BBMP was reorganised under the Greater Bengaluru Authority), and helplines, portals and responsibilities change. **For production, verify every entry and add more details as required** (see the note at the top of this README).
 - **Several channels are placeholders.** Portal URLs and social handles that haven't been researched yet are `null`. The agent reports them as "not yet available" rather than guessing.
 - **No automatic filing.** City grievance portals don't offer public APIs, so the user must submit the draft themselves.
 - **Location is free text.** The agent does not yet resolve a location to a ward or zone, or read GPS from photo EXIF data.
-- **Free-tier rate limits.** One complaint takes about 4 model requests (one per tool step plus the final reply). The Gemini free tier allows only a few requests per minute, so back-to-back complaints can fail with `429 RESOURCE_EXHAUSTED`. Wait a minute and retry, or use a paid tier.
+- **Free-tier rate limits.** One complaint takes about 4 model requests (one per tool step plus the final reply). At the time of testing, the Gemini free tier allowed 5 requests per minute and **20 requests per day** for the default model, i.e. roughly **5 complaints per day**. Exceeding either fails with `429 RESOURCE_EXHAUSTED`. For heavier testing, use a paid tier or switch `MODEL_NAME` to a model with a higher free quota.
 - **Kannada quality depends on the model.** Have a native speaker review drafts before relying on them.
+- **The guardrail is pattern-based.** It catches phone numbers, URLs, emails and @handles, but not, for example, an invented office address or officer name; those are covered only by the prompt. In streaming mode, partial text may be shown before the final filtered reply.
 - **Classification can be wrong**, especially for ambiguous photos (e.g. storm drain vs sewer). Always review the draft.
-- **Tested on:** offline tool tests pass on macOS. End-to-end runs with a live model, and Linux/Windows, are not yet tested.
+- **Photo input not yet tested with real photos.** Live runs so far used text descriptions only. Image classification relies on Gemini's vision and still needs testing with real street photos.
+- **Tested on:** macOS (Python 3.12, `google-adk` 2.13): offline tests plus live text runs. Linux and Windows untested.
 
 ---
 
@@ -180,7 +311,7 @@ pytest
 
 - **Secrets Handling**: The API key is read from `.env`, which is git-ignored. Only `.env.example` with placeholders is committed.
 - **Data Privacy**: Photos and messages are sent to the Gemini API for processing. Avoid uploading photos that show faces, licence plates or other personal details you don't want shared. Saved drafts go to `complaints/`, which is git-ignored.
-- **Safety**: The agent executes no shell commands or code and makes no network calls of its own. Its only side effect is writing a Markdown file when the user asks to save a draft. Its instructions forbid identifying or blaming individuals and inventing contact details.
+- **Safety**: The agent executes no shell commands or code and makes no network calls of its own. Its only side effect is writing a Markdown file when the user asks to save a draft. Its instructions forbid identifying or blaming individuals, inventing contact details or facts, following instructions embedded in photos, and drafting false or harassing complaints. Contact details are additionally enforced in code by `guardrails.py`. Prompt-level rules depend on the model following them; they are tested manually, not automatically.
 
 ---
 

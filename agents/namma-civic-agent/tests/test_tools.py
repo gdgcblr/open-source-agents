@@ -1,5 +1,7 @@
 """Offline tests for the agent's tools and data. No API key needed."""
 
+from pathlib import Path
+
 from namma_civic_agent import tools
 from namma_civic_agent.prompt import INSTRUCTION
 
@@ -65,10 +67,40 @@ def test_save_complaint_writes_markdown(tmp_path, monkeypatch):
         complaint_kannada="ವಿಷಯ: ರಸ್ತೆ ಗುಂಡಿ",
     )
     assert result["status"] == "success"
-    text = (tmp_path / result["saved_to"].split("/")[-1]).read_text(encoding="utf-8")
+    saved = Path(result["saved_to"])
+    assert saved.parent == tmp_path
+    text = saved.read_text(encoding="utf-8")
     assert "Indiranagar" in text and "ರಸ್ತೆ ಗುಂಡಿ" in text
 
 
 def test_instruction_has_no_state_placeholders():
     # ADK would try to substitute session state for anything in curly braces.
     assert "{" not in INSTRUCTION and "}" not in INSTRUCTION
+
+
+def test_save_complaint_rejects_invalid_severity(tmp_path, monkeypatch):
+    monkeypatch.setenv("COMPLAINTS_DIR", str(tmp_path))
+    result = tools.save_complaint("pothole", "HSR Layout", "apocalyptic", "text", "ಪಠ್ಯ")
+    assert result["status"] == "error"
+    assert not list(tmp_path.iterdir())
+
+
+def test_unverified_channels_get_a_warning(monkeypatch):
+    data = {
+        "emergency": {"value": "112", "use_when": "danger"},
+        "authorities": [
+            {
+                "id": "bwssb",
+                "name": "BWSSB",
+                "channels": [
+                    {"type": "helpline", "name": "Helpline", "value": "1916", "verified": False},
+                    {"type": "helpline", "name": "Checked line", "value": "1234", "verified": True},
+                ],
+                "escalation": ["AEE"],
+            }
+        ],
+    }
+    monkeypatch.setattr(tools, "_authorities", lambda: data)
+    channels = tools.get_filing_channels("bwssb")["channels"]
+    assert channels[0]["warning"] == tools.UNVERIFIED_WARNING
+    assert "warning" not in channels[1]

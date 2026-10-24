@@ -2,6 +2,7 @@ import os
 
 from google.adk.agents import Agent
 
+from .guardrails import block_unverified_contacts
 from .prompt import INSTRUCTION
 from .tools import find_department, get_filing_channels, list_issue_types, save_complaint
 
@@ -14,4 +15,5 @@ root_agent = Agent(
     ),
     instruction=INSTRUCTION,
     tools=[list_issue_types, find_department, get_filing_channels, save_complaint],
+    after_model_callback=block_unverified_contacts,
 )

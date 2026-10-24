@@ -14,6 +14,7 @@ from functools import lru_cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent / "data"
+SEVERITIES = ("low", "medium", "high", "critical")
 DEFAULT_COMPLAINTS_DIR = Path(__file__).parent.parent / "complaints"
 
 UNVERIFIED_WARNING = (
@@ -182,8 +183,16 @@ def save_complaint(
         complaint_kannada: The full complaint text in Kannada.
 
     Returns:
-        dict: status and the path of the saved file.
+        dict: status and the path of the saved file, or an error message.
     """
+    if severity.strip().lower() not in SEVERITIES:
+        return {
+            "status": "error",
+            "error_message": f"Invalid severity '{severity}'. Use one of: {', '.join(SEVERITIES)}.",
+        }
+    if not complaint_english.strip():
+        return {"status": "error", "error_message": "complaint_english is empty."}
+
     out_dir = Path(os.getenv("COMPLAINTS_DIR", DEFAULT_COMPLAINTS_DIR))
     out_dir.mkdir(parents=True, exist_ok=True)
 

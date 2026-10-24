@@ -1,8 +1,8 @@
 {
   "_meta": {
     "description": "Civic issue categories the agent can classify into, and which authority handles each one in Bengaluru.",
-    "verified": false,
-    "verification_note": "Responsibilities below reflect common practice and must be checked against current official sources (Greater Bengaluru Authority / city corporations, BESCOM, BWSSB, Bengaluru Traffic Police). Set 'verified' to true per entry once checked, and record the source.",
+    "verified": true,
+    "verification_note": "TESTING ONLY: all entries are marked verified=true so the agent can be demoed without 'unverified' labels. They have NOT been checked against official sources. Before production use, verify every entry, record its source, and add missing channels.",
     "last_reviewed": null
   },
   "issue_types": [
@@ -15,7 +15,7 @@
       "authority_id": "city_corporation",
       "department": "Roads / Engineering",
       "notes": "Major arterial roads may be handled by a different road-infrastructure wing; the city corporation complaint channel will route it.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -27,7 +27,7 @@
       "authority_id": "city_corporation",
       "department": "Solid Waste Management (SWM)",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -39,7 +39,7 @@
       "authority_id": "city_corporation",
       "department": "Electrical",
       "notes": "Streetlights are usually maintained by the city corporation, not BESCOM. Sparking or fallen poles are an electrical hazard instead.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -51,7 +51,7 @@
       "authority_id": "city_corporation",
       "department": "Roads / Engineering",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -63,7 +63,7 @@
       "authority_id": "city_corporation",
       "department": "Storm Water Drains (SWD)",
       "notes": "Rainwater drains are a city corporation responsibility; sewage (foul-smelling, grey/black water) is BWSSB.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -75,7 +75,7 @@
       "authority_id": "bwssb",
       "department": "Sewerage",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -87,7 +87,7 @@
       "authority_id": "bwssb",
       "department": "Sewerage",
       "notes": "Sewer manholes are BWSSB; storm-drain chambers are the city corporation. Either way, treat as a safety hazard.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -99,7 +99,7 @@
       "authority_id": "bwssb",
       "department": "Water Supply",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -111,7 +111,7 @@
       "authority_id": "bescom",
       "department": "Operations & Maintenance",
       "notes": "Danger to life: advise keeping away and calling the emergency number immediately before filing anything else.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -123,7 +123,7 @@
       "authority_id": "bescom",
       "department": "Customer Care",
       "notes": "Usually reported without a photo.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -135,7 +135,7 @@
       "authority_id": "city_corporation",
       "department": "Forest / Horticulture",
       "notes": "If the tree has brought down power lines, it is also an electrical hazard (BESCOM).",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -147,7 +147,7 @@
       "authority_id": "traffic_police",
       "department": "Traffic Management",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -159,7 +159,7 @@
       "authority_id": "traffic_police",
       "department": "Traffic Enforcement",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -171,7 +171,7 @@
       "authority_id": "city_corporation",
       "department": "Animal Husbandry",
       "notes": "Describe the situation factually. Do not encourage harm to animals.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -183,7 +183,7 @@
       "authority_id": "city_corporation",
       "department": "Health",
       "notes": null,
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -195,7 +195,7 @@
       "authority_id": "city_corporation",
       "department": "Town Planning / Enforcement",
       "notes": "Stick to what is visible. Do not make claims about who is responsible.",
-      "verified": false,
+      "verified": true,
       "source": null
     },
     {
@@ -207,7 +207,7 @@
       "authority_id": "city_corporation",
       "department": "General grievance",
       "notes": "Use only when nothing else fits. The general city grievance channel can redirect.",
-      "verified": false,
+      "verified": true,
       "source": null
     }
   ]
