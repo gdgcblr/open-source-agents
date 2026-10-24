@@ -8,14 +8,17 @@ public final class BuildDoctorCli {
   private BuildDoctorCli() {}
 
   public static void main(String[] args) throws IOException {
-    if (args.length < 1 || args.length > 2) {
-      System.err.println("Usage: BuildDoctorCli <maven-log-file> [project-root]");
+    boolean json = args.length > 0 && "--json".equals(args[0]);
+    int offset = json ? 1 : 0;
+    if (args.length - offset < 1 || args.length - offset > 2) {
+      System.err.println("Usage: BuildDoctorCli [--json] <failure-log-file> [project-root]");
       System.exit(2);
     }
 
-    Path logFile = Path.of(args[0]).toAbsolutePath().normalize();
-    Path projectRoot = args.length == 2 ? Path.of(args[1]).toAbsolutePath().normalize() : null;
+    Path logFile = Path.of(args[offset]).toAbsolutePath().normalize();
+    Path projectRoot = args.length - offset == 2 ? Path.of(args[offset + 1]).toAbsolutePath().normalize() : null;
     String log = Files.readString(logFile);
-    System.out.println(new BuildDoctorEngine().analyze(log, projectRoot).toText());
+    DiagnosticReport report = new BuildDoctorEngine().analyze(log, projectRoot);
+    System.out.println(json ? report.toJson() : report.toText());
   }
 }

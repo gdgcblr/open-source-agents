@@ -50,6 +50,14 @@ class BuildDoctorEngineTest {
   }
 
   @Test
+  void producesAStableMachineReadableContract() {
+    DiagnosticReport report = engine.analyze("error: syntax error", null);
+
+    assertTrue(report.toJson().contains("\"schema_version\":\"1.1\""));
+    assertTrue(report.toJson().contains("\"guardrails\""));
+  }
+
+  @Test
   void identifiesLanguageAgnosticCompilationSignals() {
     DiagnosticReport report = engine.analyze("error: syntax error near unexpected token\n", null);
 
