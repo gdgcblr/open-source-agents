@@ -216,19 +216,21 @@ go run ./cmd/quickcart --query "Amul Taaza milk 1L" --pincode 560001
 
 ### Example Output (real deterministic run — offline demo catalog, offline-demo labels, PIN 560001)
 
-Startup line + comparison table. All four rows are labeled a data source; the agent never places an order — it hands you the retailer's link after approval.
+Startup line + comparison table. All four rows are labeled a data source; the agent never places an order — it hands you the retailer's link after approval. (The logo column below mirrors the retailer branding used in this PR; the produced offer/checkout links point at each retailer's own site.)
 
 ```
 QuickCart Advisor — backend=openai model=google/gemma-4-12b base-url=http://localhost:1235/v1 qbuys=(disabled) data=offline-demo-catalog (always-on)
 Every offer is labeled by data source: "qbuys-live" = live qbuys service (opt-in); "offline-demo-catalog" = bundled demo data (never live prices).
 ```
 
-| Retailer | Product | Price | Fees + taxes | Final delivered cost | ETA | Stock | Source |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Blinkit** ✅ | Amul Taaza Milk 1L (Pouch) | ₹66.00 (MRP ~~₹70.00~~) | ₹25.00 del + ₹4.00 platform + ₹1.49 handling | **₹117.49** | 10 min | In stock | `offline-demo-catalog` |
-| Zepto | Amul Taaza Milk 1L (Pouch) | ₹67.00 | ₹30.00 del + ₹9.99 platform + ₹0.99 handling | **₹124.98** | 16 min | In stock | `offline-demo-catalog` |
-| Swiggy Instamart | Amul Taaza Milk 1L (Pouch) | ₹68.00 | ₹30.00 del + ₹6.00 platform + ₹1.99 handling | **₹133.99** | 12 min | In stock | `offline-demo-catalog` |
-| Amazon India | Amul Taaza Milk 1L (Pouch) | ₹69.00 | ₹40.00 delivery | — | ~1 day | **Out of stock** | `offline-demo-catalog` |
+| Retailer | Product | Price | Fees + taxes | Final delivered cost | ETA | Stock | Source | Link (produced by the agent) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **<img src="https://www.google.com/s2/favicons?domain=blinkit.com&sz=32" width="18" alt="Blinkit"> Blinkit** 🏆 | Amul Taaza Milk 1L (Pouch) | ₹66.00 (MRP ~~₹70.00~~) | ₹25.00 del + ₹4.00 platform + ₹1.49 handling | **₹117.49** | 10 min | ✅ In stock | `offline-demo-catalog` | <https://blinkit.com/s/?q=amul%20taaza%20toned%20fresh%20milk%201l%20pouch> |
+| <img src="https://www.google.com/s2/favicons?domain=zeptonow.com&sz=32" width="18" alt="Zepto"> Zepto | Amul Taaza Milk 1L (Pouch) | ₹67.00 | ₹30.00 del + ₹9.99 platform + ₹0.99 handling | **₹124.98** | 16 min | ✅ In stock | `offline-demo-catalog` | <https://www.zeptonow.com/search?query=amul%20taaza%20toned%20fresh%20milk%201l%20pouch> |
+| <img src="https://www.google.com/s2/favicons?domain=swiggy.com&sz=32" width="18" alt="Swiggy Instamart"> Swiggy Instamart | Amul Taaza Milk 1L (Pouch) | ₹68.00 | ₹30.00 del + ₹6.00 platform + ₹1.99 handling | **₹133.99** | 12 min | ✅ In stock | `offline-demo-catalog` | <https://www.swiggy.com/instamart/search?query=amul%20taaza%20toned%20fresh%20milk%201l%20pouch> |
+| <img src="https://www.google.com/s2/favicons?domain=amazon.com&sz=32" width="18" alt="Amazon"> Amazon India | Amul Taaza Milk 1L (Pouch) | ₹69.00 | ₹40.00 delivery | — | ~1 day | ❌ Out of stock | `offline-demo-catalog` | <https://www.amazon.in/s?k=amul+taaza+toned+fresh+milk+1l+pouch> |
+
+*(Logo = the retailer's favicon, matched via the exact-domain allowlist in `platformFromURL`. The last column is the actual product/checkout URL the agent emits — Blinkit `blinkit.com/s/?q=…`, Zepto `zeptonow.com/search?query=…`, Instamart `swiggy.com/instamart/search?query=…`, Amazon `amazon.in/s?k=…`.)*
 
 ```
 Best overall: Blinkit (₹117.49), delivered in 10 min.
