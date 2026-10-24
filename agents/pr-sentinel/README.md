@@ -198,47 +198,144 @@ npm run demo
 
 ---
 
-## How to Run
+## How to Run & Production Usage Guide
 
-### 1. Instant Multi-Agent Demonstration (Zero-Key)
-Runs an end-to-end evaluation using simulated vulnerability vectors, demonstrating multi-agent coordination, secret detection, and auto-patching:
-```bash
-npm run demo
-```
+PR Sentinel supports multiple execution workflows depending on whether you are developing locally, auditing another contributor's pull request, or deploying in automated production CI/CD pipelines.
 
-### 2. Audit Current Working Directory or Git Diff
-Audit the repository or a specific target path:
+---
+
+### Scenario 1: Auditing Your Local Working Tree & Staged Diffs
+Audit your current work before opening a pull request:
 ```bash
-# Audit current working tree
+# Audit uncommitted or recent git changes
 npm run audit
 
-# Audit a specific folder
-node src/cli.js audit --path agents/pr-sentinel
-
-# Audit only git staged changes
+# Audit only git staged files (git add)
 node src/cli.js --staged
 
-# Audit a branch comparison against main
-node src/cli.js --base main
+# Compare your working branch against upstream main
+node src/cli.js audit --base main
 ```
 
-### 3. Launch Local Visual Web Dashboard
-Starts the glassmorphic dark-mode web dashboard on `http://localhost:3737`:
+---
+
+### Scenario 2: Auditing Other Contributors' Pull Requests & Projects
+In an open-source monorepo with multiple submissions, you can inspect any specific directory or contributor's branch:
+
+#### A. Auditing another directory in the repository:
+```bash
+# Audit a specific agent or tool folder:
+node src/cli.js audit --path agents/other-contributor-agent
+node src/cli.js audit --path tools/custom-mcp-server
+```
+
+#### B. Auditing a remote GitHub PR branch:
+```bash
+# Fetch the PR branch from GitHub and review against main:
+git fetch origin pull/12/head:pr-12
+git checkout pr-12
+node agents/pr-sentinel/src/cli.js audit --base origin/main
+```
+
+---
+
+### Scenario 3: Using the Interactive Web Dashboard with Target Search
+Launch the embedded glassmorphic dashboard on `http://localhost:3737`:
 ```bash
 npm run serve
 ```
-Open **[http://localhost:3737](http://localhost:3737)** in any browser.
+1. Open **[http://localhost:3737](http://localhost:3737)** in any browser.
+2. **Audit Other Projects on the Fly**: Use the top navigation input:
+   ```text
+   [ Target path (e.g. . or agents/other-slug) ]  [ 🔍 Audit ]
+   ```
+   Type any relative directory path (e.g., `agents/meeting-summarizer` or `.`) and click **"🔍 Audit"** to re-evaluate in real time!
+3. **Export Reports**:
+   - Click **"📄 Export PDF"** for a clean, human-readable executive audit certificate.
+   - Click **"📥 Download .md"** for a copy-pasteable GitHub PR review comment.
 
-### 4. Interactive Terminal Session
-Launches an interactive prompt menu:
+---
+
+### Scenario 4: Verifying Your Google Gemini API Key
+Test your credentials and live handshake with Google's servers:
 ```bash
-npm run dev
+npm run check-key
+```
+Outputs:
+```text
+✅ Gemini API Key is ACTIVE and verified!
+   Model:    gemini-3.8-flash
+   Response: CONNECTED
 ```
 
-### 5. Export Downloadable Reports
-Save the review directly to a local Markdown file:
+---
+
+### Scenario 5: Production CI/CD Bot (GitHub Actions)
+Deploy PR Sentinel as an automated PR gatekeeper in your GitHub repository.
+
+Create `.github/workflows/pr-sentinel.yml`:
+```yaml
+name: PR Sentinel Automated Audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-sentinel-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Required to post review comment
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: |
+          cd agents/pr-sentinel
+          npm ci
+
+      - name: Run Multi-Agent Audit
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cd agents/pr-sentinel
+          node src/cli.js audit --base origin/main --output pr-review.md
+
+      - name: Post PR Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reviewContent = fs.readFileSync('agents/pr-sentinel/pr-review.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: reviewContent
+            });
+```
+
+Whenever any developer submits a PR:
+1. GitHub Actions triggers PR Sentinel.
+2. The 4 agents review the diff for leaked secrets, guidelines compliance, and AST quality.
+3. Automatically posts the review comment with Readiness Score and Unified Diff auto-patches.
+
+---
+
+### Scenario 6: Instant Zero-Key Demonstration
+To demonstrate the full multi-agent workflow to judges without an API key:
 ```bash
-node src/cli.js --demo --output pr-review.md
+npm run demo
 ```
 
 ---
