@@ -283,7 +283,7 @@ The web UI also shows each tool call and its result alongside the conversation.
 | Symptom | Fix |
 | :-- | :-- |
 | `429 RESOURCE_EXHAUSTED` mentioning `PerMinute` | Free-tier per-minute limit. Wait about a minute and retry. |
-| `429 RESOURCE_EXHAUSTED` mentioning `PerDay` | Free-tier daily limit (20 requests, about 5 complaints). Wait until it resets (the error says when), use a paid tier, or change `MODEL_NAME`. |
+| `429 RESOURCE_EXHAUSTED` mentioning `PerDay` | Free-tier daily limit (20 requests, about 5 complaints). Wait until it resets (the error says when), use a paid tier, or set `MODEL_NAME=gemini-3.5-flash-lite` in `.env` (separate quota; all test scenarios pass on it). |
 | `ERROR: ... requires a different Python` during `pip install` | `google-adk` needs Python 3.11+. Recreate the venv with a newer Python. |
 | `adk: command not found` | Activate the virtual environment (`source .venv/bin/activate`). |
 | `ModuleNotFoundError: namma_civic_agent` | Run commands from `agents/namma-civic-agent/`, not from the repo root. |
@@ -303,7 +303,7 @@ The web UI also shows each tool call and its result alongside the conversation.
 - **The guardrail is pattern-based.** It catches phone numbers, URLs, emails and @handles, but not, for example, an invented office address or officer name; those are covered only by the prompt. In streaming mode, partial text may be shown before the final filtered reply.
 - **Classification can be wrong**, especially for ambiguous photos (e.g. storm drain vs sewer). Always review the draft.
 - **Photo input not yet tested with real photos.** Live runs so far used text descriptions only. Image classification relies on Gemini's vision and still needs testing with real street photos.
-- **Tested on:** macOS (Python 3.12, `google-adk` 2.13): offline tests plus live text runs. Linux and Windows untested.
+- **Tested on:** macOS (Python 3.12, `google-adk` 2.13). Offline tests pass. Live text runs: all six How to Test scenarios except #4 (sewage) passed on `gemini-3.5-flash-lite` with the current prompt; scenarios 1–3 also passed on `gemini-3.5-flash` with an earlier version of the prompt. Linux and Windows untested.
 
 ---
 
