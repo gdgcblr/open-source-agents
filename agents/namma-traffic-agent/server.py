@@ -18,7 +18,8 @@ from agent.tools import (
     get_weather_waterlogging_alerts,
     calculate_best_departure_window,
     get_bmtc_bus_details,
-    get_bengaluru_live_weather
+    get_bengaluru_live_weather,
+    get_road_repairs_and_hazards
 )
 from agent.knowledge import BENGALURU_HUBS, CHOKEPOINTS
 
@@ -121,6 +122,12 @@ async def get_bus(origin: str, destination: str):
 async def get_weather():
     """Returns current Bengaluru weather, rainfall, and transit impact."""
     return get_bengaluru_live_weather()
+
+
+@app.get("/api/road-repairs")
+async def get_road_repairs(area: str = "all"):
+    """Returns active BBMP road works, BMRCL metro constructions, and hazards."""
+    return get_road_repairs_and_hazards(area)
 
 
 @app.get("/api/optimize-departure")

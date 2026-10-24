@@ -6,7 +6,10 @@ from .tools import (
     check_chokepoints,
     get_metro_alternative,
     get_weather_waterlogging_alerts,
-    calculate_best_departure_window
+    calculate_best_departure_window,
+    get_bmtc_bus_details,
+    get_bengaluru_live_weather,
+    get_road_repairs_and_hazards
 )
 
 __all__ = [
@@ -15,5 +18,8 @@ __all__ = [
     "check_chokepoints",
     "get_metro_alternative",
     "get_weather_waterlogging_alerts",
-    "calculate_best_departure_window"
+    "calculate_best_departure_window",
+    "get_bmtc_bus_details",
+    "get_bengaluru_live_weather",
+    "get_road_repairs_and_hazards"
 ]

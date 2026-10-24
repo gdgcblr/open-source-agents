@@ -15,7 +15,8 @@ from .knowledge import (
     BMTC_BUS_ROUTES,
     BENGALURU_WEATHER_CURRENT,
     METRO_STATION_COORDS,
-    BUS_STOP_COORDS
+    BUS_STOP_COORDS,
+    BENGALURU_ROAD_REPAIRS
 )
 
 
@@ -468,4 +469,37 @@ def calculate_best_departure_window(origin: str, destination: str, target_hour: 
         "commute_time_at_golden_window": f"{best_option['estimated_minutes']} mins",
         "time_saved_by_timing": f"{time_diff} minutes saved compared to peak at {worst_option['departure_time']}",
         "pro_tip": f"Departing at {best_option['departure_time']} avoids the primary tech corridor rush."
+    }
+
+
+def get_road_repairs_and_hazards(area: str = "all") -> Dict[str, Any]:
+    """
+    Returns active BBMP road works, BMRCL metro construction, and BWSSB pipeline
+    digging points across Bengaluru with severity, delay impact, and detour bypasses.
+    """
+    query = area.lower().strip()
+    if query in ["all", "", "bangalore", "bengaluru"]:
+        return {
+            "status": "success",
+            "count": len(BENGALURU_ROAD_REPAIRS),
+            "repairs": BENGALURU_ROAD_REPAIRS,
+            "traffic_police_notice": "Bengaluru Traffic Police (BTP) advises extra travel buffer time through Outer Ring Road and Central Silk Board due to ongoing metro Phase-2A pier and flyover construction."
+        }
+
+    filtered = []
+    for r in BENGALURU_ROAD_REPAIRS:
+        if (
+            query in r["name"].lower()
+            or query in r["work_type"].lower()
+            or query in r["agency"].lower()
+            or query in r["recommended_bypass"].lower()
+        ):
+            filtered.append(r)
+
+    return {
+        "status": "success",
+        "query": area,
+        "count": len(filtered),
+        "repairs": filtered if filtered else BENGALURU_ROAD_REPAIRS,
+        "traffic_police_notice": "Follow BTP lane diversion signboards and observe reduced speed limit (20 km/h) in active work zones."
     }

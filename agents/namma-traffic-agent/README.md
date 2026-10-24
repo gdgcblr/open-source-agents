@@ -84,10 +84,12 @@ flowchart TD
 | **Multimodal Comparison** | ❌ **Fragmented:** Metro, bus, and driving are hidden in separate tabs without cost comparison. | ✅ **Integrated Side-by-Side:** Automatically compares Road Cab vs Namma Metro vs BMTC Bus on a single screen. |
 | **Ride-Hail Surge & Cost Savings** | ❌ **No surge prediction:** Does not show ride-hail surge multipliers or ₹ savings. | ✅ **Calculates Exact ₹ Saved:** Shows how taking Metro/Bus saves **₹700+ per trip** over surge cabs. |
 | **BMTC Bus & Metro Fares** | ❌ Limited schedule info, no smart card vs token breakdown. | ✅ **Detailed Fares:** Ordinary (₹25), Vajra AC (₹45), Metro QR Ticket (₹57), Token (₹60). |
+| **Realistic Track & Road Visuals** | ❌ Generic flat colored lines. | ✅ **Realistic Infrastructure:** Railway track with ballast & rail sleepers/ties; asphalt roadbed with dashed lane divider. |
+| **Live Moving Vehicle Tracking** | ❌ Static route overview. | ✅ **Continuous Moving Simulation:** Live animated Metro Train (`🚆`), BMTC Bus (`🚌`), and Cab (`🚖`) moving along routes in real time. |
+| **Road Repairs & Active Work Zones** | ❌ Generic slow-traffic warning without construction context. | ✅ **Active BBMP & BMRCL Work Zones:** Details 8 critical city road cuts (Silk Board pier work, Ecospace BWSSB trenching, Marathahalli bridge milling) with detour bypasses. |
 | **Hyper-Local Bengaluru Bypasses** | ❌ **Generic rerouting:** Often routes cars into narrow dead-end gullies or trapped service roads. | ✅ **Local Chokepoint Knowledge:** Knows specific bypasses for Central Silk Board, Tin Factory, Hebbal, and Marathahalli Bridge. |
 | **Monsoon Underpass Flood Alerts** | ❌ **Delayed/Reactive:** Flags road closures only after vehicles are already stranded. | ✅ **Proactive Flood Radar:** Alerts commuters about waterlogged railway underpasses (*Kadubeesanahalli, Okalipuram, Panathur*) before they enter. |
 | **Golden Departure Window** | ❌ Shows generic historical bar graphs. | ✅ **Autonomous Timing Curve:** Analyzes travel times across a 3-hour window to recommend the single best time to leave. |
-| **Interface & Interaction** | ❌ Search box accepts only locations (point A to B). | ✅ **Natural Language AI Copilot:** Ask questions like *"Is Silk Board jammed?"* or *"Indiranagar to Airport: cab or bus?"*. |
 | **Developer Open-Source Access** | ❌ **Closed proprietary API:** Costs $5–$10 per 1,000 requests on Google Cloud. | ✅ **100% Open-Source & Reproducible:** MIT licensed, runs locally without mandatory paid API keys. |
 
 ### 🚗 Real-World Commute Example: Koramangala ➡️ Whitefield (Friday 6:00 PM)

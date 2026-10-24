@@ -8,7 +8,8 @@ from agent.tools import (
     check_chokepoints,
     get_metro_alternative,
     get_weather_waterlogging_alerts,
-    calculate_best_departure_window
+    calculate_best_departure_window,
+    get_road_repairs_and_hazards
 )
 
 
@@ -59,3 +60,11 @@ def test_calculate_best_departure_window():
     assert res["status"] == "success"
     assert "golden_departure_window" in res
     assert len(res["schedule_options"]) == 5
+
+
+def test_get_road_repairs_and_hazards():
+    res = get_road_repairs_and_hazards("all")
+    assert res["status"] == "success"
+    assert res["count"] >= 5
+    assert any("Silk Board" in r["name"] for r in res["repairs"])
+    assert any("Ecospace" in r["name"] for r in res["repairs"])

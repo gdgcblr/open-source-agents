@@ -521,3 +521,103 @@ METRO_LINES = {
         ]
     }
 }
+
+# Active Bengaluru Road Construction, BBMP Road Repairs, & BMRCL Metro Work Zones
+BENGALURU_ROAD_REPAIRS = [
+    {
+        "id": "CSB-METRO-01",
+        "name": "Central Silk Board Interchange",
+        "coords": (12.9172, 77.6228),
+        "agency": "BMRCL / BBMP",
+        "work_type": "Metro Blue Line Phase-2A Pier Work & Double-Decker Flyover Ramp",
+        "severity": "CRITICAL",
+        "lanes_affected": "3 lanes narrowed down to 1 lane on Hosur Road ramp",
+        "delay_impact_mins": 35,
+        "recommended_bypass": "Take Madiwala Market 16th Main Road inner corridor or Yellow Line Metro",
+        "completion_target": "Q4 2026"
+    },
+    {
+        "id": "ECO-BWSSB-02",
+        "name": "Ecospace - Bellandur Outer Ring Road",
+        "coords": (12.9260, 77.6830),
+        "agency": "BWSSB",
+        "work_type": "Cauvery Water Supply Stage V Pipeline Trenching & Road Digging",
+        "severity": "HIGH",
+        "lanes_affected": "Service road closed completely; left lane on main carriageway barricaded",
+        "delay_impact_mins": 30,
+        "recommended_bypass": "Use BMTC 500-D bus lane or bypass via Haralur Road towards Sarjapur",
+        "completion_target": "Active Work Zone"
+    },
+    {
+        "id": "KADU-BBMP-03",
+        "name": "Kadubeesanahalli ORR Underpass",
+        "coords": (12.9350, 77.6890),
+        "agency": "BBMP Road Infrastructure",
+        "work_type": "Stormwater Drain Culvert Desilting & Pavement Resurfacing",
+        "severity": "MODERATE",
+        "lanes_affected": "Slow crawl due to gravel and surface height difference; speed limited to 10 km/h",
+        "delay_impact_mins": 20,
+        "recommended_bypass": "Use surface-level roundabout above underpass or Marathahalli outer link",
+        "completion_target": "Under Active Maintenance"
+    },
+    {
+        "id": "MARATH-ROB-04",
+        "name": "Marathahalli Railway Overbridge (ROB)",
+        "coords": (12.9591, 77.6974),
+        "agency": "BBMP / South Western Railway",
+        "work_type": "Expansion Joint Replacement & Bituminous Concrete Resurfacing",
+        "severity": "HIGH",
+        "lanes_affected": "Single lane traffic movement over bridge towards Whitefield",
+        "delay_impact_mins": 25,
+        "recommended_bypass": "Kundalahalli Gate Underpass via Old Airport Road",
+        "completion_target": "Night Maintenance Active"
+    },
+    {
+        "id": "TIN-BMRCL-05",
+        "name": "Tin Factory / Benniganahalli Junction",
+        "coords": (12.9972, 77.6756),
+        "agency": "BMRCL / BBMP",
+        "work_type": "Pedestrian Skywalk Girder Erection & Kasturi Nagar Flyover Landing Remodeling",
+        "severity": "CRITICAL",
+        "lanes_affected": "Major lane merge bottleneck from Old Madras Road into ORR",
+        "delay_impact_mins": 35,
+        "recommended_bypass": "Use Namma Metro Purple Line from Baiyappanahalli direct to KR Puram/Whitefield",
+        "completion_target": "Phase-2 Work"
+    },
+    {
+        "id": "PEENYA-NHAI-06",
+        "name": "Goraguntepalya / Peenya Elevated Corridor",
+        "coords": (13.0280, 77.5350),
+        "agency": "NHAI & BBMP",
+        "work_type": "Pre-stressed Cable Tensioning & Flyover Pier Bearing Retrofitting",
+        "severity": "HIGH",
+        "lanes_affected": "Heavy goods vehicles diverted to surface level, creating heavy gridlock on 8th Mile",
+        "delay_impact_mins": 30,
+        "recommended_bypass": "Green Line Metro (Nagasandra to Majestic) bypassing Tumkur Road completely",
+        "completion_target": "Ongoing Structural Retrofit"
+    },
+    {
+        "id": "SONY-BBMP-07",
+        "name": "Sony World Signal / Koramangala 100ft Road",
+        "coords": (12.9352, 77.6245),
+        "agency": "BBMP",
+        "work_type": "White-Topping Concrete Curing & Stormwater Side Drain Widening",
+        "severity": "MODERATE",
+        "lanes_affected": "Southbound lane restricted; alternating one-way traffic management by BTP",
+        "delay_impact_mins": 18,
+        "recommended_bypass": "Use Intermediate Ring Road (Domlur-Koramangala link) or 80ft Road",
+        "completion_target": "White-Topping Project"
+    },
+    {
+        "id": "KUNDAL-GAIL-08",
+        "name": "Kundalahalli to Hoodi Junction",
+        "coords": (12.9730, 77.7180),
+        "agency": "GAIL Gas & BESCOM",
+        "work_type": "Underground Gas Pipeline Trenching & High-Tension Cable Ducting",
+        "severity": "MODERATE",
+        "lanes_affected": "Unpaved trenches on road shoulders, rough gravel surface",
+        "delay_impact_mins": 20,
+        "recommended_bypass": "Divert via ITPL Main Road or Hoodi Metro Station link",
+        "completion_target": "Utility Shifting"
+    }
+]
