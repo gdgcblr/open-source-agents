@@ -105,8 +105,6 @@ Git Diff:
 ```
 """
 
-        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
-
         payload = {
             "contents": [
                 {
@@ -123,40 +121,60 @@ Git Diff:
             },
         }
 
-        # Try using curl first for high-speed, reliable TLS on macOS/Linux
         import shutil
         import subprocess
+        import time
 
-        if shutil.which("curl"):
-            cmd = [
-                "curl",
-                "-s",
-                "-X",
-                "POST",
-                "-H",
-                "Content-Type: application/json",
-                "-d",
-                json.dumps(payload),
-                endpoint,
-            ]
-            try:
-                res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-                if res.returncode == 0 and res.stdout.strip():
-                    resp_data = json.loads(res.stdout)
-                    if "error" in resp_data:
-                        err = resp_data["error"]
-                        raise RuntimeError(f"Gemini API error ({err.get('code')}): {err.get('message')}")
-                    candidate = resp_data.get("candidates", [{}])[0]
-                    text_response = (
-                        candidate.get("content", {})
-                        .get("parts", [{}])[0]
-                        .get("text", "{}")
-                    )
-                    return self._parse_json_response(text_response)
-            except RuntimeError:
-                raise
-            except Exception:
-                pass
+        models_to_try = [self.model]
+        for fallback in ["gemini-flash-latest", "gemini-flash-lite-latest"]:
+            if fallback not in models_to_try:
+                models_to_try.append(fallback)
+
+        last_error = None
+        for current_model in models_to_try:
+            endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{current_model}:generateContent?key={self.api_key}"
+
+            if shutil.which("curl"):
+                cmd = [
+                    "curl",
+                    "-s",
+                    "-X",
+                    "POST",
+                    "-H",
+                    "Content-Type: application/json",
+                    "-d",
+                    json.dumps(payload),
+                    endpoint,
+                ]
+                try:
+                    res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                    if res.returncode == 0 and res.stdout.strip():
+                        resp_data = json.loads(res.stdout)
+                        if "error" in resp_data:
+                            err = resp_data["error"]
+                            code = err.get("code")
+                            if code in (503, 429):
+                                last_error = RuntimeError(f"Gemini API ({code}): {err.get('message')}")
+                                time.sleep(1.5)
+                                continue  # Try next model or retry
+                            raise RuntimeError(f"Gemini API error ({code}): {err.get('message')}")
+                        candidate = resp_data.get("candidates", [{}])[0]
+                        text_response = (
+                            candidate.get("content", {})
+                            .get("parts", [{}])[0]
+                            .get("text", "{}")
+                        )
+                        return self._parse_json_response(text_response)
+                except RuntimeError as re_err:
+                    if "503" in str(re_err) or "429" in str(re_err):
+                        last_error = re_err
+                        continue
+                    raise
+                except Exception:
+                    pass
+
+        if last_error:
+            raise last_error
 
         encoded_data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(

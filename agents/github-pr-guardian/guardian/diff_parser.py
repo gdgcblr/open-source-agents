@@ -44,7 +44,8 @@ def parse_unified_diff(diff_text: str) -> list[FileDiff]:
     if not diff_text or not diff_text.strip():
         return files
 
-    raw_file_blocks = re.split(r"(?=diff --git )", diff_text)
+    # Strictly split by top-level git diff headers (column 0, not inside patch content)
+    raw_file_blocks = re.split(r"(?m)^(?=diff --git )", diff_text)
 
     for block in raw_file_blocks:
         block = block.strip()

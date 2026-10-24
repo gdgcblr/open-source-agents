@@ -23,27 +23,66 @@ class GuardrailEngine:
     def sanitize_input(self, diff_text: str, pr_title: str, pr_description: str) -> tuple[str, list[Finding]]:
         """Inspect inputs for prompt injection or adversarial tampering."""
         guardrail_findings: list[Finding] = []
-        combined_text = f"{pr_title}\n{pr_description}\n{diff_text}"
-
+        
+        # 1. Check PR metadata (Title and Description)
+        metadata_text = f"{pr_title}\n{pr_description}"
+        injection_found = False
         for pattern in PROMPT_INJECTION_PATTERNS:
-            match = pattern.search(combined_text)
+            match = pattern.search(metadata_text)
             if match:
                 guardrail_findings.append(
                     Finding(
                         category="SECURITY",
                         severity="CRITICAL",
-                        file="PR_METADATA_OR_DIFF",
+                        file="PR_METADATA",
                         line=None,
                         title="Adversarial Prompt Injection Attempt Detected",
                         description=(
-                            f"Suspicious instruction pattern detected: `{match.group(0)[:60]}`. "
+                            f"Suspicious instruction pattern detected in PR metadata: `{match.group(0)[:60]}`. "
                             "An attacker may be attempting to hijack or manipulate the LLM review agent."
                         ),
-                        suggested_fix="Sanitize user-provided PR comments and reject instructions attempting to override review guardrails.",
+                        suggested_fix="Sanitize user-provided PR metadata and reject instructions attempting to override review guardrails.",
                         snippet=match.group(0),
                     )
                 )
-                break  # Record one high-priority finding
+                injection_found = True
+                break
+
+        # 2. Check diff content (ignoring test suite fixtures like sample_diffs/ or tests/)
+        if not injection_found:
+            lines_to_check = []
+            skip_current_file = False
+            for line in diff_text.splitlines():
+                if line.startswith("diff --git"):
+                    skip_current_file = (
+                        "sample_diffs/" in line
+                        or "/tests/" in line
+                        or "tests/test_" in line
+                        or line.endswith(".md")
+                    )
+                if not skip_current_file and line.startswith("+") and not line.startswith("+++"):
+                    lines_to_check.append(line)
+
+            diff_code_content = "\n".join(lines_to_check)
+            for pattern in PROMPT_INJECTION_PATTERNS:
+                match = pattern.search(diff_code_content)
+                if match:
+                    guardrail_findings.append(
+                        Finding(
+                            category="SECURITY",
+                            severity="CRITICAL",
+                            file="PR_CODE_DIFF",
+                            line=None,
+                            title="Adversarial Prompt Injection Attempt Detected",
+                            description=(
+                                f"Suspicious instruction pattern detected in added code: `{match.group(0)[:60]}`. "
+                                "An attacker may be attempting to hijack or manipulate the LLM review agent."
+                            ),
+                            suggested_fix="Sanitize user-provided PR comments and reject instructions attempting to override review guardrails.",
+                            snippet=match.group(0),
+                        )
+                    )
+                    break
 
         # Enforce maximum diff size (100,000 characters) to prevent token exhaustion DoS
         max_size = 100_000
