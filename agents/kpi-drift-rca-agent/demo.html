@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KPI Drift RCA Agent — Clean, readable interactive demo and visual multi-agent architecture explanation pairing deterministic Pandas decomposition with Gemini reasoning and stakeholder dispatch.">
+  <title>KPI Drift RCA Agent — Multi-Agent Architecture & Interactive Demo</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Crisp High-Contrast Light Theme */
+      --bg-body: #f8fafc;
+      --bg-white: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-card: #ffffff;
+      
+      --border-light: #e2e8f0;
+      --border-focus: #3b82f6;
+      --border-accent: #cbd5e1;
+      
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-light: #64748b;
+      
+      --brand-blue: #2563eb;
+      --brand-indigo: #4f46e5;
+      --brand-purple: #7c3aed;
+      
+      --color-drop: #dc2626;
+      --color-drop-light: #fee2e2;
+      --color-drop-border: #fca5a5;
+      
+      --color-gain: #16a34a;
+      --color-gain-light: #dcfce7;
+      --color-gain-border: #86efac;
+      
+      --color-amber: #d97706;
+      --color-amber-light: #fef3c7;
+      
+      --color-sky: #0284c7;
+      --color-sky-light: #e0f2fe;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 60px;
+    }
+
+    code, pre {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--border-light);
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-badge-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-indigo));
+      color: #ffffff;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .brand-title h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-title span {
+      font-size: 12px;
+      color: var(--brand-indigo);
+      font-weight: 600;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-gain-light);
+      border: 1px solid var(--color-gain-border);
+      color: var(--color-gain);
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .dot-green {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--color-gain);
+    }
+
+    /* Hero Explainer */
+    .hero {
+      padding: 48px 0 32px;
+      text-align: center;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      padding: 4px 14px;
+      background: var(--color-sky-light);
+      color: var(--color-sky);
+      font-weight: 700;
+      font-size: 12px;
+      border-radius: var(--radius-full);
+      margin-bottom: 16px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-main);
+      max-width: 840px;
+      margin: 0 auto 16px;
+      line-height: 1.25;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Section: Multi-Agent Architecture Explained */
+    .section-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+    }
+
+    .section-header h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Multi-Agent Visual Synchronization Pipeline */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .pipeline-grid {
+        grid-template-columns: 1fr;
+      }
+      .pipeline-connector {
+        transform: rotate(90deg);
+        margin: 8px auto;
+      }
+    }
+
+    .agent-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    .agent-box.agent-1 { border-top: 4px solid var(--brand-blue); }
+    .agent-box.agent-2 { border-top: 4px solid var(--brand-purple); }
+    .agent-box.agent-3 { border-top: 4px solid var(--color-drop); }
+
+    .agent-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .agent-1 .agent-tag { color: var(--brand-blue); }
+    .agent-2 .agent-tag { color: var(--brand-purple); }
+    .agent-3 .agent-tag { color: var(--color-drop); }
+
+    .agent-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .agent-role {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      flex-grow: 1;
+    }
+
+    .agent-output-badge {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pipeline-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--brand-indigo);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .sync-note {
+      font-size: 10px;
+      color: var(--text-light);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    /* Scenario Bar */
+    .scenario-nav {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 6px;
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .scenario-tab {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+      text-align: left;
+    }
+
+    .scenario-tab:hover {
+      background: var(--bg-white);
+      color: var(--text-main);
+    }
+
+    .scenario-tab.active {
+      background: var(--bg-white);
+      color: var(--text-main);
+      border-color: var(--border-light);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .scenario-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+    }
+
+    .badge-sev1 { background: var(--color-drop-light); color: var(--color-drop); }
+    .badge-sev2 { background: var(--color-amber-light); color: var(--color-amber); }
+
+    /* Summary Stats Row */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 720px) {
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+
+    .stat-val {
+      font-size: 24px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-main);
+    }
+
+    .stat-val.drop { color: var(--color-drop); }
+    .stat-val.gain { color: var(--color-gain); }
+
+    /* Executive Visual Waterfall Chart */
+    .waterfall-card {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .waterfall-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .waterfall-title-row h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .waterfall-legend {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-box {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .box-total { background: #3b82f6; }
+    .box-drag { background: #ef4444; }
+    .box-gain { background: #10b981; }
+
+    /* The Real Column Waterfall Visualizer */
+    .waterfall-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      height: 280px;
+      padding: 20px 10px 40px;
+      border-bottom: 2px solid var(--border-light);
+      position: relative;
+    }
+
+    .waterfall-col-wrapper {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      align-items: center;
+    }
+
+    .waterfall-block {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .block-total {
+      background: linear-gradient(180deg, #3b82f6, #2563eb);
+      color: #ffffff;
+    }
+
+    .block-drag {
+      background: linear-gradient(180deg, #f87171, #ef4444);
+      color: #ffffff;
+    }
+
+    .block-gain {
+      background: linear-gradient(180deg, #34d399, #10b981);
+      color: #ffffff;
+    }
+
+    .block-val-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      position: absolute;
+      top: -22px;
+      white-space: nowrap;
+    }
+
+    .waterfall-col-name {
+      position: absolute;
+      bottom: -32px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .waterfall-contrib-badge {
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* Grid for Reasoning & Dispatch */
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 860px) {
+      .two-col-grid { grid-template-columns: 1fr; }
+    }
+
+    .sub-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .sub-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hypo-card {
+      background: var(--bg-subtle);
+      border-left: 3px solid var(--brand-indigo);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      font-size: 12.5px;
+    }
+
+    .hypo-name {
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .hypo-desc {
+      color: var(--text-muted);
+    }
+
+    /* SQL Snippet */
+    .sql-container {
+      background: #0f172a;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      color: #e2e8f0;
+      font-size: 11.5px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin-top: 12px;
+      border: 1px solid #1e293b;
+    }
+
+    .sql-kw { color: #f43f5e; font-weight: 600; }
+    .sql-fn { color: #38bdf8; }
+    .sql-str { color: #fde047; }
+
+    /* Stakeholder Tickets */
+    .ticket-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .ticket-grid { grid-template-columns: 1fr; }
+    }
+
+    .ticket {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .ticket-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .badge-priority {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .p-p0 { background: var(--color-drop-light); color: var(--color-drop); border: 1px solid var(--color-drop-border); }
+    .p-p1 { background: var(--color-amber-light); color: var(--color-amber); border: 1px solid #fde68a; }
+
+    .ticket-sla {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .ticket-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .ticket-trigger {
+      font-size: 11.5px;
+      background: var(--bg-subtle);
+      border-left: 2px solid var(--brand-blue);
+      padding: 6px 8px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .ticket-detail {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .ticket-detail strong {
+      color: var(--text-main);
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .btn-ack {
+      margin-top: 10px;
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      padding: 7px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-ack:hover {
+      background: #e2e8f0;
+    }
+
+    /* CLI Footer helper */
+    .cli-bar {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .cli-bar code {
+      color: #38bdf8;
+      background: #1e293b;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand-group">
+        <div class="brand-badge-icon">Δ</div>
+        <div class="brand-title">
+          <h1>KPI Drift RCA Agent</h1>
+          <span>Deterministic Multi-Agent Root Cause System</span>
+        </div>
+      </div>
+      <div class="status-pill">
+        <div class="dot-green"></div>
+        <span>Zero Hallucinations Verified (100% Pandas Math)</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Hero Explainer -->
+    <section class="hero">
+      <span class="hero-tag">System Architecture & Interactive Demo</span>
+      <h2>Automated Root Cause Analysis with Zero Math Hallucinations</h2>
+      <p>
+        Slicing high-dimensional data cubes by hand takes hours, while LLMs alone hallucinate arithmetic. 
+        Our multi-agent system pairs exact deterministic calculations with diagnostic reasoning and automated incident dispatch.
+      </p>
+    </section>
+
+    <!-- Section 1: How the Agents Synchronize End-to-End -->
+    <section class="section-card">
+      <div class="section-header">
+        <h3>🧩 How the Multi-Agent System Synchronizes End-to-End</h3>
+        <p>Three specialized agents collaborate in an automated, linear pipeline to progress from raw data to assigned incident response tickets:</p>
+      </div>
+
+      <div class="pipeline-grid">
+        
+        <!-- Agent 1 -->
+        <div class="agent-box agent-1">
+          <div class="agent-tag">Step 1 • Calculation Core</div>
+          <div class="agent-name">Deterministic Math Harness</div>
+          <div class="agent-role">
+            <strong>Job:</strong> Ingests dimensional CSV cubes. Groups by dimensions and calculates exact volume delta, percentage contributions, and dual-metric conversion rate drift.
+          </div>
+          <div class="agent-output-badge">
+            <span>📦 Outputs: Immutable Math Facts Payload</span>
+          </div>
+        </div>
+
+        <!-- Connector 1 -->
+        <div class="pipeline-connector">
+          <span>➔</span>
+          <span class="sync-note">Sync Facts</span>
+        </div>
+
+        <!-- Agent 2 -->
+        <div class="agent-box agent-2">
+          <div class="agent-tag">Step 2 • Qualitative Reasoning</div>
+          <div class="agent-name">Gemini Diagnostic Engine</div>
+          <div class="agent-role">
+            <strong>Job:</strong> Never touches arithmetic. Interprets verified math facts to isolate the culprit anomaly cohort, forms 3 realistic technical hypotheses, and drafts SQL triage queries.
+          </div>
+          <div class="agent-output-badge">
+            <span>🧠 Outputs: Culprit Anomaly + Hypotheses</span>
+          </div>
+        </div>
+
+        <!-- Connector 2 -->
+        <div class="pipeline-connector">
+          <span>➔</span>
+          <span class="sync-note">Dispatch Plan</span>
+        </div>
+
+        <!-- Agent 3 -->
+        <div class="agent-box agent-3">
+          <div class="agent-tag">Step 3 • Incident Ops</div>
+          <div class="agent-name">Stakeholder Action Dispatcher</div>
+          <div class="agent-role">
+            <strong>Job:</strong> Maps diagnosis into actionable, role-assigned remediation tickets with P0/P1/P2 priorities and strict SLAs for DevOps, Paid Media, and Regional Leads.
+          </div>
+          <div class="agent-output-badge">
+            <span>🚨 Outputs: Assigned Incident Tickets & SLAs</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 2: Interactive Scenario Playground -->
+    <section class="section-card">
+      <div class="section-header">
+        <h3>📊 Interactive RCA Demo & Visual Waterfall</h3>
+        <p>Select any simulated enterprise anomaly below to see how the multi-agent system decomposes drift and routes tickets:</p>
+      </div>
+
+      <!-- Scenario Selector Tabs -->
+      <div class="scenario-nav">
+        <button class="scenario-tab active" id="tab-payment" onclick="loadScenario('payment')">
+          <div>
+            <strong>Payment Gateway Outage</strong>
+            <div style="font-size: 11px; color: var(--text-light);">Germany (DE) -90% drop</div>
+          </div>
+          <span class="scenario-badge badge-sev1">SEV-1 (P0)</span>
+        </button>
+
+        <button class="scenario-tab" id="tab-checkout" onclick="loadScenario('checkout')">
+          <div>
+            <strong>Mobile Checkout Bug</strong>
+            <div style="font-size: 11px; color: var(--text-light);">US Mobile Paid -70% drop</div>
+          </div>
+          <span class="scenario-badge badge-sev1">SEV-1 (P0)</span>
+        </button>
+
+        <button class="scenario-tab" id="tab-mobile" onclick="loadScenario('mobile')">
+          <div>
+            <strong>App Release v2.4 Crash</strong>
+            <div style="font-size: 11px; color: var(--text-light);">Global Mobile -65% drop</div>
+          </div>
+          <span class="scenario-badge badge-sev2">SEV-2 (P1)</span>
+        </button>
+
+        <button class="scenario-tab" id="tab-ad" onclick="loadScenario('ad')">
+          <div>
+            <strong>Ad Tracking Pixel Drop</strong>
+            <div style="font-size: 11px; color: var(--text-light);">Paid Acquisition -60% drop</div>
+          </div>
+          <span class="scenario-badge badge-sev2">SEV-2 (P1)</span>
+        </button>
+      </div>
+
+      <!-- Stat Counters -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Baseline Metric</div>
+          <div class="stat-val" id="stat-baseline">2,350</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Current Metric</div>
+          <div class="stat-val" id="stat-current">1,633</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Absolute Delta</div>
+          <div class="stat-val drop" id="stat-delta">-717</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Percentage Drift</div>
+          <div class="stat-val drop" id="stat-pct">-30.5%</div>
+        </div>
+      </div>
+
+      <!-- Visual Column Waterfall Chart -->
+      <div class="waterfall-card">
+        <div class="waterfall-title-row">
+          <h4>Metric Variance Waterfall Breakdown (Baseline ➔ Cohort Drags ➔ Current)</h4>
+          <div class="waterfall-legend">
+            <div class="legend-item"><div class="legend-box box-total"></div><span>Period Totals</span></div>
+            <div class="legend-item"><div class="legend-box box-drag"></div><span>Negative Drag</span></div>
+            <div class="legend-item"><div class="legend-box box-gain"></div><span>Positive Offset</span></div>
+          </div>
+        </div>
+
+        <div class="waterfall-chart" id="waterfall-chart-body">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div style="margin-top: 40px; font-size: 12.5px; color: var(--text-muted); background: var(--bg-subtle); padding: 12px 16px; border-radius: var(--radius-sm);" id="rate-summary-text">
+          German Mobile Paid conversion rate collapsed from <strong>5.00%</strong> to <strong>0.37%</strong> (-4.63 pp drop), isolating conversion friction while traffic volumes remained stable.
+        </div>
+      </div>
+
+      <!-- Two-Column Layout for Diagnosis & Action Dispatch -->
+      <div class="two-col-grid">
+        
+        <!-- Left: Diagnostic Reasoning -->
+        <div class="sub-card">
+          <div class="sub-card-title">
+            <span>🧠 Agent 2: Gemini Diagnostic Reasoning</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;" id="exec-diag-body">
+            Conversion volume suffered a localized -30.5% collapse week-over-week. Mathematical decomposition demonstrates that 97.6% of this total drag originated specifically within Germany across Mobile and Desktop Paid traffic.
+          </p>
+
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">
+            Targeted Technical Hypotheses:
+          </div>
+          <div id="hypo-list-body">
+            <!-- Dynamically populated -->
+          </div>
+
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-main); margin: 14px 0 4px;">
+            Ready-to-Run Triage SQL Query:
+          </div>
+          <div class="sql-container">
+            <pre><code id="sql-query-body">-- Ready to execute SQL query</code></pre>
+          </div>
+        </div>
+
+        <!-- Right: Action Dispatch Matrix -->
+        <div class="sub-card">
+          <div class="sub-card-title">
+            <span>🚨 Agent 3: Stakeholder Incident Action Dispatch</span>
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
+            Automated operational tickets with assigned roles, SLAs, and clear resolution actions:
+          </p>
+
+          <div class="ticket-grid" style="grid-template-columns: 1fr;" id="ticket-list-body">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick CLI Callout -->
+      <div class="cli-bar">
+        <div>
+          <strong>Run this exact scenario via CLI:</strong>
+          <span style="margin-left: 8px;" id="cli-hint"><code>python main.py --generate-sample payment_gateway_failure --dispatch</code></span>
+        </div>
+        <div style="font-size: 12px; color: #94a3b8;">
+          Exit Code 0 • Verified Math • Zero Regressions
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const DATASETS = {
+      payment: {
+        baseline: "2,350",
+        current: "1,633",
+        delta: "-717",
+        pct: "-30.5%",
+        rateText: "German Mobile Paid conversion rate collapsed from <strong>5.00%</strong> to <strong>0.37%</strong> (-4.63 pp drop), isolating payment processor failure while raw sessions remained constant.",
+        execDiag: "Conversion volume suffered a localized -30.5% collapse week-over-week. Mathematical decomposition demonstrates that 97.6% of this total drag originated specifically within Germany across Mobile and Desktop Paid traffic. Stable session counts indicate an acute regional payment gateway outage.",
+        cli: "python main.py --generate-sample payment_gateway_failure --dispatch",
+        columns: [
+          { name: "Baseline Total", val: "2,350", height: "85%", type: "block-total", contrib: "" },
+          { name: "DE Mobile Paid", val: "-370", height: "42%", type: "block-drag", contrib: "-51.6%" },
+          { name: "DE Desktop Paid", val: "-330", height: "38%", type: "block-drag", contrib: "-46.0%" },
+          { name: "US Mobile Paid", val: "-10", height: "5%", type: "block-drag", contrib: "-1.4%" },
+          { name: "FR Mobile Org", val: "+5", height: "4%", type: "block-gain", contrib: "+0.7%" },
+          { name: "Current Total", val: "1,633", height: "59%", type: "block-total", contrib: "" }
+        ],
+        hypotheses: [
+          { title: "Regional Payment Gateway Timeout", desc: "Acquiring bank or 3DS verification service in Germany degraded, rejecting payment requests on mobile & desktop checkout." },
+          { title: "SEPA / Sofort API Integration Outage", desc: "Localized payment method API token expiration or network timeout preventing order completion in DE." },
+          { title: "Local VAT / Tax Calculation Failure", desc: "Tax calculation service failing during final checkout submission for Euro transactions." }
+        ],
+        sql: `SELECT payment_method, error_code, COUNT(*) AS failures\nFROM payments.gateway_logs\nWHERE geo_country = 'DE' AND status = 'FAILED'\nGROUP BY 1, 2 ORDER BY failures DESC;`,
+        tickets: [
+          {
+            role: "Engineering / DevOps Lead",
+            priority: "P0",
+            sla: "2 hours",
+            trigger: "DE Paid traffic driving -700 drop (97.6% of total drift)",
+            inspect: "Inspect edge CDN latency, payment gateway logs, and API timeout spikes on German checkout endpoints.",
+            action: "Switch traffic routing to secondary payment processor in DE; verify synthetic health checks for 3DS verification."
+          },
+          {
+            role: "Growth / Paid Media Lead",
+            priority: "P1",
+            sla: "4 hours",
+            trigger: "Acute conversion collapse on German Paid channels with continuous ad spend.",
+            inspect: "Audit active Google/Meta campaigns targeting DE on Mobile. Check destination URL tracking and bounce rates.",
+            action: "Temporarily throttle paid campaign bidding in Germany to prevent ad budget burn while payment gateway is repaired."
+          },
+          {
+            role: "Regional / Geography Manager",
+            priority: "P1",
+            sla: "4 hours",
+            trigger: "Severe customer cart abandonment concentrated in Germany.",
+            inspect: "Assess regional payment gateway authorization rates (Sofort, Giropay, local credit cards) and contact merchant account rep.",
+            action: "Publish regional status banner on German localized site informing users of alternate payment options."
+          }
+        ]
+      },
+
+      checkout: {
+        baseline: "2,200",
+        current: "1,750",
+        delta: "-450",
+        pct: "-20.5%",
+        rateText: "US Mobile Paid conversion rate collapsed from <strong>6.00%</strong> to <strong>1.84%</strong> (-4.16 pp drop), isolating a broken client-side checkout bundle on mobile browsers.",
+        execDiag: "Conversions dropped by -20.5% week-over-week. Mathematical decomposition reveals that -420 conversions (93.3% of total drift) was concentrated entirely in US Mobile Paid traffic, indicating a critical mobile web frontend regression.",
+        cli: "python main.py --generate-sample checkout_dropoff --dispatch",
+        columns: [
+          { name: "Baseline Total", val: "2,200", height: "82%", type: "block-total", contrib: "" },
+          { name: "US Mobile Paid", val: "-420", height: "55%", type: "block-drag", contrib: "-93.3%" },
+          { name: "US Desktop Paid", val: "-20", height: "6%", type: "block-drag", contrib: "-4.4%" },
+          { name: "IN Desktop Org", val: "-10", height: "4%", type: "block-drag", contrib: "-2.2%" },
+          { name: "IN Mobile Org", val: "+10", height: "4%", type: "block-gain", contrib: "+2.2%" },
+          { name: "Current Total", val: "1,750", height: "65%", type: "block-total", contrib: "" }
+        ],
+        hypotheses: [
+          { title: "Mobile Web Checkout JS Exception", desc: "Recent frontend deployment introduced a JavaScript syntax error preventing 'Submit Order' on iOS Safari & Android Chrome." },
+          { title: "Mobile Form Viewport Layout Break", desc: "Payment method input fields pushed offscreen or obscured by fixed sticky footer on mobile viewports." },
+          { title: "Mobile Attribution Tag Suppression", desc: "Conversion postback event suppressed on mobile browsers due to strict CSP header configuration." }
+        ],
+        sql: `SELECT funnel_step, COUNT(user_id) AS dropoffs\nFROM analytics_events\nWHERE country = 'US' AND device = 'Mobile' AND channel = 'Paid'\nGROUP BY 1 ORDER BY dropoffs DESC;`,
+        tickets: [
+          {
+            role: "Engineering / DevOps Lead",
+            priority: "P0",
+            sla: "2 hours",
+            trigger: "US Mobile Paid driving -420 conversions drop (-93.3% of drift)",
+            inspect: "Check client-side Sentry error spikes, JavaScript exceptions on checkout page for mobile viewports, and recent release commits.",
+            action: "Revert commit #4f2a1 or roll back latest mobile web release bundle; verify synthetic checkout tests on mobile devices."
+          },
+          {
+            role: "Growth / Paid Media Lead",
+            priority: "P1",
+            sla: "4 hours",
+            trigger: "Disproportionate drop in US Mobile Paid acquisition efficiency.",
+            inspect: "Audit Google/Meta mobile ad creative destination URLs and inspect postback firing in Google Tag Manager.",
+            action: "Pause high-bid mobile acquisition ad sets until checkout flow rollback is confirmed."
+          },
+          {
+            role: "Regional / Geography Manager",
+            priority: "P2",
+            sla: "12 hours",
+            trigger: "US regional revenue impact totaling ~$38,000 in uncaptured orders.",
+            inspect: "Review customer support tickets mentioning checkout difficulties from US customers.",
+            action: "Send re-engagement recovery emails with one-click checkout links to impacted users once bug is resolved."
+          }
+        ]
+      },
+
+      mobile: {
+        baseline: "1,900",
+        current: "1,350",
+        delta: "-550",
+        pct: "-28.9%",
+        rateText: "Mobile conversion rate crashed from <strong>5.20%</strong> to <strong>1.80%</strong> (-3.40 pp drop) across both Paid and Organic traffic following v2.4 client release.",
+        execDiag: "App version v2.4 rollout triggered an immediate 65% conversion degradation across mobile clients globally, while Desktop conversion rates remained completely stable.",
+        cli: "python main.py --generate-sample mobile_release_regression --dispatch",
+        columns: [
+          { name: "Baseline Total", val: "1,900", height: "76%", type: "block-total", contrib: "" },
+          { name: "US Mobile Paid", val: "-325", height: "45%", type: "block-drag", contrib: "-59.1%" },
+          { name: "US Mobile Org", val: "-260", height: "36%", type: "block-drag", contrib: "-47.3%" },
+          { name: "UK Mobile Paid", val: "-195", height: "28%", type: "block-drag", contrib: "-35.5%" },
+          { name: "Current Total", val: "1,350", height: "54%", type: "block-total", contrib: "" }
+        ],
+        hypotheses: [
+          { title: "App Release v2.4 Crash Loop", desc: "Unhandled null pointer exception upon entering payment selection screen crashes the native iOS/Android container." },
+          { title: "Native Authentication Token Expiry", desc: "Session token refresh mechanism failing silently, booting users to login screen during checkout." },
+          { title: "Client Network Timeout Config", desc: "Aggressive 3-second HTTP timeout in mobile build dropping slow 4G checkout API requests." }
+        ],
+        sql: `SELECT app_version, crash_reason, COUNT(*) as crashes\nFROM mobile_telemetry_crashes\nWHERE event_date >= CURRENT_DATE - 3\nGROUP BY 1, 2 ORDER BY crashes DESC;`,
+        tickets: [
+          {
+            role: "Engineering / DevOps Lead",
+            priority: "P0",
+            sla: "2 hours",
+            trigger: "Global Mobile conversion rate down 65% following app v2.4 release.",
+            inspect: "Review Crashlytics / Sentry error rates on v2.4 build; check crash stack traces on checkout activities.",
+            action: "Halt staged rollout in Google Play Console and App Store Connect; trigger hotfix build v2.4.1."
+          },
+          {
+            role: "Growth / Paid Media Lead",
+            priority: "P1",
+            sla: "4 hours",
+            trigger: "High volume of app install campaign traffic hitting crashing app build.",
+            inspect: "Inspect app install campaign conversion rates and app store reviews.",
+            action: "Pause paid app install campaigns until emergency hotfix is published."
+          },
+          {
+            role: "Regional / Geography Manager",
+            priority: "P2",
+            sla: "8 hours",
+            trigger: "Negative customer app store review influx regarding checkout crashes.",
+            inspect: "Monitor regional Play Store review sentiment in US and UK.",
+            action: "Prepare developer response template reassuring users that fix is being expedited."
+          }
+        ]
+      },
+
+      ad: {
+        baseline: "2,000",
+        current: "1,540",
+        delta: "-460",
+        pct: "-23.0%",
+        rateText: "Paid acquisition traffic conversion tracking declined by 60%, whereas Organic, Referral, and Direct channels demonstrated steady conversion efficiency.",
+        execDiag: "Attribution audit indicates Paid campaign tracking dropoff. Web traffic from ad networks arrived normally, but conversion tag dispatch failures suppressed recorded purchase events.",
+        cli: "python main.py --generate-sample ad_campaign_fatigue --dispatch",
+        columns: [
+          { name: "Baseline Total", val: "2,000", height: "80%", type: "block-total", contrib: "" },
+          { name: "US Mobile Paid", val: "-360", height: "50%", type: "block-drag", contrib: "-78.3%" },
+          { name: "US Desktop Paid", val: "-300", height: "42%", type: "block-drag", contrib: "-65.2%" },
+          { name: "CA Mobile Paid", val: "-155", height: "22%", type: "block-drag", contrib: "-33.7%" },
+          { name: "Current Total", val: "1,540", height: "61%", type: "block-total", contrib: "" }
+        ],
+        hypotheses: [
+          { title: "Tag Manager Container Publish Error", desc: "Recent GTM workspace publish stripped the conversion trigger from the purchase thank-you page on Paid traffic." },
+          { title: "Ad Network Conversion API Disconnect", desc: "Meta Conversions API server-side token expired, failing to record server-to-server purchase conversions." },
+          { title: "UTM Parameter Stripping at Edge", desc: "CDN redirect rules stripping query parameters (utm_campaign, gclid), reclassifying Paid traffic as Direct." }
+        ],
+        sql: `SELECT traffic_source, has_gclid, COUNT(*) as sessions\nFROM analytics_sessions\nWHERE date >= CURRENT_DATE - 7\nGROUP BY 1, 2;`,
+        tickets: [
+          {
+            role: "Growth / Paid Media Lead",
+            priority: "P1",
+            sla: "4 hours",
+            trigger: "Paid conversions dropped 60% with stable spend, indicating tracking failure.",
+            inspect: "Audit Google Tag Manager version history and check live pixel firing via Meta Pixel Helper.",
+            action: "Revert GTM container to previous published state; verify server-side Conversions API token validity."
+          },
+          {
+            role: "Engineering / DevOps Lead",
+            priority: "P1",
+            sla: "4 hours",
+            trigger: "Potential query parameter stripping at CDN layer.",
+            inspect: "Inspect Cloudflare / CloudFront URL rewrite rules touching ad landing pages.",
+            action: "Ensure all UTM and click IDs (gclid, fbclid) are preserved across 301/302 redirects."
+          },
+          {
+            role: "Regional / Geography Manager",
+            priority: "P2",
+            sla: "12 hours",
+            trigger: "Paid channel attribution disruption across US and Canada.",
+            inspect: "Verify backend ERP order totals against analytics reports to confirm orders still occurred in database.",
+            action: "Notify executive stakeholders that actual sales volume is intact and gap is reporting-only."
+          }
+        ]
+      }
+    };
+
+    function loadScenario(key) {
+      const data = DATASETS[key];
+      if (!data) return;
+
+      // Update tabs
+      document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById(`tab-${key}`);
+      if (activeTab) activeTab.classList.add('active');
+
+      // Update stats
+      document.getElementById('stat-baseline').textContent = data.baseline;
+      document.getElementById('stat-current').textContent = data.current;
+      document.getElementById('stat-delta').textContent = data.delta;
+      document.getElementById('stat-pct').textContent = data.pct;
+      document.getElementById('rate-summary-text').innerHTML = data.rateText;
+      document.getElementById('exec-diag-body').textContent = data.execDiag;
+      document.getElementById('cli-hint').innerHTML = `<code>${data.cli}</code>`;
+
+      // Render Real Column Waterfall Chart
+      const chart = document.getElementById('waterfall-chart-body');
+      chart.innerHTML = '';
+      data.columns.forEach(col => {
+        const colWrapper = document.createElement('div');
+        colWrapper.className = 'waterfall-col-wrapper';
+        colWrapper.innerHTML = `
+          <div class="waterfall-block ${col.type}" style="height: ${col.height};">
+            <span class="block-val-label">${col.val}</span>
+            <span class="waterfall-contrib-badge">${col.contrib}</span>
+          </div>
+          <span class="waterfall-col-name" title="${col.name}">${col.name}</span>
+        `;
+        chart.appendChild(colWrapper);
+      });
+
+      // Render Hypotheses
+      const hypoBox = document.getElementById('hypo-list-body');
+      hypoBox.innerHTML = '';
+      data.hypotheses.forEach((h, i) => {
+        const item = document.createElement('div');
+        item.className = 'hypo-card';
+        item.innerHTML = `
+          <div class="hypo-name">${i + 1}. ${h.title}</div>
+          <div class="hypo-desc">${h.desc}</div>
+        `;
+        hypoBox.appendChild(item);
+      });
+
+      // Render SQL
+      document.getElementById('sql-query-body').textContent = data.sql;
+
+      // Render Tickets
+      const ticketBox = document.getElementById('ticket-list-body');
+      ticketBox.innerHTML = '';
+      data.tickets.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'ticket';
+        const pClass = t.priority === 'P0' ? 'p-p0' : 'p-p1';
+        card.innerHTML = `
+          <div class="ticket-header">
+            <span class="badge-priority ${pClass}">[${t.priority}]</span>
+            <span class="ticket-sla">⏱️ SLA: ${t.sla}</span>
+          </div>
+          <div class="ticket-title">${t.role}</div>
+          <div class="ticket-trigger">${t.trigger}</div>
+          <div class="ticket-detail">
+            <strong>Investigation Focus:</strong>
+            ${t.inspect}
+          </div>
+          <div class="ticket-detail">
+            <strong>Remediation Action:</strong>
+            ${t.action}
+          </div>
+          <button class="btn-ack" onclick="alert('Ticket acknowledged for: ${t.role}')">✓ Acknowledge Ticket</button>
+        `;
+        ticketBox.appendChild(card);
+      });
+    }
+
+    // Load default
+    window.addEventListener('DOMContentLoaded', () => {
+      loadScenario('payment');
+    });
+  </script>
+</body>
+</html>

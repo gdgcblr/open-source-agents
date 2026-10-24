@@ -1,0 +1,7 @@
+date,country,device,channel,conversions,sessions
+2026-10-10,IN,Mobile,Organic,450,9000
+2026-10-10,IN,Desktop,Organic,300,5000
+2026-10-10,US,Mobile,Paid,600,10000
+2026-10-10,US,Desktop,Paid,500,6000
+2026-10-10,UK,Mobile,Direct,200,4000
+2026-10-10,UK,Desktop,Direct,150,2500
