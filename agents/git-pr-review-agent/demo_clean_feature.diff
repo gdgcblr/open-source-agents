@@ -1,0 +1,16 @@
+diff --git a/services/math_utils.py b/services/math_utils.py
+new file mode 100644
+index 0000000..1234567
+--- /dev/null
++++ b/services/math_utils.py
+@@ -0,0 +1,10 @@
++"""High-performance mathematical helpers."""
++
++def compute_fibonacci(n: int) -> int:
++    """Compute the nth Fibonacci number safely."""
++    if n < 0:
++        raise ValueError("n must be non-negative")
++    a, b = 0, 1
++    for _ in range(n):
++        a, b = b, a + b
++    return a

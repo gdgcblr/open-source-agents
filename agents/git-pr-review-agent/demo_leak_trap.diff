@@ -1,0 +1,18 @@
+diff --git a/services/payment.py b/services/payment.py
+new file mode 100644
+index 0000000..abcdef1
+--- /dev/null
++++ b/services/payment.py
+@@ -0,0 +1,12 @@
++# Leaked Google AI Key
++GEMINI_API_KEY = "AIzaSyB1234567890abcdef1234567890abcdef"
++GH_PAT = "ghp_1234567890abcdefghijklmnopqrstuvwxyz"
++
++def execute_user_rule(code_string):
++    # Arbitrary code execution vulnerability
++    return eval(code_string)
++
++def fetch_user_balance(user_id):
++    # Raw SQL injection vulnerability
++    query = f"SELECT * FROM accounts WHERE user_id = '{user_id}'"
++    return db.execute(query)

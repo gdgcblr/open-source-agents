@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`git-pr-review-agent`](git-pr-review-agent/) | **Jarvis** — Autonomous PR review agent with 5-layer guardrails, security audit, and Conventional PR generator | Python, FastAPI, Gemini / Gemma 2 / Ollama | [@ShaikMohammedAshrafAli](https://github.com/ShaikMohammedAshrafAli) |
