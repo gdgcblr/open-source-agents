@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_alert, analyze_failure, inspect_api_error, inspect_ci_annotations, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
+from build_doctor_mcp.server import analyze_alert, analyze_failure, compare_diagnoses, inspect_api_error, inspect_ci_annotations, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -92,6 +92,22 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
         self.assertEqual(30, result["retry_after"])
         self.assertNotIn("secret-value", json.dumps(result))
         self.assertIn("req-1", result["request_id"])
+
+    def test_compares_structured_results_without_raw_logs(self):
+        before = json.loads(analyze_failure("error: cannot find symbol"))
+        after = json.loads(analyze_failure("BUILD SUCCESS"))
+        after["verification_status"] = "verified"
+
+        result = json.loads(compare_diagnoses(json.dumps(before), json.dumps(after)))
+
+        self.assertTrue(result["comparison"]["failure_type_changed"])
+        self.assertEqual("verified", result["comparison"]["verification_status"])
+        self.assertEqual("improved", result["conclusion"])
+
+    def test_rejects_invalid_structured_comparison_input(self):
+        result = json.loads(compare_diagnoses("not-json", "{}"))
+
+        self.assertIn("error", result)
 
     def test_parses_structured_test_report_evidence(self):
         report = """<testsuite name=\"unit\" tests=\"2\" failures=\"1\" errors=\"0\" skipped=\"0\">

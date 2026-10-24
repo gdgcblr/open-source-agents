@@ -497,6 +497,36 @@ def inspect_api_error(payload: str) -> str:
 
 
 @mcp.tool()
+def compare_diagnoses(before_result: str, after_result: str) -> str:
+    """Compare two structured BuildDoctor results without retaining or re-reading raw logs."""
+    try:
+        before = json.loads(before_result)
+        after = json.loads(after_result)
+    except json.JSONDecodeError:
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "both results must be valid BuildDoctor JSON"})
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "both results must be JSON objects"})
+    before_signals = set(before.get("scoring", {}).get("matched_signals", []))
+    after_signals = set(after.get("scoring", {}).get("matched_signals", []))
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "comparison": {
+            "failure_type_changed": before.get("failure_type") != after.get("failure_type"),
+            "before_failure_type": before.get("failure_type"),
+            "after_failure_type": after.get("failure_type"),
+            "confidence_changed": before.get("confidence") != after.get("confidence"),
+            "before_confidence": before.get("confidence"),
+            "after_confidence": after.get("confidence"),
+            "signals_added": sorted(after_signals - before_signals),
+            "signals_removed": sorted(before_signals - after_signals),
+            "verification_status": after.get("verification_status", "pending"),
+        },
+        "conclusion": "improved" if after.get("verification_status") == "verified" else "changed_but_unverified",
+        "guardrails": ["Structured-result comparison only; raw logs are not retained or processed.", "A changed diagnosis is not proof of recovery unless verification_status is verified."],
+    }, indent=2)
+
+
+@mcp.tool()
 def inspect_project(project_path: str) -> str:
     """Read bounded, redacted metadata from root project manifests without executing code."""
     root = _safe_root(project_path)
