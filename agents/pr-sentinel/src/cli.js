@@ -5,6 +5,7 @@
  */
 
 import path from 'node:path';
+import fs from 'node:fs';
 import readline from 'node:readline';
 import { Orchestrator } from './agents/orchestrator.js';
 import { banner, printReport, printStep, colors } from './ui/terminal.js';
@@ -33,6 +34,7 @@ Options:
   --staged             Only analyze staged git changes
   --json               Output machine-readable JSON report
   --markdown           Output formatted GitHub PR review comment
+  --output, -o <file>  Save review report as a downloadable/local Markdown file
   --port <port>        Port for web dashboard (default: 3737)
   --demo               Force mock/demo execution mode (bypasses live API keys)
   -h, --help           Show this help message
@@ -40,8 +42,8 @@ Options:
 Examples:
   pr-sentinel demo
   pr-sentinel audit --path agents/pr-sentinel
+  pr-sentinel audit --output pr-review.md
   pr-sentinel serve --port 3737
-  pr-sentinel --markdown > pr-review.md
 `);
     process.exit(0);
   }
@@ -52,13 +54,20 @@ Examples:
   const isJson = args.includes('--json');
   const isMarkdown = args.includes('--markdown');
 
+  // Parse output file
+  let outputFile = null;
+  const outIdx = args.indexOf('--output') !== -1 ? args.indexOf('--output') : args.indexOf('-o');
+  if (outIdx !== -1 && args[outIdx + 1]) {
+    outputFile = args[outIdx + 1];
+  }
+
   // Parse path
   let targetDir = '.';
   const pathIdx = args.indexOf('--path');
   if (pathIdx !== -1 && args[pathIdx + 1]) {
     targetDir = args[pathIdx + 1];
   } else {
-    const nonFlags = args.filter(a => !a.startsWith('-') && !['audit', 'demo', 'serve', 'interactive'].includes(a));
+    const nonFlags = args.filter(a => !a.startsWith('-') && !['audit', 'demo', 'serve', 'interactive'].includes(a) && a !== outputFile);
     if (nonFlags.length > 0) targetDir = nonFlags[0];
   }
 
@@ -130,6 +139,11 @@ index 0000000..8a3f912
   if (isMarkdown) {
     console.log(report.markdownReview);
     process.exit(0);
+  }
+
+  if (outputFile) {
+    fs.writeFileSync(outputFile, report.markdownReview, 'utf8');
+    console.log(`\n  💾 ${colors.brightGreen}Markdown review report saved to:${colors.reset} ${path.resolve(outputFile)}`);
   }
 
   printReport(report);

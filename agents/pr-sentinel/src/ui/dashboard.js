@@ -337,7 +337,7 @@ function renderDashboardHtml(report) {
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="runScan()">⚡ Re-Run Audit</button>
-      <button class="btn btn-primary" onclick="copyMarkdown()">📋 Copy GitHub PR Review</button>
+      <button class="btn btn-primary" onclick="downloadMarkdown()">📥 Download PR Review (.md)</button>
     </div>
   </header>
 
@@ -409,7 +409,10 @@ function renderDashboardHtml(report) {
 
     <div id="tab-markdown" class="tab-content">
       <div class="markdown-box">
-        <button class="btn btn-secondary copy-btn" onclick="copyMarkdown()">Copy Markdown</button>
+        <div style="position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary" onclick="copyMarkdown()">📋 Copy</button>
+          <button class="btn btn-primary" onclick="downloadMarkdown()">📥 Download .md</button>
+        </div>
         <div id="markdownContent">Loading markdown review...</div>
       </div>
     </div>
@@ -515,6 +518,26 @@ function renderDashboardHtml(report) {
       } catch (e) {
         alert('Audit failed: ' + e.message);
       }
+    }
+
+    function downloadMarkdown() {
+      const text = document.getElementById('markdownContent').innerText;
+      if (!text || text === 'Loading markdown review...') {
+        alert('No markdown review available to download.');
+        return;
+      }
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const verdict = (reportData && reportData.verdict) ? reportData.verdict.toLowerCase() : 'report';
+      const filename = 'pr-review-' + verdict + '-' + timestamp + '.md';
+      const blob = new Blob([text], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
 
     function copyMarkdown() {
