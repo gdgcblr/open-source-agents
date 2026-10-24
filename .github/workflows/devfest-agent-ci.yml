@@ -25,21 +25,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest pytest-asyncio pydantic fastapi httpx uvicorn yfinance
 
-      - name: Run Bharat Dues Ledger Auditor Tests (5/5)
+      - name: Run Bharat Dues Ledger Auditor Tests (8/8)
         run: |
-          export PYTHONPATH=$PYTHONPATH:$PWD/agents/gemini-audit-agent
+          export PYTHONPATH=$PWD/agents/gemini-audit-agent:$PYTHONPATH
           pytest agents/gemini-audit-agent/tests -v
 
       - name: Run Arthaniti Quant MCP Tests (7/7)
         run: |
-          export PYTHONPATH=$PYTHONPATH:$PWD/tools/gemma-quant-mcp
+          export PYTHONPATH=$PWD/tools/gemma-quant-mcp:$PYTHONPATH
           pytest tools/gemma-quant-mcp/tests -v
 
       - name: Verify Mathematical Invariant Zero-Sum Conserved
         run: |
+          export PYTHONPATH=$PWD/agents/gemini-audit-agent:$PYTHONPATH
           python -c "
-          from agents.gemini_audit_agent.core.models import Member, Expense, SettlementRecord
-          from agents.gemini_audit_agent.core.ledger import audit_ledger
+          from core.models import Member, Expense, SettlementRecord
+          from core.ledger import audit_ledger
           m1 = Member(id='m1', name='Alice')
           m2 = Member(id='m2', name='Bob')
           e = Expense(description='Lunch', payer_id='m1', amount=3000.0, shares={'m1': 1500.0, 'm2': 1500.0})
