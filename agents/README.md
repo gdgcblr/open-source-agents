@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`repro-capsule/`](repro-capsule/README.md) | Runs an opt-in fixed Python test command in a restricted Docker container and saves revision-bound evidence for replay. | Python, Gemini function calling, Docker | [JOHRIVASU](https://github.com/JOHRIVASU) |

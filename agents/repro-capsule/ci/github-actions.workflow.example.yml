@@ -1,0 +1,35 @@
+# Copy to the host repository's .github/workflows/repro-capsule.yml.
+# Nested workflows are not discovered by GitHub Actions.
+name: ReproCapsule
+on:
+  push:
+    paths: ["agents/repro-capsule/**"]
+  pull_request:
+    paths: ["agents/repro-capsule/**"]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: agents/repro-capsule
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check .
+      - run: python -m unittest discover -s tests -v
+      - name: Run offline demo through the platform launcher
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./run.ps1 demo
+      - name: Run offline demo through the platform launcher
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash ./run.sh demo
