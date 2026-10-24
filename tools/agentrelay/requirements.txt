@@ -1,0 +1,12 @@
+# AgentRelay — Dependencies Manifest
+# =============================================================================
+# Core Design:
+# AgentRelay's core deterministic engine, CLI, safety guardrails,
+# and offline evaluation suite use the Python 3.9+ standard library.
+# It has ZERO required third-party dependencies and runs 100% offline out-of-the-box.
+# =============================================================================
+
+# --- Optional Development & Extended Features ---
+# Uncomment below if you wish to use alternative test runners or live cloud models:
+# pytest>=7.4.0
+# google-genai>=0.1.0

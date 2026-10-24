@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [agentrelay](agentrelay/) | Evidence-driven AI engineering investigation platform connecting pre-deployment code review to production incident triage | Investigation / Evaluation | Community |
