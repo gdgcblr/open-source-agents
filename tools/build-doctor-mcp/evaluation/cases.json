@@ -29,5 +29,29 @@
     "expected_failure_type": "dependency-resolution",
     "expected_confidence": "low",
     "required_signals": ["dependency-resolution-error", "test-summary"]
+  },
+  {
+    "id": "gradle-dependency-resolution",
+    "log": "Could not resolve all files for configuration ':runtimeClasspath'. Could not find package payments-sdk.",
+    "expected_failure_type": "dependency-resolution",
+    "required_signals": ["dependency-resolution-error"]
+  },
+  {
+    "id": "rust-type-error",
+    "log": "error[E0308]: mismatched types at src/lib.rs:44:9",
+    "expected_failure_type": "compilation",
+    "required_signals": ["compiler-error", "source-location"]
+  },
+  {
+    "id": "api-rate-limit",
+    "log": "HTTP 429 response from the search API; retry-after: 30",
+    "expected_failure_type": "runtime-or-api",
+    "required_signals": ["http-status-or-transport"]
+  },
+  {
+    "id": "runtime-timeout",
+    "log": "request timeout after 30s while calling inventory service",
+    "expected_failure_type": "runtime-or-api",
+    "required_signals": ["http-status-or-transport"]
   }
 ]

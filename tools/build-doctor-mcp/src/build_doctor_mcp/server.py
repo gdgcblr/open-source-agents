@@ -30,7 +30,7 @@ _RULES: tuple[dict[str, Any], ...] = (
     {
         "failure_type": "compilation",
         "signal_id": "compiler-error",
-        "pattern": re.compile(r"compilation error|cannot find symbol|syntax error|type error|failed to compile", re.I),
+        "pattern": re.compile(r"compilation error|cannot find symbol|syntax error|type error|mismatched types|error\[e\d+\]|failed to compile", re.I),
         "weight": 4,
         "cause": "A source or compiler configuration issue is likely.",
         "remediation": "Inspect the first compiler error and its source location.",
@@ -48,7 +48,7 @@ _RULES: tuple[dict[str, Any], ...] = (
     {
         "failure_type": "dependency-resolution",
         "signal_id": "dependency-resolution-error",
-        "pattern": re.compile(r"could not resolve dependencies|module not found|modulenotfounderror|no module named|no matching distribution|failed to fetch|package .* not found", re.I),
+        "pattern": re.compile(r"could not resolve (?:all )?files|could not resolve dependencies|module not found|modulenotfounderror|no module named|no matching distribution|failed to fetch|package .* not found", re.I),
         "weight": 4,
         "cause": "A dependency name, version, lockfile, registry, or access issue may be blocking resolution.",
         "remediation": "Inspect dependency names, versions, lockfiles, and configured registries.",
