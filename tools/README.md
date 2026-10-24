@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`model-aware-prompt-enhancer`](model-aware-prompt-enhancer/README.md) | Diagnoses prompts, asks for missing details instead of guessing, applies minimal intent-preserving patches, and measures the result with A/B tests (Claude, GPT, Gemini profiles) | Prompt engineering / CLI, Claude Code plugin, MCP server | [@bhargavi905](https://github.com/bhargavi905) |

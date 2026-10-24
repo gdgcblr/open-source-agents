@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "prompt-enhancer hook claude-code",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

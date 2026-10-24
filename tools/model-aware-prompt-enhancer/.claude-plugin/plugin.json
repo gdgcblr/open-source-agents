@@ -1,0 +1,12 @@
+{
+  "name": "prompt-enhancer",
+  "displayName": "Model-Aware Prompt Enhancer",
+  "version": "0.3.0",
+  "description": "Checks every prompt you send for ambiguity, conflicts, missing context and injection risks, restates your constraints for Claude, and adds /prompt-enhancer:enhance and /prompt-enhancer:check commands plus an offline MCP server. Never rewrites what you type.",
+  "author": {
+    "name": "GDG Cloud Bengaluru open-source-agents contributors"
+  },
+  "repository": "https://github.com/gdgcblr/open-source-agents",
+  "license": "MIT",
+  "keywords": ["prompt-engineering", "prompts", "lint", "mcp", "evaluation"]
+}

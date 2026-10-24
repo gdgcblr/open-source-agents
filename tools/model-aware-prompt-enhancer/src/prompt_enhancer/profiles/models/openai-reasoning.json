@@ -1,0 +1,122 @@
+{
+  "schema_version": 2,
+  "id": "openai-reasoning",
+  "provider": "openai",
+  "display_name": "OpenAI reasoning models (o-series)",
+  "profile_version": "2.0.0",
+  "last_verified": "2026-10-24",
+  "aliases": [
+    "o-series",
+    "openai-reasoning"
+  ],
+  "match": [
+    "^o[1-9](-|$)",
+    "^openai/o[1-9]"
+  ],
+  "structure": {
+    "style": "markdown",
+    "constraints_position": "before",
+    "long_context_reminder": false
+  },
+  "sources": [
+    {
+      "id": "prompt-engineering",
+      "title": "Prompt engineering (OpenAI API docs)",
+      "url": "https://developers.openai.com/api/docs/guides/prompt-engineering"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "structured_output",
+      "summary": "A Structured Outputs feature returns data in JSON format.",
+      "source": "prompt-engineering",
+      "section": "Prompt engineering",
+      "evidence": "documented"
+    }
+  ],
+  "guidelines": [
+    {
+      "id": "openai.structure-markdown",
+      "kind": "structure",
+      "text": "Use Markdown headers and lists to mark distinct sections of the prompt and communicate hierarchy.",
+      "source": "prompt-engineering",
+      "section": "Message formatting with Markdown and XML",
+      "evidence": "documented",
+      "severity": "info"
+    },
+    {
+      "id": "openai.developer-message",
+      "kind": "advice",
+      "text": "When calling the API, put durable rules in a developer message; OpenAI's docs say developer messages are prioritized ahead of user messages.",
+      "source": "prompt-engineering",
+      "section": "Message roles and instruction following",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "has_constraints"
+        ],
+        "harnesses": [
+          "api"
+        ]
+      }
+    },
+    {
+      "id": "openai.few-shot",
+      "kind": "advice",
+      "text": "Include a handful of diverse input/output examples to show the output you want.",
+      "source": "prompt-engineering",
+      "section": "Few-shot learning",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "no_examples"
+        ],
+        "task_types": [
+          "extraction"
+        ]
+      }
+    },
+    {
+      "id": "openai.cache-order",
+      "kind": "advice",
+      "text": "Put content you reuse across requests (long documents, shared instructions) at the beginning of the prompt to benefit from prompt caching.",
+      "source": "prompt-engineering",
+      "section": "Save on cost and latency with prompt caching",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "long_context",
+          "request_before_context"
+        ]
+      }
+    },
+    {
+      "id": "openai.structured-output",
+      "kind": "advice",
+      "text": "For JSON responses, use the Structured Outputs feature instead of relying on prompt wording alone.",
+      "source": "prompt-engineering",
+      "section": "Prompt engineering",
+      "evidence": "documented",
+      "severity": "info",
+      "augments": "PE302"
+    },
+    {
+      "id": "openai.reasoning-high-level",
+      "kind": "advice",
+      "text": "OpenAI's docs say reasoning models give better results with high-level guidance: describe the goal and let the model work out the steps, rather than prescribing each one.",
+      "source": "prompt-engineering",
+      "section": "Prompting reasoning models",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "prescribes_steps"
+        ]
+      }
+    }
+  ],
+  "variants": []
+}

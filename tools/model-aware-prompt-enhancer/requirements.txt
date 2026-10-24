@@ -1,0 +1,3 @@
+# Runtime: standard library only (Python 3.10+). Nothing to install.
+# Install the tool itself with:  pip install -e .
+# Optional exact OpenAI token counts:  pip install -e ".[tokens]"

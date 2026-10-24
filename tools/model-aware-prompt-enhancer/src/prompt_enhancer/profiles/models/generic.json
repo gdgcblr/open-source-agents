@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "id": "generic",
+  "provider": "unknown",
+  "display_name": "Generic fallback (unknown or custom model)",
+  "profile_version": "2.0.0",
+  "last_verified": "2026-10-24",
+  "aliases": [
+    "generic",
+    "custom",
+    "local"
+  ],
+  "match": [],
+  "structure": {
+    "style": "markdown",
+    "constraints_position": "after",
+    "long_context_reminder": true
+  },
+  "sources": [
+    {
+      "id": "claude",
+      "title": "Prompting best practices (Claude)",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+    },
+    {
+      "id": "openai",
+      "title": "Prompt engineering (OpenAI API docs)",
+      "url": "https://developers.openai.com/api/docs/guides/prompt-engineering"
+    },
+    {
+      "id": "gemini",
+      "title": "Prompt design strategies (Gemini API docs)",
+      "url": "https://ai.google.dev/gemini-api/docs/prompting-strategies"
+    }
+  ],
+  "capabilities": [],
+  "guidelines": [
+    {
+      "id": "generic.structure",
+      "kind": "structure",
+      "text": "Separate the request and constraints with clear delimiters. All three vendor guides recommend this, so it is the safest change for an unknown model.",
+      "source": "gemini",
+      "section": "Gemini 3 > Core prompting principles",
+      "evidence": "documented",
+      "severity": "info"
+    },
+    {
+      "id": "generic.examples",
+      "kind": "advice",
+      "text": "Add a few consistent input/output examples to show the pattern you want.",
+      "source": "openai",
+      "section": "Few-shot learning",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "no_examples"
+        ],
+        "task_types": [
+          "extraction"
+        ]
+      }
+    }
+  ],
+  "variants": []
+}

@@ -1,0 +1,828 @@
+{
+  "kind": "end-to-end-llm",
+  "provider": "claude-code",
+  "model": "haiku",
+  "trials_per_arm": 3,
+  "cases_with_checks": 15,
+  "cases": 15,
+  "compared": 15,
+  "wins": 5,
+  "losses": 2,
+  "ties": 8,
+  "not_enhanced": 0,
+  "original_check_pass_rate": 0.752,
+  "enhanced_check_pass_rate": 0.962,
+  "by_group": {
+    "answered": {
+      "cases": 5,
+      "compared": 5,
+      "wins": 5,
+      "losses": 0,
+      "ties": 0,
+      "not_enhanced": 0,
+      "original_check_pass_rate": 0.242,
+      "enhanced_check_pass_rate": 1.0
+    },
+    "automatic": {
+      "cases": 10,
+      "compared": 10,
+      "wins": 0,
+      "losses": 2,
+      "ties": 8,
+      "not_enhanced": 0,
+      "original_check_pass_rate": 0.986,
+      "enhanced_check_pass_rate": 0.944
+    }
+  },
+  "results": [
+    {
+      "id": "auto-summary-limits",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 5,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [
+          "under 50 words"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          1671,
+          2163,
+          2150
+        ],
+        "ms": [
+          10201.3,
+          12109.2,
+          11870.3
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 4,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [
+          "under 50 words",
+          "under 50 words"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          1527,
+          1216,
+          1282
+        ],
+        "ms": [
+          9715.9,
+          8842.4,
+          9509.5
+        ]
+      },
+      "outcome": "loss",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-long-context-bullets",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          128,
+          131,
+          132
+        ],
+        "ms": [
+          5547.4,
+          6021.9,
+          5505.4
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          96,
+          98,
+          96
+        ],
+        "ms": [
+          4869.3,
+          4936.0,
+          4748.4
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-banned-words",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          135,
+          119,
+          140
+        ],
+        "ms": [
+          6014.5,
+          6153.3,
+          5169.9
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          145,
+          128,
+          147
+        ],
+        "ms": [
+          5093.9,
+          4904.5,
+          5479.0
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-numbered-list",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          247,
+          317,
+          310
+        ],
+        "ms": [
+          6141.4,
+          5990.9,
+          5886.2
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          265,
+          327,
+          311
+        ],
+        "ms": [
+          5259.6,
+          6145.3,
+          7302.2
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-json-only",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          22,
+          22,
+          22
+        ],
+        "ms": [
+          3678.4,
+          4092.8,
+          3654.0
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          22,
+          22,
+          22
+        ],
+        "ms": [
+          4175.4,
+          4516.2,
+          4302.2
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-no-code",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          95,
+          96,
+          98
+        ],
+        "ms": [
+          4599.8,
+          4312.2,
+          3988.3
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          91,
+          110,
+          103
+        ],
+        "ms": [
+          5724.1,
+          5175.7,
+          4360.1
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-tweet",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          210,
+          218,
+          367
+        ],
+        "ms": [
+          5386.2,
+          5493.3,
+          5277.1
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          336,
+          329,
+          215
+        ],
+        "ms": [
+          5748.8,
+          6682.1,
+          5399.7
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-haiku",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 3,
+        "total_checks": 3,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          45,
+          38,
+          42
+        ],
+        "ms": [
+          4627.3,
+          5137.8,
+          4670.7
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 3,
+        "total_checks": 3,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          43,
+          38,
+          37
+        ],
+        "ms": [
+          4782.4,
+          4699.7,
+          3995.3
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-injection",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          37,
+          37,
+          37
+        ],
+        "ms": [
+          4161.9,
+          4201.3,
+          5117.1
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 7,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [
+          "not hijacked",
+          "not hijacked"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          205,
+          37,
+          66
+        ],
+        "ms": [
+          4763.1,
+          5964.2,
+          4715.0
+        ]
+      },
+      "outcome": "loss",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "auto-no-names",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          259,
+          214,
+          141
+        ],
+        "ms": [
+          5309.7,
+          5066.0,
+          5525.6
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          501,
+          149,
+          315
+        ],
+        "ms": [
+          6783.5,
+          4740.9,
+          6383.5
+        ]
+      },
+      "outcome": "tie",
+      "tags": [
+        "automatic"
+      ]
+    },
+    {
+      "id": "answered-json-fields",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 5,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [
+          "agreed keys",
+          "agreed keys",
+          "valid json",
+          "agreed keys"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          134,
+          156,
+          170
+        ],
+        "ms": [
+          4426.9,
+          4360.8,
+          5214.7
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 9,
+        "total_checks": 9,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          71,
+          118,
+          71
+        ],
+        "ms": [
+          4932.1,
+          5445.1,
+          4694.0
+        ]
+      },
+      "outcome": "win",
+      "tags": [
+        "answered"
+      ]
+    },
+    {
+      "id": "answered-format",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 0,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [
+          "4 bullets",
+          "short",
+          "4 bullets",
+          "short",
+          "4 bullets",
+          "short"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          1409,
+          1343,
+          1263
+        ],
+        "ms": [
+          9652.6,
+          10392.0,
+          9993.4
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          226,
+          239,
+          239
+        ],
+        "ms": [
+          5505.0,
+          4963.6,
+          5518.2
+        ]
+      },
+      "outcome": "win",
+      "tags": [
+        "answered"
+      ]
+    },
+    {
+      "id": "answered-language",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 3,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [
+          "has tests",
+          "has tests",
+          "has tests"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          377,
+          355,
+          409
+        ],
+        "ms": [
+          5405.9,
+          5692.0,
+          5280.6
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          741,
+          473,
+          531
+        ],
+        "ms": [
+          5141.5,
+          6083.0,
+          6712.6
+        ]
+      },
+      "outcome": "win",
+      "tags": [
+        "answered"
+      ]
+    },
+    {
+      "id": "answered-audience",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 0,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [
+          "under 120 words",
+          "no jargon",
+          "under 120 words",
+          "no jargon",
+          "under 120 words",
+          "no jargon"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          739,
+          663,
+          763
+        ],
+        "ms": [
+          8016.9,
+          7243.8,
+          7747.5
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          272,
+          176,
+          275
+        ],
+        "ms": [
+          6344.3,
+          5212.0,
+          6431.4
+        ]
+      },
+      "outcome": "win",
+      "tags": [
+        "answered"
+      ]
+    },
+    {
+      "id": "answered-scope",
+      "status": "enhanced",
+      "original": {
+        "passed_checks": 0,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [
+          "in scope (India)",
+          "under 200 words",
+          "in scope (India)",
+          "under 200 words",
+          "in scope (India)",
+          "under 200 words"
+        ],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          2920,
+          3158,
+          3063
+        ],
+        "ms": [
+          19410.2,
+          21745.6,
+          19707.9
+        ]
+      },
+      "enhanced": {
+        "passed_checks": 6,
+        "total_checks": 6,
+        "trials": 3,
+        "failures": [],
+        "input_tokens": [
+          2,
+          2,
+          2
+        ],
+        "output_tokens": [
+          707,
+          1429,
+          1275
+        ],
+        "ms": [
+          8613.4,
+          12013.0,
+          10916.8
+        ]
+      },
+      "outcome": "win",
+      "tags": [
+        "answered"
+      ]
+    }
+  ],
+  "caveat": "Check pass rates on a small sample; sampling noise can exceed the difference. Re-run with more trials before drawing conclusions."
+}

@@ -1,0 +1,194 @@
+{
+  "schema_version": 2,
+  "id": "anthropic-claude",
+  "provider": "anthropic",
+  "display_name": "Anthropic Claude (current models)",
+  "profile_version": "2.0.0",
+  "last_verified": "2026-10-24",
+  "aliases": [
+    "claude",
+    "anthropic"
+  ],
+  "match": [
+    "^claude[-_]",
+    "^anthropic[./]claude",
+    "^(us|eu|apac|global)\\.anthropic\\.claude"
+  ],
+  "structure": {
+    "style": "xml",
+    "constraints_position": "after",
+    "long_context_reminder": true
+  },
+  "sources": [
+    {
+      "id": "best-practices",
+      "title": "Prompting best practices (Claude)",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "structured_output",
+      "summary": "A structured outputs feature constrains responses to a given schema; the docs recommend it over prefilled responses for forcing JSON/YAML.",
+      "source": "best-practices",
+      "section": "Migrating away from prefilled responses",
+      "evidence": "documented"
+    }
+  ],
+  "guidelines": [
+    {
+      "id": "claude.structure-xml",
+      "kind": "structure",
+      "text": "Wrap distinct parts of the prompt in descriptive XML tags so instructions, context and inputs are parsed unambiguously.",
+      "source": "best-practices",
+      "section": "Structure prompts with XML tags",
+      "evidence": "documented",
+      "severity": "info"
+    },
+    {
+      "id": "claude.long-context-order",
+      "kind": "structure",
+      "text": "With long inputs, put the documents above the query; ending with the query improves quality on multi-document inputs.",
+      "source": "best-practices",
+      "section": "Long context prompting",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "long_context"
+        ]
+      }
+    },
+    {
+      "id": "claude.explicit-action",
+      "kind": "advice",
+      "text": "Claude follows instructions precisely: asking it to 'suggest' changes may get suggestions rather than edits. If you want the change made, phrase it as a direct instruction (for example 'Change this function to ...').",
+      "source": "best-practices",
+      "section": "Tool usage",
+      "evidence": "documented",
+      "severity": "warning",
+      "when": {
+        "intent": "advisory",
+        "task_types": [
+          "coding"
+        ]
+      }
+    },
+    {
+      "id": "claude.output-format",
+      "kind": "advice",
+      "text": "Current Claude models are concise by default and may skip summaries unless asked, so state the format and length you need.",
+      "source": "best-practices",
+      "section": "Communication style and verbosity",
+      "evidence": "documented",
+      "severity": "info",
+      "augments": "PE301"
+    },
+    {
+      "id": "claude.positive-framing",
+      "kind": "advice",
+      "text": "Tell Claude what to do instead of only what not to do (for example 'write flowing prose paragraphs' rather than 'no markdown').",
+      "source": "best-practices",
+      "section": "Control the format of responses",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "negative_phrasing"
+        ]
+      }
+    },
+    {
+      "id": "claude.add-motivation",
+      "kind": "advice",
+      "text": "Explain why important constraints matter; Claude generalizes from the reason behind an instruction.",
+      "source": "best-practices",
+      "section": "Add context to improve performance",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "has_constraints",
+          "constraints_without_reason"
+        ]
+      }
+    },
+    {
+      "id": "claude.examples",
+      "kind": "advice",
+      "text": "Add 3-5 relevant, diverse examples wrapped in <example> tags to steer format and tone.",
+      "source": "best-practices",
+      "section": "Use examples effectively",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "no_examples"
+        ],
+        "task_types": [
+          "extraction"
+        ]
+      }
+    },
+    {
+      "id": "claude.structured-output",
+      "kind": "advice",
+      "text": "For strict JSON, use the structured outputs feature rather than relying on prompt wording alone.",
+      "source": "best-practices",
+      "section": "Migrating away from prefilled responses",
+      "evidence": "documented",
+      "severity": "info",
+      "augments": "PE302"
+    }
+  ],
+  "variants": [
+    {
+      "id": "claude-opus-4.5-4.6",
+      "match": [
+        "^claude-opus-4-[56]"
+      ],
+      "guidelines": [
+        {
+          "id": "claude.soften-emphasis",
+          "kind": "advice",
+          "text": "Claude Opus 4.5 and 4.6 respond more strongly to the system prompt; aggressive wording such as 'CRITICAL: You MUST' can cause over-triggering. Use normal phrasing such as 'Use this tool when...'.",
+          "source": "best-practices",
+          "section": "Tool usage",
+          "evidence": "documented",
+          "severity": "warning",
+          "when": {
+            "flags": [
+              "emphatic_caps"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "claude-opus-5",
+      "match": [
+        "^claude-opus-5(-\\d{8})?$"
+      ],
+      "guidelines": [
+        {
+          "id": "claude.opus5-verbosity",
+          "kind": "advice",
+          "text": "Claude Opus 5's default responses run longer than prior models', and changing effort does not reliably change visible length. If you want a short answer, ask for it explicitly.",
+          "source": "best-practices",
+          "section": "Communication style and verbosity",
+          "evidence": "documented",
+          "severity": "info",
+          "when": {
+            "flags": [
+              "no_length_limit"
+            ],
+            "task_types": [
+              "writing",
+              "research"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

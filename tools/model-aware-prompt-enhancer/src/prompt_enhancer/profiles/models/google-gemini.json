@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "id": "google-gemini",
+  "provider": "google",
+  "display_name": "Google Gemini",
+  "profile_version": "2.0.0",
+  "last_verified": "2026-10-24",
+  "aliases": [
+    "gemini",
+    "google"
+  ],
+  "match": [
+    "^gemini-",
+    "^models/gemini-",
+    "^google/gemini-"
+  ],
+  "structure": {
+    "style": "markdown",
+    "constraints_position": "before",
+    "long_context_reminder": true
+  },
+  "sources": [
+    {
+      "id": "prompting-strategies",
+      "title": "Prompt design strategies (Gemini API docs)",
+      "url": "https://ai.google.dev/gemini-api/docs/prompting-strategies"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "structured_output",
+      "summary": "Google recommends the Gemini API's structured output feature when specifying a more complex JSON schema.",
+      "source": "prompting-strategies",
+      "section": "Response format",
+      "evidence": "documented"
+    }
+  ],
+  "guidelines": [
+    {
+      "id": "gemini.consistent-structure",
+      "kind": "structure",
+      "text": "Use a consistent structure with clear delimiters (XML tags or Markdown headings) to separate parts of the prompt.",
+      "source": "prompting-strategies",
+      "section": "Gemini 3 > Core prompting principles",
+      "evidence": "documented",
+      "severity": "info"
+    },
+    {
+      "id": "gemini.constraints-first",
+      "kind": "structure",
+      "text": "Place essential behavioral constraints in the system instruction or at the very beginning of the prompt.",
+      "source": "prompting-strategies",
+      "section": "Gemini 3 > Core prompting principles",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "has_constraints"
+        ]
+      }
+    },
+    {
+      "id": "gemini.long-context-order",
+      "kind": "structure",
+      "text": "For long contexts, provide the context first and put the question at the end.",
+      "source": "prompting-strategies",
+      "section": "Gemini 3 > Core prompting principles",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "long_context"
+        ]
+      }
+    },
+    {
+      "id": "gemini.few-shot",
+      "kind": "advice",
+      "text": "Google recommends always including few-shot examples, formatted consistently, to show the pattern you want.",
+      "source": "prompting-strategies",
+      "section": "Zero-shot vs few-shot prompts",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "no_examples"
+        ],
+        "task_types": [
+          "extraction",
+          "writing"
+        ]
+      }
+    },
+    {
+      "id": "gemini.response-format",
+      "kind": "advice",
+      "text": "Google's guide recommends specifying constraints on response length and format (table, list, paragraphs, JSON).",
+      "source": "prompting-strategies",
+      "section": "Response format",
+      "evidence": "documented",
+      "severity": "info",
+      "augments": "PE301"
+    },
+    {
+      "id": "gemini.structured-output",
+      "kind": "advice",
+      "text": "For a complex JSON schema, Google recommends the structured output feature rather than describing the schema in the prompt.",
+      "source": "prompting-strategies",
+      "section": "Response format",
+      "evidence": "documented",
+      "severity": "info",
+      "augments": "PE302"
+    },
+    {
+      "id": "gemini.grounding",
+      "kind": "advice",
+      "text": "For recent or obscure facts, Google suggests Grounding with Google Search.",
+      "source": "prompting-strategies",
+      "section": "Grounding and code execution",
+      "evidence": "documented",
+      "severity": "info",
+      "augments": "PE502"
+    },
+    {
+      "id": "gemini.break-down",
+      "kind": "advice",
+      "text": "This prompt asks for several things at once. Google suggests one prompt per instruction, or chaining prompts so each output feeds the next.",
+      "source": "prompting-strategies",
+      "section": "Break down prompts into components",
+      "evidence": "documented",
+      "severity": "info",
+      "when": {
+        "flags": [
+          "multiple_requests"
+        ]
+      }
+    }
+  ],
+  "variants": [
+    {
+      "id": "gemini-3.6-plus",
+      "match": [
+        "^(models/)?gemini-(4|3\\.([6-9]|\\d{2,}))"
+      ],
+      "guidelines": [],
+      "capabilities": [
+        {
+          "name": "sampling_parameters",
+          "summary": "Gemini 4 and Gemini 3.6+ ignore custom temperature, top_p and top_k values; remove them from requests.",
+          "source": "prompting-strategies",
+          "section": "Experiment with model parameters",
+          "evidence": "documented"
+        }
+      ]
+    }
+  ]
+}

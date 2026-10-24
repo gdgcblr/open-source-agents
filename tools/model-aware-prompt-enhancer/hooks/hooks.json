@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/run.py", "hook", "claude-code"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

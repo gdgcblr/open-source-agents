@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "harnesses": [
+    {
+      "id": "api",
+      "display_name": "Direct API call",
+      "mode": "rewrite",
+      "description": "Returns a restructured prompt to send as the user message. The original text is always kept verbatim inside it."
+    },
+    {
+      "id": "chat",
+      "display_name": "Chat UI (copy and paste)",
+      "mode": "rewrite",
+      "description": "Same as api: prints a restructured prompt to paste into a chat app."
+    },
+    {
+      "id": "claude-code",
+      "display_name": "Claude Code (UserPromptSubmit hook, experimental)",
+      "mode": "augment",
+      "default_model_profile": "anthropic-claude",
+      "model_env": ["PROMPT_ENHANCER_MODEL", "ANTHROPIC_MODEL"],
+      "max_context_chars": 10000,
+      "description": "The hook cannot replace the prompt. It only adds context next to the prompt, and shows suggestions to the user as a systemMessage.",
+      "sources": [
+        {"title": "Hooks reference (Claude Code)", "url": "https://code.claude.com/docs/en/hooks"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model-aware-prompt-enhancer"
+version = "0.3.0"
+description = "Diagnose prompts, propose minimal intent-preserving patches with a requirement lock, and measure them. Offline, evidence-graded model profiles."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []  # standard library only at runtime
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+tokens = ["tiktoken>=0.7"]  # optional: exact OpenAI token counts in reports
+
+[project.scripts]
+prompt-enhancer = "prompt_enhancer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+prompt_enhancer = ["profiles/models/*.json", "profiles/harnesses/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["network: hits real documentation URLs (run with: pytest -m network)"]
+addopts = "-m 'not network'"

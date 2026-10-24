@@ -1,0 +1,14 @@
+{
+  "name": "model-aware-prompt-enhancer",
+  "description": "Marketplace for the Model-Aware Prompt Enhancer plugin (GDG Cloud Bengaluru open-source-agents)",
+  "owner": {
+    "name": "GDG Cloud Bengaluru open-source-agents contributors"
+  },
+  "plugins": [
+    {
+      "name": "prompt-enhancer",
+      "source": "./",
+      "description": "Offline prompt diagnostics, intent-preserving patches with a requirement lock, and an MCP server."
+    }
+  ]
+}
