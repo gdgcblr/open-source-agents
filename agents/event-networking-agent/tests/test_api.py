@@ -95,6 +95,11 @@ def test_world_and_demo_endpoints():
     room_after = client.get("/api/me/room", headers=h0).json()
     assert room_after["meetup"] is not None
 
-    assert client.post("/api/demo/reset").json() == {"ok": True}
+    # Reset is organiser-only: no token or a wrong token leaves the event intact
+    assert client.post("/api/demo/reset").status_code == 422
+    assert client.post("/api/demo/reset", headers={"X-Admin-Token": "guess"}).status_code == 403
+    assert client.get("/api/world").json()["round"] == 1
+
+    assert client.post("/api/demo/reset", headers=ADMIN).json() == {"ok": True}
     assert client.get("/api/world").json()["round"] == 0
     assert len(client.get("/api/world").json()["attendees"]) == 0

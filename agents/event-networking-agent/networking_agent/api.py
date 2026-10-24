@@ -245,7 +245,8 @@ def create_app(service: EventService | None = None, admin_token: str | None = No
     def demo_simulate(req: SimulateRequest = SimulateRequest()) -> dict:
         return service.simulate_activity(meet_prob=req.meet_prob, like_prob=req.like_prob)
 
-    @app.post("/api/demo/reset")
+    # Wiping the event is destructive, so unlike the other demo controls it needs the organiser token.
+    @app.post("/api/demo/reset", dependencies=[Depends(admin)])
     def demo_reset() -> dict:
         service.reset()
         return {"ok": True}

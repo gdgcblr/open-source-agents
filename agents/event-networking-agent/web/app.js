@@ -1862,7 +1862,14 @@ document.getElementById('btn-simulate').addEventListener('click', async () => {
 });
 
 document.getElementById('btn-reset').addEventListener('click', async () => {
-  await api('/api/demo/reset', { method: 'POST' });
+  const adminToken = window.prompt('Organiser token (ADMIN_TOKEN) to reset the event:');
+  if (!adminToken) return;
+  try {
+    await api('/api/demo/reset', { method: 'POST', headers: { 'X-Admin-Token': adminToken } });
+  } catch (err) {
+    showToast(err.status === 403 ? 'Reset refused: wrong organiser token.' : `Reset failed: ${err.message}`);
+    return;
+  }
   state.token = null;
   state.me = null;
   state.myRoom = null;

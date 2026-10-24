@@ -8,6 +8,8 @@
 ![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)
 ![Runs offline](https://img.shields.io/badge/API%20key-optional-lightgrey)
 
+**Live demo:** <https://event-networking-agent-646454690406.asia-south1.run.app> (Cloud Run, real Gemini). Sign up, then click **⚡ Quick Demo Setup** to play a round with bots. The demo is shared and kept in memory, so other visitors' avatars show up too, and it may be taken down after the event.
+
 ![The 2D venue map mid-event: rooms have voted to meet and the meetup agent has booked Stage Left for this group](docs/screenshots/05-meetup-booked.png)
 
 ---
@@ -286,7 +288,8 @@ gcloud run deploy event-networking-agent --source . --project $PROJECT --region 
 | `POST /api/me/like` | `X-Attendee-Token` | `{to_id}`, someone you shared a room with |
 | `GET /api/me/connections` | `X-Attendee-Token` | Mutual connections with their contact |
 | `GET /api/world` | none | Public floor state (spots, active rooms, public profiles, stats) for the 2D map |
-| `POST /api/demo/seed`, `/round`, `/simulate`, `/reset` | none | Live demo controls in the UI (seed bots, start round, simulate votes) |
+| `POST /api/demo/seed`, `/round`, `/simulate` | none | Live demo controls in the UI (seed bots, start round, simulate votes) |
+| `POST /api/demo/reset` | `X-Admin-Token` | Wipe the event (the UI's **↺ Reset event** asks for the organiser token) |
 | `POST /api/admin/rounds` | `X-Admin-Token` | Start the next round |
 | `GET /api/admin/stats` | `X-Admin-Token` | Attendees, rooms, meetups, LLM calls/failures |
 | `GET /api/event`, `GET /api/spots` | none | Event name and spots (for drawing the map) |
@@ -406,7 +409,7 @@ The tests cover room sizing, the matchmaker beating random grouping, no repeat p
 - **Matching quality is measured against its own scoring**: "affinity" is a heuristic (interest overlap + complementary goals). There is no real-world evaluation yet of whether these rooms lead to better conversations.
 - **Rate limits**: joins call Gemini once each. On low quota tiers, a rush of sign-ups may hit 429s; those attendees get an offline profile rather than an error.
 - **Model availability**: `gemini-2.5-flash-lite` is cheaper on paper but returned `404 ... no longer available to new users` for a new key in October 2026; `MODEL_NAME` lets you switch.
-- **Demo endpoints are open**: `/api/demo/seed`, `/round`, `/simulate` and `/reset` need no token, so the UI's organiser tools work without setup. Anyone who can reach the server can use them, including resetting the event. For a real event, put the server behind a proxy that blocks `/api/demo/*`, and start rounds with the admin endpoint instead.
+- **Demo endpoints are open**: `/api/demo/seed`, `/round` and `/simulate` need no token, so anyone can try the flow alone from the UI. Anyone who can reach the server can therefore add bots or start a new round. Resetting the event needs the organiser token. For a real event, block `/api/demo/*` at a proxy and start rounds with `/api/admin/rounds`.
 - **No real-time push**: the UI polls the API, so updates can appear a few seconds late.
 - Tested on macOS with Python 3.11 (Chrome, desktop and mobile viewport). Linux should work; Windows is untested. The container was built and deployed with `gcloud run deploy --source` (Cloud Build), not with a local Docker build.
 
