@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "git-commit-agent"
+version = "0.2.0"
+description = "Generates conventional commit messages from staged git diffs using Google ADK and Gemini."
+readme = "README.md"
+authors = [{ name = "pydivenkat" }]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk>=2.11.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+gca = "main:main"
+git-commit-agent = "main:main"

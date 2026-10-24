@@ -1,0 +1,3 @@
+# git-mcp-server runs on the Python 3.10+ standard library with zero external dependencies.
+# Optional: install mcp for clients that manage environments with pip
+mcp>=1.0.0

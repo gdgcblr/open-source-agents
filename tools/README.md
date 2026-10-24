@@ -47,4 +47,5 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [git-mcp-server](./git-mcp-server/) | Lightweight Model Context Protocol (MCP) server exposing safe Git status, diffs, branches, and logs | MCP Server / JSON-RPC | pydivenkat |
+| [changelog-generator](./changelog-generator/) | AI-assisted changelog generator grouping Conventional Commits with Gemini release highlight synthesis | Release Tool / CLI | pydivenkat |
