@@ -1,0 +1,11 @@
+# Environment variables and secrets
+.env
+
+# Python virtual environments and caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Generated reports
+report.md
