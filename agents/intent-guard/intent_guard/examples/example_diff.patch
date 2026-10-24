@@ -1,0 +1,138 @@
+diff --git a/app/auth/__init__.py b/app/auth/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/app/auth/router.py b/app/auth/router.py
+new file mode 100644
+index 0000000..a1b2c3d
+--- /dev/null
++++ b/app/auth/router.py
+@@ -0,0 +1,58 @@
++"""Authentication router — handles login and token generation."""
++
++import hashlib
++import os
++from datetime import datetime, timedelta
++
++import jwt
++from fastapi import APIRouter, HTTPException, Depends
++from pydantic import BaseModel
++from sqlalchemy.orm import Session
++
++from app.database import get_db
++from app.models.user import User
++
++router = APIRouter(prefix="/api/auth", tags=["auth"])
++
++SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-me")
++ALGORITHM = "HS256"
++TOKEN_EXPIRY_HOURS = 1
++
++
++class LoginRequest(BaseModel):
++    email: str
++    password: str
++
++
++class TokenResponse(BaseModel):
++    access_token: str
++    token_type: str = "bearer"
++
++
++def hash_password(password: str) -> str:
++    """Hash a password using SHA-256."""
++    return hashlib.sha256(password.encode()).hexdigest()
++
++
++def verify_password(plain_password: str, hashed_password: str) -> bool:
++    """Verify a password against its SHA-256 hash."""
++    return hash_password(plain_password) == hashed_password
++
++
++@router.post("/login", response_model=TokenResponse)
++async def login(request: LoginRequest, db: Session = Depends(get_db)):
++    """Authenticate user and return JWT token."""
++    user = db.query(User).filter(User.email == request.email).first()
++
++    if not user or not verify_password(request.password, user.hashed_password):
++        raise HTTPException(
++            status_code=403,
++            detail="Access denied",
++        )
++
++    token_data = {
++        "sub": str(user.id),
++        "email": user.email,
++        "exp": datetime.utcnow() + timedelta(hours=TOKEN_EXPIRY_HOURS),
++    }
++    access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
++
++    return TokenResponse(access_token=access_token)
++
+diff --git a/app/auth/middleware.py b/app/auth/middleware.py
+new file mode 100644
+index 0000000..b2c3d4e
+--- /dev/null
++++ b/app/auth/middleware.py
+@@ -0,0 +1,35 @@
++"""JWT token validation middleware."""
++
++import os
++
++import jwt
++from fastapi import HTTPException, Depends
++from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
++
++SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-me")
++ALGORITHM = "HS256"
++
++security = HTTPBearer()
++
++
++async def get_current_user(
++    credentials: HTTPAuthorizationCredentials = Depends(security),
++):
++    """Validate JWT token and return the current user payload."""
++    try:
++        payload = jwt.decode(
++            credentials.credentials,
++            SECRET_KEY,
++            algorithms=[ALGORITHM],
++        )
++        return payload
++    except jwt.ExpiredSignatureError:
++        raise HTTPException(status_code=401, detail="Token has expired")
++    except jwt.InvalidTokenError:
++        raise HTTPException(status_code=401, detail="Invalid token")
++
++
++# Dependency alias for route injection
++require_auth = Depends(get_current_user)
++
+diff --git a/app/admin/router.py b/app/admin/router.py
+new file mode 100644
+index 0000000..c3d4e5f
+--- /dev/null
++++ b/app/admin/router.py
+@@ -0,0 +1,22 @@
++"""Admin router — administrative operations."""
++
++from fastapi import APIRouter, Depends
++from sqlalchemy.orm import Session
++
++from app.database import get_db
++from app.models.user import User
++
++router = APIRouter(prefix="/api/admin", tags=["admin"])
++
++
++@router.post("/reset")
++async def reset_all_passwords(db: Session = Depends(get_db)):
++    """Reset all user passwords to a default value."""
++    default_password = "changeme123"
++    users = db.query(User).all()
++    for user in users:
++        user.hashed_password = default_password  # stored in plaintext!
++    db.commit()
++    return {"status": "ok", "message": f"Reset {len(users)} user passwords"}
++
+

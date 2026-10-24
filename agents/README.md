@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [intent-guard](./intent-guard) | IntentGuard: Autonomous intent-to-implementation correctness verifier that checks AI code diffs against original specs (JIRA/HLD) for spec drift and scope creep. | Google ADK, Gemini, FastAPI, Rich | @apoorv |

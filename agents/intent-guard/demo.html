@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IntentGuard — Cinematic Product Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 25px rgba(99, 102, 241, 0.3), inset 0 0 15px rgba(99, 102, 241, 0.2); }
+      50% { box-shadow: 0 0 50px rgba(99, 102, 241, 0.6), inset 0 0 30px rgba(99, 102, 241, 0.4); }
+    }
+    @keyframes scanBeam {
+      0% { top: 0%; opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { top: 96%; opacity: 0.9; }
+    }
+    @keyframes floatParticle {
+      0% { transform: translateY(0px) scale(0.8); opacity: 0.2; }
+      50% { transform: translateY(-30px) scale(1.2); opacity: 0.6; }
+      100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
+    }
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, #c084fc, transparent);
+      box-shadow: 0 0 20px #818cf8, 0 0 40px #38bdf8;
+      pointer-events: none;
+      animation: scanBeam 2.4s ease-in-out infinite alternate;
+    }
+    .cinematic-stage {
+      perspective: 1400px;
+      transform-style: preserve-3d;
+      transition: all 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glow-badge-red {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    .glow-badge-green {
+      background: rgba(34, 197, 94, 0.18);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    }
+    .apple-gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .apple-accent-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#05060a] text-slate-100 min-h-screen flex flex-col items-center justify-between p-4 selection:bg-indigo-500 selection:text-white font-sans antialiased overflow-hidden">
+
+  <!-- Apple-style Top Bar -->
+  <header class="w-full max-w-6xl flex items-center justify-between py-3 px-6 glass-panel rounded-full my-2 border border-slate-800/80 shadow-2xl z-50">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      </div>
+      <div>
+        <span class="font-bold tracking-tight text-base apple-gradient-text">IntentGuard</span>
+        <span class="text-xs px-2 py-0.5 ml-2 rounded-full bg-indigo-500/20 text-indigo-300 font-mono border border-indigo-500/30">v1.0 • ADK</span>
+      </div>
+    </div>
+
+    <!-- Scene Title Banner -->
+    <div id="scene-indicator-text" class="text-sm font-medium text-slate-300 tracking-wide flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <span id="scene-caption" class="apple-accent-text font-semibold">Scene 1: The Context Shift</span>
+    </div>
+
+    <!-- Playback Control Pills -->
+    <div class="flex items-center gap-2">
+      <button id="prev-btn" class="p-1.5 px-3 rounded-full hover:bg-slate-800 text-xs font-medium text-slate-300 transition border border-slate-800">
+        ◀ Prev
+      </button>
+      <button id="play-pause-btn" class="p-1.5 px-4 rounded-full bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/30 transition flex items-center gap-1.5">
+        <span id="play-icon">❚❚</span> Pause
+      </button>
+      <button id="next-btn" class="p-1.5 px-3 rounded-full hover:bg-slate-800 text-xs font-medium text-slate-300 transition border border-slate-800">
+        Next ▶
+      </button>
+      <button id="speed-btn" class="p-1.5 px-2.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs font-mono text-slate-300 transition border border-slate-700">
+        1x
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Viewport Canvas (The Video / Stage) -->
+  <main class="relative w-full max-w-6xl flex-1 flex items-center justify-center my-2 overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-[#0c0e18] via-[#07080f] to-[#040509] shadow-2xl">
+    
+    <!-- Ambient Background Radial Lighting -->
+    <div id="ambient-light" class="absolute inset-0 pointer-events-none transition-all duration-1000 opacity-60 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/40 via-transparent to-transparent"></div>
+
+    <!-- Camera / 3D Rig -->
+    <div id="camera-rig" class="cinematic-stage w-[92%] max-w-4xl h-[470px] relative transition-transform duration-1000 ease-out">
+
+      <!-- ============================================================ -->
+      <!-- SCENE 1: THE PROMPT & INTENT (JIRA TICKET IN CURSOR)        -->
+      <!-- ============================================================ -->
+      <div id="stage-scene-1" class="absolute inset-0 glass-panel rounded-xl overflow-hidden border border-slate-700/60 shadow-2xl transition-all duration-700 opacity-100">
+        <!-- macOS Window Title Bar -->
+        <div class="h-9 bg-slate-900/90 px-4 flex items-center justify-between border-b border-slate-800">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+          </div>
+          <span class="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            JIRA-1234: JWT Auth Architecture Spec
+          </span>
+          <span class="text-[11px] text-slate-500 font-mono">Cursor IDE • Composer</span>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-6 grid grid-cols-12 gap-6 h-[calc(100%-36px)]">
+          <!-- Left: JIRA Ticket Context -->
+          <div class="col-span-7 flex flex-col justify-between">
+            <div>
+              <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold uppercase tracking-wider mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                Product Requirement Document
+              </div>
+              <h2 class="text-2xl font-bold apple-gradient-text tracking-tight mb-3">Production Authentication Engine</h2>
+              <div class="space-y-2 text-xs text-slate-300 font-mono bg-slate-950/60 p-4 rounded-lg border border-slate-800/80 leading-relaxed">
+                <p><span class="text-indigo-400 font-bold">REQ-1:</span> Endpoint: <code class="text-amber-300">POST /api/auth/login</code></p>
+                <p><span class="text-indigo-400 font-bold">REQ-2:</span> Sign with <span class="bg-indigo-900/60 text-indigo-200 px-1.5 py-0.5 rounded font-bold border border-indigo-500/40">RS256</span> (RSA Keypair)</p>
+                <p><span class="text-indigo-400 font-bold">REQ-3:</span> Hash passwords using <span class="bg-emerald-900/60 text-emerald-200 px-1.5 py-0.5 rounded font-bold border border-emerald-500/40">bcrypt (rounds=12)</span></p>
+                <p><span class="text-indigo-400 font-bold">REQ-4:</span> Rate limiting: <span class="text-amber-300">5 req / 15 min / IP</span> (HTTP 429)</p>
+                <p><span class="text-indigo-400 font-bold">REQ-5:</span> On auth failure: return <span class="text-rose-300">HTTP 401 Unauthorized</span></p>
+              </div>
+            </div>
+            
+            <div class="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <span class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Context fed into AI Coding Assistant
+              </span>
+              <span class="text-slate-500 font-mono">1,420 tokens</span>
+            </div>
+          </div>
+
+          <!-- Right: AI Generating Code -->
+          <div class="col-span-5 bg-slate-950/80 rounded-xl p-4 border border-slate-800/80 flex flex-col justify-between relative overflow-hidden">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span class="text-xs text-slate-400 font-mono">Cursor AI Generating...</span>
+              <span class="flex h-2 w-2 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+              </span>
+            </div>
+
+            <!-- Animated Code Generation Mock -->
+            <div class="space-y-1.5 font-mono text-[11px] text-slate-300 py-3 overflow-hidden">
+              <p class="text-slate-500">// Generating 14 modified files across repository...</p>
+              <p class="text-sky-300">+ app/auth/router.py</p>
+              <p class="text-sky-300">+ app/auth/middleware.py</p>
+              <p class="text-purple-300">+ app/admin/router.py <span class="text-rose-400 text-[10px]">[Unrequested]</span></p>
+              <p class="text-emerald-400 text-xs mt-3 font-semibold">✓ "Code looks plausible. Merging?"</p>
+            </div>
+
+            <div class="bg-indigo-950/50 p-2.5 rounded-lg border border-indigo-500/30 text-center">
+              <span class="text-xs text-indigo-300 font-medium">The Intent-to-Implementation Void</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 2: CAMERA ZOOM IN ON DANGEROUS CODE DEFECTS            -->
+      <!-- ============================================================ -->
+      <div id="stage-scene-2" class="absolute inset-0 glass-panel rounded-xl overflow-hidden border border-rose-500/40 shadow-2xl transition-all duration-700 opacity-0 pointer-events-none">
+        <!-- Title Bar with Zoom Indicator -->
+        <div class="h-9 bg-slate-900/90 px-4 flex items-center justify-between border-b border-rose-900/40">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+          </div>
+          <span class="text-xs text-rose-300 font-mono font-semibold flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-rose-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            MACRO INSPECTION: 3 Critical Misinterpretations Detected
+          </span>
+          <span class="text-xs text-slate-500 font-mono">Zoom: 2.2x</span>
+        </div>
+
+        <div class="p-5 font-mono text-xs space-y-3 bg-[#080912]">
+          <!-- Flaw 1 -->
+          <div class="p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/40 flex items-start justify-between">
+            <div>
+              <span class="text-rose-400 font-bold block mb-1">❌ FLAW 1: Cryptographic Misinterpretation</span>
+              <p class="text-slate-300 text-[11px]"><span class="text-rose-400 font-bold">- password_hash = hashlib.sha256(password.encode()).hexdigest()</span></p>
+              <p class="text-emerald-400 text-[11px]"><span class="text-emerald-400 font-bold">+ MUST USE:</span> bcrypt.hashpw(password, bcrypt.gensalt(rounds=12))</p>
+            </div>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">CWE-328</span>
+          </div>
+
+          <!-- Flaw 2 -->
+          <div class="p-2.5 rounded-lg bg-amber-950/40 border border-amber-500/40 flex items-start justify-between">
+            <div>
+              <span class="text-amber-400 font-bold block mb-1">❌ FLAW 2: Algorithm Downgrade Attack</span>
+              <p class="text-slate-300 text-[11px]"><span class="text-amber-400 font-bold">- jwt.encode(payload, "secret-key", algorithm="HS256")</span></p>
+              <p class="text-emerald-400 text-[11px]"><span class="text-emerald-400 font-bold">+ REQUIRED:</span> jwt.encode(payload, rsa_private_key, algorithm="RS256")</p>
+            </div>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Spec Drift</span>
+          </div>
+
+          <!-- Flaw 3: Scope Creep -->
+          <div class="p-2.5 rounded-lg bg-purple-950/40 border border-purple-500/40 flex items-start justify-between">
+            <div>
+              <span class="text-purple-400 font-bold block mb-1">🚨 FLAW 3: Severe Scope Creep / Backdoor</span>
+              <p class="text-slate-300 text-[11px]"><span class="text-purple-400 font-bold">@app.post("/admin/reset-password-override")</span></p>
+              <p class="text-slate-400 text-[11px]">Unrequested endpoint writing default password <code class="text-rose-300">"changeme123"</code> in plaintext!</p>
+            </div>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Backdoor</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 3: INTENTGUARD SCANNING (2-PASS REASONING SWEEP)        -->
+      <!-- ============================================================ -->
+      <div id="stage-scene-3" class="absolute inset-0 glass-panel rounded-xl overflow-hidden border border-indigo-500/60 shadow-2xl transition-all duration-700 opacity-0 pointer-events-none relative" style="animation: pulseGlow 3s infinite;">
+        <!-- Laser Scanner Bar -->
+        <div class="scan-line"></div>
+
+        <div class="h-9 bg-slate-900/90 px-4 flex items-center justify-between border-b border-indigo-900/40">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500 animate-ping"></span>
+            <span class="text-xs text-indigo-300 font-mono font-semibold">IntentGuard Neural & AST Engine Active</span>
+          </div>
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-mono">Gemini 3.5 Flash</span>
+        </div>
+
+        <div class="p-6 grid grid-cols-2 gap-6 h-[calc(100%-36px)]">
+          <!-- Pass 1: Extraction -->
+          <div class="bg-slate-950/80 rounded-xl p-4 border border-slate-800 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-bold text-sky-400 uppercase tracking-wider block mb-2">PASS 1: Requirement Extraction</span>
+              <div class="space-y-2 text-xs font-mono">
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
+                  <span>REQ-1: Auth Route</span>
+                  <span class="text-emerald-400">Extracted ✓</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
+                  <span>REQ-2: RS256 Tokens</span>
+                  <span class="text-emerald-400">Extracted ✓</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
+                  <span>REQ-3: bcrypt Hashing</span>
+                  <span class="text-emerald-400">Extracted ✓</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
+                  <span>REQ-4: 5 req/15m Limit</span>
+                  <span class="text-emerald-400">Extracted ✓</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-[11px] text-slate-500 font-mono">Deterministic intent mapping • 100% complete</span>
+          </div>
+
+          <!-- Pass 2: Cross Reference -->
+          <div class="bg-slate-950/80 rounded-xl p-4 border border-slate-800 flex flex-col justify-between">
+            <div>
+              <span class="text-xs font-bold text-purple-400 uppercase tracking-wider block mb-2">PASS 2: AST Cross-Reference</span>
+              <div class="space-y-2 text-xs font-mono">
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
+                  <span>check_python_syntax()</span>
+                  <span class="text-emerald-400">Valid AST ✓</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-rose-950/30 border border-rose-800/40">
+                  <span>Password Hash AST</span>
+                  <span class="text-rose-400 font-bold">SHA-256 (Mismatch) ✗</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-rose-950/30 border border-rose-800/40">
+                  <span>JWT Algorithm AST</span>
+                  <span class="text-rose-400 font-bold">HS256 (Mismatch) ✗</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-purple-950/30 border border-purple-800/40">
+                  <span>File Ingress Audit</span>
+                  <span class="text-purple-400 font-bold">Scope Creep Flagged !</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-[11px] text-slate-500 font-mono">AST static inspection & trace evidence matched</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 4: THE APPLE-STYLE AUDIT SCORECARD VERDICT            -->
+      <!-- ============================================================ -->
+      <div id="stage-scene-4" class="absolute inset-0 glass-panel rounded-xl overflow-hidden border border-slate-700/80 shadow-2xl transition-all duration-700 opacity-0 pointer-events-none">
+        <!-- Verdict Banner -->
+        <div class="p-4 bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-950 border-b border-rose-800/50 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <span class="px-3 py-1 rounded-full glow-badge-red text-rose-300 font-black text-sm tracking-wider flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+              VERDICT: FAIL
+            </span>
+            <span class="text-xs text-slate-400 font-mono">Confidence: <span class="text-emerald-400 font-bold">1.00</span></span>
+          </div>
+          <span class="text-xs text-slate-400 font-mono">INTENTGUARD_REPORT.md</span>
+        </div>
+
+        <div class="p-5 overflow-hidden flex flex-col justify-between h-[calc(100%-60px)]">
+          <!-- Traceability Matrix -->
+          <div class="space-y-1.5 text-xs font-mono">
+            <div class="grid grid-cols-12 text-slate-400 border-b border-slate-800 pb-1.5 font-bold text-[11px]">
+              <div class="col-span-2">ID</div>
+              <div class="col-span-4">REQUIREMENT</div>
+              <div class="col-span-3">STATUS</div>
+              <div class="col-span-3">EVIDENCE</div>
+            </div>
+            <div class="grid grid-cols-12 py-1 border-b border-slate-800/40 items-center">
+              <div class="col-span-2 font-bold text-indigo-300">REQ-1</div>
+              <div class="col-span-4 text-slate-200">POST /api/auth/login</div>
+              <div class="col-span-3 text-emerald-400 font-semibold">✅ Implemented</div>
+              <div class="col-span-3 text-slate-400">router.py:46</div>
+            </div>
+            <div class="grid grid-cols-12 py-1 border-b border-slate-800/40 items-center">
+              <div class="col-span-2 font-bold text-indigo-300">REQ-2</div>
+              <div class="col-span-4 text-slate-200">RS256 JWT Signing</div>
+              <div class="col-span-3 text-amber-400 font-semibold">🔄 Misinterpreted</div>
+              <div class="col-span-3 text-slate-400">Found HS256</div>
+            </div>
+            <div class="grid grid-cols-12 py-1 border-b border-slate-800/40 items-center">
+              <div class="col-span-2 font-bold text-indigo-300">REQ-3</div>
+              <div class="col-span-4 text-slate-200">bcrypt Hash (rounds=12)</div>
+              <div class="col-span-3 text-rose-400 font-semibold">🔄 Misinterpreted</div>
+              <div class="col-span-3 text-slate-400">Found SHA-256</div>
+            </div>
+            <div class="grid grid-cols-12 py-1 border-b border-slate-800/40 items-center">
+              <div class="col-span-2 font-bold text-indigo-300">REQ-4</div>
+              <div class="col-span-4 text-slate-200">Rate Limiting (5/15m)</div>
+              <div class="col-span-3 text-rose-400 font-semibold">❌ Missing</div>
+              <div class="col-span-3 text-slate-400">0 lines found</div>
+            </div>
+          </div>
+
+          <!-- Scope Creep Warning Box -->
+          <div class="mt-3 p-3 rounded-lg bg-purple-950/40 border border-purple-500/40 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-purple-400 font-bold">🚨 Scope Creep Quarantined:</span>
+              <span class="text-slate-300 font-mono">app/admin/router.py</span>
+            </div>
+            <span class="text-rose-400 text-[11px] font-semibold">Blocked before PR merge!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 5: NATIVE IN-EDITOR MCP (CURSOR & ANTIGRAVITY)         -->
+      <!-- ============================================================ -->
+      <div id="stage-scene-5" class="absolute inset-0 glass-panel rounded-xl overflow-hidden border border-emerald-500/40 shadow-2xl transition-all duration-700 opacity-0 pointer-events-none">
+        <div class="h-9 bg-slate-900/90 px-4 flex items-center justify-between border-b border-slate-800">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+          </div>
+          <span class="text-xs text-slate-300 font-mono font-semibold flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Model Context Protocol (MCP) • Cursor & Antigravity
+          </span>
+          <span class="text-xs text-indigo-400 font-mono">@intent-guard</span>
+        </div>
+
+        <div class="p-6 flex flex-col justify-between h-[calc(100%-36px)]">
+          <div>
+            <div class="text-xs text-slate-400 mb-2 font-mono">Developer Composer Pane:</div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-sm font-mono text-slate-200 mb-4 flex items-center gap-2 shadow-inner">
+              <span class="text-indigo-400 font-bold">@intent-guard</span>
+              <span>audit my staged changes against JIRA-1234 before I push</span>
+              <span class="w-2 h-4 bg-indigo-400 animate-pulse inline-block"></span>
+            </div>
+
+            <!-- Agent Response -->
+            <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs font-mono">
+              <div class="flex items-center justify-between">
+                <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  IntentGuard MCP Response (Took 2.4s):
+                </span>
+                <span class="text-rose-400 font-bold">Merge Blocked: Needs Revision</span>
+              </div>
+              <p class="text-slate-300 leading-relaxed">
+                Found 2 algorithm misinterpretations and 1 unrequested admin endpoint. 
+                <span class="text-sky-300 underline cursor-pointer">View full INTENTGUARD_REPORT.md scorecard</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Action Callout -->
+          <div class="flex items-center justify-between p-3 rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-xs">
+            <span class="text-indigo-300 font-medium">Zero context switching. Zero broken merges.</span>
+            <span class="text-emerald-400 font-mono font-bold">Pull Request #67 Ready 🚀</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scrubber Timeline Bar at Bottom of Video Viewport -->
+    <div class="absolute bottom-3 left-8 right-8 flex items-center gap-4 z-40">
+      <div class="flex-1 h-1.5 bg-slate-800/80 rounded-full overflow-hidden cursor-pointer" id="scrubber-track">
+        <div id="scrubber-progress" class="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 w-[20%] transition-all duration-300"></div>
+      </div>
+      <span id="time-display" class="text-xs font-mono text-slate-400 w-12 text-right">0:04</span>
+    </div>
+
+  </main>
+
+  <!-- Apple-Style Bottom Scene Selector Pills -->
+  <footer class="w-full max-w-4xl flex items-center justify-center gap-2 py-3 z-50">
+    <button class="scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/30" data-scene="1">
+      1. Intent Void
+    </button>
+    <button class="scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200" data-scene="2">
+      2. Code Flaws (Zoom)
+    </button>
+    <button class="scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200" data-scene="3">
+      3. IntentGuard Scan
+    </button>
+    <button class="scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200" data-scene="4">
+      4. Audit Verdict
+    </button>
+    <button class="scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200" data-scene="5">
+      5. Cursor & MCP
+    </button>
+  </footer>
+
+  <script>
+    // Cinematic Timeline Driver
+    const scenes = [
+      {
+        id: 1,
+        title: "Scene 1: The Context Shift & Intent Void",
+        caption: "15 files generated. But does it match intent?",
+        zoom: "scale(1) translateZ(0px) rotateX(0deg)",
+        duration: 4500,
+      },
+      {
+        id: 2,
+        title: "Scene 2: Zooming In On Silent Defects",
+        caption: "SHA-256 instead of bcrypt. HS256 instead of RS256.",
+        zoom: "scale(1.12) translateZ(40px) rotateX(3deg)",
+        duration: 5000,
+      },
+      {
+        id: 3,
+        title: "Scene 3: IntentGuard 2-Pass Neural Sweep",
+        caption: "Extracting discrete specs & scanning AST syntax.",
+        zoom: "scale(1.04) translateZ(20px) rotateX(-2deg)",
+        duration: 4800,
+      },
+      {
+        id: 4,
+        title: "Scene 4: The Audit Scorecard Verdict",
+        caption: "FAIL: Quarantined before dangerous merge.",
+        zoom: "scale(1.08) translateZ(30px) rotateX(1deg)",
+        duration: 5200,
+      },
+      {
+        id: 5,
+        title: "Scene 5: In-Editor Model Context Protocol",
+        caption: "@intent-guard right inside Cursor & Antigravity.",
+        zoom: "scale(1) translateZ(0px) rotateX(0deg)",
+        duration: 5000,
+      }
+    ];
+
+    let currentSceneIdx = 0;
+    let isPlaying = true;
+    let playbackSpeed = 1.0;
+    let sceneTimer = null;
+    let startTime = Date.now();
+
+    const cameraRig = document.getElementById("camera-rig");
+    const sceneCaption = document.getElementById("scene-caption");
+    const playPauseBtn = document.getElementById("play-pause-btn");
+    const playIcon = document.getElementById("play-icon");
+    const speedBtn = document.getElementById("speed-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const scrubberProgress = document.getElementById("scrubber-progress");
+    const timeDisplay = document.getElementById("time-display");
+    const sceneTabs = document.querySelectorAll(".scene-tab");
+
+    function renderScene(idx) {
+      currentSceneIdx = idx;
+      const s = scenes[idx];
+
+      // Update camera 3D transform (Apple-style macro zoom)
+      cameraRig.style.transform = s.zoom;
+
+      // Update captions
+      sceneCaption.innerText = s.title + " — " + s.caption;
+
+      // Show active stage, hide others
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById(`stage-scene-${i}`);
+        if (i === s.id) {
+          el.style.opacity = "1";
+          el.style.pointerEvents = "auto";
+        } else {
+          el.style.opacity = "0";
+          el.style.pointerEvents = "none";
+        }
+      }
+
+      // Update bottom navigation pills
+      sceneTabs.forEach(tab => {
+        const tId = parseInt(tab.getAttribute("data-scene"));
+        if (tId === s.id) {
+          tab.className = "scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/30";
+        } else {
+          tab.className = "scene-tab px-3.5 py-1.5 rounded-full text-xs font-medium transition border bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200";
+        }
+      });
+
+      // Update scrubber
+      const pct = ((idx + 1) / scenes.length) * 100;
+      scrubberProgress.style.width = pct + "%";
+      timeDisplay.innerText = `0:0${(idx + 1) * 4}`;
+    }
+
+    function scheduleNextScene() {
+      if (sceneTimer) clearTimeout(sceneTimer);
+      if (!isPlaying) return;
+
+      const dur = scenes[currentSceneIdx].duration / playbackSpeed;
+      sceneTimer = setTimeout(() => {
+        const nextIdx = (currentSceneIdx + 1) % scenes.length;
+        renderScene(nextIdx);
+        scheduleNextScene();
+      }, dur);
+    }
+
+    // Controls
+    playPauseBtn.addEventListener("click", () => {
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        playPauseBtn.innerHTML = '<span id="play-icon">❚❚</span> Pause';
+        scheduleNextScene();
+      } else {
+        playPauseBtn.innerHTML = '<span id="play-icon">▶</span> Play';
+        if (sceneTimer) clearTimeout(sceneTimer);
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      currentSceneIdx = (currentSceneIdx - 1 + scenes.length) % scenes.length;
+      renderScene(currentSceneIdx);
+      if (isPlaying) scheduleNextScene();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentSceneIdx = (currentSceneIdx + 1) % scenes.length;
+      renderScene(currentSceneIdx);
+      if (isPlaying) scheduleNextScene();
+    });
+
+    speedBtn.addEventListener("click", () => {
+      if (playbackSpeed === 1.0) playbackSpeed = 1.5;
+      else if (playbackSpeed === 1.5) playbackSpeed = 2.0;
+      else playbackSpeed = 1.0;
+      speedBtn.innerText = playbackSpeed + "x";
+      if (isPlaying) scheduleNextScene();
+    });
+
+    sceneTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        const tId = parseInt(tab.getAttribute("data-scene"));
+        renderScene(tId - 1);
+        if (isPlaying) scheduleNextScene();
+      });
+    });
+
+    // Start timeline
+    renderScene(0);
+    scheduleNextScene();
+  </script>
+</body>
+</html>
