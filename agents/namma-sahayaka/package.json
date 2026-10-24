@@ -1,0 +1,37 @@
+{
+  "name": "namma-sahayaka",
+  "version": "1.0.0",
+  "description": "Autonomous AI Civic Grievance & Ward Buddy for Bengaluru citizens and techies, with Google Gemini 2.5 Flash and automated evaluation harness",
+  "main": "dist/cli.js",
+  "type": "module",
+  "bin": {
+    "namma-sahayaka": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "demo": "node dist/cli.js --demo",
+    "eval": "node dist/eval/benchmark.js",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "keywords": [
+    "ai-agent",
+    "gemini",
+    "google-genai",
+    "bengaluru",
+    "civic-agent",
+    "kannada",
+    "evals",
+    "ai-evaluation"
+  ],
+  "author": "Pranav N (GDG Cloud Bengaluru Contributor)",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "typescript": "^5.7.3"
+  }
+}

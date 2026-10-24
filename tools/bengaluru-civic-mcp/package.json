@@ -1,0 +1,37 @@
+{
+  "name": "bengaluru-civic-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server providing Bengaluru civic jurisdiction lookup, triage, and bilingual Kannada complaint generation",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "bengaluru-civic-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "cli": "node dist/index.js --cli",
+    "test": "node --test dist/test/*.test.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "bengaluru",
+    "civic",
+    "bbmp",
+    "bescom",
+    "bwssb",
+    "kannada",
+    "agent-tools"
+  ],
+  "author": "GDG Cloud Bengaluru Community Contributor",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "typescript": "^5.7.3"
+  }
+}

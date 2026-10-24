@@ -1,0 +1,257 @@
+{
+  "timestamp": "2026-10-24T07:11:37.538Z",
+  "event": "GDG Cloud Bengaluru - Road to DevFest (FORK. BUILD. MERGE.)",
+  "venue": "Google Ananta, Mahadevapura, Bengaluru",
+  "summary": {
+    "totalCases": 10,
+    "agencyAccuracy": "100.0%",
+    "wardAccuracy": "100.0%",
+    "severityAccuracy": "100.0%",
+    "bilingualRate": "100.0%",
+    "dispatchRate": "100.0%",
+    "zeroHallucinationRate": "100%",
+    "avgLatencyMs": 0.1
+  },
+  "testResults": [
+    {
+      "id": "TC-01",
+      "name": "Mahadevapura Waterlogging (Event Venue Context)",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BBMP",
+        "actual": "BBMP",
+        "match": true
+      },
+      "ward": {
+        "expected": 82,
+        "actual": 82,
+        "match": true
+      },
+      "severity": {
+        "expected": "critical",
+        "actual": "critical",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 253,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-02",
+      "name": "HSR Layout 27th Main Pothole (Accident Hazard)",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BBMP",
+        "actual": "BBMP",
+        "match": true
+      },
+      "ward": {
+        "expected": 174,
+        "actual": 174,
+        "match": true
+      },
+      "severity": {
+        "expected": "critical",
+        "actual": "critical",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 253,
+      "latencyMs": 1
+    },
+    {
+      "id": "TC-03",
+      "name": "Indiranagar Power Outage (Kanglish)",
+      "language": "Kanglish",
+      "status": "PASS",
+      "agency": {
+        "expected": "BESCOM",
+        "actual": "BESCOM",
+        "match": true
+      },
+      "ward": {
+        "expected": 80,
+        "actual": 80,
+        "match": true
+      },
+      "severity": {
+        "expected": "moderate",
+        "actual": "moderate",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 222,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-04",
+      "name": "Bellandur Contaminated Kaveri Water",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BWSSB",
+        "actual": "BWSSB",
+        "match": true
+      },
+      "ward": {
+        "expected": 150,
+        "actual": 150,
+        "match": true
+      },
+      "severity": {
+        "expected": "critical",
+        "actual": "critical",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 243,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-05",
+      "name": "Koramangala 4th Block Sewage Overflow",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BWSSB",
+        "actual": "BWSSB",
+        "match": true
+      },
+      "ward": {
+        "expected": 151,
+        "actual": 151,
+        "match": true
+      },
+      "severity": {
+        "expected": "critical",
+        "actual": "critical",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 231,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-06",
+      "name": "Whitefield Streetlight Dark Stretch",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BESCOM",
+        "actual": "BESCOM",
+        "match": true
+      },
+      "ward": {
+        "expected": 84,
+        "actual": 84,
+        "match": true
+      },
+      "severity": {
+        "expected": "standard",
+        "actual": "standard",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 242,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-07",
+      "name": "Hebbal Flyover Traffic Signal Breakdown",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BTP",
+        "actual": "BTP",
+        "match": true
+      },
+      "ward": {
+        "expected": 7,
+        "actual": 7,
+        "match": true
+      },
+      "severity": {
+        "expected": "moderate",
+        "actual": "moderate",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 236,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-08",
+      "name": "Malleswaram Drinking Water Scarcity (Kannada)",
+      "language": "Kannada",
+      "status": "PASS",
+      "agency": {
+        "expected": "BWSSB",
+        "actual": "BWSSB",
+        "match": true
+      },
+      "ward": {
+        "expected": 45,
+        "actual": 45,
+        "match": true
+      },
+      "severity": {
+        "expected": "critical",
+        "actual": "critical",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 226,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-09",
+      "name": "BTM Layout PIN Code 560076 Garbage Dump",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BBMP",
+        "actual": "BBMP",
+        "match": true
+      },
+      "ward": {
+        "expected": 176,
+        "actual": 176,
+        "match": true
+      },
+      "severity": {
+        "expected": "moderate",
+        "actual": "moderate",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 238,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC-10",
+      "name": "Basavanagudi Live Sparking Wire (Emergency)",
+      "language": "English",
+      "status": "PASS",
+      "agency": {
+        "expected": "BESCOM",
+        "actual": "BESCOM",
+        "match": true
+      },
+      "ward": {
+        "expected": 154,
+        "actual": 154,
+        "match": true
+      },
+      "severity": {
+        "expected": "critical",
+        "actual": "critical",
+        "match": true
+      },
+      "bilingual": true,
+      "tweetLength": 239,
+      "latencyMs": 0
+    }
+  ]
+}
