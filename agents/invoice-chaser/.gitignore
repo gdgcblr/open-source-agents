@@ -41,3 +41,7 @@ Thumbs.db
 data/
 *.db
 *.db-journal
+.adk/
+
+# Eval results contain model outputs; commit a report deliberately if you want to share it
+evals/results/

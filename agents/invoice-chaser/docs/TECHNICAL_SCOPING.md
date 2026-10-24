@@ -347,3 +347,22 @@ agents/invoice-chaser/
 | Drafter cases | 30 | 10 |
 | Reply classifier | 50 | 15 (only if G is built) |
 | E2E scenarios | S1–S9 | S1, S2, S3, S7, and S8 run against a bank-narration injection (the reply version needs G) |
+
+---
+
+## 12. Implementation notes (as built, 2026-10-24)
+
+Where the build differs from the plan above, and why.
+
+| Plan | As built | Why |
+|---|---|---|
+| Orchestrator may import payments | Imports are **owner-only** (CLI) | A file path chosen by the LLM is an arbitrary-file-read risk; the agent works on data the owner imported |
+| Sub-agents return Pydantic `output_schema` | Sub-agents return a short text summary; the **tool-call arguments** are the structured contract (MCP JSON schemas) and the ledger state is the source of truth | Keeps one source of truth; nothing downstream parses the sub-agents' prose |
+| Sub-agents via `AgentTool` / transfer | ADK 2.x `mode="single_turn"` sub-agents, which ADK exposes to the root as tools taking a `request` string | The ADK 2.x recommended way; control always returns to the root |
+| `adk eval` evalsets | Custom harness (`evals/run_evals.py`) driving the ADK runner, scored from ledger state | The properties that matter (correct auto-applies, idempotency, grounding of amounts) are about final state, not tool-call trajectories; trajectory matching would also pin incidental call order |
+| Confidence threshold applied by the agent | `propose_match` always records a proposal; the **ledger** decides auto-apply vs confirmation from amount signal + name confidence + ambiguity | The caller cannot force an auto-apply |
+| Policy-blocked reminders | Stored as `DROPPED` with reasons (visible in run report) | Shows the owner why a client wasn't chased |
+| Instructions as strings | Instructions passed as callables | ADK substitutes `{name}` placeholders from session state in string instructions, which would break the reminder slot names |
+| Mock mode | `tests/mock_llm.py` `ScriptedLlm` (an ADK `BaseLlm`) used by the flow and harness tests | Exercises the real runner, callbacks and MCP subprocess without a key |
+
+Defence in depth, in order: per-agent `McpToolset(tool_filter=…)` → `before_tool_callback` allow-list (returns `TOOL_NOT_ALLOWED`) → MCP server bound to role `agent` (owner actions not exposed) → `Ledger(actor="agent")` (`FORBIDDEN`) → validation and state machines → invariants checked before every commit.
