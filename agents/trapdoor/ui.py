@@ -70,7 +70,14 @@ async def run_evaluation():
             ],
         })
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        err = str(e)
+        if "429" in err or "RESOURCE_EXHAUSTED" in err or "quota" in err.lower():
+            return JSONResponse(status_code=429, content={
+                "error": "API quota exhausted (free tier: 20 requests/day). "
+                         "Wait ~22 hours or add a paid API key. "
+                         "See EVIDENCE.md for recorded live run results."
+            })
+        return JSONResponse(status_code=500, content={"error": err})
 
 
 @app.get("/scenarios")
