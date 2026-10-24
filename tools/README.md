@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`mcp-gstin-toolkit`](mcp-gstin-toolkit/) | Validate Indian GSTINs (checksum, state, PAN) and audit GST CSV feeds for mismatches and inconsistent spellings | MCP server (Python) + CLI | Mirakbar |

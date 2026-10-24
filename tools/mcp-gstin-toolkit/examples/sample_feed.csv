@@ -1,0 +1,16 @@
+invoice_number,supplier_name,supplier_gstin,supplier_state,country
+INV-1001,Sample Residency Bengaluru,29AAACZ0001A1Z4,Karnataka,India
+INV-1002,Sample Residency Bengaluru,29AAACZ0001A1Z4,KA,India
+INV-1003,Demo Suites Chennai,33AAFCZ0002B1Z7,Uttar Pradesh,India
+INV-1004,Demo Suites Chennai,33AAFCZ0002B1Z7,Tamil Nadu,India
+INV-1005,Example Inn Mumbai,27AAACZ0003C1Z0,Maharashtra,India
+INV-1006,Example Inn Pune,27AAACZ0003C2Z1,Maharashtra,INDIA
+INV-1007,Placeholder Hotel Bhubaneswar,21AABCZ0004D1ZA,Orissa,India
+INV-1008,Test Lodge Delhi,,Delhi,India
+INV-1009,Mock Airways (Dubai station),07AAGCZ0005E1ZS,Delhi,UAE
+INV-1010,Mock Airways (Dubai station),07AAGCZ0005E1ZS,New Delhi,United Arab Emirates
+INV-1011,Fixture Stay Hyderabad,36AAACZ0006F1ZU,Telangana,India
+INV-1012,Fixture Stay Hyderabad,36AAACZ0006F1ZU,Uttar Pradesh,India
+INV-1013,Sample Grand Kochi,32AAACZ0007G1ZZ,Uttar Pradesh,India
+INV-1014,Demo Stay Jaipur,08AAFCZ0008H1ZI,Uttar Pradesh,India
+INV-1015,Example Hotel Kolkata,19AABCZ0009J1ZD,Uttar Pradesh,India
