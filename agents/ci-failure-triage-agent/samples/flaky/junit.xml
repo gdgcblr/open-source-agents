@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="checkout-service" tests="3" failures="0">
+  <testcase classname="tests.test_cart" name="test_add_item" time="0.02"/>
+  <testcase classname="tests.test_checkout" name="test_payment_confirmation_polls_until_done" time="5.3">
+    <flakyFailure message="TimeoutError: confirmation not received within 5s" type="TimeoutError">Traceback: poll_confirmation() waited 5s</flakyFailure>
+  </testcase>
+  <testcase classname="tests.test_cart" name="test_remove_item" time="0.01"/>
+</testsuite>

@@ -1,0 +1,4 @@
+pydantic==2.14.1
+defusedxml==0.7.1
+google-genai==2.33.0
+pytest==9.1.1

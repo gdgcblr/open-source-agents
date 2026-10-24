@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="profile-service" tests="1" failures="1">
+  <testcase classname="tests.test_profile" name="test_update_avatar" time="0.4">
+    <failure message="KeyError: 'avatar_url'" type="KeyError">Traceback (most recent call last):
+  File "profile.py", line 88, in update_avatar
+    return payload["avatar_url"]
+KeyError: 'avatar_url'</failure>
+  </testcase>
+</testsuite>

@@ -1,0 +1,4 @@
+[10:01:02] collected 3 items
+[10:01:08] tests/test_checkout.py::test_payment_confirmation_polls_until_done FAILED (attempt 1)
+[10:01:14] tests/test_checkout.py::test_payment_confirmation_polls_until_done PASSED (attempt 2)
+[10:01:14] 3 passed, 1 rerun

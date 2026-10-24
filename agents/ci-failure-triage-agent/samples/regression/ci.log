@@ -1,0 +1,3 @@
+[11:20:01] collected 3 items
+[11:20:02] tests/test_pricing.py::test_discount_applies_to_total FAILED
+[11:20:02] 1 failed, 2 passed

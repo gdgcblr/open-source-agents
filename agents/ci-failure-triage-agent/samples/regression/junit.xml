@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="pricing-service" tests="3" failures="1">
+  <testcase classname="tests.test_pricing" name="test_discount_applies_to_total" time="0.03">
+    <failure message="AssertionError: expected 90.0 but got 100.0" type="AssertionError">assert apply_discount(100, 0.10) == 90.0
+AssertionError: expected: 90.0, actual: 100.0</failure>
+  </testcase>
+  <testcase classname="tests.test_pricing" name="test_tax_rounding" time="0.01"/>
+  <testcase classname="tests.test_pricing" name="test_currency_format" time="0.01"/>
+</testsuite>

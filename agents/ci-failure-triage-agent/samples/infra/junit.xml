@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="orders-api" tests="2" failures="2">
+  <testcase classname="tests.test_orders" name="test_fetch_order" time="30.0">
+    <failure message="ConnectionError: Connection reset by peer" type="ConnectionError">requests.exceptions.ConnectionError: Connection reset by peer while calling https://registry.internal.example</failure>
+  </testcase>
+  <testcase classname="tests.test_orders" name="test_list_orders" time="30.0">
+    <error message="Setup failed" type="RuntimeError">fixture 'db' setup failed</error>
+  </testcase>
+</testsuite>
