@@ -1,0 +1,48 @@
+
+{
+  "incident": {
+    "id": "EMG-1001",
+    "severity": "critical",
+    "location": "Central Market",
+    "required_hospital_capabilities": [
+  "emergency"
+]
+  },
+  "ambulances": [
+    {
+      "id": "AMB-01",
+      "location": "Central Station",
+      "available": true,
+      "capabilities": ["basic-life-support"],
+      "estimated_travel_minutes": 5
+    },
+    {
+      "id": "AMB-02",
+      "location": "City Hospital",
+      "available": true,
+      "capabilities": ["basic-life-support", "advanced-life-support"],
+      "estimated_travel_minutes": 8
+    },
+    {
+      "id": "AMB-03",
+      "location": "North District",
+      "available": false,
+      "capabilities": ["basic-life-support", "advanced-life-support"],
+      "estimated_travel_minutes": 3
+    }
+  ],
+  "hospitals": [
+    {
+      "id": "HOSP-01",
+      "name": "Central General",
+      "available_capabilities": ["emergency", "critical-care"],
+      "estimated_travel_minutes": 6
+    },
+    {
+      "id": "HOSP-02",
+      "name": "North Medical Center",
+      "available_capabilities": ["emergency"],
+      "estimated_travel_minutes": 4
+    }
+  ]
+}
