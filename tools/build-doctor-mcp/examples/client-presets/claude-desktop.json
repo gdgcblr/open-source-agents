@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "build-doctor": {
+      "command": "python",
+      "args": ["-m", "build_doctor_mcp.server"],
+      "env": {
+        "BUILD_DOCTOR_ALLOWED_ROOT": "/absolute/path/to/your/workspace"
+      }
+    }
+  }
+}
