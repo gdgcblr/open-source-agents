@@ -21,10 +21,13 @@ def format_report(report: dict) -> str:
     lines.append("")
 
     for result in report["results"]:
-        lines.append(f"[{result['status']}] {result['title']}")
-        lines.append(f"  Expected: {result['category']}")
-        lines.append(f"  Reason: {result['reason']}")
-        lines.append(f"  Observed: {result['observed_response'][:180]}")
+        expected = result.get("expected_behavior") or result.get("category") or "Not specified"
+        actual = result.get("actual_response") or result.get("observed_response") or "<empty response>"
+        lines.append(f"Scenario: {result['title']}")
+        lines.append(f"Expected behavior: {expected}")
+        lines.append(f"Actual model response: {actual}")
+        lines.append(f"Judgment: {result['status']}")
+        lines.append(f"Explanation: {result['reason']}")
         lines.append("")
 
     return "\n".join(lines).rstrip()

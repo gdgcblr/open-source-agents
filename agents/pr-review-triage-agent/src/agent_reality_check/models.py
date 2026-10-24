@@ -30,6 +30,8 @@ class EvaluationResult:
     reason: str
     observed_response: str
     pass_percentage: float = 0.0
+    expected_behavior: str = ""
+    actual_response: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
