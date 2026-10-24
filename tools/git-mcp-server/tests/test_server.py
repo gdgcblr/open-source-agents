@@ -62,6 +62,26 @@ class TestGitMcpServer(unittest.TestCase):
         content = res["result"]["content"][0]["text"]
         self.assertIn("feat/git-commit-agent", content)
 
+    def test_prompts_list_and_get(self):
+        # 1. prompts/list
+        req = {"jsonrpc": "2.0", "id": 10, "method": "prompts/list"}
+        res = server.handle_jsonrpc_message(req)
+        names = [p["name"] for p in res["result"]["prompts"]]
+        self.assertIn("generate-commit-message", names)
+        self.assertIn("review-pr-changes", names)
+
+        # 2. prompts/get
+        get_req = {
+            "jsonrpc": "2.0",
+            "id": 11,
+            "method": "prompts/get",
+            "params": {"name": "generate-commit-message", "arguments": {"hint": "test hint"}},
+        }
+        get_res = server.handle_jsonrpc_message(get_req)
+        msg_text = get_res["result"]["messages"][0]["content"]["text"]
+        self.assertIn("Conventional Commit", msg_text)
+        self.assertIn("test hint", msg_text)
+
     def test_unknown_method(self):
         req = {"jsonrpc": "2.0", "id": 99, "method": "non_existent_method"}
         res = server.handle_jsonrpc_message(req)

@@ -102,9 +102,21 @@ SENSITIVE_FILENAMES = [
 ]
 
 
+def shannon_entropy(s: str) -> float:
+    """Calculates the Shannon entropy of a string."""
+    import math
+    from collections import Counter
+    if not s:
+        return 0.0
+    counts = Counter(s)
+    length = len(s)
+    return -sum((cnt / length) * math.log2(cnt / length) for cnt in counts.values())
+
+
 def check_staged_for_secrets() -> list[str]:
     """
     Scans staged filenames and added diff lines for potential credentials or secrets.
+    Uses both multi-vendor regex signatures and Shannon entropy heuristics (H >= 4.0).
     Returns a list of warning descriptions.
     """
     warnings = []
@@ -137,11 +149,25 @@ def check_staged_for_secrets() -> list[str]:
             lower = added_text.lower()
             if "example" in lower or "your_" in lower or "placeholder" in lower:
                 continue
+            
+            # A. Known Regex Signatures
+            matched = False
             for pat, desc in SECRET_PATTERNS:
                 if re.search(pat, added_text):
                     snippet = added_text[:50] + "..." if len(added_text) > 50 else added_text
                     warnings.append(f"Possible {desc} detected: {snippet}")
+                    matched = True
                     break
+            
+            # B. Mathematical Shannon Entropy Check (catches custom high-entropy secrets)
+            if not matched:
+                tokens = re.findall(r"[A-Za-z0-9_\-]{24,}", added_text)
+                for tok in tokens:
+                    if not any(k in tok.lower() for k in ["http", "github", "example", "placeholder"]):
+                        if shannon_entropy(tok) >= 4.0:
+                            snippet = tok[:20] + "..." if len(tok) > 20 else tok
+                            warnings.append(f"High-entropy token detected (possible unknown secret): {snippet}")
+                            break
 
     return warnings
 

@@ -208,6 +208,26 @@ TOOLS_METADATA = [
 ]
 
 
+PROMPTS_METADATA = [
+    {
+        "name": "generate-commit-message",
+        "description": "Analyzes current staged Git changes and prompts for a Conventional Commit message.",
+        "arguments": [
+            {
+                "name": "hint",
+                "description": "Optional context or hint for the commit.",
+                "required": False,
+            }
+        ],
+    },
+    {
+        "name": "review-pr-changes",
+        "description": "Analyzes working tree diff and requests a comprehensive security and quality code review.",
+        "arguments": [],
+    },
+]
+
+
 def dispatch_tool(name: str, arguments: Dict[str, Any]) -> str:
     """Dispatches tool execution by name."""
     repo_path = arguments.get("repo_path", ".")
@@ -258,6 +278,7 @@ def handle_jsonrpc_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {
                     "tools": {},
+                    "prompts": {},
                 },
                 "serverInfo": {
                     "name": SERVER_NAME,
@@ -265,6 +286,68 @@ def handle_jsonrpc_message(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 },
             },
         }
+
+    if method == "prompts/list":
+        return {
+            "jsonrpc": "2.0",
+            "id": msg_id,
+            "result": {
+                "prompts": PROMPTS_METADATA,
+            },
+        }
+
+    if method == "prompts/get":
+        params = msg.get("params", {})
+        prompt_name = params.get("name")
+        args = params.get("arguments", {})
+        if prompt_name == "generate-commit-message":
+            staged_diff = tool_git_diff(staged=True)
+            status_text = tool_git_status()
+            user_hint = args.get("hint", "")
+            prompt_text = (
+                f"Please generate a Conventional Commit message for these staged changes.\n\n"
+                f"Status:\n{status_text}\n\nDiff:\n{staged_diff}\n"
+            )
+            if user_hint:
+                prompt_text += f"\nUser Hint: {user_hint}"
+            return {
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "result": {
+                    "description": "Conventional Commit generation prompt",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {"type": "text", "text": prompt_text},
+                        }
+                    ],
+                },
+            }
+        elif prompt_name == "review-pr-changes":
+            diff_text = tool_git_diff(staged=False)
+            prompt_text = (
+                f"Please conduct a comprehensive code review focusing on OWASP security, "
+                f"performance, and code quality on this diff:\n\n{diff_text}"
+            )
+            return {
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "result": {
+                    "description": "Code review prompt",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": {"type": "text", "text": prompt_text},
+                        }
+                    ],
+                },
+            }
+        else:
+            return {
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "error": {"code": -32602, "message": f"Prompt '{prompt_name}' not found"},
+            }
 
     if method == "tools/list":
         return {
