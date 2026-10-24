@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [contribution-reviewer](contribution-reviewer/) | Reviews an `agents/` or `tools/` contribution against the PR checklist and writes maintainer-style feedback | Google ADK, Gemini, Python | [@naveenam-dev](https://github.com/naveenam-dev) |
