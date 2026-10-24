@@ -1,0 +1,16 @@
+{
+  "repository": "synthetic-fixture/retry-limit-bug",
+  "synthetic": true,
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "2222222222222222222222222222222222222222",
+  "issue_title": "Issue #42: Enforce bounded retry limit in retry_request",
+  "issue_file": "issue.md",
+  "pr_title": "PR #43: Add retry loop and validation to retry_request",
+  "pr_file": "pr.md",
+  "labels": ["bug", "reliability", "synthetic-fixture"],
+  "diff_file": "diff.patch",
+  "source_files": ["src/retry_client.py"],
+  "test_files": ["tests/test_retry_client.py"],
+  "expected_verdict": "CHANGES_REQUESTED"
+}
+

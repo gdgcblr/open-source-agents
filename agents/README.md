@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [patchproof](patchproof/) | Evidence-driven, multi-agent software-change verification system with append-only evidence ledger and deterministic AST checks. | Python 3.11+, Pydantic v2, Multi-Agent Orchestrator | [@CaptnSalazar](https://github.com/CaptnSalazar) |

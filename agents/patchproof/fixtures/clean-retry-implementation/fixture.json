@@ -1,0 +1,16 @@
+{
+  "repository": "synthetic-fixture/clean-retry-implementation",
+  "synthetic": true,
+  "base_sha": "3333333333333333333333333333333333333333",
+  "head_sha": "4444444444444444444444444444444444444444",
+  "issue_title": "Issue #42: Enforce bounded retry limit in retry_request",
+  "issue_file": "issue.md",
+  "pr_title": "PR #44: Correctly bound retry loop and add boundary exhaustion tests",
+  "pr_file": "pr.md",
+  "labels": ["bug", "reliability", "clean-control", "synthetic-fixture"],
+  "diff_file": "diff.patch",
+  "source_files": ["src/retry_client.py"],
+  "test_files": ["tests/test_retry_client.py"],
+  "expected_verdict": "READY_FOR_HUMAN_REVIEW"
+}
+
