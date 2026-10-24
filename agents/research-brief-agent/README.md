@@ -116,13 +116,16 @@ npx --yes @grok/agent-sdk@0.2.29 eval --dir . --list
 npx --yes @grok/agent-sdk@0.2.29 eval --dir .
 ```
 
-Optional NVIDIA GLM smoke (OpenAI-compatible **integrate** API — validates report **shape** only; does not run BDK tool-calling evals):
+Optional generic smoke test (any OpenAI-compatible endpoint — validates report **shape** only; does not run BDK tool-calling evals):
 
 ```bash
 pip install -r requirements-dev.txt
-# Set NVIDIA_API_KEY in .env or your shell (never commit)
-npm run fixture:save
-python scripts/nvidia_smoke.py --fixture-json .agent-serve/nvidia-fixture.json
+# Set SMOKE_* vars in your shell (never commit the key):
+#   SMOKE_API_KEY=<your-key>
+#   SMOKE_BASE_URL=https://integrate.api.nvidia.com/v1  # or any OpenAI-compatible URL
+#   SMOKE_MODEL=z-ai/glm-5.3                            # or any model ID
+npm run fixture:save      # generates .agent-serve/fixture.json
+npm run smoke             # runs scripts/smoke_test.py
 ```
 
 ---
@@ -182,8 +185,8 @@ npx --yes @grok/agent-sdk@0.2.29 eval --dir . --tags smoke
 - No autonomous web search; the model only fetches URLs the user provides.
 - `fetch_source` caps response size (256 KB) and blocks localhost/private IP targets.
 - HTML pages are stripped to plain text; complex layouts may lose structure.
-- Official `agent-sdk eval` requires **CURSOR_API_KEY** (NVIDIA/OpenAI keys cannot substitute — evals run the real Cursor agent loop with tools).
-- Optional `scripts/nvidia_smoke.py` checks markdown shape via NVIDIA `integrate.api.nvidia.com` using fixture text from `read-bundled-source`.
+- Official `agent-sdk eval` requires **CURSOR_API_KEY** (smoke-test keys cannot substitute — evals run the real Cursor agent loop with tools).
+- Optional `scripts/smoke_test.py` checks markdown shape via any OpenAI-compatible endpoint; configure via `SMOKE_API_KEY`, `SMOKE_BASE_URL`, `SMOKE_MODEL`.
 - Tested on Windows 10 and Node 22; Bun is unsupported by the Agent SDK harness.
 
 ---

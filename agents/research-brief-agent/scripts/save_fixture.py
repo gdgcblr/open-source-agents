@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Helper: run the agent-sdk tool call and save clean JSON fixture.
+save_fixture.py — Saves a clean JSON fixture for the smoke test.
+
+Calls the agent-sdk `read-bundled-source` tool and writes the result to
+.agent-serve/fixture.json, which smoke_test.py reads.
+
 Usage (from agents/research-brief-agent):
     python scripts/save_fixture.py
 """
@@ -9,10 +13,13 @@ import json
 import os
 import sys
 
-# Always run from the agent root dir
+# Always run from the agent root dir regardless of where the script is invoked
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.makedirs(os.path.join(AGENT_DIR, ".agent-serve"), exist_ok=True)
+OUT_PATH = os.path.join(AGENT_DIR, ".agent-serve", "fixture.json")
 
+os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
+
+# Use shell=True so Windows can resolve `npx` via PATH
 cmd = (
     'npx --yes @grok/agent-sdk@0.2.29 tool call read-bundled-source '
     '--dir . '
@@ -28,17 +35,17 @@ result = subprocess.run(
     cwd=AGENT_DIR,
 )
 
-# The JSON output may be multi-line; find the block starting with '{'
+# The JSON may be multi-line; find the block starting with '{'
 stdout = result.stdout
 json_start = stdout.find("{")
 if json_start == -1:
     print("ERROR: no JSON found in output:", file=sys.stderr)
     print("STDOUT:", stdout[:500], file=sys.stderr)
+    print("STDERR:", result.stderr[:500], file=sys.stderr)
     sys.exit(1)
 
 data = json.loads(stdout[json_start:])
-out_path = os.path.join(AGENT_DIR, ".agent-serve", "nvidia-fixture.json")
-with open(out_path, "w", encoding="utf-8") as f:
+with open(OUT_PATH, "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 
-print(f"Fixture saved to {out_path}  ok={data.get('ok')}")
+print(f"Fixture saved to {OUT_PATH}  ok={data.get('ok')}")
