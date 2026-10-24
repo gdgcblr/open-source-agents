@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`incident-analyzer`](incident-analyzer/) | AST-indexed codebase incident diagnosis agent with log sanitization and syntax-validated fixes | Python, AST, Gemini 2.5 Flash, Pydantic | Community |
