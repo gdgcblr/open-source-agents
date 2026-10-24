@@ -79,7 +79,25 @@ type IdentifyResult struct {
 
 var urlHostRe = regexp.MustCompile(`^[a-z0-9.-]+\.[a-z]{2,}(/|$)`)
 
-// platformFromURL infers the retail platform from a product URL's host.
+// allowedRetailHosts maps each supported retailer's owned hostnames (exact
+// host or subdomain) to its platform id. Matching is strict — a look-alike
+// domain that merely *contains* the brand (e.g. "swiggy-deals.example.com") is
+// NOT treated as a retailer; this is the only URL trust decision the agent
+// makes, and it never follows the URL.
+var allowedRetailHosts = map[string]string{
+	"swiggy.com":   "instamart",
+	"instamart.in": "instamart",
+	"blinkit.com":  "blinkit",
+	"zeptonow.com": "zepto",
+	"zepto.in":     "zepto",
+	"amazon.in":    "amazon",
+	"amazon.com":   "amazon",
+	"amzn.in":      "amazon",
+}
+
+// platformFromURL infers the retail platform from a product URL's host. The
+// host must be an allowed retail domain (or a direct subdomain of one); the
+// URL is only a hint — it is never dereferenced, scraped, or opened.
 func platformFromURL(u string) string {
 	lu := strings.ToLower(strings.TrimSpace(u))
 	if lu == "" {
@@ -92,19 +110,13 @@ func platformFromURL(u string) string {
 	if err != nil {
 		return ""
 	}
-	host := strings.ToLower(parsed.Hostname())
-	switch {
-	case strings.Contains(host, "swiggy.com"), strings.Contains(host, "instamart"):
-		return "instamart"
-	case strings.Contains(host, "blinkit.com"), strings.Contains(host, "grofers"):
-		return "blinkit"
-	case strings.Contains(host, "zepto"), strings.Contains(host, "zeptonow"):
-		return "zepto"
-	case strings.Contains(host, "amazon.in"), strings.Contains(host, "amazon.com"), host == "amzn.in":
-		return "amazon"
-	default:
-		return ""
+	host := strings.TrimSuffix(strings.ToLower(parsed.Hostname()), ".")
+	for allowed, platform := range allowedRetailHosts {
+		if host == allowed || strings.HasSuffix(host, "."+allowed) {
+			return platform
+		}
 	}
+	return ""
 }
 
 // Identify resolves a Product from a URL and/or free text. Real-time title

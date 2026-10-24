@@ -219,6 +219,64 @@ Manual smoke check (offline demo path, works with no LM Studio model loaded erro
 
 ---
 
+## Guardrails (agent safety & trust)
+
+These guardrails keep the agent honest, safe, and predictable — enforced in code and the system prompt, not just hoped for:
+
+- **No transactions without explicit approval.** The only mutating "action" is `request_purchase_confirmation`, registered with ADK `RequireConfirmation: true`. The runtime pauses for a human decision before the handler runs; on denial the agent states the action was cancelled. It never places an order, subscribes, or pays on its own — it hands you the retailer's own link after you approve.
+- **HTML/script-safe output.** The agent produces plain Markdown (tables, lists, links); it never emits executable code, inline scripts, or embedded frames. Responses render as text in the CLI.
+- **Honest data provenance.** Every offer is labeled `qbuys-live` (fetched at run time) or `offline-demo-catalog` (bundled demo data) with a last-updated timestamp. The demo catalog is *never* presented as live prices, and an unavailable retailer is reported as such — never guessed. (The bundled prices are static demo values, not real.)
+- **All math in Go.** Prices, fees, discounts, membership application, totals and ranking are computed deterministically in Go, not by the LLM — so the numbers and the Best/Cheapest/Fastest picks can't be hallucinated.
+- **No shell or arbitrary code execution.** The agent only calls its five typed function tools.
+- **Least surprise on input.** The PIN code is validated as 6 digits; a product that can't be resolved triggers a clarifying question rather than a guess.
+
+### URL verification & security
+
+When you paste a product URL, the agent uses it **only** as a hint and **never follows, fetches, scrapes or executes it**:
+
+1. **Parse, don't fetch.** `platformFromURL` runs `net/url.Parse` on the string. No HTTP request is made to the URL.
+2. **Exact-domain allowlist.** The host must be an owned retail domain (or a direct subdomain of one): `swiggy.com`/`instamart.in` → Instamart, `blinkit.com` → Blinkit, `zeptonow.com`/`zepto.in` → Zepto, `amazon.in`/`amazon.com`/`amzn.in` → Amazon. A look-alike host that merely *contains* the brand (e.g. `swiggy-deals.evil.example`) is **rejected** — matching is `host == allowed || host ends with "." + allowed`, never substring.
+3. **Contained failure.** Unparseable or non-allowlisted URLs simply yield no platform hint; the product is then resolved from free text against the offline catalog, or the agent asks for clarification.
+4. **No live scraping.** Real-time fetching of the URL's page is intentionally out of scope, so a malicious or redirecting link can't be weaponized to pull content into the agent.
+
+The network is touched only for (a) the configured LLM backend and (b) the optional qbuys live adapter at your `QBUYS_BASE_URL` — never for a user-supplied product URL.
+
+---
+
+## Ranking rubric (how "value" is calculated)
+
+All ranking is deterministic Go in `internal/retailers` (`ComputeFees` → `ApplyMemberships` → `Rank`). The rubric:
+
+**1. Effective delivered cost (per offer, integer paise):**
+```
+final_delivered_cost = price − discount + delivery_fee + platform_fee
+                     + handling_fee + small_cart_fee + other_fees + taxes
+```
+An offer is **usable** for ranking only when it is in stock, serviceable at the PIN, has a valid status, and a positive final cost.
+
+**2. Memberships applied before ranking** (e.g. Amazon Prime, Instamart One, Blinkit/Zepto passes): a matching membership waives the delivery fee on that retailer's fast/slow speed tiers. `final_delivered_cost` is the *after-membership* total.
+
+**3. Sort key (ascending, in priority order):**
+1. `final_delivered_cost` — lower wins
+2. `eta_minutes` — faster breaks a cost tie
+3. total fees — fewer fees breaks a further tie
+4. retailer name — a stable, deterministic final tie-break
+
+**4. Three outputs (independently computed over usable offers):**
+- **Best overall** — top of the sort above (lowest delivered cost, then fastest). This trades off price *and* speed.
+- **Cheapest** — strictly lowest `final_delivered_cost` (may not be the fastest).
+- **Fastest** — strictly lowest `eta_minutes` (may not be the cheapest).
+
+**5. Explanations.** `Rank` emits human-readable lines for each decision: the savings vs the next-best offer, the delivery-speed trade-off (e.g. "saves ₹5 but takes up to 3 days"), and any fee note. So the recommendation is always justified in plain terms.
+
+| Output | Optimizes | Tie-breaks |
+| :--- | :--- | :--- |
+| Best overall | lowest delivered cost | faster ETA → fewer fees → name |
+| Cheapest | lowest delivered cost | (same as above) |
+| Fastest | lowest ETA | lower cost → fewer fees → name |
+
+---
+
 ## Security & Privacy Considerations
 
 - **Secrets Handling**: credentials come from environment variables / flags only; `.env` is gitignored and `.env.example` contains placeholders, no real secrets. Local LM Studio needs no real key.
