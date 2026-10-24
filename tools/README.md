@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`tool-schema-lint`](tool-schema-lint/) | Lints LLM tool definitions (MCP, OpenAI, Gemini, Anthropic) for structural errors, provider incompatibilities, and weak descriptions. | Evaluation & CI utility · Python (stdlib) | [@iamsatyatiwari](https://github.com/iamsatyatiwari) |

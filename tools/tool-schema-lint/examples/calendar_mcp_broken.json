@@ -1,0 +1,77 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "weather.get-forecast",
+        "description": "Get the weather forecast for a city so the assistant can suggest whether an outdoor event should be moved.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "city": { "type": "string", "description": "City name, e.g. Bengaluru" },
+            "units": {
+              "type": "string",
+              "enum": ["metric", "imperial"],
+              "default": "kelvin",
+              "description": "Unit system for temperatures"
+            },
+            "days": { "type": "integer", "enum": [1, 3, 7], "description": "Number of forecast days" }
+          },
+          "required": ["city", "zip"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "search_events",
+        "description": "Search events.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string" },
+            "time-range": {
+              "type": "object",
+              "description": "Only return events inside this window",
+              "properties": {
+                "start": { "type": ["string", "null"], "format": "date-time", "description": "ISO 8601 start" },
+                "end": { "type": "string", "format": "date-time", "description": "ISO 8601 end" }
+              }
+            },
+            "tags": { "type": "array", "description": "Tags the event must have" },
+            "filter": {
+              "description": "Filter by organizer or by room",
+              "oneOf": [
+                { "type": "object", "properties": { "organizer": { "type": "string", "description": "Organizer email" } } },
+                { "type": "object", "properties": { "room": { "type": "string", "description": "Room id" } } }
+              ]
+            }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "create_event",
+        "description": "TODO",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "Event title" },
+            "attendees": {
+              "type": "array",
+              "items": { "type": "string", "format": "email" },
+              "description": "Attendee email addresses"
+            },
+            "reminder": { "$ref": "#/$defs/Reminder" }
+          },
+          "required": ["title"]
+        }
+      },
+      {
+        "name": "list_calendars",
+        "description": "List the calendars the signed-in user can read, with their ids and display names.",
+        "inputSchema": { "type": "object" }
+      }
+    ]
+  }
+}

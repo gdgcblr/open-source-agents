@@ -1,0 +1,3 @@
+# tool-schema-lint has no runtime dependencies (Python standard library only).
+# This file lists what is needed to run the test suite.
+pytest>=8

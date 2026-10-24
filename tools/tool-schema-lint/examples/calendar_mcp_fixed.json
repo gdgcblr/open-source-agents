@@ -1,0 +1,98 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "weather_get_forecast",
+        "description": "Get the daily weather forecast for a city. Use it when the user asks about weather or whether an outdoor event should be moved. Returns one entry per day with the high, low, and chance of rain.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "city": { "type": "string", "description": "City name, e.g. Bengaluru" },
+            "units": {
+              "type": "string",
+              "enum": ["metric", "imperial"],
+              "description": "Unit system for temperatures: metric (Celsius) or imperial (Fahrenheit)"
+            },
+            "days": {
+              "type": "string",
+              "enum": ["1", "3", "7"],
+              "description": "Number of forecast days to return"
+            }
+          },
+          "required": ["city", "units", "days"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "search_events",
+        "description": "Search the user's calendar events by free-text query. Use it to find existing events before creating or changing one. Returns at most 20 events ordered by start time.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string", "description": "Words to match against event titles and notes, e.g. 'design review'" },
+            "time_range": {
+              "type": "object",
+              "description": "Only return events inside this window",
+              "properties": {
+                "start": {
+                  "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }],
+                  "description": "ISO 8601 start, or null for no lower bound"
+                },
+                "end": { "type": "string", "format": "date-time", "description": "ISO 8601 end" }
+              },
+              "required": ["start", "end"],
+              "additionalProperties": false
+            },
+            "tags": {
+              "type": "array",
+              "items": { "type": "string", "description": "A single tag, e.g. 'offsite'" },
+              "description": "Tags the event must have; use an empty list for no tag filter"
+            },
+            "organizer": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Organizer email address, or null for any organizer"
+            }
+          },
+          "required": ["query", "time_range", "tags", "organizer"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "create_event",
+        "description": "Create a new event on the user's primary calendar and send invitations. Only call it after the user has confirmed the title, time, and attendees. Returns the new event id.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "Event title shown to attendees" },
+            "attendees": {
+              "type": "array",
+              "items": { "type": "string", "format": "email", "description": "Attendee email address" },
+              "description": "Attendee email addresses; use an empty list for a private event"
+            },
+            "reminder": { "$ref": "#/$defs/Reminder" }
+          },
+          "required": ["title", "attendees", "reminder"],
+          "additionalProperties": false,
+          "$defs": {
+            "Reminder": {
+              "type": "object",
+              "description": "When to remind the attendees",
+              "properties": {
+                "minutes_before": { "type": "integer", "description": "Minutes before the start time, e.g. 15" }
+              },
+              "required": ["minutes_before"],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      {
+        "name": "list_calendars",
+        "description": "List the calendars the signed-in user can read. Use it to find a calendar id before searching or creating events. Returns each calendar's id and display name.",
+        "inputSchema": { "type": "object", "additionalProperties": false }
+      }
+    ]
+  }
+}
