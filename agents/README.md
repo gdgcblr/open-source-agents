@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`readme-reviewer`](readme-reviewer/README.md) | Audits a project folder against the repo's contribution standards and returns a fix report | Google ADK + Gemini | Amodh2022 |

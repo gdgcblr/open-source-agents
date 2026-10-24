@@ -1,0 +1,3 @@
+# Optional: only needed to run `adk eval` (evals/run_evals.sh). Large install.
+-r requirements.txt
+google-adk[eval]==2.13.0

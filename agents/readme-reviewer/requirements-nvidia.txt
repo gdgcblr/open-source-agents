@@ -1,0 +1,4 @@
+# Optional: only needed when MODEL_PROVIDER=nvidia (any OpenAI-compatible endpoint).
+-r requirements.txt
+litellm==1.106.2
+mcp==2.3.0

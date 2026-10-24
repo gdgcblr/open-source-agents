@@ -1,0 +1,170 @@
+{
+  "eval_set_id": "readme_reviewer",
+  "name": "README reviewer samples",
+  "description": "Five sample projects: excellent, missing install steps, leaked key, wrong folder name, minimal.",
+  "eval_cases": [
+    {
+      "eval_id": "excellent",
+      "conversation": [
+        {
+          "invocation_id": "excellent-1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Review evals/.generated/excellent-agent"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\n  \"overall_score\": 100,\n  \"criterion_scores\": {\n    \"reproducibility\": 100,\n    \"documentation\": 100,\n    \"security\": 100,\n    \"scope\": 100\n  },\n  \"failures\": [],\n  \"suggested_fixes\": [],\n  \"verdict\": \"ready\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "creation_timestamp": 0.0
+        }
+      ],
+      "creation_timestamp": 0.0,
+      "final_session_state": {}
+    },
+    {
+      "eval_id": "missing_install_steps",
+      "conversation": [
+        {
+          "invocation_id": "missing_install_steps-1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Review evals/.generated/missing-install-agent"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\n  \"overall_score\": 71,\n  \"criterion_scores\": {\n    \"reproducibility\": 0,\n    \"documentation\": 83,\n    \"security\": 100,\n    \"scope\": 100\n  },\n  \"failures\": [\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"manifest_present\",\n      \"reason\": \"No dependency manifest (requirements.txt, package.json, ...).\"\n    },\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"env_example_present\",\n      \"reason\": \"Missing .env.example.\"\n    },\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"run_command_documented\",\n      \"reason\": \"No run/usage section with a code block.\"\n    },\n    {\n      \"criterion\": \"documentation\",\n      \"id\": \"sections_present\",\n      \"reason\": \"Missing sections: prerequisites, installation, configuration, how to run\"\n    }\n  ],\n  \"suggested_fixes\": [\n    \"Add a dependency manifest (requirements.txt, package.json or pyproject.toml) listing every dependency.\",\n    \"Add a .env.example with placeholder values for every variable the project reads.\",\n    \"Add the exact run command in a code block under a How to Run or Usage section.\",\n    \"Add the missing README sections from template/README.md.\"\n  ],\n  \"verdict\": \"needs_changes\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "creation_timestamp": 0.0
+        }
+      ],
+      "creation_timestamp": 0.0,
+      "final_session_state": {}
+    },
+    {
+      "eval_id": "leaked_api_key",
+      "conversation": [
+        {
+          "invocation_id": "leaked_api_key-1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Review evals/.generated/leaked-key-agent"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\n  \"overall_score\": 92,\n  \"criterion_scores\": {\n    \"reproducibility\": 100,\n    \"documentation\": 100,\n    \"security\": 67,\n    \"scope\": 100\n  },\n  \"failures\": [\n    {\n      \"criterion\": \"security\",\n      \"id\": \"no_secrets\",\n      \"reason\": \"README.md: Possible Google API key (value redacted); main.py: Possible Google API key (value redacted); main.py: Possible Hardcoded secret assignment (value redacted)\"\n    }\n  ],\n  \"suggested_fixes\": [\n    \"Remove committed secrets, .env files and virtualenvs, rotate any exposed key, and add them to .gitignore.\"\n  ],\n  \"verdict\": \"needs_changes\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "creation_timestamp": 0.0
+        }
+      ],
+      "creation_timestamp": 0.0,
+      "final_session_state": {}
+    },
+    {
+      "eval_id": "wrong_folder_name",
+      "conversation": [
+        {
+          "invocation_id": "wrong_folder_name-1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Review evals/.generated/Bad_Name_Agent"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\n  \"overall_score\": 75,\n  \"criterion_scores\": {\n    \"reproducibility\": 100,\n    \"documentation\": 100,\n    \"security\": 100,\n    \"scope\": 0\n  },\n  \"failures\": [\n    {\n      \"criterion\": \"scope\",\n      \"id\": \"folder_name_ok\",\n      \"reason\": \"'Bad_Name_Agent' must be lowercase kebab-case and not a generic name.\"\n    }\n  ],\n  \"suggested_fixes\": [\n    \"Rename the folder to a lowercase kebab-case name that describes the project.\"\n  ],\n  \"verdict\": \"needs_changes\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "creation_timestamp": 0.0
+        }
+      ],
+      "creation_timestamp": 0.0,
+      "final_session_state": {}
+    },
+    {
+      "eval_id": "minimal_readme",
+      "conversation": [
+        {
+          "invocation_id": "minimal_readme-1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Review evals/.generated/minimal-agent"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\n  \"overall_score\": 62,\n  \"criterion_scores\": {\n    \"reproducibility\": 0,\n    \"documentation\": 83,\n    \"security\": 67,\n    \"scope\": 100\n  },\n  \"failures\": [\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"manifest_present\",\n      \"reason\": \"No dependency manifest (requirements.txt, package.json, ...).\"\n    },\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"env_example_present\",\n      \"reason\": \"Missing .env.example.\"\n    },\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"run_command_documented\",\n      \"reason\": \"No run/usage section with a code block.\"\n    },\n    {\n      \"criterion\": \"documentation\",\n      \"id\": \"sections_present\",\n      \"reason\": \"Missing sections: overview, technical stack, architecture, prerequisites, installation, configuration, how to run, example input, how to test, known limitations, security\"\n    },\n    {\n      \"criterion\": \"security\",\n      \"id\": \"gitignore_covers_secrets_and_venv\",\n      \"reason\": \".gitignore does not cover: .env, virtualenv, __pycache__\"\n    }\n  ],\n  \"suggested_fixes\": [\n    \"Add a dependency manifest (requirements.txt, package.json or pyproject.toml) listing every dependency.\",\n    \"Add a .env.example with placeholder values for every variable the project reads.\",\n    \"Add the exact run command in a code block under a How to Run or Usage section.\",\n    \"Add the missing README sections from template/README.md.\",\n    \"Add .env, a virtualenv folder and __pycache__/ to .gitignore.\"\n  ],\n  \"verdict\": \"needs_changes\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "creation_timestamp": 0.0
+        }
+      ],
+      "creation_timestamp": 0.0,
+      "final_session_state": {}
+    },
+    {
+      "eval_id": "vulnerable_project",
+      "conversation": [
+        {
+          "invocation_id": "vulnerable_project-1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Review evals/.generated/vulnerable-agent"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\n  \"overall_score\": 65,\n  \"criterion_scores\": {\n    \"reproducibility\": 60,\n    \"documentation\": 100,\n    \"security\": 0,\n    \"scope\": 100\n  },\n  \"failures\": [\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"env_example_present\",\n      \"reason\": \"Missing .env.example.\"\n    },\n    {\n      \"criterion\": \"reproducibility\",\n      \"id\": \"deps_pinned\",\n      \"reason\": \"Unpinned requirements: flask>=2.0, requests\"\n    },\n    {\n      \"criterion\": \"security\",\n      \"id\": \"no_secrets\",\n      \"reason\": \"app.py: Possible Google API key (value redacted); app.py: Possible Hardcoded secret assignment (value redacted); app.py: Possible AWS access key (value redacted); app.py: Possible Hardcoded secret assignment (value redacted); config.json: Possible GitHub token (value redacted)\"\n    },\n    {\n      \"criterion\": \"security\",\n      \"id\": \"gitignore_covers_secrets_and_venv\",\n      \"reason\": \".gitignore does not cover: .env, virtualenv, __pycache__\"\n    },\n    {\n      \"criterion\": \"security\",\n      \"id\": \"no_risky_code\",\n      \"reason\": \"app.py:10 os system call; app.py:11 shell execution via subprocess; app.py:12 eval/exec call; app.py:13 eval/exec call; deploy.sh:2 recursive delete\"\n    }\n  ],\n  \"suggested_fixes\": [\n    \"Add a .env.example with placeholder values for every variable the project reads.\",\n    \"Pin every dependency in requirements.txt to an exact version with ==.\",\n    \"Remove committed secrets, .env files and virtualenvs, rotate any exposed key, and add them to .gitignore.\",\n    \"Add .env, a virtualenv folder and __pycache__/ to .gitignore.\",\n    \"Remove shell-execution, eval or exec calls, or document why they are safe.\"\n  ],\n  \"verdict\": \"needs_changes\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "creation_timestamp": 0.0
+        }
+      ],
+      "creation_timestamp": 0.0,
+      "final_session_state": {}
+    }
+  ],
+  "creation_timestamp": 0.0
+}
