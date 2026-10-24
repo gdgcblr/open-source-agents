@@ -1,0 +1,38 @@
+#!/bin/sh
+# Build on first use, then run without requiring a separate Maven installation.
+set -eu
+tool_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -n "${JAVA_HOME:-}" ]; then
+  java_cmd="$JAVA_HOME/bin/java"
+else
+  java_cmd=$(command -v java || true)
+fi
+if [ -z "$java_cmd" ] || [ ! -x "$java_cmd" ]; then
+  echo "Java 17 or later is needed. Install a JDK, then run this command again." >&2
+  exit 1
+fi
+java_major=$("$java_cmd" -version 2>&1 | sed -n 's/.*version "\([0-9][0-9]*\).*/\1/p' | head -1)
+if [ -z "$java_major" ] || [ "$java_major" -lt 17 ]; then
+  echo "Java 17 or later is needed. Point JAVA_HOME to a supported JDK and retry." >&2
+  exit 1
+fi
+tool_jar="$tool_dir/target/mutation-auditor.jar"
+needs_build=false
+if [ ! -f "$tool_jar" ]; then
+  needs_build=true
+elif [ -n "$(find "$tool_dir/src" "$tool_dir/pom.xml" -type f -newer "$tool_jar" -print -quit)" ]; then
+  needs_build=true
+fi
+if [ "$needs_build" = true ]; then
+  echo "Preparing Mutation Auditor. The first run downloads build tools and dependencies..." >&2
+  build_log=$(mktemp "${TMPDIR:-/tmp}/mutation-auditor-build.XXXXXX")
+  if ! "$tool_dir/mvnw" -f "$tool_dir/pom.xml" -B -ntp -DskipTests package >"$build_log" 2>&1; then
+    echo "Setup failed. Details: $build_log" >&2
+    tail -20 "$build_log" >&2
+    exit 1
+  fi
+  rm -f "$build_log"
+fi
+# The wrapper reads its own configuration but runs Maven in the analyzed project's directory.
+export MUTATION_AUDITOR_MAVEN="${MUTATION_AUDITOR_MAVEN:-$tool_dir/mvnw}"
+exec "$java_cmd" -jar "$tool_jar" "$@"
