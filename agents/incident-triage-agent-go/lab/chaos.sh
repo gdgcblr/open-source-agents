@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Inject a known fault into the lab. Each scenario has one true root cause.
-#   ./chaos.sh latency | bad-deploy | pool | leak | reset | status
+#   ./chaos.sh latency | bad-deploy | pool | leak | reset | status | alerts
 set -euo pipefail
 
 CHECKOUT=${CHECKOUT_URL:-http://localhost:8080}
@@ -25,5 +25,10 @@ case "${1:-status}" in
     post "$CHECKOUT" '{"version": "v1.3.0"}' >/dev/null ;;
   status)
     curl -sf "$CHECKOUT/chaos"; curl -sf "$PAYMENTS/chaos" ;;
-  *) echo "usage: $0 latency|bad-deploy|pool|leak|reset|status" >&2; exit 1 ;;
+  alerts)      # alerts take ~90s to fire: 1m rate window + 30s "for"
+    curl -sf "${PROMETHEUS_URL:-http://localhost:9090}/api/v1/alerts" |
+      grep -oE '"alertname":"[^"]+"|"service":"[^"]+"|"state":"[^"]+"' |
+      sed -E 's/"([a-z]+)":"([^"]+)"/\2/' | paste - - - | column -t
+    ;;
+  *) echo "usage: $0 latency|bad-deploy|pool|leak|reset|status|alerts" >&2; exit 1 ;;
 esac
