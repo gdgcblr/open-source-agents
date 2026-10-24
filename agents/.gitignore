@@ -1,0 +1,30 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# Generated evaluation results
+evals/results/
+
+# Do not add adk sessions
+agents/accessable_ai/.adk/session.db
+
+# Generated accessibility reports and screenshots
+reports/*.pdf
+reports/screenshots/
+
+# OS files
+.DS_Store

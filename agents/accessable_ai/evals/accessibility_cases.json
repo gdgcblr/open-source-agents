@@ -1,0 +1,35 @@
+
+[
+  {
+    "case_id": "contrast_001",
+    "user_input": "Review the screenshot for potential accessibility issues.",
+    "evidence_context": [
+      "The reviewer observed body text that appears difficult to distinguish from its background. No measured color values are available."
+    ],
+    "reference_findings": [
+      "Flag possible low contrast as a hypothesis.",
+      "Do not claim an exact contrast ratio.",
+      "Recommend measuring the actual foreground and background colors."
+    ],
+    "expected_behavior": [
+      "Include visible evidence",
+      "Explain potential impact",
+      "Suggest measuring contrast",
+      "Avoid claiming WCAG compliance"
+    ]
+  },
+  {
+    "case_id": "no_issue_002",
+    "user_input": "Review the screenshot for potential accessibility issues.",
+    "evidence_context": [
+      "The screenshot does not provide enough evidence to determine whether keyboard navigation works."
+    ],
+    "reference_findings": [
+      "State that keyboard accessibility cannot be determined from the screenshot alone."
+    ],
+    "expected_behavior": [
+      "Do not claim keyboard navigation is broken",
+      "Recommend keyboard testing"
+    ]
+  }
+]
