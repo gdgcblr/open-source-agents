@@ -1,0 +1,36 @@
+{
+  "name": "pr-sentinel",
+  "version": "1.0.0",
+  "description": "Autonomous Multi-Agent PR Review, Security Triage, and Auto-Patch System powered by Gemini",
+  "type": "module",
+  "main": "src/cli.js",
+  "bin": {
+    "pr-sentinel": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "demo": "node src/cli.js --demo",
+    "serve": "node src/cli.js --serve",
+    "audit": "node src/cli.js --audit",
+    "interactive": "node src/cli.js --interactive",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "ai-agent",
+    "gemini",
+    "pr-review",
+    "security-scanner",
+    "multi-agent",
+    "open-source",
+    "code-analysis"
+  ],
+  "author": "open-source-contributor",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "dotenv": "^16.4.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

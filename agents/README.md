@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`pr-sentinel`](pr-sentinel/) | Autonomous multi-agent PR review, security triage, and auto-patch system | Node.js / Google GenAI (Gemini 2.5) | [@community](https://github.com/gdgcblr) |
