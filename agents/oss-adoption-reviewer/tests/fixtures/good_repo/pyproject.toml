@@ -1,0 +1,6 @@
+[project]
+name = "goodapp"
+version = "1.0.0"
+
+[tool.ruff]
+line-length = 100

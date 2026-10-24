@@ -1,0 +1,14 @@
+services:
+  reviewer:
+    build: .
+    ports:
+      - "8001:8001"
+    environment:
+      MODEL_NAME: ${MODEL_NAME:-ollama_chat/qwen3.5:9b}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OLLAMA_API_BASE: ${OLLAMA_API_BASE:-http://host.docker.internal:11434}
+      MAX_LLM_CALLS: ${MAX_LLM_CALLS:-15}
+      NUM_CTX: ${NUM_CTX:-16384}
+    volumes:
+      # Repos to review, read-only. Defaults to the parent folder of this project.
+      - ${REPOS_DIR:-../}:/repos:ro

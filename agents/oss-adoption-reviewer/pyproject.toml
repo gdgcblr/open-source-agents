@@ -1,0 +1,21 @@
+[project]
+name = "oss-adoption-reviewer"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "google-adk[a2a]>=2.13",
+    "litellm>=1.106.2",
+    "mcp>=2.3.0",
+    "python-dotenv>=1.2.4",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = ["fixtures"]

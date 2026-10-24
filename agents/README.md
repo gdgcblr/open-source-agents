@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`oss-adoption-reviewer`](oss-adoption-reviewer/) | Reviews a local repo for adoption friction and returns prioritized fixes citing deterministic signals. | Google ADK, MCP, A2A, Ollama (Qwen) | [@PranavAga](https://github.com/PranavAga) |
