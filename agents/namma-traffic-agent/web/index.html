@@ -3,426 +3,982 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Namma Bengaluru Traffic Copilot</title>
+  <title>Namma Bengaluru Traffic Copilot - Live Commute & Money Saver</title>
+  
+  <!-- Leaflet Maps CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
-      --accent: #38bdf8;
-      --accent-hover: #0284c7;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --green: #22c55e;
-      --yellow: #eab308;
-      --red: #ef4444;
-      --purple: #a855f7;
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --bg-dark: #202124;
+      --surface: #ffffff;
+      --surface-border: #dadce0;
+      --text-main: #202124;
+      --text-muted: #5f6368;
+      --traffic-red: #ea4335;
+      --traffic-orange: #fbbc04;
+      --traffic-green: #34a853;
+      --metro-purple: #9333ea;
+      --metro-green: #16a34a;
+      --metro-yellow: #ca8a04;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Google Sans', Roboto, Arial, -apple-system, sans-serif;
     }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      padding-bottom: 50px;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #e8eaed;
     }
 
-    header {
-      background: linear-gradient(135deg, #1e1b4b, #0f172a);
-      border-bottom: 1px solid var(--card-border);
-      padding: 24px 20px;
+    /* Fullscreen Map */
+    #map {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Floating Google Maps-style Left Panel */
+    .gmaps-sidebar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      width: 440px;
+      max-height: calc(100vh - 32px);
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 600px) {
+      .gmaps-sidebar {
+        width: calc(100% - 32px);
+        max-height: 80vh;
+      }
+    }
+
+    /* Sidebar Header & Brand */
+    .sidebar-header {
+      padding: 16px 20px 12px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1a73e8;
+    }
+
+    .brand-title span.tag {
+      font-size: 0.72rem;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    /* Route Input Form */
+    .route-inputs {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-line {
+      display: flex;
+      align-items: center;
+      background: #f1f3f4;
+      border-radius: 8px;
+      padding: 6px 12px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .input-line:focus-within {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+    }
+
+    .input-icon {
+      font-size: 1rem;
+      margin-right: 10px;
+      width: 18px;
       text-align: center;
     }
 
-    .badge-devfest {
-      display: inline-block;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      letter-spacing: 0.5px;
+    .route-inputs input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      padding: 4px 0;
     }
 
-    h1 {
-      font-size: 2.2rem;
+    .btn-swap {
+      position: absolute;
+      right: 12px;
+      top: 26px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      z-index: 2;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    .time-selector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .time-selector select {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--surface-border);
+      background: #f8f9fa;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .rain-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #1e293b;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-search {
+      width: 100%;
+      margin-top: 12px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-search:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Corridor Chips */
+    .corridor-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--surface-border);
+      scrollbar-width: none;
+    }
+
+    .corridor-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      white-space: nowrap;
+      background: #f1f3f4;
+      color: #3c4043;
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: #e8f0fe;
+      color: var(--primary);
+      border-color: #d2e3fc;
+    }
+
+    /* Scrollable Results Drawer */
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Money & Time Saver Summary Banner */
+    .money-saver-banner {
+      background: linear-gradient(135deg, #137333, #0d652d);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(19, 115, 51, 0.25);
+    }
+
+    .saver-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #e6f4ea;
+      font-weight: 700;
+    }
+
+    .saver-metric-row {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+
+    .saver-big-val {
+      font-size: 1.6rem;
       font-weight: 800;
       color: #ffffff;
+    }
+
+    .saver-sub {
+      font-size: 0.9rem;
+      color: #ceead6;
+    }
+
+    /* Route Option Cards */
+    .route-card {
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid var(--surface-border);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .route-card:hover {
+      border-color: #aecbfa;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .route-card.selected {
+      border: 2px solid var(--primary);
+      background: #f8fafd;
+    }
+
+    .route-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .route-mode-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .tag-recommended {
+      background: #e6f4ea;
+      color: #137333;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tag-gridlock {
+      background: #fce8e6;
+      color: #c5221f;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .route-duration-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
       margin-bottom: 6px;
     }
 
-    h1 span {
-      color: #fbbf24;
+    .route-duration {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
     }
 
-    p.subtitle {
-      color: var(--text-muted);
-      font-size: 1rem;
-      max-width: 650px;
-      margin: 0 auto;
-    }
-
-    .container {
-      max-width: 1050px;
-      margin: 28px auto;
-      padding: 0 16px;
-    }
-
-    .search-section {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      margin-bottom: 24px;
-    }
-
-    .quick-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .pill {
-      background: #334155;
-      color: #cbd5e1;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.82rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid transparent;
-    }
-
-    .pill:hover {
-      background: #475569;
-      color: #fff;
-      border-color: var(--accent);
-    }
-
-    .input-group {
-      display: flex;
-      gap: 12px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      color: #fff;
-      padding: 14px 18px;
-      border-radius: 10px;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--accent);
-    }
-
-    button.btn-primary {
-      background: var(--accent);
-      color: #0f172a;
-      border: none;
-      padding: 14px 28px;
-      border-radius: 10px;
+    .route-fare {
       font-size: 1rem;
       font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      white-space: nowrap;
+      color: #1a73e8;
+      margin-left: auto;
     }
 
-    button.btn-primary:hover {
-      background: var(--accent-hover);
-      color: #fff;
-    }
-
-    .options-row {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      margin-top: 14px;
-      font-size: 0.9rem;
+    .route-details {
+      font-size: 0.85rem;
       color: var(--text-muted);
+      line-height: 1.4;
     }
 
-    .toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-
-    .results-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-      margin-top: 24px;
-    }
-
-    @media (min-width: 768px) {
-      .results-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .span-2 {
-        grid-column: span 2;
-      }
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 20px;
-    }
-
-    .card h3 {
-      font-size: 1.15rem;
-      color: #fff;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 0.95rem;
-    }
-
-    .stat-label {
-      color: var(--text-muted);
-    }
-
-    .stat-value {
-      font-weight: 600;
-    }
-
-    .badge-red {
-      color: #fca5a5;
-      background: rgba(239, 68, 68, 0.2);
-      padding: 2px 8px;
-      border-radius: 6px;
-    }
-
-    .badge-green {
-      color: #86efac;
-      background: rgba(34, 197, 94, 0.2);
-      padding: 2px 8px;
-      border-radius: 6px;
-    }
-
-    .response-bubble {
-      background: rgba(56, 189, 248, 0.05);
-      border-left: 4px solid var(--accent);
-      padding: 16px;
-      border-radius: 0 10px 10px 0;
-      white-space: pre-line;
-      line-height: 1.6;
-      font-size: 0.95rem;
-    }
-
-    .chokepoint-card {
-      border-left: 4px solid var(--yellow);
-      margin-bottom: 12px;
-      padding: 12px 14px;
-      background: rgba(255, 255, 255, 0.02);
+    /* AI Copilot Advice Card */
+    .copilot-advice-card {
+      background: #ffffff;
+      border-left: 4px solid var(--primary);
       border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      color: #3c4043;
+      line-height: 1.5;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
-    .chokepoint-card h4 {
-      font-size: 0.95rem;
+    .copilot-advice-card h4 {
+      font-size: 0.92rem;
+      color: #1a73e8;
       margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .loading-spinner {
+    /* Top-Right Floating Controls (Map Layers) */
+    .map-controls-panel {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+
+    .map-btn {
+      padding: 10px 14px;
+      border: none;
+      background: #ffffff;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 1px solid var(--surface-border);
+      transition: background 0.2s;
+    }
+
+    .map-btn:last-child {
+      border-bottom: none;
+    }
+
+    .map-btn:hover {
+      background: #f1f3f4;
+    }
+
+    .map-btn.active {
+      color: var(--primary);
+      font-weight: 700;
+      background: #e8f0fe;
+    }
+
+    /* Custom Leaflet Map Pulsing Markers */
+    .choke-pin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--traffic-red);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.4);
+      animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(234, 67, 53, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+    }
+
+    .metro-pin {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--metro-purple);
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .water-pin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #0284c7;
+      border: 2px solid #ffffff;
+      animation: pulse-blue 1.5s infinite;
+    }
+
+    @keyframes pulse-blue {
+      0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+    }
+
+    /* Loading Indicator */
+    .loading-bar {
+      height: 3px;
+      width: 100%;
+      background: #e8eaed;
+      position: relative;
+      overflow: hidden;
       display: none;
-      text-align: center;
-      padding: 20px;
-      color: var(--accent);
-      font-weight: 600;
+    }
+
+    .loading-bar::after {
+      content: '';
+      position: absolute;
+      left: -50%;
+      height: 100%;
+      width: 50%;
+      background: var(--primary);
+      animation: loading-anim 1s infinite linear;
+    }
+
+    @keyframes loading-anim {
+      0% { left: -50%; }
+      100% { left: 100%; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="badge-devfest">GDG Cloud Bengaluru • FORK. BUILD. MERGE. 2026</div>
-    <h1>Namma <span>Traffic</span> Copilot</h1>
-    <p class="subtitle">AI-powered multimodal transit intelligence, live bottleneck bypasses, and Namma Metro optimizer for Bengaluru commuters.</p>
-  </header>
+  <!-- Fullscreen Interactive Map -->
+  <div id="map"></div>
 
-  <div class="container">
-    <div class="search-section">
-      <div class="quick-pills">
-        <span class="pill" onclick="setQuery('How is traffic from Koramangala to Whitefield at 6 PM?')">📍 Koramangala ➡️ Whitefield (6 PM)</span>
-        <span class="pill" onclick="setQuery('Should I take metro or cab from Indiranagar to Airport?')">✈️ Indiranagar ➡️ Airport</span>
-        <span class="pill" onclick="setQuery('Is Silk Board jammed right now?')">🚦 Silk Board Status</span>
-        <span class="pill" onclick="setQuery('Waterlogging alerts near Bellandur and ORR')">🌧️ Rain / Waterlogging Alerts</span>
-      </div>
-
-      <div class="input-group">
-        <input type="text" id="queryInput" placeholder="Ask about routes, junctions, metro savings, or waterlogging..." value="How is traffic from Koramangala to Whitefield at 6 PM?">
-        <button class="btn-primary" onclick="submitQuery()">Ask Copilot</button>
-      </div>
-
-      <div class="options-row">
-        <label class="toggle-label">
-          <input type="checkbox" id="rainToggle">
-          <span>🌧️ Monsoon Rain Disruptions Active</span>
-        </label>
-        <span>⚡ Mode: Gemini 2.5 + Local Transit Intelligence</span>
-      </div>
-    </div>
-
-    <div id="loading" class="loading-spinner">
-      🔄 Analyzing Bengaluru traffic corridor patterns...
-    </div>
-
-    <div id="results" class="results-grid"></div>
+  <!-- Top-Right Map View Toggles -->
+  <div class="map-controls-panel">
+    <button class="map-btn active" id="btnToggleTraffic" onclick="toggleTrafficLayer()">
+      🚦 Traffic Congestion
+    </button>
+    <button class="map-btn active" id="btnToggleMetro" onclick="toggleMetroLayer()">
+      🚇 Namma Metro Lines
+    </button>
+    <button class="map-btn active" id="btnToggleFloods" onclick="toggleFloodLayer()">
+      🌧️ Flooded Underpasses
+    </button>
+    <a href="/presentation" target="_blank" class="map-btn" style="text-decoration: none; color: #1a73e8; font-weight: 700;">
+      📊 DevFest Deck ↗
+    </a>
   </div>
 
+  <!-- Floating Google Maps-style Left Panel -->
+  <div class="gmaps-sidebar">
+    <div class="sidebar-header">
+      <div class="brand-row">
+        <div class="brand-title">
+          <span>🚦</span> Namma Traffic Copilot
+          <span class="tag">AI Optimizer</span>
+        </div>
+        <div style="font-size: 0.8rem; color: #5f6368;">Bengaluru</div>
+      </div>
+
+      <!-- Route Search Inputs -->
+      <div class="route-inputs">
+        <div class="input-line">
+          <span class="input-icon" style="color: #34a853;">🟢</span>
+          <input type="text" id="originInput" placeholder="Choose starting point..." value="Koramangala" list="hubsList">
+        </div>
+
+        <div class="btn-swap" onclick="swapLocations()" title="Reverse direction">⇅</div>
+
+        <div class="input-line">
+          <span class="input-icon" style="color: #ea4335;">🔴</span>
+          <input type="text" id="destInput" placeholder="Choose destination..." value="Whitefield" list="hubsList">
+        </div>
+      </div>
+
+      <!-- Departure & Monsoon Controls -->
+      <div class="controls-row">
+        <div class="time-selector">
+          <span>Leave at:</span>
+          <select id="timeSelect">
+            <option value="16">4:00 PM (Early Window)</option>
+            <option value="17">5:00 PM (Rush Start)</option>
+            <option value="18" selected>6:00 PM (Peak Gridlock)</option>
+            <option value="19">7:00 PM (Heavy Flow)</option>
+            <option value="20">8:00 PM (Night Rush)</option>
+            <option value="21">9:00 PM (Clearer)</option>
+          </select>
+        </div>
+
+        <label class="rain-toggle">
+          <input type="checkbox" id="rainCheckbox">
+          <span>🌧️ Monsoon Rain</span>
+        </label>
+      </div>
+
+      <button class="btn-search" onclick="calculateCommute()">
+        <span>🔍</span> Find Best Route & Save Money
+      </button>
+    </div>
+
+    <!-- Loading Bar -->
+    <div class="loading-bar" id="loadingBar"></div>
+
+    <!-- Quick Corridor Chips -->
+    <div class="corridor-chips">
+      <div class="chip" onclick="setCorridor('Koramangala', 'Whitefield')">Koramangala ➔ Whitefield</div>
+      <div class="chip" onclick="setCorridor('Indiranagar', 'Airport')">Indiranagar ➔ Airport</div>
+      <div class="chip" onclick="setCorridor('HSR Layout', 'Bellandur')">HSR ➔ Bellandur / ORR</div>
+      <div class="chip" onclick="setCorridor('Majestic', 'Electronic City')">Majestic ➔ E-City</div>
+    </div>
+
+    <!-- Dynamic Commute & Savings Content -->
+    <div class="sidebar-content" id="sidebarContent">
+      <!-- Injected dynamically by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Datalist for Autocomplete -->
+  <datalist id="hubsList">
+    <option value="Koramangala">
+    <option value="Whitefield">
+    <option value="Indiranagar">
+    <option value="HSR Layout">
+    <option value="Bellandur">
+    <option value="Marathahalli">
+    <option value="Electronic City">
+    <option value="Hebbal">
+    <option value="Manyata Tech Park">
+    <option value="Majestic">
+    <option value="MG Road">
+    <option value="Airport">
+    <option value="JP Nagar">
+    <option value="Banashankari">
+  </datalist>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script>
-    async function submitQuery() {
-      const prompt = document.getElementById('queryInput').value.trim();
-      const isRaining = document.getElementById('rainToggle').checked;
-      const loading = document.getElementById('loading');
-      const resultsDiv = document.getElementById('results');
+    // Initialize Google Maps style Leaflet Map centered on Bengaluru
+    const map = L.map('map', {
+      zoomControl: false
+    }).setView([12.9716, 77.6200], 12);
 
-      if (!prompt) return;
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      loading.style.display = 'block';
-      resultsDiv.innerHTML = '';
+    // CartoDB Voyager tiles (Google Maps cartographic aesthetic)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Hub Coordinates Database
+    const BENGALURU_COORDS = {
+      "koramangala": [12.9352, 77.6245],
+      "indiranagar": [12.9719, 77.6412],
+      "whitefield": [12.9698, 77.7500],
+      "hsr_layout": [12.9121, 77.6446],
+      "bellandur": [12.9304, 77.6784],
+      "marathahalli": [12.9591, 77.6974],
+      "electronic_city": [12.8452, 77.6602],
+      "hebbal": [13.0358, 77.5970],
+      "manyata": [13.0450, 77.6200],
+      "majestic": [12.9774, 77.5708],
+      "mg_road": [12.9756, 77.6066],
+      "airport": [13.1986, 77.7066],
+      "jp_nagar": [12.9063, 77.5857],
+      "banashankari": [12.9255, 77.5468]
+    };
+
+    // Layer Groups
+    let trafficLayerGroup = L.layerGroup().addTo(map);
+    let metroLayerGroup = L.layerGroup().addTo(map);
+    let floodLayerGroup = L.layerGroup().addTo(map);
+    let routeLayerGroup = L.layerGroup().addTo(map);
+
+    // Plot Chokepoints (Silk Board, Tin Factory, Hebbal, Marathahalli, Ecospace)
+    const CHOKEPOINTS_DATA = [
+      { name: "Central Silk Board", coords: [12.9172, 77.6228], delay: "~35 min delay", score: "9.6/10", bypass: "Use Madiwala market internal corridor or Yellow line." },
+      { name: "Tin Factory / KR Puram", coords: [12.9972, 77.6756], delay: "~30 min delay", score: "9.3/10", bypass: "Purple line metro direct bypass over bridge." },
+      { name: "Hebbal Flyover Junction", coords: [13.0358, 77.5970], delay: "~25 min delay", score: "8.9/10", bypass: "Use Hennur-Bagalur road for airport." },
+      { name: "Ecospace / Bellandur ORR", coords: [12.9260, 77.6830], delay: "~35 min delay", score: "9.4/10", bypass: "Stagger departure: leave before 4 PM or after 8 PM." },
+      { name: "Marathahalli Bridge", coords: [12.9591, 77.6974], delay: "~20 min delay", score: "8.7/10", bypass: "Use Kundalahalli Gate underpass." }
+    ];
+
+    function drawChokepoints() {
+      trafficLayerGroup.clearLayers();
+      CHOKEPOINTS_DATA.forEach(cp => {
+        const icon = L.divIcon({ className: 'choke-pin', iconSize: [14, 14] });
+        const marker = L.marker(cp.coords, { icon: icon }).addTo(trafficLayerGroup);
+        marker.bindPopup(`
+          <div style="font-family: sans-serif;">
+            <b style="color: #ea4335;">🚦 ${cp.name}</b><br>
+            <span style="color:#d93025; font-weight:bold;">Congestion Index: ${cp.score}</span><br>
+            <span>Delay: ${cp.delay}</span><br>
+            <small style="color: #137333;"><b>💡 Bypass:</b> ${cp.bypass}</small>
+          </div>
+        `);
+      });
+
+      // Highlight Outer Ring Road traffic crawl in Red
+      const orrLine = [
+        [12.9172, 77.6228], // Silk Board
+        [12.9260, 77.6830], // Ecospace
+        [12.9591, 77.6974], // Marathahalli
+        [12.9972, 77.6756], // Tin factory
+        [13.0358, 77.5970]  // Hebbal
+      ];
+      L.polyline(orrLine, { color: '#ea4335', weight: 6, opacity: 0.85, lineCap: 'round' })
+        .addTo(trafficLayerGroup)
+        .bindTooltip("Outer Ring Road: 🔴 Severe Peak Gridlock", { sticky: true });
+    }
+
+    // Draw Namma Metro Lines (Purple Line and Green Line)
+    function drawMetroLines() {
+      metroLayerGroup.clearLayers();
+      // Purple Line: Challaghatta -> Majestic -> MG Road -> Indiranagar -> Whitefield
+      const purpleLineCoords = [
+        [12.9080, 77.4850], // Challaghatta
+        [12.9774, 77.5708], // Majestic
+        [12.9756, 77.6066], // MG Road
+        [12.9719, 77.6412], // Indiranagar
+        [12.9972, 77.6756], // KR Puram
+        [12.9698, 77.7500]  // Whitefield Kadugodi
+      ];
+      L.polyline(purpleLineCoords, { color: '#9333ea', weight: 5, dashArray: '8, 6', opacity: 0.9 })
+        .addTo(metroLayerGroup)
+        .bindTooltip("🚇 Namma Metro Purple Line (Fastest East-West Route)", { sticky: true });
+
+      // Green Line: Silk Institute -> Majestic -> Yeshwantpur -> Nagasandra
+      const greenLineCoords = [
+        [12.8680, 77.5350], // Silk Institute
+        [12.9255, 77.5468], // Banashankari
+        [12.9774, 77.5708], // Majestic
+        [13.0280, 77.5500], // Yeshwantpur
+        [13.0500, 77.5000]  // Nagasandra
+      ];
+      L.polyline(greenLineCoords, { color: '#16a34a', weight: 5, dashArray: '8, 6', opacity: 0.9 })
+        .addTo(metroLayerGroup)
+        .bindTooltip("🚇 Namma Metro Green Line (North-South Corridor)", { sticky: true });
+    }
+
+    // Draw Waterlogging / Flooded Underpasses
+    const FLOOD_ZONES = [
+      { name: "Kadubeesanahalli Underpass (ORR)", coords: [12.9350, 77.6890], desc: "2 ft standing water during heavy downpour. Impassable for sedans." },
+      { name: "Okalipuram Underpass", coords: [12.9820, 77.5670], desc: "Submerged within 20 mins of cloudburst. Use Majestic flyover." },
+      { name: "Panathur Railway Underbridge (RUB)", coords: [12.9380, 77.7050], desc: "Completely submerged. Avoid Bellandur-Balagere connector." }
+    ];
+
+    function drawFloodZones() {
+      floodLayerGroup.clearLayers();
+      FLOOD_ZONES.forEach(fz => {
+        const icon = L.divIcon({ className: 'water-pin', iconSize: [14, 14] });
+        const marker = L.marker(fz.coords, { icon: icon }).addTo(floodLayerGroup);
+        marker.bindPopup(`
+          <div>
+            <b style="color: #0284c7;">🌧️ ${fz.name}</b><br>
+            <span style="color:#d93025; font-weight:bold;">Waterlogging Risk: HIGH</span><br>
+            <small>${fz.desc}</small>
+          </div>
+        `);
+      });
+    }
+
+    // Toggle Handlers
+    let showTraffic = true;
+    let showMetro = true;
+    let showFloods = true;
+
+    function toggleTrafficLayer() {
+      showTraffic = !showTraffic;
+      document.getElementById('btnToggleTraffic').classList.toggle('active', showTraffic);
+      if (showTraffic) drawChokepoints(); else trafficLayerGroup.clearLayers();
+    }
+
+    function toggleMetroLayer() {
+      showMetro = !showMetro;
+      document.getElementById('btnToggleMetro').classList.toggle('active', showMetro);
+      if (showMetro) drawMetroLines(); else metroLayerGroup.clearLayers();
+    }
+
+    function toggleFloodLayer() {
+      showFlood = !showFloods;
+      document.getElementById('btnToggleFloods').classList.toggle('active', showFloods);
+      if (showFloods) drawFloodZones(); else floodLayerGroup.clearLayers();
+    }
+
+    function swapLocations() {
+      const orig = document.getElementById('originInput');
+      const dest = document.getElementById('destInput');
+      const temp = orig.value;
+      orig.value = dest.value;
+      dest.value = temp;
+      calculateCommute();
+    }
+
+    function setCorridor(orig, dest) {
+      document.getElementById('originInput').value = orig;
+      document.getElementById('destInput').value = dest;
+      calculateCommute();
+    }
+
+    // Normalize location string to coordinate key
+    function getCoords(name) {
+      const key = name.toLowerCase().replace(/[^a-z]/g, '_');
+      for (const k in BENGALURU_COORDS) {
+        if (key.includes(k) || k.includes(key)) return BENGALURU_COORDS[k];
+      }
+      return [12.9716, 77.5946];
+    }
+
+    // Main Commute Calculation Function
+    async function calculateCommute() {
+      const origin = document.getElementById('originInput').value.trim();
+      const destination = document.getElementById('destInput').value.trim();
+      const hour = parseInt(document.getElementById('timeSelect').value);
+      const isRaining = document.getElementById('rainCheckbox').checked;
+      const loadingBar = document.getElementById('loadingBar');
+      const content = document.getElementById('sidebarContent');
+
+      if (!origin || !destination) return;
+
+      loadingBar.style.display = 'block';
 
       try {
-        const resp = await fetch('/api/ask', {
+        // Fetch AI Agent route analysis & multimodal metro savings
+        const queryPrompt = `How is traffic from ${origin} to ${destination} at ${hour}:00 hrs?`;
+        const res = await fetch('/api/ask', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ prompt: prompt, is_raining: isRaining })
+          body: JSON.stringify({ prompt: queryPrompt, is_raining: isRaining, hour: hour })
         });
-        const data = await resp.json();
-        renderResults(data);
+        const data = await res.json();
+        renderSidebarResults(data, origin, destination);
+        drawRouteOnMap(origin, destination);
       } catch (err) {
-        resultsDiv.innerHTML = `<div class="card span-2"><p style="color:red">Failed to reach server: ${err.message}</p></div>`;
+        content.innerHTML = `<div style="color:red; padding:12px;">Failed to fetch route data: ${err.message}</div>`;
       } finally {
-        loading.style.display = 'none';
+        loadingBar.style.display = 'none';
       }
     }
 
-    function setQuery(text) {
-      document.getElementById('queryInput').value = text;
-      submitQuery();
+    function drawRouteOnMap(origName, destName) {
+      routeLayerGroup.clearLayers();
+      const c1 = getCoords(origName);
+      const c2 = getCoords(destName);
+
+      // Add Origin Marker
+      L.marker(c1).addTo(routeLayerGroup).bindPopup(`<b>Start: ${origName}</b>`).openPopup();
+      // Add Destination Marker
+      L.marker(c2).addTo(routeLayerGroup).bindPopup(`<b>Destination: ${destName}</b>`);
+
+      // Road Route Polyline (Red / Heavy Congestion)
+      const roadPath = [c1, [(c1[0] + c2[0])/2 + 0.01, (c1[1] + c2[1])/2 - 0.01], c2];
+      L.polyline(roadPath, { color: '#ea4335', weight: 6, opacity: 0.85 })
+        .addTo(routeLayerGroup)
+        .bindTooltip("🚖 Road Cab Route (Slow, Choked)", { sticky: true });
+
+      // Multimodal Metro Path (Purple / Green)
+      const metroPath = [c1, [(c1[0] + c2[0])/2, (c1[1] + c2[1])/2], c2];
+      L.polyline(metroPath, { color: '#9333ea', weight: 4, dashArray: '6, 6', opacity: 0.9 })
+        .addTo(routeLayerGroup)
+        .bindTooltip("🚇 Namma Metro Alternate Track", { sticky: true });
+
+      // Fit map to show both points
+      const bounds = L.latLngBounds([c1, c2]);
+      map.fitBounds(bounds, { padding: [80, 80] });
     }
 
-    function renderResults(data) {
-      const resultsDiv = document.getElementById('results');
+    function renderSidebarResults(data, origin, destination) {
+      const content = document.getElementById('sidebarContent');
       let html = '';
 
-      // AI Advice Banner
+      let trafficData = null;
+      let metroData = null;
+      let departureData = null;
+
+      if (data.raw_tool_data) {
+        data.raw_tool_data.forEach(item => {
+          if (item.current_travel_time_mins && item.distance_km) trafficData = item;
+          if (item.origin_boarding_station) metroData = item;
+          if (item.golden_departure_window) departureData = item;
+        });
+      }
+
+      const roadTime = trafficData ? trafficData.current_travel_time_mins : 120;
+      const roadFare = trafficData ? trafficData.cost_estimates.cab_uber_ola_inr : 800;
+      const metroTime = metroData ? metroData.breakdown.total_multimodal_time_mins : 75;
+      const metroFare = metroData ? metroData.total_transit_cost_inr : 80;
+
+      const timeSaved = Math.max(0, roadTime - metroTime);
+      const moneySaved = Math.max(0, roadFare - metroFare);
+
+      // 1. Money & Time Saver Big Banner
       html += `
-        <div class="card span-2">
-          <h3>🤖 Namma Copilot Recommendation</h3>
-          <div class="response-bubble">${data.response || 'No summary available.'}</div>
+        <div class="money-saver-banner">
+          <div class="saver-header">
+            <span>⚡ AI Commute Optimization</span>
+            <span>Bengaluru DevFest</span>
+          </div>
+          <div class="saver-metric-row">
+            <div>
+              <div class="saver-big-val">₹${moneySaved}</div>
+              <div class="saver-sub">Saved with Metro</div>
+            </div>
+            <div style="margin-left: 20px;">
+              <div class="saver-big-val">${timeSaved}m</div>
+              <div class="saver-sub">Faster door-to-door</div>
+            </div>
+          </div>
         </div>
       `;
 
-      // Tool Data Breakdown
-      if (data.raw_tool_data && data.raw_tool_data.length > 0) {
-        data.raw_tool_data.forEach(item => {
-          // Commute stats
-          if (item.origin && item.destination && item.current_travel_time_mins) {
-            html += `
-              <div class="card">
-                <h3>🚗 Road Commute: ${item.origin} ➡️ ${item.destination}</h3>
-                <div class="stat-row">
-                  <span class="stat-label">Road Distance</span>
-                  <span class="stat-value">${item.distance_km} km</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Current Travel Time</span>
-                  <span class="stat-value badge-red">${item.current_travel_time_mins} mins</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Off-Peak Duration</span>
-                  <span class="stat-value">${item.off_peak_time_mins} mins</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Est. Cab Fare</span>
-                  <span class="stat-value">₹${item.cost_estimates?.cab_uber_ola_inr || 'N/A'} (Surge: ${item.cost_estimates?.surge_multiplier || '1.0x'})</span>
-                </div>
-              </div>
-            `;
-          }
+      // 2. Route Option: Namma Metro (RECOMMENDED)
+      html += `
+        <div class="route-card selected" onclick="highlightRoute('metro')">
+          <div class="route-card-header">
+            <div class="route-mode-badge" style="color: #137333;">
+              <span>🚇 Namma Metro Multimodal</span>
+            </div>
+            <span class="tag-recommended">⭐ AI Recommended</span>
+          </div>
+          <div class="route-duration-row">
+            <span class="route-duration">${metroTime} mins</span>
+            <span class="route-fare">₹${metroFare}</span>
+          </div>
+          <div class="route-details">
+            • <b>Boarding:</b> ${metroData?.origin_boarding_station || 'Nearest Metro Station'}<br>
+            • <b>Deboarding:</b> ${metroData?.destination_deboarding_station || 'Dest. Station'}<br>
+            • <b>Door-to-door:</b> First-mile auto + train + last-mile auto.<br>
+            <span style="color: #137333; font-weight: 700;">💰 Saves ₹${moneySaved} vs surge cab!</span>
+          </div>
+        </div>
+      `;
 
-          // Metro Alternative
-          if (item.origin_boarding_station && item.breakdown) {
-            html += `
-              <div class="card">
-                <h3>🚇 Namma Metro Alternative</h3>
-                <div class="stat-row">
-                  <span class="stat-label">Boarding Station</span>
-                  <span class="stat-value">${item.origin_boarding_station}</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Deboarding Station</span>
-                  <span class="stat-value">${item.destination_deboarding_station}</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Multimodal Door-to-Door</span>
-                  <span class="stat-value badge-green">${item.breakdown.total_multimodal_time_mins} mins</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Transit Cost</span>
-                  <span class="stat-value">₹${item.total_transit_cost_inr}</span>
-                </div>
-                <div class="stat-row">
-                  <span class="stat-label">Commuter Savings</span>
-                  <span class="stat-value badge-green">⏱️ Saves ${item.comparison_with_road_cab?.time_saved_mins || 0} mins (₹${item.comparison_with_road_cab?.money_saved_inr || 0})</span>
-                </div>
-              </div>
-            `;
-          }
+      // 3. Route Option: Road Cab (GRIDLOCKED)
+      html += `
+        <div class="route-card" onclick="highlightRoute('road')">
+          <div class="route-card-header">
+            <div class="route-mode-badge" style="color: #c5221f;">
+              <span>🚖 Road Cab (Ola / Uber)</span>
+            </div>
+            <span class="tag-gridlock">🔴 Severe Crawl</span>
+          </div>
+          <div class="route-duration-row">
+            <span class="route-duration">${roadTime} mins</span>
+            <span class="route-fare">₹${roadFare}</span>
+          </div>
+          <div class="route-details">
+            • <b>Road Distance:</b> ${trafficData?.distance_km || 18} km<br>
+            • <b>Congestion:</b> ${trafficData?.congestion_category || 'Heavy Gridlock'}<br>
+            • <b>Surge Multiplier:</b> ${trafficData?.cost_estimates?.surge_multiplier || '1.6x'} active.<br>
+            <span style="color: #d93025;">⚠️ Vulnerable to ORR/Silk Board bottlenecks</span>
+          </div>
+        </div>
+      `;
 
-          // Departure Windows
-          if (item.schedule_options) {
-            let optionsHtml = item.schedule_options.map(opt => `
-              <div class="stat-row">
-                <span class="stat-label">${opt.departure_time} ${opt.departure_time === item.golden_departure_window ? '⭐ (Best)' : ''}</span>
-                <span class="stat-value">${opt.estimated_minutes} mins</span>
+      // 4. Golden Departure Window Option
+      if (departureData) {
+        html += `
+          <div class="route-card" style="border-left: 4px solid #ca8a04;">
+            <div class="route-card-header">
+              <div class="route-mode-badge" style="color: #ca8a04;">
+                <span>⏱️ Golden Departure Window</span>
               </div>
-            `).join('');
-
-            html += `
-              <div class="card span-2">
-                <h3>⏱️ Golden Departure Window Optimization</h3>
-                <p style="color: var(--accent); margin-bottom: 12px;">Recommendation: Departing at <strong>${item.golden_departure_window}</strong> saves up to <strong>${item.time_saved_by_timing}</strong>!</p>
-                <div>${optionsHtml}</div>
-              </div>
-            `;
-          }
-        });
+              <span style="background: #fef9c3; color: #854d0e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Optimal</span>
+            </div>
+            <div class="route-duration-row">
+              <span class="route-duration" style="font-size: 1.15rem;">Leave at ${departureData.golden_departure_window}</span>
+            </div>
+            <div class="route-details">
+              ${departureData.time_saved_by_timing}. Avoids peak IT corridor outflow.
+            </div>
+          </div>
+        `;
       }
 
-      resultsDiv.innerHTML = html;
+      // 5. AI Copilot Advice
+      html += `
+        <div class="copilot-advice-card">
+          <h4>🤖 Namma Copilot Advice</h4>
+          <p>${data.response || 'Avoid Outer Ring Road between 5:30 PM and 8:30 PM. Namma Metro Purple Line offers guaranteed travel time regardless of surface road gridlock.'}</p>
+        </div>
+      `;
+
+      content.innerHTML = html;
     }
 
-    // Auto-run default query on initial load
-    window.onload = () => submitQuery();
+    // Initial Setup on Page Load
+    window.onload = () => {
+      drawChokepoints();
+      drawMetroLines();
+      drawFloodZones();
+      calculateCommute();
+    };
   </script>
 </body>
 </html>
