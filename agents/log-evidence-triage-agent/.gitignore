@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+**/.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.log
+!samples/spring-boot-incident.log
+.DS_Store
+.idea/
+.vscode/
