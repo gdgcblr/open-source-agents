@@ -129,3 +129,58 @@ def test_health_never_exposes_key(monkeypatch):
 
     body = TestClient(server.app).get("/api/health").text
     assert "super-secret" not in body
+
+
+def test_expert_with_empty_answer_does_not_crash(monkeypatch):
+    """Reproduces the live bug: Gemma 4 spends its whole budget thinking and
+    returns no visible text for one expert (finish_reason MAX_TOKENS)."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    import server
+
+    fake = FakeGenAI()
+    original = fake._gen
+
+    async def gen(model, contents, config):
+        if "COLOR ANALYST" in str(config.system_instruction):
+            fake.calls.append({"model": model, "contents": contents, "config": config})
+            return types.GenerateContentResponse(candidates=[types.Candidate(
+                finish_reason="MAX_TOKENS",
+                content=types.Content(role="model", parts=[
+                    types.Part(text="thinking thinking thinking…", thought=True)]))])
+        return await original(model, contents, config)
+
+    fake.aio.models.generate_content = gen
+
+    def patch(agent):
+        if isinstance(agent, LlmAgent):
+            m = models.build_model("gemma-4-26b-a4b-it")
+            m.client = fake
+            agent.model = m
+        for sub in getattr(agent, "sub_agents", []) or []:
+            patch(sub)
+
+    patch(server.root_agent)
+    from fastapi.testclient import TestClient
+
+    resp = TestClient(server.app).post("/api/fitcheck", json={
+        "selected_item_ids": ["t1", "b3", "s2"], "occasion": "office"})
+    lines = [json.loads(l) for l in resp.text.strip().splitlines()]
+    assert not [l for l in lines if l["type"] == "error"], lines
+    analyst = [l for l in lines if l.get("agent") == "ColorAnalyst"]
+    assert analyst and "token limit" in analyst[0]["text"]
+    assert lines[-1]["type"] == "result"
+    head = next(c for c in fake.calls if "HEAD STYLIST" in str(c["config"].system_instruction))
+    assert "COLOR ANALYST:" in str(head["config"].system_instruction)
+
+
+def test_error_messages_are_classified_correctly(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    import server
+    from google.genai import errors
+
+    # A plain KeyError containing "not found" must NOT be blamed on the model
+    msg = server.explain_error(KeyError("Context variable not found: `x`"))
+    assert "isn't available" not in msg and "KeyError" in msg
+    assert "quota" in server.explain_error(errors.ClientError(429, {"error": {"message": "Resource exhausted"}}))
+    assert "isn't available" in server.explain_error(errors.ClientError(404, {"error": {"message": "models/x not found"}}))
+    assert "API key" in server.explain_error(errors.ClientError(400, {"error": {"message": "API key not valid", "status": "INVALID_ARGUMENT"}}))

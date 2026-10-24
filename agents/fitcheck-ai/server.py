@@ -130,19 +130,26 @@ def build_result(state: dict) -> dict:
 
 
 def explain_error(exc: Exception) -> str:
+    """Turn API failures into a fix the user can act on. Only real Gemini API
+    errors (with an HTTP status) get API-specific advice."""
+    from google.genai import errors as genai_errors
+
     msg = f"{type(exc).__name__}: {exc}"
-    low = msg.lower()
-    if is_hosted(MODEL_ID):
-        if not api_key() or "api key" in low or "api_key" in low or "401" in low or "permission" in low:
-            return ("Gemini API rejected the request — check GOOGLE_API_KEY in .env "
+    if isinstance(exc, genai_errors.APIError):
+        code, low = exc.code, msg.lower()
+        if code in (401, 403) or "api key" in low or "api_key" in low:
+            return ("Gemini API rejected your key — check GOOGLE_API_KEY in .env "
                     "(create one at https://aistudio.google.com/apikey). " + msg[:300])
-        if "429" in low or "resource_exhausted" in low or "quota" in low:
-            return ("Gemini API quota hit even after retries. Wait a minute, set "
-                    "FITCHECK_MODEL=gemma-4-26b-a4b-it, or raise your AI Studio tier. " + msg[:300])
-        if "404" in low or "not found" in low:
+        if code == 429:
+            return ("Gemini API quota hit even after retries — wait a minute and try again, "
+                    "or set FITCHECK_THINKING=minimal to use fewer tokens. " + msg[:300])
+        if code == 404:
             return (f"Model '{MODEL_ID}' isn't available to your key. Run "
                     "`python scripts/check_api.py` to list Gemma models you can use. " + msg[:300])
-    elif "connect" in low:
+        if code >= 500:
+            return "Gemini API is having trouble right now (server error) — try again shortly. " + msg[:300]
+        return "Gemini API error: " + msg[:400]
+    if "ollama" in MODEL_ID and "connect" in msg.lower():
         return msg + " — is Ollama running? Try `ollama serve` and `ollama pull gemma3:4b`."
     return msg
 

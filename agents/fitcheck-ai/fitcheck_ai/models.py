@@ -72,9 +72,13 @@ def generation_config(model_id: str, temperature: float) -> types.GenerateConten
     cfg = types.GenerateContentConfig(
         temperature=temperature,
         # Generous: on thinking-capable models, reasoning tokens share this budget.
-        max_output_tokens=int(os.getenv("FITCHECK_MAX_TOKENS", "2048")),
+        max_output_tokens=int(os.getenv("FITCHECK_MAX_TOKENS", "4096")),
     )
-    level = os.getenv("FITCHECK_THINKING")  # e.g. "minimal" (fast) or "high"
-    if level and model_id.startswith("gemma-4"):
+    # Gemma 4 thinks before answering and the thinking eats the output budget.
+    # Styling verdicts don't need deep reasoning, so default to "minimal":
+    # faster, cheaper on free-tier quota, and no empty answers.
+    # FITCHECK_THINKING=high for deeper thinking, or "default" for the model's own setting.
+    level = os.getenv("FITCHECK_THINKING", "minimal").strip().lower()
+    if model_id.startswith("gemma-4") and level not in ("", "default", "none"):
         cfg.thinking_config = types.ThinkingConfig(thinking_level=level)
     return cfg

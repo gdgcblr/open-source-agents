@@ -21,6 +21,7 @@ from typing import AsyncGenerator
 from google.adk.agents import BaseAgent, LlmAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
+from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
 from . import color_engine as ce
@@ -37,6 +38,25 @@ def _model(model_id: str):
 
 def _cfg(temp: float = 0.6, model_id: str = MODEL_ID) -> types.GenerateContentConfig:
     return generation_config(model_id, temp)
+
+
+OUTPUT_KEYS = ["outfit_notes", "stylist_take", "color_take", "occasion_take",
+               "analyst_take", "skeptic_take", "scorecard_raw"]
+NO_ANSWER = "(no answer from this expert — ignore and decide without it)"
+
+
+def _ensure_answer(callback_context, llm_response: LlmResponse):
+    """after_model_callback: if Gemma returns only thinking (or nothing) — e.g. it
+    hit the token limit — replace it with a visible placeholder, so the UI shows
+    what happened and the next agents' {templates} still resolve."""
+    parts = llm_response.content.parts if llm_response.content else []
+    if llm_response.partial or any(p.text and p.text.strip() and not p.thought for p in parts) \
+            or any(p.function_call for p in parts):
+        return None
+    reason = str(llm_response.finish_reason or llm_response.error_code or "empty response")
+    hint = " (hit the token limit — raise FITCHECK_MAX_TOKENS)" if "MAX_TOKENS" in reason else ""
+    return LlmResponse(content=types.Content(role="model", parts=[types.Part(
+        text=f"(no answer: {reason.split('.')[-1]}{hint})")]))
 
 
 # ---------------------------------------------------------------------------
@@ -101,6 +121,8 @@ class ColorLab(BaseAgent):
             "selected_items": selected,
         }
         delta = {
+            **{k: NO_ANSWER for k in OUTPUT_KEYS},  # safety net for {templates}
+            "scorecard_raw": "",
             "color_lab": color_lab,
             "occasion_text": occasion,
             "user_notes": s.get("notes") or "none",
@@ -146,6 +168,7 @@ length, fabric/texture if visible), how pieces are layered, the overall silhouet
 footwear and accessories. If something isn't visible, say "not visible".
 No opinions or scores — only observations.""",
     output_key="outfit_notes",
+    after_model_callback=_ensure_answer,
 )
 
 # ---------------------------------------------------------------------------
@@ -166,6 +189,7 @@ stylist = LlmAgent(
 layering and silhouette: balance of volume top vs bottom, waist definition, lengths,
 how layers stack, fit. Give 1 strength and 2 concrete fixes.""" + _COMMON,
     output_key="stylist_take",
+    after_model_callback=_ensure_answer,
 )
 
 color_expert = LlmAgent(
@@ -178,6 +202,7 @@ Colours that sit in the wearer's personal palette: {in_palette_text}
 Wearer's palette: {palette_text}
 Explain the scheme in plain words, whether contrast suits the wearer, and one colour swap.""" + _COMMON,
     output_key="color_take",
+    after_model_callback=_ensure_answer,
 )
 
 occasion_expert = LlmAgent(
@@ -188,6 +213,7 @@ the event: formality level, practicality (weather, walking, sitting, dancing),
 cultural context and dress codes common in India where relevant. Say what to
 add/remove to hit the dress code exactly.""" + _COMMON,
     output_key="occasion_take",
+    after_model_callback=_ensure_answer,
 )
 
 color_analyst = LlmAgent(
@@ -205,6 +231,7 @@ away from the face, and how to wear favourites that fall outside the palette
 below 60%, say the reading is tentative and suggest retaking in daylight.
 End with exactly one line: SCORE: <how well the current outfit fits their palette, 1-10>/10""",
     output_key="analyst_take",
+    after_model_callback=_ensure_answer,
 )
 
 council = ParallelAgent(
@@ -234,6 +261,7 @@ Pick the 3 best combo IDs for this occasion and say in one line each why.
 Then say whether ONE new purchase is truly justified (a real gap) or "nothing to buy".
 Never invent garments that aren't listed. Max 110 words.""",
     output_key="skeptic_take",
+    after_model_callback=_ensure_answer,
 )
 
 # ---------------------------------------------------------------------------
@@ -266,6 +294,7 @@ Reply with ONLY valid JSON (no markdown fences), exactly this shape:
   "buy_next": "<one item or 'nothing — shop your closet'>"
 }""",
     output_key="scorecard_raw",
+    after_model_callback=_ensure_answer,
 )
 
 root_agent = SequentialAgent(

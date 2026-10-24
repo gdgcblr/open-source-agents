@@ -65,7 +65,7 @@ Browser ◀── NDJSON stream (each agent's take, then the final result) ─�
 | `gemma-3-*` | `Gemma` (patched) | ADK moves system instructions into the prompt; we patch an edge case where they could be dropped |
 | anything else | `LiteLlm` | e.g. `ollama_chat/gemma3:4b` for local runs |
 
-Hosted calls retry `429`/`5xx` with exponential backoff (free-tier quotas are per minute and the council fires 4 calls at once). Gemma 4 "thinking" text is filtered out of the debate feed, and the API key stays on the server and is never sent to the browser.
+Hosted calls retry `429`/`5xx` with exponential backoff (free-tier quotas are per minute and the council fires 4 calls at once). Gemma 4 runs with `minimal` thinking by default (styling verdicts don't need long reasoning, and it keeps thinking from using up the token budget). Thinking text is filtered out of the debate feed, and if an expert still returns no answer, an ADK `after_model_callback` puts a visible placeholder in its place so the rest of the council keeps going. and the API key stays on the server and is never sent to the browser.
 
 **Design principle: measure in code, reason with Gemma.** Small models are unreliable at reading exact colours off pixels, so all colour facts are computed deterministically in `color_engine.py` and passed into prompts through ADK state templating (`{palette_text}`, `{harmony_text}`, …). Gemma handles what it's good at: judgement, taste and explanation. This also means every step works with Gemma builds that **don't support tool-calling**.
 
@@ -114,9 +114,9 @@ Hosted calls retry `429`/`5xx` with exponential backoff (free-tier quotas are pe
 | `GOOGLE_API_KEY` (or `GEMINI_API_KEY`) | For hosted Gemma | *None* | Google AI Studio key |
 | `FITCHECK_MODEL` | No | `gemma-4-26b-a4b-it` with a key, else `ollama_chat/gemma3:4b` | Model for all agents |
 | `FITCHECK_VISION_MODEL` | No | same as `FITCHECK_MODEL` | Model for the OutfitReader (must accept images) |
-| `FITCHECK_THINKING` | No | model default | Gemma 4 thinking level: `minimal` (faster) or `high` |
+| `FITCHECK_THINKING` | No | `minimal` | Gemma 4 thinking level: `minimal` (fast), `high` (deeper), or `default` (model's own) |
 | `FITCHECK_RETRY_ATTEMPTS` | No | `5` | Retries on 429 / 5xx with exponential backoff |
-| `FITCHECK_MAX_TOKENS` | No | `2048` | Max output tokens per call (thinking shares this budget) |
+| `FITCHECK_MAX_TOKENS` | No | `4096` | Max output tokens per call (thinking shares this budget) |
 | `OLLAMA_API_BASE` | No | `http://localhost:11434` | Ollama endpoint (local mode only) |
 | `HOST` / `PORT` | No | `127.0.0.1` / `8000` | Web server address |
 
@@ -173,7 +173,7 @@ The final scorecard has this shape (values vary by model and run):
 ```bash
 pytest -q
 ```
-All 12 tests run **fully offline** (no key, no Ollama). They check:
+All 14 tests run **fully offline** (no key, no Ollama). They check:
 - **hosted path**: a fake `google-genai` client sits behind the real ADK `Gemini` class, so the tests verify what would actually be sent to the Gemini API: the model id, native system instructions, the outfit photo as inline image bytes, 7 calls per run, and thinking text filtered out;
 - the model factory (key ⇒ hosted Gemma 4, `gemma-3-*` ⇒ patched `Gemma` class, otherwise LiteLLM), retry settings, and that `/api/health` never leaks the key;
 - that white balance removes a warm cast and that skin detection works on selfies,
