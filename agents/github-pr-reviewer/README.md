@@ -1,61 +1,71 @@
-# GitHub PR Reviewer & Triage Agent
+# Autonomous GitHub PR Reviewer & Triage Council
 
-> An automated, intelligent AI agent that reviews GitHub Pull Requests, analyzes diffs for security vulnerabilities and code smells, classifies PR size and risk, and generates actionable review reports.
+> A multi-agent AI system that audits GitHub Pull Requests for OWASP/CWE security vulnerabilities and performance bottlenecks, autonomously synthesizes regression tests, authors drop-in remediation patches, and issues definitive merge verdicts.
 
 ---
 
 ## Overview
 
 ### Problem Statement & Intended Users
-- **Problem**: Reviewing pull requests is time-consuming and prone to human oversight. Critical security flaws (such as hardcoded API keys, SQL injections, and command injection risks) and unhandled edge cases frequently slip through code reviews, while reviewers spend valuable engineering time on manual triage and sizing.
-- **Intended Users**: Open-source maintainers, software engineers, DevOps/platform teams, and security reviewers seeking automated PR triage, pre-merge validation, and continuous code quality feedback.
+- **Problem**: Reviewing pull requests is time-consuming, mentally exhausting, and prone to human oversight. Critical security vulnerabilities (hardcoded secrets, SQL injections, command injection vectors) and subtle performance regressions frequently slip past reviewers, while engineering teams lack the bandwidth to author missing unit tests or fix boilerplate issues for external contributors.
+- **Intended Users**: Open-source maintainers, software engineering teams, platform/DevOps leads, and security auditors seeking fully autonomous, pre-merge PR triage and self-healing pull request reviews.
 
 ### Key Features
-- **Automated PR Triage**: Classifies pull requests by category (`Feature`, `Bug Fix`, `Security Fix`, `Refactor`, `Documentation`), size tier (`XS` to `XL`), and overall risk level (`Low`, `Medium`, `High`, `Critical`).
-- **Heuristic Security & Secret Scanner**: Deterministic static checks detecting hardcoded secrets (AWS keys, GitHub tokens, private keys), SQL injection vectors, dangerous dynamic evaluation (`eval`/`exec`), disabled TLS verification, and leftover debug code.
-- **LLM-Powered Reasoning & Synthesis**: Integrates with Google Gemini API (`gemini-1.5-flash`, `gemini-2.0-flash`, etc.) to provide contextual architectural analysis, constructive review notes, and line-by-line diff fix suggestions.
-- **Dual-Mode Execution (Zero-Config Offline Support)**: Operates seamlessly in offline heuristic mode when an API key is not provided or when `--offline` is specified, ensuring 100% test reproducibility and zero paid API lock-in.
-- **Multiple Input Sources**: Ingests diffs directly from live GitHub PR URLs (`https://github.com/owner/repo/pull/123`), repository slugs (`owner/repo#123`), local `.patch` / `.diff` files, or piped standard input (`git diff | python main.py --stdin`).
-- **Flexible Output**: Generates GitHub-flavored markdown reports (ready for PR comments) or structured JSON payloads for CI/CD integration.
+- **Multi-Agent Specialist Council**: Coordinates four specialized AI agents to deliver multi-faceted code reviews:
+  1. **Security & Vulnerability Auditor**: Scans additions against OWASP Top 10 and CWE standards (CWE-798, CWE-89, CWE-78, CWE-95, CWE-502, CWE-295).
+  2. **Performance & Reliability Architect**: Flags unmanaged database connections, resource leaks, full-table scans, and blocking synchronous calls.
+  3. **Automated Test Synthesizer**: Parses touched function signatures and automatically writes complete, runnable `pytest` unit and regression test cases.
+  4. **Lead Architect (Adjudicator)**: Evaluates specialist reports, computes a composite Code Health Score (0–100), and renders a definitive verdict (`APPROVED`, `CHANGES_REQUESTED`, or `BLOCKED`).
+- **Autonomous Remediation Patching (`--auto-fix`)**: Authors an apply-ready `remediation.patch` file containing concrete drop-in fixes that developers can apply in one command (`git apply remediation.patch`).
+- **Interactive Dark-Mode HTML Dashboard (`--html`)**: Generates a self-contained, offline-compatible HTML report featuring SVG health score gauges, council scorecards, filterable findings, and copy-pasteable test cases.
+- **Drop-in GitHub Action**: Packaged with a native [`action.yml`](action.yml) for 1-click installation into any repository's CI/CD pipeline.
+- **Rich Terminal UI & Visual Scorecard**: Terminal interface with progress indicators, colored scorecard tables, and severity panels (with graceful ANSI fallback).
+- **Dual-Mode Zero-Config Offline Support**: Operates out-of-the-box in local heuristic mode without requiring any API keys, with optional Gemini LLM deep synthesis (`gemini-1.5-flash`, `gemini-1.5-pro`).
 
 ---
 
 ## Technical Stack
 
 - **Language & Runtime**: Python 3.9+ / 3.10+ / 3.11+
-- **Agent Framework / Core Library**: Custom multi-stage reasoning agent (Heuristic Pattern Engine + LLM Reviewer)
-- **Models**: Google Gemini (`gemini-1.5-flash`, `gemini-1.5-pro`, configurable via `GEMINI_MODEL`)
-- **External APIs / Tools**: GitHub REST API / Raw Diff endpoints, `requests`, `python-dotenv`
-- **Testing**: `unittest` / `pytest`
+- **Agent Architecture**: Multi-Agent Orchestration (Specialist Council Pattern)
+- **Supported Models**: Google Gemini (`gemini-1.5-flash`, `gemini-1.5-pro` via official REST API)
+- **CLI & Presentation**: Python `rich` (with zero-dependency ANSI fallback)
+- **CI/CD Integration**: GitHub Actions Composite Action (`action.yml`)
+- **Testing**: Python `unittest` / `pytest`
 
 ---
 
 ## Architecture & Data Flow
 
 ```
-[GitHub PR / Local Diff / Stdin]
-              |
-              v
-     [Diff Parser Module]
-              |
-              +---> [Heuristic Rule Scanner]
-              |            | (Secrets, Injections, Code Smells)
-              |            v
-              +---> [Triage & Sizing Engine]
-              |            | (Type, Size Tier, Risk Level)
-              |            v
-              +---> [LLM Synthesis Agent (Gemini API)]
-                           | (Architectural Analysis & Suggestions)
-                           v
-          [Structured Markdown / JSON Report]
+                     [GitHub PR / Local Diff / Stdin]
+                                    │
+                                    ▼
+                         [Unified Diff Parser]
+                                    │
+    ┌───────────────────────────────┼───────────────────────────────┐
+    ▼                               ▼                               ▼
+[Security Auditor]        [Performance Architect]         [Test Synthesizer]
+ • CWE-798 (Secrets)       • Resource & Connection Leaks   • Function AST Inspection
+ • CWE-89 (SQL Injection) • Full-Table Scans               • Edge-case Test Authoring
+ • CWE-78 (Cmd Injection) • Blocking Event Loop Calls     • Pytest Suite Generation
+    │                               │                               │
+    └───────────────────────────────┼───────────────────────────────┘
+                                    ▼
+                        [Lead Architect Agent]
+                                    │
+                   ┌────────────────┴────────────────┐
+                   ▼                                 ▼
+         [Composite Health Score]            [Definitive Verdict]
+             (Weighted 0–100)           (APPROVED / CHANGES / BLOCKED)
+                   │                                 │
+                   └────────────────┬────────────────┘
+                                    ▼
+        ┌───────────────────────────┼───────────────────────────┐
+        ▼                           ▼                           ▼
+[Rich Terminal UI]         [Interactive HTML]        [Auto-Fix Patch]
+ Scorecard & Tables         Standalone Dashboard       remediation.patch
 ```
-
-1. **Diff Ingestion**: The agent fetches unified diffs from GitHub (API or web diff endpoint), a local patch file, or standard input.
-2. **Unified Diff Parsing**: Changes are parsed into structured file diffs, hunk boundaries, and changed line arrays with line-number tracking.
-3. **Static Heuristic Inspection**: Regex-based scanners evaluate additions for hardcoded credentials, known security anti-patterns, and code smells.
-4. **Triage Metrics Computation**: Change volume and risk vectors are computed to categorize the pull request.
-5. **AI Reasoning Loop**: If configured with a Gemini API key, diff context and heuristic observations are dispatched to Gemini for semantic review and code suggestions. In offline mode, the heuristic engine generates structured findings directly.
-6. **Report Generation**: Output is formatted as a standardized markdown review report with triage metrics, findings by severity, and a reviewer checklist.
 
 ---
 
@@ -63,8 +73,8 @@
 
 - **Python**: Python 3.9 or higher.
 - **Package Manager**: `pip`
-- **Gemini API Key (Optional)**: Required for LLM synthesis (`GEMINI_API_KEY`). If omitted, the agent runs in offline heuristic mode.
-- **GitHub Token (Optional)**: Required only for private repositories or higher GitHub API rate limits.
+- **Gemini API Key (Optional)**: Required for deep generative LLM review (`GEMINI_API_KEY`). If omitted, the agent runs in offline specialist council mode with zero external dependencies.
+- **GitHub Token (Optional)**: Required only for private repositories or high GitHub API rate limits.
 
 ---
 
@@ -83,11 +93,10 @@
    ```
 
 3. **Configure Environment Variables:**
-   Copy the example environment configuration:
    ```bash
    cp .env.example .env
    ```
-   *(Edit `.env` to supply `GEMINI_API_KEY` if you wish to enable LLM-powered review.)*
+   *(Edit `.env` to supply `GEMINI_API_KEY` for online LLM synthesis.)*
 
 ---
 
@@ -95,8 +104,8 @@
 
 | Variable Name | Required | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `GEMINI_API_KEY` | No | *None* | Google Gemini API key. If omitted, agent defaults to offline heuristic mode. |
-| `GITHUB_TOKEN` | No | *None* | GitHub Personal Access Token (for private repos or high rate limits). |
+| `GEMINI_API_KEY` | No | *None* | Google Gemini API key. If omitted, agent runs in offline council mode. |
+| `GITHUB_TOKEN` | No | *None* | GitHub Personal Access Token (for private repos or higher API limits). |
 | `GEMINI_MODEL` | No | `gemini-1.5-flash` | Gemini model name identifier (`gemini-1.5-flash`, `gemini-1.5-pro`). |
 | `LOG_LEVEL` | No | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`). |
 
@@ -104,133 +113,144 @@
 
 ## How to Run
 
-### 1. Zero-Config Sample Run (Offline Heuristic Mode)
+### 1. Zero-Config Sample Run (Offline Council Mode)
 Run the agent on the bundled sample patch containing intentional security vulnerabilities:
 ```bash
 python main.py --sample --offline
 ```
 
-### 2. Review a Live Public GitHub Pull Request
+### 2. Autonomous Auto-Fix & Test Synthesis
+Generate a remediation patch and unit test suite:
+```bash
+python main.py --sample --offline --auto-fix --generate-tests generated_tests.py
+```
+To apply the generated fixes to your local branch:
+```bash
+git apply remediation.patch
+```
+
+### 3. Export Interactive HTML Dashboard
+Export a standalone, dark-mode HTML dashboard:
+```bash
+python main.py --sample --offline --html pr_dashboard.html
+```
+
+### 4. Review a Live Public GitHub Pull Request
 ```bash
 python main.py --pr https://github.com/torvalds/linux/pull/42 --offline
-# Or with LLM review enabled:
+# Or with Gemini LLM enabled:
 python main.py --pr https://github.com/facebook/react/pull/28000
 ```
 
-### 3. Review a Local Git Diff or Patch File
-```bash
-python main.py --diff samples/sample_bug_fix.patch --offline
-```
-
-### 4. Pipe Uncommitted Local Git Changes via Stdin
+### 5. Review Uncommitted Git Changes via Stdin
 ```bash
 git diff main...HEAD | python main.py --stdin --offline
 ```
 
-### 5. Export Report to Markdown File or JSON
+### 6. Run in CI Mode (Exit Code 1 on BLOCKED)
 ```bash
-# Save to Markdown
-python main.py --sample --offline --output pr_review.md
+python main.py --diff my_feature.patch --ci
+```
 
-# Output structured JSON
-python main.py --sample --offline --json
+---
+
+## GitHub Action Integration
+
+Add the agent to any repository's CI pipeline by creating `.github/workflows/pr-agent.yml`:
+
+```yaml
+name: "AI PR Reviewer Council"
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: Mourya-N/open-source-agents/agents/github-pr-reviewer@feat/github-pr-reviewer
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          auto_fix: "true"
+          fail_on_block: "true"
 ```
 
 ---
 
 ## Example Input & Output
 
-### Example Input (Unified Diff)
-```diff
-diff --git a/src/auth/service.py b/src/auth/service.py
---- a/src/auth/service.py
-+++ b/src/auth/service.py
-@@ -10,6 +10,12 @@
-+SECRET_KEY = "super-secret-production-jwt-key-do-not-share"
-+
-+def authenticate_user(username, password):
-+    conn = sqlite3.connect("users.db")
-+    cursor = conn.cursor()
-+    query = f"SELECT * FROM users WHERE username = '{username}'"
-+    cursor.execute(query)
+### Terminal Council Scorecard Output
+```text
+╭──────── 🤖 PR Council Review: Sample PR Diff (sample_pr_diff.patch) ─────────╮
+│                                                                              │
+│   VERDICT: BLOCKED  |  HEALTH SCORE: 40/100                                  │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+                      🏛️ Specialist Agent Council Scorecard                      
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Specialist Agent          ┃ Health Score ┃ Status ┃ Key Observation          ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Security & Vulnerability  │    0/100     │ FAILED │ Detected 3 critical or   │
+│ Auditor                   │              │        │ high security issue(s).  │
+│ Performance & Reliability │   75/100     │ PASSED │ Resource management and  │
+│ Architect                 │              │        │ I/O patterns meet norms. │
+│ Automated Test            │   70/100     │ PASSED │ Synthesized 1 automated  │
+│ Synthesizer               │              │        │ test case(s).            │
+└───────────────────────────┴──────────────┴────────┴──────────────────────────┘
+               📊 Triage & Sizing Analysis               
+┏━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Classification ┃ Size Tier ┃ Lines (+/-) ┃ Risk Level ┃
+┡━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│  Security Fix  │    XS     │  +19 / -2   │  Critical  │
+└────────────────┴───────────┴─────────────┴────────────┘
+
+🔍 Findings & Remediation (6 identified):
+1. [CRITICAL] Potential hardcoded secret or API key [CWE-798: Hardcoded Credentials]
+   Location: src/auth/service.py:14
+   Fix: Extract secret to environment variables or secret manager vault.
+2. [HIGH] Potential SQL injection: formatted f-string in SQL query [CWE-89: SQL Injection]
+   Location: src/auth/service.py:22
+   Fix: Use parameterized SQL query binding with placeholders (?, %s, or :param).
+
+╭──────────────── 🩹 Autonomous Remediation Patch (git apply) ─────────────────╮
+│ diff --git a/src/auth/service.py b/src/auth/service.py                       │
+│ --- a/src/auth/service.py                                                    │
+│ +++ b/src/auth/service.py                                                    │
+│ @@ -13,5 +13,5 @@                                                            │
+│ -SECRET_KEY = "super-secret-production-jwt-key-do-not-share"                 │
+│ +SECRET_KEY = os.environ.get('SECRET_KEY')                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
 ```
-
-### Example Output (Markdown Report)
-````markdown
-# 🤖 Pull Request Review & Triage Report
-
-**Target:** `Sample PR Diff (sample_pr_diff.patch)`  
-**Generated:** 2026-10-24 06:53:47 UTC  
-
----
-
-## 📊 Triage Summary
-
-| Metric | Assessment |
-| :--- | :--- |
-| **Type** | `Security Fix` |
-| **Size** | `XS` (+19 / -2 lines across 2 files) |
-| **Risk Level** | 🔴 Critical |
-
-**Triage Note:** CRITICAL security issues found! Hardcoded credentials or critical flaws require immediate remediation.
-
----
-
-## 🔍 Findings & Recommendations (4 issues identified)
-
-### 1. 🚨 **CRITICAL**: Potential hardcoded secret or API key
-- **Location:** `src/auth/service.py`:L14
-- **Category:** `SECURITY`
-- **Description:** Hardcoded sensitive data pattern matched on line 14.
-- **Suggested Fix:**
-```suggestion
-Remove secret and load it from environment variables (`os.environ.get(...)`).
-```
-
-### 2. ⚠️ **HIGH**: Potential SQL injection: raw formatted string in SQL query
-- **Location:** `src/auth/service.py`:L22
-- **Category:** `SECURITY`
-- **Description:** Identified risky programming construct on line 22.
-- **Suggested Fix:**
-```suggestion
-Use parameterized queries with placeholder syntax (e.g. `cursor.execute('SELECT ... WHERE user = ?', (username,))`).
-```
-
----
-
-## ✅ Reviewer Checklist
-
-- [ ] Verify all unit and integration tests pass cleanly.
-- [ ] Verify that no sensitive environment variables or secrets are exposed.
-- [ ] Ensure adequate test coverage has been added for modified code paths.
-- [ ] Check for edge cases and input validation on external data.
-````
 
 ---
 
 ## How to Test
 
-Run the automated test suite using `unittest`:
+Run the automated test suite covering all specialist agents, test generator, patch generator, and dashboard reporter:
 
 ```bash
-# Run all tests
-python -m unittest discover -s tests -v
-
-# Or with pytest
-pytest tests/
+python3 -m unittest discover -s tests -v
 ```
 
-### Test Coverage Summary:
-- **`test_parse_pr_target`**: Validates URL and repo/number slug parsing.
-- **`test_parse_unified_diff`**: Validates multi-file diff parsing, hunk calculation, and line numbers.
-- **`test_heuristic_security_detection`**: Validates regex detection of AWS keys, hardcoded JWT secrets, and SQL injections.
-- **`test_calculate_triage`**: Validates sizing thresholds and risk classification.
-- **`test_end_to_end_offline_analysis`**: Verifies complete end-to-end report generation and markdown/JSON formatting.
+### Test Suite Coverage:
+- `test_security_specialist_agent`: Validates OWASP/CWE pattern detection, secret flags, and failure status.
+- `test_performance_specialist_agent`: Validates resource leak and query scanning.
+- `test_auto_test_generator_agent`: Validates AST function discovery and unit test code synthesis.
+- `test_auto_patch_generator`: Verifies authoring of valid unified git diff patches.
+- `test_html_dashboard_generation`: Validates full standalone HTML generation with SVG health gauge.
+- `test_end_to_end_council_verdict_blocked`: Validates adjudication of blocked PRs and patch bundling.
+- `test_end_to_end_council_verdict_approved`: Validates approval workflows for clean bug fixes.
+- `test_parse_pr_target`: Validates GitHub URL and slug parsing.
+- `test_parse_unified_diff`: Validates multi-file diff parsing with hunk tracking.
 
 ---
 
 ## Known Limitations
 
-- **Large PR Truncation**: Extremely large diffs (>50,000 lines) are truncated to respect model context window boundaries.
-- **Private Repository Access**: Analyzing private GitHub PRs requires exporting `GITHUB_TOKEN` with appropriate repository read scopes.
-- **Dynamic Language Constraints**: Static heuristic checks use regex patterns and do not perform deep inter-procedural data flow tracking (complemented by Gemini LLM analysis when enabled).
+- **Large PR Truncation**: Diffs exceeding 50,000 characters are safely truncated to respect LLM context window constraints.
+- **Language Coverage for Tests**: Automated test generation currently synthesizes Python `pytest` test suites; multi-language test generation for TypeScript/Go is on the roadmap.
+- **Private Repository Scopes**: Inspecting private pull requests requires providing a GitHub Personal Access Token with repo read scopes.

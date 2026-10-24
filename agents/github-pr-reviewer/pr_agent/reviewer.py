@@ -4,14 +4,16 @@ import re
 from typing import List, Optional
 import requests
 
-from .models import ReviewReport, ReviewIssue, TriageResult, FileDiff
+from .models import ReviewReport, ReviewIssue, TriageResult, FileDiff, SpecialistVerdict, GeneratedTest
 from .diff_parser import parse_unified_diff
-from .rules import run_heuristic_checks, calculate_triage
+from .rules import calculate_triage
 from .prompts import REVIEW_SYSTEM_PROMPT, build_review_prompt
+from .specialists import SecurityAuditorAgent, PerformanceArchitectAgent, AutoTestGeneratorAgent, LeadArchitectAgent
+from .patch_generator import AutoPatchGenerator
 
 
 class PRReviewerAgent:
-    """Intelligent GitHub PR Reviewer & Triage Agent."""
+    """Multi-Agent Autonomous GitHub PR Reviewer & Triage Council."""
 
     def __init__(
         self,
@@ -23,12 +25,17 @@ class PRReviewerAgent:
         self.model_name = model_name or os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
         self.offline = offline or not bool(self.api_key)
 
+        # Initialize specialist council
+        self.security_agent = SecurityAuditorAgent()
+        self.performance_agent = PerformanceArchitectAgent()
+        self.test_generator = AutoTestGeneratorAgent()
+        self.lead_architect = LeadArchitectAgent()
+
     def analyze(self, diff_text: str, source_title: str) -> ReviewReport:
-        """Execute full review and triage workflow."""
-        # 1. Parse diff
+        """Execute full multi-agent review and triage workflow."""
+        # 1. Parse unified diff
         file_diffs = parse_unified_diff(diff_text)
         if not file_diffs:
-            # If standard git header wasn't found, create dummy diff entry
             file_diffs = [
                 FileDiff(
                     filename="unspecified",
@@ -40,34 +47,79 @@ class PRReviewerAgent:
                 )
             ]
 
-        # 2. Heuristic rule scanner
-        heuristic_issues = run_heuristic_checks(file_diffs)
+        # 2. Run Specialist Agents in parallel / sequence
+        sec_verdict = self.security_agent.evaluate(file_diffs)
+        perf_verdict = self.performance_agent.evaluate(file_diffs)
+        test_verdict, generated_tests = self.test_generator.evaluate(file_diffs)
 
-        # 3. Compute triage metrics
-        triage = calculate_triage(file_diffs, heuristic_issues, title=source_title)
+        specialist_verdicts: List[SpecialistVerdict] = [sec_verdict, perf_verdict, test_verdict]
 
-        # 4. LLM synthesis or offline fallback
+        # Consolidate issues
+        combined_issues: List[ReviewIssue] = []
+        combined_issues.extend(sec_verdict.findings)
+        combined_issues.extend(perf_verdict.findings)
+
+        # 3. Compute triage and volume metrics
+        triage = calculate_triage(file_diffs, combined_issues, title=source_title)
+
+        # 4. Lead Architect Adjudication
+        verdict, health_score, exec_summary, recommendations = self.lead_architect.adjudicate(
+            triage,
+            specialist_verdicts,
+            combined_issues
+        )
+
+        # 5. Autonomous Remediation Patch Generation
+        remediation_patch = AutoPatchGenerator.generate_remediation_patch(file_diffs, combined_issues)
+
+        # 6. LLM Deep Synthesis (if online and key present)
+        raw_llm = None
         if not self.offline and self.api_key:
             try:
-                llm_data = self._call_gemini_api(diff_text, source_title, heuristic_issues)
-                return self._build_report(source_title, triage, heuristic_issues, llm_data)
-            except Exception as e:
-                # Graceful degradation to offline heuristics if API fails
-                return self._build_offline_report(
-                    source_title,
-                    triage,
-                    heuristic_issues,
-                    warning_note=f"LLM synthesis bypassed (Error: {e}). Fallback to offline heuristic engine."
-                )
-        else:
-            return self._build_offline_report(source_title, triage, heuristic_issues)
+                llm_data = self._call_gemini_api(diff_text, source_title, combined_issues)
+                raw_llm = json.dumps(llm_data, indent=2)
 
-    def _call_gemini_api(self, diff_text: str, source_title: str, heuristic_issues: List[ReviewIssue]) -> dict:
-        """Call Gemini API via REST endpoint with structured JSON parsing."""
+                # Merge extra LLM issues
+                for raw in llm_data.get("issues", []):
+                    issue = ReviewIssue(
+                        file=raw.get("file", "unknown"),
+                        line=raw.get("line"),
+                        severity=raw.get("severity", "MEDIUM").upper(),
+                        category=raw.get("category", "CODE_SMELL").upper(),
+                        title=raw.get("title", "Review observation"),
+                        description=raw.get("description", ""),
+                        suggestion=raw.get("suggestion")
+                    )
+                    if not any(h.file == issue.file and h.title == issue.title for h in combined_issues):
+                        combined_issues.append(issue)
+
+                if llm_data.get("executive_summary"):
+                    exec_summary = llm_data["executive_summary"] + f"\n\nCouncil Verdict: {verdict} (Health Score: {health_score}/100)."
+
+            except Exception as e:
+                exec_summary += f"\n\n*(Notice: LLM deep synthesis bypassed: {e})*"
+
+        return ReviewReport(
+            title=source_title,
+            source=source_title,
+            triage=triage,
+            issues=combined_issues,
+            executive_summary=exec_summary,
+            recommendations=recommendations,
+            verdict=verdict,
+            health_score=health_score,
+            specialist_reviews=specialist_verdicts,
+            generated_tests=generated_tests,
+            remediation_patch=remediation_patch,
+            raw_llm_analysis=raw_llm
+        )
+
+    def _call_gemini_api(self, diff_text: str, source_title: str, issues: List[ReviewIssue]) -> dict:
+        """Call Gemini API via REST endpoint with structured JSON response."""
         heuristics_summary = (
-            f"Found {len(heuristic_issues)} heuristic issues: " +
-            ", ".join(f"{i.severity}: {i.title}" for i in heuristic_issues[:5])
-            if heuristic_issues else "No automated heuristic flags."
+            f"Found {len(issues)} council issues: " +
+            ", ".join(f"{i.severity}: {i.title}" for i in issues[:5])
+            if issues else "No initial static heuristic issues."
         )
 
         prompt = build_review_prompt(source_title, diff_text, heuristics_summary)
@@ -97,91 +149,6 @@ class PRReviewerAgent:
             raise RuntimeError("Gemini API returned empty candidates.")
 
         text_content = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-        # Clean potential markdown fences
         cleaned = re.sub(r"^```(?:json)?\n", "", text_content.strip())
         cleaned = re.sub(r"\n```$", "", cleaned)
         return json.loads(cleaned)
-
-    def _build_report(
-        self,
-        source_title: str,
-        triage: TriageResult,
-        heuristic_issues: List[ReviewIssue],
-        llm_data: dict
-    ) -> ReviewReport:
-        """Combine heuristic findings with LLM analysis."""
-        combined_issues: List[ReviewIssue] = list(heuristic_issues)
-
-        # Parse LLM issues
-        for raw in llm_data.get("issues", []):
-            issue = ReviewIssue(
-                file=raw.get("file", "unknown"),
-                line=raw.get("line"),
-                severity=raw.get("severity", "MEDIUM").upper(),
-                category=raw.get("category", "CODE_SMELL").upper(),
-                title=raw.get("title", "Code review observation"),
-                description=raw.get("description", ""),
-                suggestion=raw.get("suggestion")
-            )
-            # Avoid duplicate heuristic titles
-            if not any(h.file == issue.file and h.title == issue.title for h in combined_issues):
-                combined_issues.append(issue)
-
-        executive_summary = llm_data.get(
-            "executive_summary",
-            f"Pull request `{source_title}` introduces {triage.total_additions} additions and {triage.total_deletions} deletions across {triage.total_files} files."
-        )
-
-        recommendations = llm_data.get("recommendations", [
-            "Verify all test suites pass in CI.",
-            "Confirm sensitive credentials are not tracked in revision history.",
-            "Perform manual sanity test of changed endpoints."
-        ])
-
-        return ReviewReport(
-            title=source_title,
-            source=source_title,
-            triage=triage,
-            issues=combined_issues,
-            executive_summary=executive_summary,
-            recommendations=recommendations,
-            raw_llm_analysis=json.dumps(llm_data, indent=2)
-        )
-
-    def _build_offline_report(
-        self,
-        source_title: str,
-        triage: TriageResult,
-        heuristic_issues: List[ReviewIssue],
-        warning_note: Optional[str] = None
-    ) -> ReviewReport:
-        """Construct a high-quality review report using local rules when offline."""
-        summary_paragraphs = [
-            f"This pull request has been analyzed via the **Local Heuristic Rule Engine**.",
-            f"It encompasses **{triage.total_files} file(s)** with **+{triage.total_additions} additions** and **-{triage.total_deletions} deletions**."
-        ]
-        if warning_note:
-            summary_paragraphs.append(f"> ⚠️ *Notice:* {warning_note}")
-
-        if triage.risk_level == "Critical":
-            summary_paragraphs.append("🚨 **Action Required:** Critical security vulnerabilities or hardcoded secrets were detected. Immediate remediation is required before merging.")
-        elif triage.risk_level == "High":
-            summary_paragraphs.append("⚠️ **Caution:** Elevated risk profile identified due to sensitive file changes or security anti-patterns.")
-        else:
-            summary_paragraphs.append("✅ Changes appear self-contained with no high-severity static pattern warnings.")
-
-        recommendations = [
-            "Verify all unit and integration tests pass cleanly.",
-            "Verify that no sensitive environment variables or secrets are exposed.",
-            "Ensure adequate test coverage has been added for modified code paths.",
-            "Check for edge cases and input validation on external data."
-        ]
-
-        return ReviewReport(
-            title=source_title,
-            source=source_title,
-            triage=triage,
-            issues=heuristic_issues,
-            executive_summary="\n\n".join(summary_paragraphs),
-            recommendations=recommendations
-        )

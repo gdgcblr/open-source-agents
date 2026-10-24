@@ -1,0 +1,60 @@
+name: "Autonomous PR Reviewer & Triage Agent"
+description: "AI-powered PR triage, security auditing, performance analysis, and automated patch remediation council."
+author: "Mourya N"
+inputs:
+  gemini_api_key:
+    description: "Google Gemini API Key for deep LLM synthesis"
+    required: false
+  github_token:
+    description: "GitHub Token for posting review comments"
+    required: false
+    default: ${{ github.token }}
+  model:
+    description: "Gemini Model name"
+    required: false
+    default: "gemini-1.5-flash"
+  auto_fix:
+    description: "Generate remediation.patch file"
+    required: false
+    default: "true"
+  fail_on_block:
+    description: "Exit with failure code if PR is BLOCKED by Security Council"
+    required: false
+    default: "true"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r ${{ github.action_path }}/requirements.txt
+
+    - name: Run PR Reviewer Council
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GEMINI_MODEL: ${{ inputs.model }}
+      run: |
+        python ${{ github.action_path }}/main.py \
+          --diff <(git diff origin/${{ github.base_ref }}...HEAD) \
+          --auto-fix \
+          --output pr_review_report.md \
+          --html pr_dashboard.html \
+          ${{ inputs.fail_on_block == 'true' && '--ci' || '' }}
+
+    - name: Upload Review Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr-review-artifacts
+        path: |
+          pr_review_report.md
+          pr_dashboard.html
+          remediation.patch
