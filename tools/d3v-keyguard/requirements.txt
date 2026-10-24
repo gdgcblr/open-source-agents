@@ -1,0 +1,5 @@
+cryptography>=44
+keyring>=25
+google-adk>=2.13
+pytest>=8
+-e .
