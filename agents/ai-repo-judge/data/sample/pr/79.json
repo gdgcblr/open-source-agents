@@ -1,0 +1,1019 @@
+{
+ "id": "79",
+ "number": 79,
+ "title": "feat(agents): add patchproof with documentation and setup",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/79",
+ "author": "CaptnSalazar",
+ "author_avatar": "https://avatars.githubusercontent.com/u/34618395?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T08:35:34Z",
+ "updated_at": "2026-10-24T08:35:34Z",
+ "head_sha": "dcbf58dd9c476f9f3998d9c106d26093adae8607",
+ "category": "agents",
+ "slug": "patchproof",
+ "project_path": "agents/patchproof",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 14,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 18,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 233,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "pyproject.toml",
+   "lines": 56,
+   "language": "TOML",
+   "findings": 0
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 12,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/clean-retry-implementation/diff.patch",
+   "lines": 33,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/clean-retry-implementation/fixture.json",
+   "lines": 16,
+   "language": "JSON",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/clean-retry-implementation/issue.md",
+   "lines": 10,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/clean-retry-implementation/pr.md",
+   "lines": 10,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/clean-retry-implementation/src/retry_client.py",
+   "lines": 32,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/clean-retry-implementation/tests/test_retry_client.py",
+   "lines": 49,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/prompt-injection-issue/diff.patch",
+   "lines": 15,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/prompt-injection-issue/fixture.json",
+   "lines": 16,
+   "language": "JSON",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/prompt-injection-issue/issue.md",
+   "lines": 8,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/prompt-injection-issue/pr.md",
+   "lines": 5,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/prompt-injection-issue/src/retry_client.py",
+   "lines": 19,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/prompt-injection-issue/tests/test_retry_client.py",
+   "lines": 8,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/retry-limit-bug/diff.patch",
+   "lines": 39,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/retry-limit-bug/fixture.json",
+   "lines": 16,
+   "language": "JSON",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/retry-limit-bug/issue.md",
+   "lines": 10,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/retry-limit-bug/pr.md",
+   "lines": 10,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/retry-limit-bug/src/retry_client.py",
+   "lines": 33,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "fixtures/retry-limit-bug/tests/test_retry_client.py",
+   "lines": 36,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/__init__.py",
+   "lines": 7,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/__main__.py",
+   "lines": 7,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/cli.py",
+   "lines": 159,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/config.py",
+   "lines": 75,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/__init__.py",
+   "lines": 38,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/adjudicator.py",
+   "lines": 266,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "src/patchproof/agents/adversarial_reviewer.py",
+   "lines": 232,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/base.py",
+   "lines": 125,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/change_investigator.py",
+   "lines": 223,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/intent_analyst.py",
+   "lines": 237,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/test_coverage.py",
+   "lines": 269,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/agents/verification_agent.py",
+   "lines": 166,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/core/__init__.py",
+   "lines": 88,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/core/enums.py",
+   "lines": 107,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/core/ledger.py",
+   "lines": 113,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/core/models.py",
+   "lines": 355,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/core/redaction.py",
+   "lines": 55,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/core/validator.py",
+   "lines": 202,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/ingestion/__init__.py",
+   "lines": 34,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/ingestion/fixture_loader.py",
+   "lines": 370,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "src/patchproof/ingestion/github_loader.py",
+   "lines": 536,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "src/patchproof/ingestion/snapshot.py",
+   "lines": 45,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/orchestration/__init__.py",
+   "lines": 11,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/orchestration/pipeline.py",
+   "lines": 631,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/providers/__init__.py",
+   "lines": 23,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/providers/base.py",
+   "lines": 194,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/reporting/__init__.py",
+   "lines": 6,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/reporting/composer.py",
+   "lines": 158,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/tools/__init__.py",
+   "lines": 20,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/tools/policy.py",
+   "lines": 79,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/patchproof/tools/static_checks.py",
+   "lines": 127,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_contracts_and_validator.py",
+   "lines": 252,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_ingestion_and_security.py",
+   "lines": 376,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_pipeline_and_cli.py",
+   "lines": 328,
+   "language": "Python",
+   "findings": 0
+  }
+ ],
+ "loc": 6091,
+ "languages": {
+  "Python": 6091
+ },
+ "frameworks": [
+  "LangGraph"
+ ],
+ "providers": [],
+ "ai_level": 4,
+ "ai_level_label": "Agent loop",
+ "ai_level_evidence": [
+  "LLM call: src/patchproof/orchestration/pipeline.py:629",
+  "Structured output/system prompt: src/patchproof/agents/adversarial_reviewer.py:66",
+  "Agent construct: src/patchproof/orchestration/pipeline.py:607"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Split complex functions into smaller helpers.",
+  "Add retries with backoff on 429, timeouts and max token/step limits.",
+  "Separate CLI, core logic, LLM client and tools into modules."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: agents/patchproof",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "patchproof",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "patchproof",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files + index row",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "8/8 checklist items ticked",
+     "fix": null
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "feat(agents): add patchproof with documentation and setup",
+     "fix": null
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 6613 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "17/17 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No exact pins to check",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 76,
+   "static_score": 76,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "7 test file(s), 37 test(s), test/source LOC 0.28",
+     "fix": null
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.0,
+     "detail": "19% of 81 functions over 10; max 61 in `run` (src/patchproof/agents/adjudicator.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.2592592592592593,
+     "detail": "15 of 81 functions over 60 lines: build_parser (93), run (229), run (196), run (169)",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "99% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "74% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "0 swallowed/bare except block(s)",
+     "fix": null
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging not used; 0 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "33 source file(s); largest src/patchproof/orchestration/pipeline.py (631 lines)",
+     "fix": "Separate CLI, core logic, LLM client and tools into modules."
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 0.967164669184042,
+     "detail": "24 issue(s), 0.4 per 100 lines: PLR0912×9, PLR0915×9, PLR0917×3, RET504×1, SIM102×1",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (61) in run",
+     "detail": "",
+     "file": "src/patchproof/agents/adjudicator.py",
+     "line": 38,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (60) in load_github_pr_snapshot",
+     "detail": "",
+     "file": "src/patchproof/ingestion/github_loader.py",
+     "line": 212,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (53) in load_fixture_snapshot",
+     "detail": "",
+     "file": "src/patchproof/ingestion/fixture_loader.py",
+     "line": 71,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "pyproject.toml, requirements.txt",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "5/5 documented",
+     "fix": null
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Resolved: patchproof",
+     "fix": null
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "40 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 70,
+   "static_score": 70,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "pass",
+     "weight": 4.0,
+     "score": 0.8,
+     "detail": "Level 4: Agent loop",
+     "fix": null
+    },
+    {
+     "id": "robustness",
+     "dimension": "ai_native",
+     "label": "Robust model calls (retries, timeouts, limits, error handling)",
+     "status": "warn",
+     "weight": 2.5,
+     "score": 0.5,
+     "detail": "Missing: token/step limits, errors handled around model calls",
+     "fix": "Add retries with backoff on 429, timeouts and max token/step limits."
+    },
+    {
+     "id": "portability",
+     "dimension": "ai_native",
+     "label": "Provider-portable (model via env, mock/offline mode, local models)",
+     "status": "pass",
+     "weight": 1.5,
+     "score": 0.8999999999999999,
+     "detail": "model from env, mock/offline mode, configurable endpoint/multi-provider",
+     "fix": null
+    },
+    {
+     "id": "evals",
+     "dimension": "ai_native",
+     "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.7,
+     "detail": "tests mock the model",
+     "fix": null
+    },
+    {
+     "id": "observability",
+     "dimension": "ai_native",
+     "label": "Tracks token usage / tracing",
+     "status": "warn",
+     "weight": 0.5,
+     "score": 0.0,
+     "detail": "No usage tracking",
+     "fix": null
+    },
+    {
+     "id": "guardrails",
+     "dimension": "ai_native",
+     "label": "Guardrails (input limits, safety settings, confirmations)",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "Found at src/patchproof/agents/__init__.py:13",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1328 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "13/13 sections",
+     "fix": null
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 97,
+   "static_score": 97,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.9359999999999999,
+     "detail": "Closest: #72 'Feat/merge ready' (README similarity 18%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Max code overlap 0% with #1",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 90,
+ "verdict": "ready",
+ "gates": [],
+ "confidence": 69,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:37+00:00",
+ "judge_version": "2026.10.3"
+}

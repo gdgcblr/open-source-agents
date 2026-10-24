@@ -1,0 +1,924 @@
+{
+ "id": "56",
+ "number": 56,
+ "title": "feat(tools): add idle-janitor with documentation and setup",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/56",
+ "author": "pritikumari24",
+ "author_avatar": "https://avatars.githubusercontent.com/u/123960215?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T08:19:02Z",
+ "updated_at": "2026-10-24T08:19:02Z",
+ "head_sha": "97f47aee5b63234f8b78476f78b9423e893fd2a0",
+ "category": "tools",
+ "slug": "idle-janitor",
+ "project_path": "tools/idle-janitor",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 15,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 42,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 522,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "aws_fixture.example.yaml",
+   "lines": 54,
+   "language": "YAML",
+   "findings": 0
+  },
+  {
+   "path": "demo_seed.py",
+   "lines": 110,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "pyproject.toml",
+   "lines": 41,
+   "language": "TOML",
+   "findings": 0
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 6,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "server.py",
+   "lines": 286,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "smoke_test.py",
+   "lines": 65,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/__init__.py",
+   "lines": 3,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/aws_scan.py",
+   "lines": 266,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/cli.py",
+   "lines": 408,
+   "language": "Python",
+   "findings": 3
+  },
+  {
+   "path": "janitor/cost.py",
+   "lines": 121,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/docker_scan.py",
+   "lines": 182,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "janitor/firebase_scan.py",
+   "lines": 133,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/history.py",
+   "lines": 213,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/policies.default.yaml",
+   "lines": 35,
+   "language": "YAML",
+   "findings": 0
+  },
+  {
+   "path": "janitor/policies.py",
+   "lines": 208,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/process_scan.py",
+   "lines": 282,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "janitor/safety.py",
+   "lines": 259,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "janitor/scan.py",
+   "lines": 56,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/snooze.py",
+   "lines": 66,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/tui.py",
+   "lines": 158,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "janitor/watcher.py",
+   "lines": 178,
+   "language": "Python",
+   "findings": 2
+  }
+ ],
+ "loc": 2994,
+ "languages": {
+  "Python": 2994
+ },
+ "frameworks": [
+  "MCP",
+  "CLI"
+ ],
+ "providers": [],
+ "ai_level": 3,
+ "ai_level_label": "Tool use",
+ "ai_level_evidence": [
+  "Exposes tools to models via MCP"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Add pytest tests for the core logic; stub the model so they run without API keys.",
+  "Catch specific exceptions and log or surface them.",
+  "Add retries with backoff on 429, timeouts and max token/step limits."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: tools/idle-janitor",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "idle-janitor",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "idle-janitor",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files + index row",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "8/8 checklist items ticked",
+     "fix": null
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "feat(tools): add idle-janitor with documentation and setup",
+     "fix": null
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 3710 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "12/12 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No exact pins to check",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 54,
+   "static_score": 54,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "fail",
+     "weight": 3.0,
+     "score": 0.0,
+     "detail": "1 test file(s), 0 test(s), test/source LOC 0.02",
+     "fix": "Add pytest tests for the core logic; stub the model so they run without API keys."
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.7717391304347826,
+     "detail": "8% of 92 functions over 10; max 24 in `reap` (janitor/cli.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "warn",
+     "weight": 1.0,
+     "score": 0.6956521739130435,
+     "detail": "7 of 92 functions over 60 lines: apply_policies (61), list_instances (88), reap (75), list_processes (64)",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "99% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "78% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.0,
+     "detail": "4 swallowed/bare except block(s)",
+     "fix": "Catch specific exceptions and log or surface them."
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging used; 16 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "16 source file(s); largest janitor/cli.py (408 lines)",
+     "fix": "Separate CLI, core logic, LLM client and tools into modules."
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 0.9220663549320864,
+     "detail": "28 issue(s), 0.9 per 100 lines: F401×5, SIM102×4, UP017×3, RET504×3, PLR0911×3",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (24) in reap",
+     "detail": "",
+     "file": "janitor/cli.py",
+     "line": 153,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (22) in run",
+     "detail": "",
+     "file": "janitor/watcher.py",
+     "line": 83,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (20) in check_reap",
+     "detail": "",
+     "file": "janitor/safety.py",
+     "line": 158,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "janitor/docker_scan.py",
+     "line": 57,
+     "snippet": "return (cpu_delta / system_delta) * online_cpus * 100.0\n    except (KeyError, TypeError, ZeroDivisionError):\n        pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "janitor/process_scan.py",
+     "line": 187,
+     "snippet": "candidates.append(proc)\n        except (psutil.NoSuchProcess, psutil.AccessDenied):\n            continue",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "janitor/process_scan.py",
+     "line": 232,
+     "snippet": ")\n        except (psutil.NoSuchProcess, psutil.AccessDenied):\n            continue",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "janitor/watcher.py",
+     "line": 65,
+     "snippet": ")\n    except (OSError, subprocess.TimeoutExpired):\n        pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `time` imported but unused",
+     "detail": "",
+     "file": "demo_seed.py",
+     "line": 19,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F841: Local variable `inline` is assigned to but never used",
+     "detail": "",
+     "file": "demo_seed.py",
+     "line": 40,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `sys` imported but unused",
+     "detail": "",
+     "file": "janitor/cli.py",
+     "line": 16,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `pathlib.Path` imported but unused",
+     "detail": "",
+     "file": "janitor/cli.py",
+     "line": 17,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "pyproject.toml, requirements.txt",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1/1 documented",
+     "fix": null
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Resolved: cli.py, history.py, demo_seed.py",
+     "fix": null
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "17 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 50,
+   "static_score": 50,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "pass",
+     "weight": 4.0,
+     "score": 0.6,
+     "detail": "Level 3: Tool use",
+     "fix": null
+    },
+    {
+     "id": "robustness",
+     "dimension": "ai_native",
+     "label": "Robust model calls (retries, timeouts, limits, error handling)",
+     "status": "warn",
+     "weight": 2.5,
+     "score": 0.5,
+     "detail": "Missing: token/step limits, errors handled around model calls",
+     "fix": "Add retries with backoff on 429, timeouts and max token/step limits."
+    },
+    {
+     "id": "portability",
+     "dimension": "ai_native",
+     "label": "Provider-portable (model via env, mock/offline mode, local models)",
+     "status": "warn",
+     "weight": 1.5,
+     "score": 0.44999999999999996,
+     "detail": "mock/offline mode, local model",
+     "fix": "Read the model name from an env var and add a mock mode so reviewers can run it without keys."
+    },
+    {
+     "id": "evals",
+     "dimension": "ai_native",
+     "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "No AI-specific tests",
+     "fix": "Add tests that stub the model and golden examples that check output quality."
+    },
+    {
+     "id": "observability",
+     "dimension": "ai_native",
+     "label": "Tracks token usage / tracing",
+     "status": "warn",
+     "weight": 0.5,
+     "score": 0.4,
+     "detail": "tracing",
+     "fix": null
+    },
+    {
+     "id": "guardrails",
+     "dimension": "ai_native",
+     "label": "Guardrails (input limits, safety settings, confirmations)",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "Found at demo_seed.py:4",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "3288 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "13/13 sections",
+     "fix": null
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Closest: #20 'feat(tools): add mcp-tool-poisoning-scanner' (README similarity 12%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Max code overlap 0% with #1",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 83,
+ "verdict": "ready",
+ "gates": [],
+ "confidence": 69,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:26+00:00",
+ "judge_version": "2026.10.3"
+}

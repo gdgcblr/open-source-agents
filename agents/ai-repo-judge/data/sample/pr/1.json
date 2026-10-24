@@ -1,0 +1,888 @@
+{
+ "id": "1",
+ "number": 1,
+ "title": "feat(agents): add namma-traffic-agent for Bengaluru transit intelligence",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/1",
+ "author": "shaikjafar559",
+ "author_avatar": "https://avatars.githubusercontent.com/u/218779716?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T06:49:01Z",
+ "updated_at": "2026-10-24T08:35:08Z",
+ "head_sha": "75eb24ef78ac50bf06ca0ab552f3bd19187d257f",
+ "category": "agents",
+ "slug": "namma-traffic-agent",
+ "project_path": "agents/namma-traffic-agent",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 10,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 42,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "BENGALURU_TRAFFIC_AI_AGENT_GUIDE.md",
+   "lines": 236,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "PRESENTATION.md",
+   "lines": 129,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 359,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "TRANSIT_GUIDE.md",
+   "lines": 236,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "main.py",
+   "lines": 180,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "presentation.html",
+   "lines": 584,
+   "language": "HTML",
+   "findings": 0
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 10,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "server.py",
+   "lines": 135,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "agent/__init__.py",
+   "lines": 19,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "agent/core.py",
+   "lines": 294,
+   "language": "Python",
+   "findings": 3
+  },
+  {
+   "path": "agent/knowledge.py",
+   "lines": 523,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "agent/tools.py",
+   "lines": 471,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "tests/test_agent.py",
+   "lines": 34,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_tools.py",
+   "lines": 61,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "web/index.html",
+   "lines": 1339,
+   "language": "HTML",
+   "findings": 5
+  }
+ ],
+ "loc": 1717,
+ "languages": {
+  "HTML": 1923,
+  "Python": 1717
+ },
+ "frameworks": [
+  "FastAPI"
+ ],
+ "providers": [
+  "Gemini"
+ ],
+ "ai_level": 3,
+ "ai_level_label": "Tool use",
+ "ai_level_evidence": [
+  "LLM call: agent/core.py:86",
+  "Structured output/system prompt: agent/core.py:22",
+  "Tool calling: main.py:46"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Add retries with backoff on 429, timeouts and max token/step limits.",
+  "Split complex functions into smaller helpers.",
+  "Add pytest tests for the core logic; stub the model so they run without API keys."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: agents/namma-traffic-agent",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "namma-traffic-agent",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "namma-traffic-agent",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "8/8 checklist items ticked",
+     "fix": null
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "feat(agents): add namma-traffic-agent for Bengaluru transit intelligence",
+     "fix": null
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 86,
+   "static_score": 86,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 5037 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "warn",
+     "weight": 3.0,
+     "score": 0.25,
+     "detail": "0 high, 5 medium, 0 low",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "7/7 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No exact pins to check",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "innerHTML assignment (XSS if it renders model or user text)",
+     "detail": "",
+     "file": "web/index.html",
+     "line": 819,
+     "snippet": "btn.innerHTML = '🛰️ Satellite View';",
+     "fix": "Use textContent, or sanitise with DOMPurify before inserting model output.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "innerHTML assignment (XSS if it renders model or user text)",
+     "detail": "",
+     "file": "web/index.html",
+     "line": 825,
+     "snippet": "btn.innerHTML = '🗺️ Street Map';",
+     "fix": "Use textContent, or sanitise with DOMPurify before inserting model output.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "innerHTML assignment (XSS if it renders model or user text)",
+     "detail": "",
+     "file": "web/index.html",
+     "line": 1022,
+     "snippet": "document.getElementById('weatherRibbon').innerHTML = `",
+     "fix": "Use textContent, or sanitise with DOMPurify before inserting model output.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "innerHTML assignment (XSS if it renders model or user text)",
+     "detail": "",
+     "file": "web/index.html",
+     "line": 1031,
+     "snippet": "content.innerHTML = `<div style=\"color:red; padding:12px;\">Failed to fetch route data: ${err.message}</div>`;",
+     "fix": "Use textContent, or sanitise with DOMPurify before inserting model output.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "innerHTML assignment (XSS if it renders model or user text)",
+     "detail": "",
+     "file": "web/index.html",
+     "line": 1327,
+     "snippet": "content.innerHTML = html;",
+     "fix": "Use textContent, or sanitise with DOMPurify before inserting model output.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 65,
+   "static_score": 65,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "warn",
+     "weight": 3.0,
+     "score": 0.6464241676942046,
+     "detail": "2 test file(s), 10 test(s), test/source LOC 0.06",
+     "fix": "Add pytest tests for the core logic; stub the model so they run without API keys."
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.2793103448275862,
+     "detail": "21% of 29 functions over 10; max 30 in `_run_local_heuristics` (agent/core.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.1724137931034483,
+     "detail": "6 of 29 functions over 60 lines: display_result (83), _run_gemini_agent (77), _run_local_heuristics (144), get_route_traffic (122)",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.954861111111111,
+     "detail": "76% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "91% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.75,
+     "detail": "1 swallowed/bare except block(s)",
+     "fix": "Catch specific exceptions and log or surface them."
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging not used; 2 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "6 source file(s); largest agent/knowledge.py (523 lines)",
+     "fix": "Separate CLI, core logic, LLM client and tools into modules."
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.74762182100563,
+     "detail": "52 issue(s), 3.0 per 100 lines: UP006×20, UP045×9, F401×6, UP035×5, PLR0915×3",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (30) in _run_local_heuristics",
+     "detail": "",
+     "file": "agent/core.py",
+     "line": 151,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (26) in get_route_traffic",
+     "detail": "",
+     "file": "agent/tools.py",
+     "line": 80,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (25) in get_metro_alternative",
+     "detail": "",
+     "file": "agent/tools.py",
+     "line": 232,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "main.py",
+     "line": 14,
+     "snippet": "sys.stderr.reconfigure(encoding=\"utf-8\")\n    except Exception:\n        pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `json` imported but unused",
+     "detail": "",
+     "file": "agent/core.py",
+     "line": 8,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 92,
+   "static_score": 92,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "requirements.txt",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.5,
+     "detail": "1/2 documented; missing: GOOGLE_API_KEY",
+     "fix": "Add the missing variables to .env.example with placeholder values."
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Resolved: main.py, server.py",
+     "fix": null
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "8 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "functionality",
+     "severity": "low",
+     "title": "Undocumented env var GOOGLE_API_KEY",
+     "detail": "",
+     "file": "agent/core.py",
+     "line": 44,
+     "snippet": null,
+     "fix": "Add `GOOGLE_API_KEY=` to .env.example.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 32,
+   "static_score": 32,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "pass",
+     "weight": 4.0,
+     "score": 0.6,
+     "detail": "Level 3: Tool use",
+     "fix": null
+    },
+    {
+     "id": "robustness",
+     "dimension": "ai_native",
+     "label": "Robust model calls (retries, timeouts, limits, error handling)",
+     "status": "fail",
+     "weight": 2.5,
+     "score": 0.0,
+     "detail": "Missing: retries/backoff, timeouts, token/step limits, errors handled around model calls",
+     "fix": "Add retries with backoff on 429, timeouts and max token/step limits."
+    },
+    {
+     "id": "portability",
+     "dimension": "ai_native",
+     "label": "Provider-portable (model via env, mock/offline mode, local models)",
+     "status": "warn",
+     "weight": 1.5,
+     "score": 0.35,
+     "detail": "mock/offline mode",
+     "fix": "Read the model name from an env var and add a mock mode so reviewers can run it without keys."
+    },
+    {
+     "id": "evals",
+     "dimension": "ai_native",
+     "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "No AI-specific tests",
+     "fix": "Add tests that stub the model and golden examples that check output quality."
+    },
+    {
+     "id": "observability",
+     "dimension": "ai_native",
+     "label": "Tracks token usage / tracing",
+     "status": "warn",
+     "weight": 0.5,
+     "score": 0.0,
+     "detail": "No usage tracking",
+     "fix": null
+    },
+    {
+     "id": "guardrails",
+     "dimension": "ai_native",
+     "label": "Guardrails (input limits, safety settings, confirmations)",
+     "status": "warn",
+     "weight": 0.5,
+     "score": null,
+     "detail": "None detected",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 91,
+   "static_score": 91,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "2256 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "warn",
+     "weight": 3.0,
+     "score": 0.7692307692307693,
+     "detail": "10/13 sections; missing: Technical Stack, Configuration & Environment Variables, Security & Privacy Considerations",
+     "fix": "Add: Technical Stack, Configuration & Environment Variables, Security & Privacy Considerations."
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Missing",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Closest: #78 'feat(agents): add commute-gate with swappable gates and evals' (README similarity 15%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Max code overlap 0% with #10",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 76,
+ "verdict": "ready",
+ "gates": [],
+ "confidence": 69,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:07+00:00",
+ "judge_version": "2026.10.3"
+}

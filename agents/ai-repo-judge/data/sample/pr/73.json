@@ -1,0 +1,845 @@
+{
+ "id": "73",
+ "number": 73,
+ "title": "feat(agents): add autonomous-incident-responder",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/73",
+ "author": "adishshanbhag",
+ "author_avatar": "https://avatars.githubusercontent.com/u/69667020?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T08:32:52Z",
+ "updated_at": "2026-10-24T08:33:40Z",
+ "head_sha": "f96f3c995f146bf3c6cab429b04d7c64835a19fa",
+ "category": "agents",
+ "slug": "autonomous-incident-responder",
+ "project_path": "agents/autonomous-incident-responder",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 28,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 38,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 256,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "main.py",
+   "lines": 142,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 4,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "src/__init__.py",
+   "lines": 1,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/agent.py",
+   "lines": 385,
+   "language": "Python",
+   "findings": 3
+  },
+  {
+   "path": "src/config.py",
+   "lines": 41,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "src/models.py",
+   "lines": 177,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/orchestrator.py",
+   "lines": 369,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "src/safety.py",
+   "lines": 145,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/severity.py",
+   "lines": 317,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "src/simulator.py",
+   "lines": 588,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "src/tools.py",
+   "lines": 197,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/__init__.py",
+   "lines": 1,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_agent_scenarios.py",
+   "lines": 289,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_severity.py",
+   "lines": 363,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_simulator.py",
+   "lines": 105,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_tools.py",
+   "lines": 113,
+   "language": "Python",
+   "findings": 0
+  }
+ ],
+ "loc": 3233,
+ "languages": {
+  "Python": 3233
+ },
+ "frameworks": [],
+ "providers": [
+  "Gemini"
+ ],
+ "ai_level": 4,
+ "ai_level_label": "Agent loop",
+ "ai_level_evidence": [
+  "LLM call: src/agent.py:330",
+  "Structured output/system prompt: src/agent.py:207",
+  "Tool calling: main.py:121",
+  "Agent loop/memory: src/orchestrator.py:77"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Split complex functions into smaller helpers.",
+  "Add the missing variables to .env.example with placeholder values.",
+  "Catch specific exceptions and log or surface them."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 92,
+   "static_score": 92,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: agents/autonomous-incident-responder",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "autonomous-incident-responder",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "autonomous-incident-responder",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "0/8 checklist items ticked",
+     "fix": "Fill in .github/PULL_REQUEST_TEMPLATE.md in the PR description."
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "feat(agents): add autonomous-incident-responder",
+     "fix": null
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 3559 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "4/4 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No exact pins to check",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 69,
+   "static_score": 69,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "5 test file(s), 29 test(s), test/source LOC 0.37",
+     "fix": null
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.04137931034482767,
+     "detail": "9% of 58 functions over 10; max 60 in `assess` (src/severity.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "warn",
+     "weight": 1.0,
+     "score": 0.4482758620689655,
+     "detail": "8 of 58 functions over 60 lines: main (92), decide_next_step (140), decide_next_step (162), run_incident_response (324)",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "95% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "73% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.75,
+     "detail": "1 swallowed/bare except block(s)",
+     "fix": "Catch specific exceptions and log or surface them."
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging not used; 28 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "10 source file(s); largest src/simulator.py (588 lines)",
+     "fix": "Separate CLI, core logic, LLM client and tools into modules."
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.5463449840189711,
+     "detail": "176 issue(s), 5.4 per 100 lines: UP006×68, UP045×33, F401×24, UP035×20, UP042×5",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (60) in assess",
+     "detail": "",
+     "file": "src/severity.py",
+     "line": 74,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (47) in run_incident_response",
+     "detail": "",
+     "file": "src/orchestrator.py",
+     "line": 46,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (39) in decide_next_step",
+     "detail": "",
+     "file": "src/agent.py",
+     "line": 51,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "src/agent.py",
+     "line": 354,
+     "snippet": "break\n            except Exception:\n                pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `typing.Optional` imported but unused",
+     "detail": "",
+     "file": "main.py",
+     "line": 7,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `src.models.HealthState` imported but unused",
+     "detail": "",
+     "file": "src/agent.py",
+     "line": 15,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 95,
+   "static_score": 95,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "requirements.txt",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.6666666666666667,
+     "detail": "2/3 documented; missing: GOOGLE_API_KEY",
+     "fix": "Add the missing variables to .env.example with placeholder values."
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Resolved: main.py",
+     "fix": null
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "15 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "functionality",
+     "severity": "low",
+     "title": "Undocumented env var GOOGLE_API_KEY",
+     "detail": "",
+     "file": "src/config.py",
+     "line": 18,
+     "snippet": null,
+     "fix": "Add `GOOGLE_API_KEY=` to .env.example.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 80,
+   "static_score": 80,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "pass",
+     "weight": 4.0,
+     "score": 0.8,
+     "detail": "Level 4: Agent loop",
+     "fix": null
+    },
+    {
+     "id": "robustness",
+     "dimension": "ai_native",
+     "label": "Robust model calls (retries, timeouts, limits, error handling)",
+     "status": "pass",
+     "weight": 2.5,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "portability",
+     "dimension": "ai_native",
+     "label": "Provider-portable (model via env, mock/offline mode, local models)",
+     "status": "pass",
+     "weight": 1.5,
+     "score": 0.7,
+     "detail": "model from env, mock/offline mode",
+     "fix": null
+    },
+    {
+     "id": "evals",
+     "dimension": "ai_native",
+     "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.7,
+     "detail": "tests mock the model",
+     "fix": null
+    },
+    {
+     "id": "observability",
+     "dimension": "ai_native",
+     "label": "Tracks token usage / tracing",
+     "status": "warn",
+     "weight": 0.5,
+     "score": 0.0,
+     "detail": "No usage tracking",
+     "fix": null
+    },
+    {
+     "id": "guardrails",
+     "dimension": "ai_native",
+     "label": "Guardrails (input limits, safety settings, confirmations)",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "Found at main.py:43",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1247 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "13/13 sections",
+     "fix": null
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 99,
+   "static_score": 99,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.976,
+     "detail": "Closest: #42 'Jarvis - A PR Review Agent' (README similarity 16%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Max code overlap 0% with #1",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 90,
+ "verdict": "ready",
+ "gates": [],
+ "confidence": 69,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:33+00:00",
+ "judge_version": "2026.10.3"
+}

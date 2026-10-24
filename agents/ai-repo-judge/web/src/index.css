@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* Tokens: neutral surfaces + one accent (blue) from the validated reference palette, a fixed status set
+   (always paired with an icon + label), and an ordinal blue ramp for the AI maturity ladder. */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f2f1ed;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #6f6d68;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --ring: rgba(11, 11, 11, 0.1);
+  --accent: #2a78d6;
+  --accent-ink: #1f5fae;
+  --accent-wash: #e3eefc;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --lvl-0: #c3c2b7;
+  --lvl-1: #86b6ef;
+  --lvl-2: #5598e7;
+  --lvl-3: #2a78d6;
+  --lvl-4: #1c5cab;
+  --lvl-5: #104281;
+  --lvl-on-0: #0b0b0b;
+  --lvl-on-1: #0b0b0b;
+  --lvl-on-2: #0b0b0b;
+  --lvl-on-3: #ffffff;
+  --lvl-on-4: #ffffff;
+  --lvl-on-5: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #242422;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --muted: #9b9990;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --ring: rgba(255, 255, 255, 0.1);
+    --accent: #3987e5;
+    --accent-ink: #86b6ef;
+    --accent-wash: #16304f;
+    --lvl-0: #4a4945;
+    --lvl-1: #184f95;
+    --lvl-2: #256abf;
+    --lvl-3: #3987e5;
+    --lvl-4: #6da7ec;
+    --lvl-5: #9ec5f4;
+    --lvl-on-0: #f0efec;
+    --lvl-on-1: #ffffff;
+    --lvl-on-2: #ffffff;
+    --lvl-on-3: #0b0b0b;
+    --lvl-on-4: #0b0b0b;
+    --lvl-on-5: #0b0b0b;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #242422;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --muted: #9b9990;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --ring: rgba(255, 255, 255, 0.1);
+  --accent: #3987e5;
+  --accent-ink: #86b6ef;
+  --accent-wash: #16304f;
+  --lvl-0: #4a4945;
+  --lvl-1: #184f95;
+  --lvl-2: #256abf;
+  --lvl-3: #3987e5;
+  --lvl-4: #6da7ec;
+  --lvl-5: #9ec5f4;
+  --lvl-on-0: #f0efec;
+  --lvl-on-1: #ffffff;
+  --lvl-on-2: #ffffff;
+  --lvl-on-3: #0b0b0b;
+  --lvl-on-4: #0b0b0b;
+  --lvl-on-5: #0b0b0b;
+}
+
+@theme inline {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-grid: var(--grid);
+  --color-axis: var(--axis);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-wash: var(--accent-wash);
+  --color-good: var(--good);
+  --color-warning: var(--warning);
+  --color-serious: var(--serious);
+  --color-critical: var(--critical);
+}
+
+html {
+  background: var(--page);
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--ring);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.35s ease-out both;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+}

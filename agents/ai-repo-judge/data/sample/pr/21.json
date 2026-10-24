@@ -1,0 +1,786 @@
+{
+ "id": "21",
+ "number": 21,
+ "title": "feat(agents): add ai-codebase-explorer",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/21",
+ "author": "rochishajaiswal",
+ "author_avatar": "https://avatars.githubusercontent.com/u/48403169?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T07:33:30Z",
+ "updated_at": "2026-10-24T07:33:30Z",
+ "head_sha": "603f6492ce037ec27aab9d7b6e2090f696a4c0f5",
+ "category": "agents",
+ "slug": "ai-codebase-explorer",
+ "project_path": "agents/ai-codebase-explorer",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 3,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 12,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 198,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "agent.py",
+   "lines": 216,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 1,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_agent.py",
+   "lines": 63,
+   "language": "Python",
+   "findings": 0
+  }
+ ],
+ "loc": 279,
+ "languages": {
+  "Python": 279
+ },
+ "frameworks": [],
+ "providers": [
+  "OpenAI"
+ ],
+ "ai_level": 1,
+ "ai_level_label": "Prompt wrapper",
+ "ai_level_evidence": [
+  "LLM call: agent.py:154"
+ ],
+ "claims": [
+  {
+   "feature": "Search local repository for keyword matches",
+   "status": "unverified",
+   "evidence": "search function not shown in excerpts"
+  },
+  {
+   "feature": "Rank results by relevance score",
+   "status": "unverified",
+   "evidence": "scoring logic not visible in excerpts"
+  },
+  {
+   "feature": "Optional AI explanation mode",
+   "status": "implemented",
+   "evidence": "agent.py:148-165"
+  },
+  {
+   "feature": "Read‑only operation (no code execution)",
+   "status": "unverified",
+   "evidence": "no execution code shown"
+  },
+  {
+   "feature": "Automatic exclusion of generated directories and credential files",
+   "status": "unverified",
+   "evidence": "exclusion logic not present in excerpts"
+  },
+  {
+   "feature": "Configuration via environment variables (API key, model)",
+   "status": "implemented",
+   "evidence": "agent.py:152-156"
+  }
+ ],
+ "summary": "A CLI tool that searches a local repository for keyword matches and can optionally explain findings using an OpenAI model. The implementation is functional but limited in robustness, security, and architectural depth.",
+ "strengths": [
+  "Clear README with step‑by‑step setup and usage examples",
+  "Implements optional LLM explanation with a well‑scoped system prompt",
+  "Search and ranking logic is encapsulated in dedicated functions"
+ ],
+ "top_fixes": [
+  "Add proper error handling and retries around the OpenAI API call (e.g., backoff, timeout, token limits)",
+  "Replace swallowed bare except blocks with explicit exception types and logging",
+  "Introduce a small configuration module to centralise env handling and enforce input validation"
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: agents/ai-codebase-explorer",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "ai-codebase-explorer",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "ai-codebase-explorer",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "8/8 checklist items ticked",
+     "fix": null
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "feat(agents): add ai-codebase-explorer",
+     "fix": null
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 85,
+   "static_score": 100,
+   "llm_score": 25,
+   "llm_share": 0.2,
+   "llm_rationale": "Relies on env vars without validation and lacks input sanitisation or output constraints.",
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 493 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "1/1 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No exact pins to check",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "Swallowed exceptions",
+     "detail": "Bare except blocks (e.g., at agent.py:72 and 96) hide errors, making debugging hard and potentially masking failures.",
+     "file": "agent.py",
+     "line": 72,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "llm",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "high",
+     "title": "Unbounded LLM calls",
+     "detail": "No timeout, retry, or token‑limit logic; a malformed request could hang or exceed quota.",
+     "file": "agent.py",
+     "line": 154,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "llm",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "Missing input validation",
+     "detail": "User‑provided paths and questions are passed directly to file I/O and the LLM without sanitisation.",
+     "file": "agent.py",
+     "line": 172,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "llm",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "low",
+     "title": "Debug prints in production code",
+     "detail": "Static analysis flagged 11 print() calls; they should be replaced with structured logging.",
+     "file": null,
+     "line": null,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "llm",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 69,
+   "static_score": 77,
+   "llm_score": 50,
+   "llm_share": 0.3,
+   "llm_rationale": "Single‑file script with moderate function size; acceptable but not layered.",
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "1 test file(s), 5 test(s), test/source LOC 0.29",
+     "fix": null
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.1428571428571429,
+     "detail": "29% of 7 functions over 10; max 11 in `scan_repository` (agent.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "0 of 7 functions over 60 lines",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "94% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "86% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.5,
+     "detail": "2 swallowed/bare except block(s)",
+     "fix": "Catch specific exceptions and log or surface them."
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging not used; 11 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "1 source file(s); largest agent.py (216 lines)",
+     "fix": null
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 0.970131421744325,
+     "detail": "1 issue(s), 0.4 per 100 lines: SIM103×1",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "agent.py",
+     "line": 96,
+     "snippet": "lines = path.read_text(encoding=\"utf-8\", errors=\"replace\").splitlines()\n        except OSError:\n            continue",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "agent.py",
+     "line": 72,
+     "snippet": "continue\n            except OSError:\n                continue",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 90,
+   "static_score": 100,
+   "llm_score": 75,
+   "llm_share": 0.4,
+   "llm_rationale": "Core search and LLM explanation work, but missing robust error handling and edge‑case checks.",
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "requirements.txt",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "2/2 documented",
+     "fix": null
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Resolved: agent.py",
+     "fix": null
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "2 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 24,
+   "static_score": 21,
+   "llm_score": 28,
+   "llm_share": 0.4,
+   "llm_rationale": "Uses a single LLM call; no planning, memory, or tool orchestration. Provides a clear system instruction, but not versioned or schema‑driven. No token limits, rate caps, or user confirmations for side‑effects.",
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "warn",
+     "weight": 4.0,
+     "score": 0.2,
+     "detail": "Level 1: Prompt wrapper",
+     "fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop."
+    },
+    {
+     "id": "robustness",
+     "dimension": "ai_native",
+     "label": "Robust model calls (retries, timeouts, limits, error handling)",
+     "status": "fail",
+     "weight": 2.5,
+     "score": 0.0,
+     "detail": "Missing: retries/backoff, timeouts, token/step limits, errors handled around model calls",
+     "fix": "Add retries with backoff on 429, timeouts and max token/step limits."
+    },
+    {
+     "id": "portability",
+     "dimension": "ai_native",
+     "label": "Provider-portable (model via env, mock/offline mode, local models)",
+     "status": "pass",
+     "weight": 1.5,
+     "score": 0.7,
+     "detail": "model from env, mock/offline mode",
+     "fix": null
+    },
+    {
+     "id": "evals",
+     "dimension": "ai_native",
+     "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "No AI-specific tests",
+     "fix": "Add tests that stub the model and golden examples that check output quality."
+    },
+    {
+     "id": "observability",
+     "dimension": "ai_native",
+     "label": "Tracks token usage / tracing",
+     "status": "warn",
+     "weight": 0.5,
+     "score": 0.0,
+     "detail": "No usage tracking",
+     "fix": null
+    },
+    {
+     "id": "guardrails",
+     "dimension": "ai_native",
+     "label": "Guardrails (input limits, safety settings, confirmations)",
+     "status": "warn",
+     "weight": 0.5,
+     "score": null,
+     "detail": "None detected",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 92,
+   "static_score": 100,
+   "llm_score": 75,
+   "llm_share": 0.3,
+   "llm_rationale": "README is thorough, with installation, configuration, and usage sections. Shows concrete CLI invocation and realistic snippet output.",
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "824 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "13/13 sections",
+     "fix": null
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 72,
+   "static_score": 96,
+   "llm_score": 62,
+   "llm_share": 0.7,
+   "llm_rationale": "Combines local grep‑style search with LLM explanation—a modest twist on existing tools. Helps developers quickly locate relevant code, a common pain point.",
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.9099999999999999,
+     "detail": "Closest: #52 'feat(agents): add push-guard — AI-powered pre-push security scanner' (README similarity 20%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Max code overlap 0% with #1",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 73,
+ "verdict": "ready",
+ "gates": [],
+ "confidence": 100,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": true,
+  "provider": "groq",
+  "model": "openai/gpt-oss-120b",
+  "tokens": 4517,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:14+00:00",
+ "judge_version": "2026.10.3"
+}

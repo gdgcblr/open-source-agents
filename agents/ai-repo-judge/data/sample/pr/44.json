@@ -1,0 +1,1004 @@
+{
+ "id": "44",
+ "number": 44,
+ "title": "feat(agents): add coding-interview-mock-agent with documentation and setup",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/44",
+ "author": "NishkarshMakhija",
+ "author_avatar": "https://avatars.githubusercontent.com/u/28013224?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T08:02:07Z",
+ "updated_at": "2026-10-24T08:02:07Z",
+ "head_sha": "a3e051b233cbb86b934a959010c70c23953b8b6b",
+ "category": "agents",
+ "slug": "coding-interview-mock-agent",
+ "project_path": "agents/coding-interview-mock-agent",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 19,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 36,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 353,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "main.py",
+   "lines": 284,
+   "language": "Python",
+   "findings": 5
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 9,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "models/schemas.py",
+   "lines": 193,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "prompts/evaluator.txt",
+   "lines": 64,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "prompts/followup.txt",
+   "lines": 33,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "prompts/interviewer.txt",
+   "lines": 67,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "question_bank/easy.json",
+   "lines": 202,
+   "language": "JSON",
+   "findings": 0
+  },
+  {
+   "path": "question_bank/hard.json",
+   "lines": 357,
+   "language": "JSON",
+   "findings": 1
+  },
+  {
+   "path": "question_bank/medium.json",
+   "lines": 218,
+   "language": "JSON",
+   "findings": 0
+  },
+  {
+   "path": "services/code_runner.py",
+   "lines": 257,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "services/evaluator.py",
+   "lines": 251,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "services/interview.py",
+   "lines": 1060,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "services/report.py",
+   "lines": 245,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "sessions/.gitkeep",
+   "lines": 2,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_evaluator.py",
+   "lines": 124,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_questions.py",
+   "lines": 88,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "ui/README.md",
+   "lines": 49,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "ui/index.html",
+   "lines": 16,
+   "language": "HTML",
+   "findings": 0
+  },
+  {
+   "path": "ui/package.json",
+   "lines": 26,
+   "language": "JSON",
+   "findings": 2
+  },
+  {
+   "path": "ui/postcss.config.js",
+   "lines": 7,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/tailwind.config.js",
+   "lines": 26,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/vite.config.js",
+   "lines": 16,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/App.jsx",
+   "lines": 395,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/index.css",
+   "lines": 29,
+   "language": "CSS",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/main.jsx",
+   "lines": 11,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/components/ChatFeed.jsx",
+   "lines": 141,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/components/CodeEditor.jsx",
+   "lines": 162,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/components/Navbar.jsx",
+   "lines": 85,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/components/ProblemDrawer.jsx",
+   "lines": 102,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "ui/src/components/ReportModal.jsx",
+   "lines": 175,
+   "language": "JavaScript",
+   "findings": 0
+  },
+  {
+   "path": "utils/loader.py",
+   "lines": 108,
+   "language": "Python",
+   "findings": 0
+  }
+ ],
+ "loc": 3730,
+ "languages": {
+  "Python": 2610,
+  "JavaScript": 1120,
+  "HTML": 16
+ },
+ "frameworks": [
+  "FastAPI",
+  "React"
+ ],
+ "providers": [
+  "Gemini"
+ ],
+ "ai_level": 2,
+ "ai_level_label": "Structured prompting",
+ "ai_level_evidence": [
+  "LLM call: services/evaluator.py:108",
+  "Structured output/system prompt: services/evaluator.py:37"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+  "Split complex functions into smaller helpers.",
+  "Add retries with backoff on 429, timeouts and max token/step limits."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 92,
+   "static_score": 92,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: agents/coding-interview-mock-agent",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "coding-interview-mock-agent",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "coding-interview-mock-agent",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "0/8 checklist items ticked",
+     "fix": "Fill in .github/PULL_REQUEST_TEMPLATE.md in the PR description."
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "feat(agents): add coding-interview-mock-agent with documentation and setup",
+     "fix": null
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 89,
+   "static_score": 89,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 5210 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "0 high, 0 medium, 1 low",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "17/17 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "fail",
+     "weight": 2.0,
+     "score": null,
+     "detail": "2 vulnerable package(s) (OSV.dev)",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "postcss 8.4.38 has 4 known vulnerabilities",
+     "detail": "GHSA-6g55-p6wh-862q, GHSA-fxqj-rqcc-2cmp, GHSA-qx2v-qp2m-jg93, GHSA-r28c-9q8g-f849",
+     "file": "ui/package.json",
+     "line": null,
+     "snippet": "https://osv.dev/vulnerability/GHSA-6g55-p6wh-862q https://osv.dev/vulnerability/GHSA-fxqj-rqcc-2cmp https://osv.dev/vulnerability/GHSA-qx2v-qp2m-jg93",
+     "fix": "Upgrade postcss to a patched release.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "medium",
+     "title": "vite 5.1.6 has 21 known vulnerabilities",
+     "detail": "GHSA-356w-63v5-8wf4, GHSA-4r4m-qw57-chr8, GHSA-4w7w-66w2-5vf9, GHSA-587h-7wmj-h5pm, GHSA-64vr-g452-qvp3",
+     "file": "ui/package.json",
+     "line": null,
+     "snippet": "https://osv.dev/vulnerability/GHSA-356w-63v5-8wf4 https://osv.dev/vulnerability/GHSA-4r4m-qw57-chr8 https://osv.dev/vulnerability/GHSA-4w7w-66w2-5vf9",
+     "fix": "Upgrade vite to a patched release.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "security",
+     "severity": "low",
+     "title": "CORS allows every origin",
+     "detail": "",
+     "file": "main.py",
+     "line": 53,
+     "snippet": "app.add_middleware(",
+     "fix": "List the allowed origins explicitly.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 67,
+   "static_score": 67,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "warn",
+     "weight": 3.0,
+     "score": 0.6506537805571347,
+     "detail": "2 test file(s), 11 test(s), test/source LOC 0.06",
+     "fix": "Add pytest tests for the core logic; stub the model so they run without API keys."
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.7366666666666666,
+     "detail": "3% of 36 functions over 10; max 34 in `_evaluate_heuristic` (services/evaluator.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "warn",
+     "weight": 1.0,
+     "score": 0.6666666666666667,
+     "detail": "3 of 36 functions over 60 lines: _evaluate_heuristic (95), generate_report (77), _build_markdown_report (70)",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "88% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.806451612903226,
+     "detail": "56% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.5,
+     "detail": "2 swallowed/bare except block(s)",
+     "fix": "Catch specific exceptions and log or surface them."
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging not used; 19 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "fail",
+     "weight": 1.0,
+     "score": null,
+     "detail": "17 source file(s); largest services/interview.py (1060 lines)",
+     "fix": "Separate CLI, core logic, LLM client and tools into modules."
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "warn",
+     "weight": 2.0,
+     "score": 0.7520107238605899,
+     "detail": "111 issue(s), 3.0 per 100 lines: UP006×34, UP045×28, F401×15, UP035×10, UP042×4",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (34) in _evaluate_heuristic",
+     "detail": "",
+     "file": "services/evaluator.py",
+     "line": 152,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "services/evaluator.py",
+     "line": 117,
+     "snippet": "return response.text\n        except ImportError:\n            pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "services/report.py",
+     "line": 55,
+     "snippet": "duration_sec = max(int((end_dt - start_dt).total_seconds()), 60)\n        except Exception:\n            pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `sys` imported but unused",
+     "detail": "",
+     "file": "main.py",
+     "line": 10,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `typing.Optional` imported but unused",
+     "detail": "",
+     "file": "main.py",
+     "line": 12,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `fastapi.status` imported but unused",
+     "detail": "",
+     "file": "main.py",
+     "line": 16,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F401: `services.evaluator.evaluator_service` imported but unused",
+     "detail": "",
+     "file": "main.py",
+     "line": 40,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 85,
+   "static_score": 85,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "requirements.txt, ui/package.json",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1/1 documented",
+     "fix": null
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Resolved: main.py, dev, docker run",
+     "fix": null
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "fail",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Broken: services/interview.py, question_bank/hard.json",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "functionality",
+     "severity": "high",
+     "title": "File does not parse",
+     "detail": "",
+     "file": "services/interview.py",
+     "line": null,
+     "snippet": null,
+     "fix": "Fix the syntax error; the project cannot run.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "functionality",
+     "severity": "high",
+     "title": "File does not parse",
+     "detail": "",
+     "file": "question_bank/hard.json",
+     "line": null,
+     "snippet": null,
+     "fix": "Fix the syntax error; the project cannot run.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 39,
+   "static_score": 39,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "warn",
+     "weight": 4.0,
+     "score": 0.4,
+     "detail": "Level 2: Structured prompting",
+     "fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop."
+    },
+    {
+     "id": "robustness",
+     "dimension": "ai_native",
+     "label": "Robust model calls (retries, timeouts, limits, error handling)",
+     "status": "warn",
+     "weight": 2.5,
+     "score": 0.5,
+     "detail": "Missing: retries/backoff, token/step limits",
+     "fix": "Add retries with backoff on 429, timeouts and max token/step limits."
+    },
+    {
+     "id": "portability",
+     "dimension": "ai_native",
+     "label": "Provider-portable (model via env, mock/offline mode, local models)",
+     "status": "warn",
+     "weight": 1.5,
+     "score": 0.35,
+     "detail": "mock/offline mode",
+     "fix": "Read the model name from an env var and add a mock mode so reviewers can run it without keys."
+    },
+    {
+     "id": "evals",
+     "dimension": "ai_native",
+     "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "No AI-specific tests",
+     "fix": "Add tests that stub the model and golden examples that check output quality."
+    },
+    {
+     "id": "observability",
+     "dimension": "ai_native",
+     "label": "Tracks token usage / tracing",
+     "status": "warn",
+     "weight": 0.5,
+     "score": 0.0,
+     "detail": "No usage tracking",
+     "fix": null
+    },
+    {
+     "id": "guardrails",
+     "dimension": "ai_native",
+     "label": "Guardrails (input limits, safety settings, confirmations)",
+     "status": "pass",
+     "weight": 0.5,
+     "score": null,
+     "detail": "Found at services/code_runner.py:241",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 81,
+   "static_score": 81,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1763 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "warn",
+     "weight": 3.0,
+     "score": 0.6923076923076923,
+     "detail": "9/13 sections; missing: Technical Stack, How to Test, Known Limitations, Security & Privacy Considerations",
+     "fix": "Add: Technical Stack, How to Test, Known Limitations, Security & Privacy Considerations."
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "fail",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Missing or template text",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "warn",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Missing",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Closest: #65 'feat(agents): add pr-sentinel autonomous PR review & triage agent' (README similarity 12%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.999,
+     "detail": "Max code overlap 0% with #42",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 75,
+ "verdict": "needs_changes",
+ "gates": [],
+ "confidence": 69,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:24+00:00",
+ "judge_version": "2026.10.3"
+}

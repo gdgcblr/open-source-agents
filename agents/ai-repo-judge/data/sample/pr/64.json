@@ -1,0 +1,577 @@
+{
+ "id": "64",
+ "number": 64,
+ "title": "Feat/open flutter qa",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/64",
+ "author": "maharanakk",
+ "author_avatar": "https://avatars.githubusercontent.com/u/8220749?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T08:27:24Z",
+ "updated_at": "2026-10-24T08:27:24Z",
+ "head_sha": "1f467516edfa82b8d5ffa53fcafc956a9425e96c",
+ "category": "tools",
+ "slug": "OpenFlutterQA",
+ "project_path": "tools/OpenFlutterQA",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 23,
+   "language": "Other",
+   "findings": 1
+  },
+  {
+   "path": ".gitignore",
+   "lines": 46,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 285,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "analysis_options.yaml",
+   "lines": 10,
+   "language": "YAML",
+   "findings": 0
+  },
+  {
+   "path": "pubspec.yaml",
+   "lines": 24,
+   "language": "YAML",
+   "findings": 0
+  },
+  {
+   "path": "bin/open_flutter_qa.dart",
+   "lines": 106,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/main.dart",
+   "lines": 27,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/open_flutter_qa.dart",
+   "lines": 6,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/src/models/qa_models.dart",
+   "lines": 453,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/src/services/ai_qa_service.dart",
+   "lines": 303,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/src/services/test_execution_engine.dart",
+   "lines": 105,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/src/widgets/qa_charts.dart",
+   "lines": 528,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/src/widgets/qa_dashboard.dart",
+   "lines": 1387,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "lib/src/widgets/qa_overlay_wrapper.dart",
+   "lines": 83,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "test/open_flutter_qa_test.dart",
+   "lines": 145,
+   "language": "Other",
+   "findings": 0
+  }
+ ],
+ "loc": 0,
+ "languages": {},
+ "frameworks": [],
+ "providers": [],
+ "ai_level": 2,
+ "ai_level_label": "AI tooling (no model calls)",
+ "ai_level_evidence": [
+  "Operates on AI artefacts (12 references to prompts/LLMs/MCP/tokens/evals)"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Revoke/rotate the key, load it from an environment variable and document it in .env.example.",
+  "Revoke the keys and move them to a git-ignored .env file.",
+  "Add dependency manifest (copy them from template/)."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 83,
+   "static_score": 83,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: tools/OpenFlutterQA",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "fail",
+     "weight": 1.0,
+     "score": null,
+     "detail": "OpenFlutterQA",
+     "fix": "Rename the folder to openflutterqa."
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "OpenFlutterQA",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.75,
+     "detail": "Missing: dependency manifest",
+     "fix": "Add dependency manifest (copy them from template/)."
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "warn",
+     "weight": 1.0,
+     "score": 0.625,
+     "detail": "5/8 checklist items ticked",
+     "fix": "Fill in .github/PULL_REQUEST_TEMPLATE.md in the PR description."
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "warn",
+     "weight": 0.5,
+     "score": null,
+     "detail": "Feat/open flutter qa",
+     "fix": "Retitle to `feat(tools): add OpenFlutterQA`."
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 73,
+   "static_score": 73,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "fail",
+     "weight": 4.0,
+     "score": null,
+     "detail": "1 live-looking key(s) in code/config, 0 to confirm in docs/tests",
+     "fix": "Revoke the keys and move them to a git-ignored .env file."
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 3575 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "security",
+     "severity": "critical",
+     "title": "Google API key committed",
+     "detail": "Anyone can read this key in the public PR. Revoke it now; deleting the line is not enough.",
+     "file": ".env.example",
+     "line": 13,
+     "snippet": "GEMINI_API_KEY=AIza…(39 chars)",
+     "fix": "Revoke/rotate the key, load it from an environment variable and document it in .env.example.",
+     "commit": null,
+     "source": "static",
+     "gate": true
+    }
+   ]
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": null,
+   "static_score": null,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "skip",
+     "weight": 3.0,
+     "score": null,
+     "detail": "No tests found",
+     "fix": "Add automated tests for the core logic; stub the model so they run without API keys."
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 88,
+   "static_score": 88,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No code, no manifest needed",
+     "fix": "Add requirements.txt / pyproject.toml / package.json listing every dependency."
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Code reads no environment variables",
+     "fix": null
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "warn",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No run command found in README code blocks",
+     "fix": "Add an exact, copy-pasteable run command to 'How to Run'."
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "0 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 40,
+   "static_score": 40,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "warn",
+     "weight": 4.0,
+     "score": 0.4,
+     "detail": "Level 2: AI tooling (no model calls)",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1680 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "13/13 sections",
+     "fix": null
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Closest: #19 'feat(agents): add research-assistant with MCP server and HTML dashboard' (README similarity 14%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Max code overlap 0% with #1",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 75,
+ "verdict": "blocked",
+ "gates": [
+  "Google API key committed"
+ ],
+ "confidence": 58,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:28+00:00",
+ "judge_version": "2026.10.3"
+}

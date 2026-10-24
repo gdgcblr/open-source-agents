@@ -1,0 +1,923 @@
+{
+ "id": "72",
+ "number": 72,
+ "title": "Feat/merge ready",
+ "url": "https://github.com/gdgcblr/open-source-agents/pull/72",
+ "author": "Rithvik-krishna",
+ "author_avatar": "https://avatars.githubusercontent.com/u/73592329?v=4",
+ "state": "open",
+ "created_at": "2026-10-24T08:32:48Z",
+ "updated_at": "2026-10-24T08:32:48Z",
+ "head_sha": "17f335b3f36b1b874a5a2a9b2892b69a7ec37a70",
+ "category": "tools",
+ "slug": "merge-ready",
+ "project_path": "tools/merge-ready",
+ "extra_projects": [],
+ "files": [
+  {
+   "path": ".env.example",
+   "lines": 5,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": ".gitignore",
+   "lines": 38,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "README.md",
+   "lines": 252,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "pyproject.toml",
+   "lines": 25,
+   "language": "TOML",
+   "findings": 0
+  },
+  {
+   "path": "requirements.txt",
+   "lines": 3,
+   "language": "Text",
+   "findings": 0
+  },
+  {
+   "path": "rules.toml",
+   "lines": 114,
+   "language": "TOML",
+   "findings": 0
+  },
+  {
+   "path": "examples/merge-ready.yml",
+   "lines": 59,
+   "language": "YAML",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/__init__.py",
+   "lines": 3,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/__main__.py",
+   "lines": 7,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/cli.py",
+   "lines": 172,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/model.py",
+   "lines": 232,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/project.py",
+   "lines": 355,
+   "language": "Python",
+   "findings": 5
+  },
+  {
+   "path": "merge_ready/report.py",
+   "lines": 158,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/checks/__init__.py",
+   "lines": 214,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/checks/agent_safety.py",
+   "lines": 339,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "merge_ready/checks/deps.py",
+   "lines": 208,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/checks/env_drift.py",
+   "lines": 271,
+   "language": "Python",
+   "findings": 2
+  },
+  {
+   "path": "merge_ready/checks/layout.py",
+   "lines": 260,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/checks/scope.py",
+   "lines": 235,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "merge_ready/checks/secrets.py",
+   "lines": 280,
+   "language": "Python",
+   "findings": 1
+  },
+  {
+   "path": "merge_ready/checks/template.py",
+   "lines": 253,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/__init__.py",
+   "lines": 1,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/conftest.py",
+   "lines": 98,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_checks.py",
+   "lines": 824,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/test_cli.py",
+   "lines": 144,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/fixtures/good-tool/.env.example",
+   "lines": 4,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "tests/fixtures/good-tool/.gitignore",
+   "lines": 5,
+   "language": "Other",
+   "findings": 0
+  },
+  {
+   "path": "tests/fixtures/good-tool/README.md",
+   "lines": 125,
+   "language": "Markdown",
+   "findings": 0
+  },
+  {
+   "path": "tests/fixtures/good-tool/counter.py",
+   "lines": 37,
+   "language": "Python",
+   "findings": 0
+  },
+  {
+   "path": "tests/fixtures/good-tool/requirements.txt",
+   "lines": 2,
+   "language": "Text",
+   "findings": 0
+  }
+ ],
+ "loc": 4091,
+ "languages": {
+  "Python": 4091
+ },
+ "frameworks": [],
+ "providers": [],
+ "ai_level": 2,
+ "ai_level_label": "AI tooling (no model calls)",
+ "ai_level_evidence": [
+  "Operates on AI artefacts (87 references to prompts/LLMs/MCP/tokens/evals)"
+ ],
+ "claims": [],
+ "summary": null,
+ "strengths": [],
+ "top_fixes": [
+  "Add an exact, copy-pasteable run command to 'How to Run'.",
+  "Split complex functions into smaller helpers.",
+  "Catch specific exceptions and log or surface them."
+ ],
+ "dimensions": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged.",
+   "score": 90,
+   "static_score": 90,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "location",
+     "dimension": "compliance",
+     "label": "Lives in agents/<slug>/ or tools/<slug>/",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Project folder: tools/merge-ready",
+     "fix": null
+    },
+    {
+     "id": "kebab_case",
+     "dimension": "compliance",
+     "label": "Folder name is lowercase kebab-case",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "merge-ready",
+     "fix": null
+    },
+    {
+     "id": "descriptive_name",
+     "dimension": "compliance",
+     "label": "Folder name is descriptive (not generic)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "merge-ready",
+     "fix": null
+    },
+    {
+     "id": "required_files",
+     "dimension": "compliance",
+     "label": "README, .gitignore, .env.example and a manifest present",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "All present",
+     "fix": null
+    },
+    {
+     "id": "scope",
+     "dimension": "compliance",
+     "label": "Changes confined to the submission's own folder(s)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": null,
+     "detail": "Only project files + index row",
+     "fix": null
+    },
+    {
+     "id": "no_junk",
+     "dimension": "compliance",
+     "label": "No virtualenvs, caches or OS files committed",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Clean",
+     "fix": null
+    },
+    {
+     "id": "pr_checklist",
+     "dimension": "compliance",
+     "label": "PR template checklist completed",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.0,
+     "detail": "0/8 checklist items ticked",
+     "fix": "Fill in .github/PULL_REQUEST_TEMPLATE.md in the PR description."
+    },
+    {
+     "id": "pr_title",
+     "dimension": "compliance",
+     "label": "Conventional PR title, e.g. feat(agents): add <slug>",
+     "status": "warn",
+     "weight": 0.5,
+     "score": null,
+     "detail": "Feat/merge ready",
+     "fix": "Retitle to `feat(tools): add merge-ready`."
+    },
+    {
+     "id": "unique_name",
+     "dimension": "compliance",
+     "label": "Folder name unique within its category",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Unique",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "no_secrets",
+     "dimension": "security",
+     "label": "No API keys or credentials in files",
+     "status": "pass",
+     "weight": 4.0,
+     "score": null,
+     "detail": "No secrets detected",
+     "fix": null
+    },
+    {
+     "id": "history_clean",
+     "dimension": "security",
+     "label": "No secrets anywhere in the PR's commit history",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Scanned 4968 added lines across all commits",
+     "fix": null
+    },
+    {
+     "id": "no_credential_files",
+     "dimension": "security",
+     "label": "No .env or credential files committed",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "risky_code",
+     "dimension": "security",
+     "label": "No dangerous calls (eval/exec, shell=True, unsafe deserialisation…)",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None found",
+     "fix": null
+    },
+    {
+     "id": "ai_safety",
+     "dimension": "security",
+     "label": "AI-specific safety (model output → exec, unbounded loops, keys in browser)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No AI-specific risks detected",
+     "fix": null
+    },
+    {
+     "id": "deps_pinned",
+     "dimension": "security",
+     "label": "Dependencies have version constraints",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "3/3 constrained",
+     "fix": null
+    },
+    {
+     "id": "deps_vulns",
+     "dimension": "security",
+     "label": "No known-vulnerable dependency versions",
+     "status": "skip",
+     "weight": 2.0,
+     "score": null,
+     "detail": "No exact pins to check",
+     "fix": null
+    },
+    {
+     "id": "no_manipulation",
+     "dimension": "security",
+     "label": "No hidden text or instructions aimed at AI judges",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "security",
+     "severity": "high",
+     "title": "Google API key-shaped string in test/sample data",
+     "detail": "It may be a realistic fake. If it is a real key, revoke it: it is public in this PR.",
+     "file": "tests/fixtures/bad-agent/bad_agent.py",
+     "line": 8,
+     "snippet": "HARDCODED_API_KEY = \"AIza…(39 chars)\"",
+     "fix": "Use an obviously fake value (e.g. sk-test-EXAMPLE) in docs and tests.",
+     "commit": "4e2a25ef8f",
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "purpose": "Maintainable, idiomatic, tested code.",
+   "score": 64,
+   "static_score": 64,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "tests",
+     "dimension": "quality",
+     "label": "Automated tests exist and cover the code",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "5 test file(s), 45 test(s), test/source LOC 0.37",
+     "fix": null
+    },
+    {
+     "id": "complexity",
+     "dimension": "quality",
+     "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.0,
+     "detail": "34% of 62 functions over 10; max 31 in `check_s01` (merge_ready/checks/secrets.py)",
+     "fix": "Split complex functions into smaller helpers."
+    },
+    {
+     "id": "function_length",
+     "dimension": "quality",
+     "label": "Functions are short (≤ 60 lines)",
+     "status": "fail",
+     "weight": 1.0,
+     "score": 0.16129032258064513,
+     "detail": "13 of 62 functions over 60 lines: format_markdown (66), run_all_checks (155), check_a01 (68), check_a03 (70)",
+     "fix": null
+    },
+    {
+     "id": "type_hints",
+     "dimension": "quality",
+     "label": "Type hints on function signatures",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "100% of parameters/returns annotated",
+     "fix": null
+    },
+    {
+     "id": "docstrings",
+     "dimension": "quality",
+     "label": "Modules, classes and public functions documented",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "78% have docstrings",
+     "fix": null
+    },
+    {
+     "id": "error_handling",
+     "dimension": "quality",
+     "label": "No bare or silently swallowed exceptions",
+     "status": "fail",
+     "weight": 2.0,
+     "score": 0.0,
+     "detail": "13 swallowed/bare except block(s)",
+     "fix": "Catch specific exceptions and log or surface them."
+    },
+    {
+     "id": "logging",
+     "dimension": "quality",
+     "label": "Uses logging rather than scattered print()",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "logging not used; 2 print() calls",
+     "fix": null
+    },
+    {
+     "id": "modularity",
+     "dimension": "quality",
+     "label": "Code split into focused modules",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "14 source file(s); largest merge_ready/project.py (355 lines)",
+     "fix": null
+    },
+    {
+     "id": "lint",
+     "dimension": "quality",
+     "label": "Lint clean (ruff: pyflakes, bugbear, pylint subset)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 0.8798174855373584,
+     "detail": "59 issue(s), 1.4 per 100 lines: UP045×13, SIM102×12, PLR0912×9, F401×6, F541×4",
+     "fix": null
+    }
+   ],
+   "findings": [
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (31) in check_s01",
+     "detail": "",
+     "file": "merge_ready/checks/secrets.py",
+     "line": 120,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (28) in check_e01",
+     "detail": "",
+     "file": "merge_ready/checks/env_drift.py",
+     "line": 118,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "High complexity (26) in extract_python_env_vars",
+     "detail": "",
+     "file": "merge_ready/checks/env_drift.py",
+     "line": 57,
+     "snippet": null,
+     "fix": "Extract branches into named helper functions.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "merge_ready/project.py",
+     "line": 199,
+     "snippet": "return \"tools\", slug\n            except ValueError:\n                pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "merge_ready/project.py",
+     "line": 242,
+     "snippet": "return out\n            except Exception:\n                pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "merge_ready/project.py",
+     "line": 267,
+     "snippet": "return out\n            except Exception:\n                pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "merge_ready/project.py",
+     "line": 250,
+     "snippet": "return template_path.read_text(encoding=\"utf-8\", errors=\"replace\")\n                except Exception:\n                    pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "Exception swallowed",
+     "detail": "",
+     "file": "merge_ready/project.py",
+     "line": 275,
+     "snippet": "return template_path.read_text(encoding=\"utf-8\", errors=\"replace\")\n                except Exception:\n                    pass",
+     "fix": "Catch a specific exception and log it.",
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F541: f-string without any placeholders",
+     "detail": "",
+     "file": "merge_ready/checks/agent_safety.py",
+     "line": 107,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    },
+    {
+     "dimension": "quality",
+     "severity": "low",
+     "title": "ruff F541: f-string without any placeholders",
+     "detail": "",
+     "file": "merge_ready/checks/agent_safety.py",
+     "line": 121,
+     "snippet": null,
+     "fix": null,
+     "commit": null,
+     "source": "static",
+     "gate": false
+    }
+   ]
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "purpose": "Does what it claims and installs and runs on someone else's machine.",
+   "score": 85,
+   "static_score": 85,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "manifest",
+     "dimension": "functionality",
+     "label": "Dependency manifest present and parseable",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "pyproject.toml, requirements.txt, tests/fixtures/good-tool/requirements.txt",
+     "fix": null
+    },
+    {
+     "id": "deps_declared",
+     "dimension": "functionality",
+     "label": "Every imported package is declared in the manifest",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "All imports resolved",
+     "fix": null
+    },
+    {
+     "id": "env_documented",
+     "dimension": "functionality",
+     "label": "Env vars read by the code are documented (.env.example/README)",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1/1 documented",
+     "fix": null
+    },
+    {
+     "id": "run_command",
+     "dimension": "functionality",
+     "label": "README run command points at real files",
+     "status": "fail",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Targets not found: venv",
+     "fix": "Add an exact, copy-pasteable run command to 'How to Run'."
+    },
+    {
+     "id": "compiles",
+     "dimension": "functionality",
+     "label": "All Python/JSON files parse",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "19 Python file(s) OK",
+     "fix": null
+    },
+    {
+     "id": "install_steps",
+     "dimension": "functionality",
+     "label": "README install steps match the manifest",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Install command found",
+     "fix": null
+    },
+    {
+     "id": "portable_paths",
+     "dimension": "functionality",
+     "label": "No machine-specific absolute paths",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "None found",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt.",
+   "score": 40,
+   "static_score": 40,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "ai_level",
+     "dimension": "ai_native",
+     "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+     "status": "warn",
+     "weight": 4.0,
+     "score": 0.4,
+     "detail": "Level 2: AI tooling (no model calls)",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "purpose": "A newcomer can understand, set up and use it within five minutes.",
+   "score": 100,
+   "static_score": 100,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "readme",
+     "dimension": "docs",
+     "label": "README exists and is substantial",
+     "status": "pass",
+     "weight": 2.0,
+     "score": 1.0,
+     "detail": "1425 words",
+     "fix": null
+    },
+    {
+     "id": "sections",
+     "dimension": "docs",
+     "label": "Covers the template's sections",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "13/13 sections",
+     "fix": null
+    },
+    {
+     "id": "placeholders",
+     "dimension": "docs",
+     "label": "No unfilled template placeholders",
+     "status": "pass",
+     "weight": 3.0,
+     "score": 1.0,
+     "detail": "None left",
+     "fix": null
+    },
+    {
+     "id": "examples",
+     "dimension": "docs",
+     "label": "Real example input and output",
+     "status": "pass",
+     "weight": 2.0,
+     "score": null,
+     "detail": "Example with code block",
+     "fix": null
+    },
+    {
+     "id": "architecture",
+     "dimension": "docs",
+     "label": "Architecture explained (ideally with a diagram)",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 1.0,
+     "detail": "Diagram included",
+     "fix": null
+    },
+    {
+     "id": "limitations",
+     "dimension": "docs",
+     "label": "Honest known limitations",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    },
+    {
+     "id": "security_notes",
+     "dimension": "docs",
+     "label": "Security & privacy notes",
+     "status": "pass",
+     "weight": 1.0,
+     "score": null,
+     "detail": "Documented",
+     "fix": null
+    }
+   ],
+   "findings": []
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective.",
+   "score": 94,
+   "static_score": 94,
+   "llm_score": null,
+   "llm_share": 0.0,
+   "llm_rationale": null,
+   "checks": [
+    {
+     "id": "novelty",
+     "dimension": "innovation",
+     "label": "Idea differs from other submissions",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.89,
+     "detail": "Closest: #17 'feat(agents): add github-pr-guardian autonomous security reviewer agent' (README similarity 20%)",
+     "fix": null
+    },
+    {
+     "id": "originality",
+     "dimension": "innovation",
+     "label": "Code is not copied from another submission",
+     "status": "pass",
+     "weight": 1.0,
+     "score": 0.996,
+     "detail": "Max code overlap 0% with #11",
+     "fix": null
+    }
+   ],
+   "findings": []
+  }
+ ],
+ "overall": 78,
+ "verdict": "needs_changes",
+ "gates": [],
+ "confidence": 69,
+ "manipulation_suspected": false,
+ "llm": {
+  "used": false,
+  "provider": null,
+  "model": null,
+  "tokens": 0,
+  "error": null
+ },
+ "similar": [
+  {
+   "id": "17",
+   "slug": "github-pr-guardian",
+   "title": "feat(agents): add github-pr-guardian autonomous security reviewer agent",
+   "score": 0.205,
+   "kind": "idea"
+  },
+  {
+   "id": "81",
+   "slug": "submission-linter",
+   "title": "feat(tools): add submission linter tool to help the repo maintainer",
+   "score": 0.204,
+   "kind": "idea"
+  }
+ ],
+ "history": [],
+ "judged_at": "2026-10-24T08:40:32+00:00",
+ "judge_version": "2026.10.3"
+}

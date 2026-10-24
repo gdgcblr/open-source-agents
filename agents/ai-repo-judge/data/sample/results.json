@@ -1,0 +1,4239 @@
+{
+ "generated_at": "2026-10-24T08:40:44+00:00",
+ "repo": "gdgcblr/open-source-agents",
+ "judge_version": "2026.10.3",
+ "prompt_version": "review_v2",
+ "rubric": [
+  {
+   "key": "compliance",
+   "label": "Compliance",
+   "weight": 0.1,
+   "llm_share": 0.0,
+   "purpose": "Follows the repository's contribution rules: predicts whether the PR can be merged."
+  },
+  {
+   "key": "security",
+   "label": "Security & Privacy",
+   "weight": 0.2,
+   "llm_share": 0.2,
+   "purpose": "Safe to merge and run: no secrets, no dangerous code, sound AI-specific safety."
+  },
+  {
+   "key": "quality",
+   "label": "Code Quality",
+   "weight": 0.15,
+   "llm_share": 0.3,
+   "purpose": "Maintainable, idiomatic, tested code."
+  },
+  {
+   "key": "functionality",
+   "label": "Functionality & Reproducibility",
+   "weight": 0.2,
+   "llm_share": 0.4,
+   "purpose": "Does what it claims and installs and runs on someone else's machine."
+  },
+  {
+   "key": "ai_native",
+   "label": "AI-Native",
+   "weight": 0.2,
+   "llm_share": 0.4,
+   "purpose": "How deeply and how well AI is engineered in, beyond a thin wrapper around one prompt."
+  },
+  {
+   "key": "docs",
+   "label": "Docs & Developer Experience",
+   "weight": 0.1,
+   "llm_share": 0.3,
+   "purpose": "A newcomer can understand, set up and use it within five minutes."
+  },
+  {
+   "key": "innovation",
+   "label": "Innovation & Impact",
+   "weight": 0.05,
+   "llm_share": 0.7,
+   "purpose": "Original and useful. Kept at a low weight because it is subjective."
+  }
+ ],
+ "thresholds": {
+  "ready": 70,
+  "manipulation_penalty": 10
+ },
+ "submissions": [
+  {
+   "id": "86",
+   "number": 86,
+   "title": "feat(tools): add First PR Compass",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/86",
+   "author": "firoz3130",
+   "author_avatar": "https://avatars.githubusercontent.com/u/77429826?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "first-pr-compass",
+   "overall": 73,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 78,
+    "functionality": 82,
+    "ai_native": 0,
+    "docs": 100,
+    "innovation": 95
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 0,
+   "ai_level_label": "No AI detected",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "f063bf476e0109650e4aed2904a636d9af34dadd",
+   "judged_at": "2026-10-24T08:40:38+00:00",
+   "updated_at": "2026-10-24T08:39:58Z",
+   "llm_used": false
+  },
+  {
+   "id": "85",
+   "number": 85,
+   "title": "pre changes for the tool",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/85",
+   "author": "Harshul26Nanwani",
+   "author_avatar": "https://avatars.githubusercontent.com/u/72592254?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "cloud-run-launch-doctor",
+   "overall": 86,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 86,
+    "security": 97,
+    "quality": 77,
+    "functionality": 100,
+    "ai_native": 59,
+    "docs": 100,
+    "innovation": 96
+   },
+   "frameworks": [
+    "Google ADK",
+    "Flask"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "5eb76fc5513373b6570bd829f8977510af7035e9",
+   "judged_at": "2026-10-24T08:40:38+00:00",
+   "updated_at": "2026-10-24T08:39:16Z",
+   "llm_used": false
+  },
+  {
+   "id": "84",
+   "number": 84,
+   "title": "feat(agents): add issue reproduction agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/84",
+   "author": "JOHRIVASU",
+   "author_avatar": "https://avatars.githubusercontent.com/u/129716667?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "issue-repro-agent",
+   "overall": 86,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 78,
+    "functionality": 79,
+    "ai_native": 73,
+    "docs": 98,
+    "innovation": 95
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "Shell"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 5,
+    "info": 0
+   },
+   "top_fix": "Add an exact, copy-pasteable run command to 'How to Run'.",
+   "head_sha": "75e0c1cc4ea8a5eeecda96bbfffb11f26c8e025f",
+   "judged_at": "2026-10-24T08:40:38+00:00",
+   "updated_at": "2026-10-24T08:37:37Z",
+   "llm_used": false
+  },
+  {
+   "id": "83",
+   "number": 83,
+   "title": "feat(tools): add aegentsec agent IAM with scoped tokens, MCP tools and SDK",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/83",
+   "author": "circuit-geek",
+   "author_avatar": "https://avatars.githubusercontent.com/u/55285968?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "aegentsec",
+   "overall": 89,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 93,
+    "functionality": 100,
+    "ai_native": 48,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [
+    "MCP",
+    "FastAPI"
+   ],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "fbad3655bdaca68f6faeb7d9a3bb27d8f8f13d37",
+   "judged_at": "2026-10-24T08:40:38+00:00",
+   "updated_at": "2026-10-24T08:37:14Z",
+   "llm_used": false
+  },
+  {
+   "id": "82",
+   "number": 82,
+   "title": "feat(agents): add quickcart-advisor — ADK-Go multi-retailer price comparison agent with HITL approval",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/82",
+   "author": "seshachalam-yv",
+   "author_avatar": "https://avatars.githubusercontent.com/u/104052572?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "quickcart-advisor",
+   "overall": 91,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 88,
+    "functionality": 100,
+    "ai_native": 64,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Go"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "d9979e50cf1736642e9f91e56bcc280aa5d81b65",
+   "judged_at": "2026-10-24T08:40:37+00:00",
+   "updated_at": "2026-10-24T08:36:42Z",
+   "llm_used": false
+  },
+  {
+   "id": "81",
+   "number": 81,
+   "title": "feat(tools): add submission linter tool to help the repo maintainer",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/81",
+   "author": "DigbijayNayak",
+   "author_avatar": "https://avatars.githubusercontent.com/u/66635084?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "submission-linter",
+   "overall": 82,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 65,
+    "functionality": 100,
+    "ai_native": 40,
+    "docs": 100,
+    "innovation": 85
+   },
+   "frameworks": [],
+   "providers": [
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "a45e1ae2cb2327e54bd7e8e18b508713e22c6f32",
+   "judged_at": "2026-10-24T08:40:37+00:00",
+   "updated_at": "2026-10-24T08:35:51Z",
+   "llm_used": false
+  },
+  {
+   "id": "80",
+   "number": 80,
+   "title": "feat: add git-commit-agent, pr-reviewer, git-mcp-server, and changelog-generator",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/80",
+   "author": "pydivenkat",
+   "author_avatar": "https://avatars.githubusercontent.com/u/98642982?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "git-commit-agent",
+   "overall": 78,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 69,
+    "quality": 72,
+    "functionality": 98,
+    "ai_native": 58,
+    "docs": 72,
+    "innovation": 90
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 5,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "293a50ace690ede7bf2a314691d964d7b93c9706",
+   "judged_at": "2026-10-24T08:40:37+00:00",
+   "updated_at": "2026-10-24T08:35:46Z",
+   "llm_used": false
+  },
+  {
+   "id": "79",
+   "number": 79,
+   "title": "feat(agents): add patchproof with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/79",
+   "author": "CaptnSalazar",
+   "author_avatar": "https://avatars.githubusercontent.com/u/34618395?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "patchproof",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 76,
+    "functionality": 100,
+    "ai_native": 70,
+    "docs": 100,
+    "innovation": 97
+   },
+   "frameworks": [
+    "LangGraph"
+   ],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "dcbf58dd9c476f9f3998d9c106d26093adae8607",
+   "judged_at": "2026-10-24T08:40:37+00:00",
+   "updated_at": "2026-10-24T08:35:34Z",
+   "llm_used": false
+  },
+  {
+   "id": "78",
+   "number": 78,
+   "title": "feat(agents): add commute-gate with swappable gates and evals",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/78",
+   "author": "karthikvkreddy",
+   "author_avatar": "https://avatars.githubusercontent.com/u/67229804?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "commute-gate",
+   "overall": 73,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 55,
+    "functionality": 100,
+    "ai_native": 0,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [],
+   "providers": [
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 0,
+   "ai_level_label": "No AI detected",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "28d24542ba02f4c0d62a2a8396b23e236e0176cd",
+   "judged_at": "2026-10-24T08:40:36+00:00",
+   "updated_at": "2026-10-24T08:35:57Z",
+   "llm_used": false
+  },
+  {
+   "id": "77",
+   "number": 77,
+   "title": "BuildBuddy - Less Awkward Networking, More Meaningful Connections",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/77",
+   "author": "adarsh-kn",
+   "author_avatar": "https://avatars.githubusercontent.com/u/66333004?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "event-networking-matchmaker",
+   "overall": 76,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 98,
+    "security": 100,
+    "quality": 71,
+    "functionality": 64,
+    "ai_native": 62,
+    "docs": 50,
+    "innovation": 100
+   },
+   "frameworks": [
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "JavaScript",
+    "HTML"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 11,
+    "info": 0
+   },
+   "top_fix": "Add httpx, onnxruntime to your manifest.",
+   "head_sha": "9634a9ebf5e67210e82cf8a349fc38fdd0a489c9",
+   "judged_at": "2026-10-24T08:40:35+00:00",
+   "updated_at": "2026-10-24T08:34:54Z",
+   "llm_used": false
+  },
+  {
+   "id": "76",
+   "number": 76,
+   "title": "feat(tools): add pr-readiness-checker with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/76",
+   "author": "Yukti007",
+   "author_avatar": "https://avatars.githubusercontent.com/u/88759870?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "pr-readiness-checker",
+   "overall": 89,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 84,
+    "functionality": 96,
+    "ai_native": 72,
+    "docs": 88,
+    "innovation": 87
+   },
+   "frameworks": [
+    "CLI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 8,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "5671afe8d07e634c5908a1bb1698ec81054aa93a",
+   "judged_at": "2026-10-24T08:40:35+00:00",
+   "updated_at": "2026-10-24T08:34:34Z",
+   "llm_used": false
+  },
+  {
+   "id": "75",
+   "number": 75,
+   "title": "feat(tools): add git-diff-summarizer with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/75",
+   "author": "ankit-singh44",
+   "author_avatar": "https://avatars.githubusercontent.com/u/70136925?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "git-diff-summarizer",
+   "overall": 84,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 80,
+    "functionality": 100,
+    "ai_native": 37,
+    "docs": 100,
+    "innovation": 91
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "TypeScript"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "3aebeefabb79bcd58b0cde146eb5d474f7942d14",
+   "judged_at": "2026-10-24T08:40:34+00:00",
+   "updated_at": "2026-10-24T08:34:04Z",
+   "llm_used": false
+  },
+  {
+   "id": "74",
+   "number": 74,
+   "title": "  feat(agents): add incident-analyzer powered by Gemma and AST static analysis",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/74",
+   "author": "UmasankarCherukuri",
+   "author_avatar": "https://avatars.githubusercontent.com/u/28698891?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "incident-analyzer",
+   "overall": 84,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 98,
+    "security": 100,
+    "quality": 81,
+    "functionality": 100,
+    "ai_native": 40,
+    "docs": 100,
+    "innovation": 90
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "791f5eae3cfc14cc96c6bae8091145863af9dac3",
+   "judged_at": "2026-10-24T08:40:33+00:00",
+   "updated_at": "2026-10-24T08:39:53Z",
+   "llm_used": false
+  },
+  {
+   "id": "73",
+   "number": 73,
+   "title": "feat(agents): add autonomous-incident-responder",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/73",
+   "author": "adishshanbhag",
+   "author_avatar": "https://avatars.githubusercontent.com/u/69667020?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "autonomous-incident-responder",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 69,
+    "functionality": 95,
+    "ai_native": 80,
+    "docs": 100,
+    "innovation": 99
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "f96f3c995f146bf3c6cab429b04d7c64835a19fa",
+   "judged_at": "2026-10-24T08:40:33+00:00",
+   "updated_at": "2026-10-24T08:33:40Z",
+   "llm_used": false
+  },
+  {
+   "id": "72",
+   "number": 72,
+   "title": "Feat/merge ready",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/72",
+   "author": "Rithvik-krishna",
+   "author_avatar": "https://avatars.githubusercontent.com/u/73592329?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "merge-ready",
+   "overall": 78,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 90,
+    "security": 100,
+    "quality": 64,
+    "functionality": 85,
+    "ai_native": 40,
+    "docs": 100,
+    "innovation": 94
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 10,
+    "info": 0
+   },
+   "top_fix": "Add an exact, copy-pasteable run command to 'How to Run'.",
+   "head_sha": "17f335b3f36b1b874a5a2a9b2892b69a7ec37a70",
+   "judged_at": "2026-10-24T08:40:32+00:00",
+   "updated_at": "2026-10-24T08:32:48Z",
+   "llm_used": false
+  },
+  {
+   "id": "71",
+   "number": 71,
+   "title": "feat(agents): add weekly-focus-coach with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/71",
+   "author": "MahinSyeda99",
+   "author_avatar": "https://avatars.githubusercontent.com/u/70097284?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "weekly-focus-coach",
+   "overall": 87,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 85,
+    "functionality": 96,
+    "ai_native": 49,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "8aeb823c28819c50b2cbd093572463e2cde967fd",
+   "judged_at": "2026-10-24T08:40:32+00:00",
+   "updated_at": "2026-10-24T08:32:12Z",
+   "llm_used": false
+  },
+  {
+   "id": "70",
+   "number": 70,
+   "title": "feat(agents): add scam-message-shield",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/70",
+   "author": "abhisekmishra1709",
+   "author_avatar": "https://avatars.githubusercontent.com/u/74945783?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "scam-message-shield",
+   "overall": 87,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 89,
+    "quality": 96,
+    "functionality": 87,
+    "ai_native": 63,
+    "docs": 100,
+    "innovation": 87
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "TypeScript"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "9973b85863566c68b19833e758aa4a2559c96ab5",
+   "judged_at": "2026-10-24T08:40:31+00:00",
+   "updated_at": "2026-10-24T08:31:49Z",
+   "llm_used": false
+  },
+  {
+   "id": "69",
+   "number": 69,
+   "title": "feat(tools,agents): add pinpoint-mcp-server and pinpoint-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/69",
+   "author": "TeamAnoryx",
+   "author_avatar": "https://avatars.githubusercontent.com/u/262371217?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "pinpoint-mcp-server",
+   "overall": 76,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 94,
+    "security": 100,
+    "quality": 50,
+    "functionality": 100,
+    "ai_native": 26,
+    "docs": 92,
+    "innovation": 98
+   },
+   "frameworks": [
+    "MCP"
+   ],
+   "providers": [],
+   "languages": [
+    "JavaScript"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "8b416047208958fde84cdd729a005249b6be9f9a",
+   "judged_at": "2026-10-24T08:40:30+00:00",
+   "updated_at": "2026-10-24T08:31:20Z",
+   "llm_used": false
+  },
+  {
+   "id": "68",
+   "number": 68,
+   "title": "feat(agents): add contribution-preflight-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/68",
+   "author": "PatakiSubodh",
+   "author_avatar": "https://avatars.githubusercontent.com/u/135350282?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "contribution-preflight-agent",
+   "overall": 88,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 83,
+    "functionality": 88,
+    "ai_native": 68,
+    "docs": 100,
+    "innovation": 93
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 5,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "52413912958bce989f83ee73e35924a6373cea18",
+   "judged_at": "2026-10-24T08:40:29+00:00",
+   "updated_at": "2026-10-24T08:31:16Z",
+   "llm_used": false
+  },
+  {
+   "id": "67",
+   "number": 67,
+   "title": "feat(agents): add intent-guard with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/67",
+   "author": "Apoorv97",
+   "author_avatar": "https://avatars.githubusercontent.com/u/15074697?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "intent-guard",
+   "overall": 88,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 80,
+    "functionality": 100,
+    "ai_native": 56,
+    "docs": 100,
+    "innovation": 94
+   },
+   "frameworks": [
+    "Google ADK",
+    "MCP",
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "b0857af44a6c493f3657d016a4b92603783cd733",
+   "judged_at": "2026-10-24T08:40:29+00:00",
+   "updated_at": "2026-10-24T08:38:53Z",
+   "llm_used": false
+  },
+  {
+   "id": "66",
+   "number": 66,
+   "title": "feat: add Agent Reality Check evaluator for workshop safety scenarios",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/66",
+   "author": "nisha102",
+   "author_avatar": "https://avatars.githubusercontent.com/u/30928039?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "pr-review-triage-agent",
+   "overall": 85,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 82,
+    "functionality": 100,
+    "ai_native": 42,
+    "docs": 100,
+    "innovation": 96
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "f2e0dbdf1733db783d4a782a1ea9f05852e06600",
+   "judged_at": "2026-10-24T08:40:28+00:00",
+   "updated_at": "2026-10-24T08:34:29Z",
+   "llm_used": false
+  },
+  {
+   "id": "65",
+   "number": 65,
+   "title": "feat(agents): add pr-sentinel autonomous PR review & triage agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/65",
+   "author": "KiranGowdaS",
+   "author_avatar": "https://avatars.githubusercontent.com/u/53030515?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "pr-sentinel",
+   "overall": 78,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 72,
+    "quality": 59,
+    "functionality": 96,
+    "ai_native": 54,
+    "docs": 98,
+    "innovation": 91
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "JavaScript"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 4,
+    "medium": 5,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Replace key-shaped strings in docs/tests with obviously fake values.",
+   "head_sha": "f04a735d2b95d4d965a414e9d7f31a6a6e17b905",
+   "judged_at": "2026-10-24T08:40:28+00:00",
+   "updated_at": "2026-10-24T08:27:34Z",
+   "llm_used": false
+  },
+  {
+   "id": "64",
+   "number": 64,
+   "title": "Feat/open flutter qa",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/64",
+   "author": "maharanakk",
+   "author_avatar": "https://avatars.githubusercontent.com/u/8220749?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "OpenFlutterQA",
+   "overall": 75,
+   "verdict": "blocked",
+   "confidence": 58,
+   "scores": {
+    "compliance": 83,
+    "security": 73,
+    "quality": null,
+    "functionality": 88,
+    "ai_native": 40,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 1,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Revoke/rotate the key, load it from an environment variable and document it in .env.example.",
+   "head_sha": "1f467516edfa82b8d5ffa53fcafc956a9425e96c",
+   "judged_at": "2026-10-24T08:40:28+00:00",
+   "updated_at": "2026-10-24T08:27:24Z",
+   "llm_used": false
+  },
+  {
+   "id": "63",
+   "number": 63,
+   "title": "feat(tools): add LabLens lab report explainer",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/63",
+   "author": "rajverma-gits",
+   "author_avatar": "https://avatars.githubusercontent.com/u/60125223?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "lablens",
+   "overall": 72,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 86,
+    "functionality": 100,
+    "ai_native": 0,
+    "docs": 51,
+    "innovation": 100
+   },
+   "frameworks": [
+    "Streamlit"
+   ],
+   "providers": [
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 0,
+   "ai_level_label": "No AI detected",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "7963e7ec6c9b8f0727332f0747f1746904207d1c",
+   "judged_at": "2026-10-24T08:40:28+00:00",
+   "updated_at": "2026-10-24T08:31:35Z",
+   "llm_used": false
+  },
+  {
+   "id": "62",
+   "number": 62,
+   "title": "Feat/pr review assistant",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/62",
+   "author": "saiprasanna56",
+   "author_avatar": "https://avatars.githubusercontent.com/u/149445634?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "pr-review-assistant",
+   "overall": 80,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 90,
+    "security": 94,
+    "quality": 72,
+    "functionality": 100,
+    "ai_native": 35,
+    "docs": 100,
+    "innovation": 89
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "2deef9ca5977b5aaf870386eb0e67d8befbeb03b",
+   "judged_at": "2026-10-24T08:40:27+00:00",
+   "updated_at": "2026-10-24T08:25:52Z",
+   "llm_used": false
+  },
+  {
+   "id": "61",
+   "number": 61,
+   "title": "feat(agents): add multi-agent-editorial-team collaborative pipeline",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/61",
+   "author": "PavaS279",
+   "author_avatar": "https://avatars.githubusercontent.com/u/118591603?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "multi-agent-editorial-team",
+   "overall": 88,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 71,
+    "functionality": 100,
+    "ai_native": 69,
+    "docs": 100,
+    "innovation": 77
+   },
+   "frameworks": [
+    "MCP"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 5,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "e6b5a19d5d8669b03dc7d28e78a3e8b29fe8b8c8",
+   "judged_at": "2026-10-24T08:40:27+00:00",
+   "updated_at": "2026-10-24T08:24:46Z",
+   "llm_used": false
+  },
+  {
+   "id": "60",
+   "number": 60,
+   "title": "feat(agents): add maintainer-guard review harness",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/60",
+   "author": "Misbah43",
+   "author_avatar": "https://avatars.githubusercontent.com/u/72561521?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "maintainer-guard",
+   "overall": 74,
+   "verdict": "blocked",
+   "confidence": 69,
+   "scores": {
+    "compliance": 68,
+    "security": 93,
+    "quality": 59,
+    "functionality": 95,
+    "ai_native": 48,
+    "docs": 65,
+    "innovation": 95
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 2,
+    "medium": 0,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Revert this file in your branch.",
+   "head_sha": "c9d2be92fa0089739b1250fee39565cccc951681",
+   "judged_at": "2026-10-24T08:40:27+00:00",
+   "updated_at": "2026-10-24T08:24:15Z",
+   "llm_used": false
+  },
+  {
+   "id": "59",
+   "number": 59,
+   "title": "feat: add pr-cve-scanner tool",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/59",
+   "author": "Ujwal6702",
+   "author_avatar": "https://avatars.githubusercontent.com/u/107605379?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "pr-cve-scanner",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 90,
+    "functionality": 100,
+    "ai_native": 60,
+    "docs": 100,
+    "innovation": 94
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 6,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "a7ad6024126a014976782417fd25f87a01c98057",
+   "judged_at": "2026-10-24T08:40:27+00:00",
+   "updated_at": "2026-10-24T08:32:27Z",
+   "llm_used": false
+  },
+  {
+   "id": "58",
+   "number": 58,
+   "title": "feat(agents): add flaky-test-triage, an ADK agent that triages failing test logs",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/58",
+   "author": "jharinkesh",
+   "author_avatar": "https://avatars.githubusercontent.com/u/6746272?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "flaky-test-triage",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 99,
+    "security": 100,
+    "quality": 83,
+    "functionality": 92,
+    "ai_native": 75,
+    "docs": 100,
+    "innovation": 94
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "Java"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 6,
+    "info": 0
+   },
+   "top_fix": "Add requests to your manifest.",
+   "head_sha": "413398634acbbdee723c219a9e2fe4d92cffb3d1",
+   "judged_at": "2026-10-24T08:40:27+00:00",
+   "updated_at": "2026-10-24T08:20:18Z",
+   "llm_used": false
+  },
+  {
+   "id": "57",
+   "number": 57,
+   "title": "feat(agents): add namma-civic-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/57",
+   "author": "vi5hnuu",
+   "author_avatar": "https://avatars.githubusercontent.com/u/78157776?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "namma-civic-agent",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 95,
+    "functionality": 100,
+    "ai_native": 54,
+    "docs": 100,
+    "innovation": 95
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "cea937c6c2ae547920931cc9e0daf8789563fd3a",
+   "judged_at": "2026-10-24T08:40:26+00:00",
+   "updated_at": "2026-10-24T08:23:15Z",
+   "llm_used": false
+  },
+  {
+   "id": "56",
+   "number": 56,
+   "title": "feat(tools): add idle-janitor with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/56",
+   "author": "pritikumari24",
+   "author_avatar": "https://avatars.githubusercontent.com/u/123960215?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "idle-janitor",
+   "overall": 83,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 54,
+    "functionality": 100,
+    "ai_native": 50,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [
+    "MCP",
+    "CLI"
+   ],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 11,
+    "info": 0
+   },
+   "top_fix": "Add pytest tests for the core logic; stub the model so they run without API keys.",
+   "head_sha": "97f47aee5b63234f8b78476f78b9423e893fd2a0",
+   "judged_at": "2026-10-24T08:40:26+00:00",
+   "updated_at": "2026-10-24T08:19:02Z",
+   "llm_used": false
+  },
+  {
+   "id": "55",
+   "number": 55,
+   "title": "feat(agents): add kpi-drift-rca-agent — deterministic metric drift RCA with Gemini diagnostics",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/55",
+   "author": "PavanBJ",
+   "author_avatar": "https://avatars.githubusercontent.com/u/43775576?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "kpi-drift-rca-agent",
+   "overall": 76,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 55,
+    "functionality": 96,
+    "ai_native": 19,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "8a3afa72d315a5074076b69a5a6dfdef166a100c",
+   "judged_at": "2026-10-24T08:40:26+00:00",
+   "updated_at": "2026-10-24T08:18:36Z",
+   "llm_used": false
+  },
+  {
+   "id": "53",
+   "number": 53,
+   "title": "feat(agents): add scam-shield-agent with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/53",
+   "author": "EM-DeepakBehera",
+   "author_avatar": "https://avatars.githubusercontent.com/u/296770277?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "scam-shield-agent",
+   "overall": 93,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 80,
+    "functionality": 100,
+    "ai_native": 84,
+    "docs": 100,
+    "innovation": 87
+   },
+   "frameworks": [
+    "Google ADK",
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "HTML",
+    "JavaScript"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "b4c420a2e7fd401799053cc9f7864a20b0a0c849",
+   "judged_at": "2026-10-24T08:40:26+00:00",
+   "updated_at": "2026-10-24T08:34:29Z",
+   "llm_used": false
+  },
+  {
+   "id": "52",
+   "number": 52,
+   "title": "feat(agents): add push-guard — AI-powered pre-push security scanner",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/52",
+   "author": "krishajoshi14",
+   "author_avatar": "https://avatars.githubusercontent.com/u/111437346?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "push-guard",
+   "overall": 75,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 94,
+    "quality": 62,
+    "functionality": 92,
+    "ai_native": 52,
+    "docs": 62,
+    "innovation": 60
+   },
+   "frameworks": [
+    "FastAPI",
+    "LangGraph",
+    "OpenAI Agents SDK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "HTML"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 23,
+    "info": 0
+   },
+   "top_fix": "Add pytest tests for the core logic; stub the model so they run without API keys.",
+   "head_sha": "7aaab2d98fa377539ad47068c8f5eaa34d29895b",
+   "judged_at": "2026-10-24T08:40:25+00:00",
+   "updated_at": "2026-10-24T08:15:00Z",
+   "llm_used": false
+  },
+  {
+   "id": "51",
+   "number": 51,
+   "title": "feat(agents): add bill-decoder-agent — explain Indian utility bills with Gemini",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/51",
+   "author": "00-14",
+   "author_avatar": "https://avatars.githubusercontent.com/u/142693428?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "bill-decoder-agent",
+   "overall": 80,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 71,
+    "functionality": 100,
+    "ai_native": 24,
+    "docs": 100,
+    "innovation": 96
+   },
+   "frameworks": [
+    "Streamlit"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "75ac963a96db19923a8415eb728f2fa2f89b90ed",
+   "judged_at": "2026-10-24T08:40:25+00:00",
+   "updated_at": "2026-10-24T08:13:47Z",
+   "llm_used": false
+  },
+  {
+   "id": "50",
+   "number": 50,
+   "title": "feat(agents): add scholar-agent with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/50",
+   "author": "SHIVANGIJOSHI",
+   "author_avatar": "https://avatars.githubusercontent.com/u/30415259?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "scholar-agent",
+   "overall": 80,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 99,
+    "quality": 80,
+    "functionality": 62,
+    "ai_native": 56,
+    "docs": 100,
+    "innovation": 95
+   },
+   "frameworks": [
+    "Google ADK",
+    "OpenAI Agents SDK",
+    "CLI"
+   ],
+   "providers": [
+    "Gemini",
+    "OpenAI",
+    "Hugging Face"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 6,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Add google-adk, google-genai, httpx, numpy, openai-agents to your manifest.",
+   "head_sha": "44b1dcbe91973b720e451bd60ac473729319bb9a",
+   "judged_at": "2026-10-24T08:40:25+00:00",
+   "updated_at": "2026-10-24T08:17:40Z",
+   "llm_used": false
+  },
+  {
+   "id": "49",
+   "number": 49,
+   "title": "Add MetroAgent for metro crowd insights",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/49",
+   "author": "JanhaviRgowda",
+   "author_avatar": "https://avatars.githubusercontent.com/u/158803137?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "metroagent",
+   "overall": 71,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 95,
+    "security": 94,
+    "quality": 51,
+    "functionality": 85,
+    "ai_native": 42,
+    "docs": 62,
+    "innovation": 60
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 22,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "66f99d8b5a71154ec930f245f9ceb7819853dce7",
+   "judged_at": "2026-10-24T08:40:25+00:00",
+   "updated_at": "2026-10-24T08:07:56Z",
+   "llm_used": false
+  },
+  {
+   "id": "48",
+   "number": 48,
+   "title": "feat(agents): add ishikawa-rca, multi-agent root-cause analysis with guardrails",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/48",
+   "author": "Likhith-BlueLotus",
+   "author_avatar": "https://avatars.githubusercontent.com/u/148641690?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "ishikawa-rca",
+   "overall": 93,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 81,
+    "quality": 95,
+    "functionality": 100,
+    "ai_native": 89,
+    "docs": 100,
+    "innovation": 91
+   },
+   "frameworks": [
+    "MCP",
+    "FastAPI",
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "HTML"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 9,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "157674522001358218bebcec6dce395b588f6d00",
+   "judged_at": "2026-10-24T08:40:24+00:00",
+   "updated_at": "2026-10-24T08:07:38Z",
+   "llm_used": false
+  },
+  {
+   "id": "47",
+   "number": 47,
+   "title": "feat(agents): add Android Dev Assistant",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/47",
+   "author": "jeevithangowda",
+   "author_avatar": "https://avatars.githubusercontent.com/u/274084964?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "android-dev-assistant",
+   "overall": 82,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 72,
+    "functionality": 100,
+    "ai_native": 34,
+    "docs": 100,
+    "innovation": 94
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "c0ab202c72d2ed3e88ac4d277d4c453fd50eac0f",
+   "judged_at": "2026-10-24T08:40:24+00:00",
+   "updated_at": "2026-10-24T08:05:51Z",
+   "llm_used": false
+  },
+  {
+   "id": "46",
+   "number": 46,
+   "title": "feat(agents): add meeting-notes-action-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/46",
+   "author": "Kalokherohini",
+   "author_avatar": "https://avatars.githubusercontent.com/u/167956715?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "meeting-notes-action-agent",
+   "overall": 83,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 86,
+    "functionality": 100,
+    "ai_native": 31,
+    "docs": 97,
+    "innovation": 100
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "503c81d46e692875113f0d175905bac6f4847ba1",
+   "judged_at": "2026-10-24T08:40:24+00:00",
+   "updated_at": "2026-10-24T08:03:06Z",
+   "llm_used": false
+  },
+  {
+   "id": "45",
+   "number": 45,
+   "title": "First attempt",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/45",
+   "author": "RaghavendraHegdekatte",
+   "author_avatar": "https://avatars.githubusercontent.com/u/20636242?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "FlightWise",
+   "overall": 77,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 78,
+    "security": 100,
+    "quality": 76,
+    "functionality": 100,
+    "ai_native": 50,
+    "docs": 72,
+    "innovation": 10
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "ee5f3323cb2e7cbe9a4525942d84252029509e13",
+   "judged_at": "2026-10-24T08:40:24+00:00",
+   "updated_at": "2026-10-24T08:02:20Z",
+   "llm_used": false
+  },
+  {
+   "id": "44",
+   "number": 44,
+   "title": "feat(agents): add coding-interview-mock-agent with documentation and setup",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/44",
+   "author": "NishkarshMakhija",
+   "author_avatar": "https://avatars.githubusercontent.com/u/28013224?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "coding-interview-mock-agent",
+   "overall": 75,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 89,
+    "quality": 67,
+    "functionality": 85,
+    "ai_native": 39,
+    "docs": 81,
+    "innovation": 100
+   },
+   "frameworks": [
+    "FastAPI",
+    "React"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "JavaScript",
+    "HTML"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 2,
+    "medium": 2,
+    "low": 8,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "a3e051b233cbb86b934a959010c70c23953b8b6b",
+   "judged_at": "2026-10-24T08:40:24+00:00",
+   "updated_at": "2026-10-24T08:02:07Z",
+   "llm_used": false
+  },
+  {
+   "id": "43",
+   "number": 43,
+   "title": "feat(agents): add good-first-issue-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/43",
+   "author": "AbhiJeet9065",
+   "author_avatar": "https://avatars.githubusercontent.com/u/81186534?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "good-first-issue-agent",
+   "overall": 88,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 74,
+    "functionality": 92,
+    "ai_native": 72,
+    "docs": 100,
+    "innovation": 89
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 11,
+    "info": 0
+   },
+   "top_fix": "Read the model name from an env var and add a mock mode so reviewers can run it without keys.",
+   "head_sha": "c6dfeb8deb7a6f3f637313c53e6a3d905239985c",
+   "judged_at": "2026-10-24T08:40:22+00:00",
+   "updated_at": "2026-10-24T08:00:16Z",
+   "llm_used": false
+  },
+  {
+   "id": "42",
+   "number": 42,
+   "title": "Jarvis - A PR Review Agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/42",
+   "author": "ShaikMohammedAshrafAli",
+   "author_avatar": "https://avatars.githubusercontent.com/u/64964800?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "git-pr-review-agent",
+   "overall": 84,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 98,
+    "security": 100,
+    "quality": 63,
+    "functionality": 100,
+    "ai_native": 56,
+    "docs": 98,
+    "innovation": 81
+   },
+   "frameworks": [
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 7,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "ef82c935aa908e005cca4294d9e6f23a35fc36e2",
+   "judged_at": "2026-10-24T08:40:21+00:00",
+   "updated_at": "2026-10-24T08:19:44Z",
+   "llm_used": false
+  },
+  {
+   "id": "41",
+   "number": 41,
+   "title": "FlightWise - agent for personalised flight suggestions - initial commit",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/41",
+   "author": "RaghavendraHegdekatte",
+   "author_avatar": "https://avatars.githubusercontent.com/u/20636242?v=4",
+   "state": "closed",
+   "category": "agents",
+   "slug": "FlightWise",
+   "overall": 77,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 78,
+    "security": 100,
+    "quality": 76,
+    "functionality": 100,
+    "ai_native": 50,
+    "docs": 72,
+    "innovation": 10
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "7cc2d09001910d8ab7927f15cd8f33f0ee4eb877",
+   "judged_at": "2026-10-24T08:40:21+00:00",
+   "updated_at": "2026-10-24T07:56:27Z",
+   "llm_used": false
+  },
+  {
+   "id": "40",
+   "number": 40,
+   "title": "Add prompt cost analyzer MCP tool",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/40",
+   "author": "shrikar10",
+   "author_avatar": "https://avatars.githubusercontent.com/u/60685603?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "prompt-cost-analyzer",
+   "overall": 88,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 97,
+    "security": 100,
+    "quality": 95,
+    "functionality": 100,
+    "ai_native": 48,
+    "docs": 97,
+    "innovation": 88
+   },
+   "frameworks": [
+    "MCP"
+   ],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "cecce183b9fc99d714e630d60d1f1bbc32260ae0",
+   "judged_at": "2026-10-24T08:40:21+00:00",
+   "updated_at": "2026-10-24T07:56:05Z",
+   "llm_used": false
+  },
+  {
+   "id": "39",
+   "number": 39,
+   "title": "feat: add Aran LLM privacy gateway (tool) and Aran KYC underwriter (agent)",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/39",
+   "author": "Antojoel",
+   "author_avatar": "https://avatars.githubusercontent.com/u/51856652?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "aran-llm-privacy-gateway",
+   "overall": 93,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 84,
+    "functionality": 98,
+    "ai_native": 82,
+    "docs": 100,
+    "innovation": 96
+   },
+   "frameworks": [
+    "MCP",
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 8,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "657a772917e9aedf6e3cdf7fcca13b4d73edf0e4",
+   "judged_at": "2026-10-24T08:40:21+00:00",
+   "updated_at": "2026-10-24T07:52:08Z",
+   "llm_used": false
+  },
+  {
+   "id": "38",
+   "number": 38,
+   "title": "♿🤖🚀 AccessAble AI: Turn Any Website into an Accessibility Detective 🔍🌐",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/38",
+   "author": "vinayakkaladhar",
+   "author_avatar": "https://avatars.githubusercontent.com/u/20831296?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "accessable_ai",
+   "overall": 70,
+   "verdict": "blocked",
+   "confidence": 69,
+   "scores": {
+    "compliance": 58,
+    "security": 95,
+    "quality": 55,
+    "functionality": 92,
+    "ai_native": 50,
+    "docs": 80,
+    "innovation": 10
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 4,
+    "medium": 1,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Revert this file in your branch.",
+   "head_sha": "f0477e6cd111f83f699cc1e48ed059ba41148192",
+   "judged_at": "2026-10-24T08:40:20+00:00",
+   "updated_at": "2026-10-24T08:32:43Z",
+   "llm_used": false
+  },
+  {
+   "id": "37",
+   "number": 37,
+   "title": "feat(agents): add issue-scout - find issues you can actually work on",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/37",
+   "author": "kunalcodehub",
+   "author_avatar": "https://avatars.githubusercontent.com/u/55286681?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "issue-scout",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 74,
+    "functionality": 97,
+    "ai_native": 78,
+    "docs": 100,
+    "innovation": 85
+   },
+   "frameworks": [
+    "Google ADK",
+    "MCP"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "df652d775eb1b6ee8e16a754ead0a1ded07adb3b",
+   "judged_at": "2026-10-24T08:40:20+00:00",
+   "updated_at": "2026-10-24T08:37:32Z",
+   "llm_used": false
+  },
+  {
+   "id": "36",
+   "number": 36,
+   "title": "Add AccessAble AI accessibility and its evaluation pipeline",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/36",
+   "author": "vinayakkaladhar",
+   "author_avatar": "https://avatars.githubusercontent.com/u/20831296?v=4",
+   "state": "closed",
+   "category": "agents",
+   "slug": "accessable_ai",
+   "overall": 69,
+   "verdict": "blocked",
+   "confidence": 69,
+   "scores": {
+    "compliance": 46,
+    "security": 95,
+    "quality": 55,
+    "functionality": 92,
+    "ai_native": 50,
+    "docs": 80,
+    "innovation": 10
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 3,
+    "medium": 1,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Revert this file in your branch.",
+   "head_sha": "c115fbfb58fe044bd21a4a6fd765c311d40fd3c8",
+   "judged_at": "2026-10-24T08:40:20+00:00",
+   "updated_at": "2026-10-24T08:15:36Z",
+   "llm_used": false
+  },
+  {
+   "id": "35",
+   "number": 35,
+   "title": "feat(tools): add FirstRun Doctor",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/35",
+   "author": "Ug0510",
+   "author_avatar": "https://avatars.githubusercontent.com/u/85778092?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "first-run-doctor",
+   "overall": 69,
+   "verdict": "needs_changes",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 68,
+    "functionality": 69,
+    "ai_native": 0,
+    "docs": 100,
+    "innovation": 95
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 0,
+   "ai_level_label": "No AI detected",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 6,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "94675fd94dd1da8ee86317d4ba8b37e3fc3bb7ce",
+   "judged_at": "2026-10-24T08:40:19+00:00",
+   "updated_at": "2026-10-24T07:50:38Z",
+   "llm_used": false
+  },
+  {
+   "id": "34",
+   "number": 34,
+   "title": "feat(agents): add sql-copilot-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/34",
+   "author": "kannajune",
+   "author_avatar": "https://avatars.githubusercontent.com/u/4979391?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "sql-copilot-agent",
+   "overall": 90,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 89,
+    "functionality": 97,
+    "ai_native": 63,
+    "docs": 100,
+    "innovation": 93
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "1cfab76c38588a5f90e88e37caede93de03deb76",
+   "judged_at": "2026-10-24T08:40:19+00:00",
+   "updated_at": "2026-10-24T07:47:45Z",
+   "llm_used": false
+  },
+  {
+   "id": "33",
+   "number": 33,
+   "title": "feat(agents): Issue reproduction assistant",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/33",
+   "author": "pradeep15a",
+   "author_avatar": "https://avatars.githubusercontent.com/u/80315129?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "issue-reproduction-assistant",
+   "overall": 88,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 97,
+    "functionality": 100,
+    "ai_native": 46,
+    "docs": 92,
+    "innovation": 94
+   },
+   "frameworks": [
+    "MCP"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "TypeScript"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "33269252697c6e675261b1dce8961e5fba5559f6",
+   "judged_at": "2026-10-24T08:40:43+00:00",
+   "updated_at": "2026-10-24T08:40:12Z",
+   "llm_used": false
+  },
+  {
+   "id": "32",
+   "number": 32,
+   "title": "feat(agents): add merge-mentor, a first-PR issue finder and mentor",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/32",
+   "author": "vaishukan",
+   "author_avatar": "https://avatars.githubusercontent.com/u/116555306?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "merge-mentor",
+   "overall": 85,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 83,
+    "quality": 93,
+    "functionality": 86,
+    "ai_native": 65,
+    "docs": 100,
+    "innovation": 85
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "TypeScript",
+    "HTML"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 19,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Add a to your manifest.",
+   "head_sha": "ae3251d444e1c78e46142a172a6d2eed97e4d38d",
+   "judged_at": "2026-10-24T08:40:18+00:00",
+   "updated_at": "2026-10-24T08:32:14Z",
+   "llm_used": false
+  },
+  {
+   "id": "31",
+   "number": 31,
+   "title": "feat(tools): add pii-redaction-mcp-server with comprehensive guardrails",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/31",
+   "author": "dipanwitasarkar",
+   "author_avatar": "https://avatars.githubusercontent.com/u/20910039?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "pii-redaction-tool",
+   "overall": 86,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 65,
+    "functionality": 100,
+    "ai_native": 54,
+    "docs": 100,
+    "innovation": 99
+   },
+   "frameworks": [
+    "CLI",
+    "MCP"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 5,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "b2b05ee1f0481ddab8e5fff744c90d189d6e385d",
+   "judged_at": "2026-10-24T08:40:17+00:00",
+   "updated_at": "2026-10-24T08:33:25Z",
+   "llm_used": false
+  },
+  {
+   "id": "30",
+   "number": 30,
+   "title": "Add GDG event marketing agent UI",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/30",
+   "author": "monu1011agrawal",
+   "author_avatar": "https://avatars.githubusercontent.com/u/100155036?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "gdg-event-marketing",
+   "overall": 84,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 90,
+    "security": 100,
+    "quality": 83,
+    "functionality": 100,
+    "ai_native": 37,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "6cf83a2951b68da8f9176e5bff3ac2d63cd16a89",
+   "judged_at": "2026-10-24T08:40:16+00:00",
+   "updated_at": "2026-10-24T08:15:32Z",
+   "llm_used": false
+  },
+  {
+   "id": "29",
+   "number": 29,
+   "title": "feat(agents): RentRakshak - Bengaluru rental safety ADK agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/29",
+   "author": "rockygeekz",
+   "author_avatar": "https://avatars.githubusercontent.com/u/124438543?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "rentrakshak",
+   "overall": 87,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 94,
+    "security": 81,
+    "quality": 82,
+    "functionality": 98,
+    "ai_native": 80,
+    "docs": 83,
+    "innovation": 100
+   },
+   "frameworks": [
+    "Google ADK",
+    "FastAPI",
+    "Streamlit"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python",
+    "HTML",
+    "JavaScript",
+    "Shell"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 20,
+    "low": 10,
+    "info": 0
+   },
+   "top_fix": "Add pytest tests for the core logic; stub the model so they run without API keys.",
+   "head_sha": "1633a36dae7e0edfbad549748c0f2d0a75d3efb1",
+   "judged_at": "2026-10-24T08:40:16+00:00",
+   "updated_at": "2026-10-24T08:34:47Z",
+   "llm_used": false
+  },
+  {
+   "id": "28",
+   "number": 28,
+   "title": "feat(tools): add adk-memshield – RLS-enforced multi-tenant memory service for Google ADK",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/28",
+   "author": "aalishan001",
+   "author_avatar": "https://avatars.githubusercontent.com/u/60288602?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "adk-memshield",
+   "overall": 89,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 89,
+    "functionality": 100,
+    "ai_native": 62,
+    "docs": 100,
+    "innovation": 59
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "f0ff4f4912d1f98d20518cb24272668fa07e9d4d",
+   "judged_at": "2026-10-24T08:40:16+00:00",
+   "updated_at": "2026-10-24T07:41:55Z",
+   "llm_used": false
+  },
+  {
+   "id": "27",
+   "number": 27,
+   "title": "feat(tools): add adk-leak-arena – red-team harness for Google ADK multi-tenant memory leakage",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/27",
+   "author": "aalishan001",
+   "author_avatar": "https://avatars.githubusercontent.com/u/60288602?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "adk-leak-arena",
+   "overall": 86,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 81,
+    "quality": 73,
+    "functionality": 100,
+    "ai_native": 78,
+    "docs": 100,
+    "innovation": 59
+   },
+   "frameworks": [
+    "Google ADK",
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "HTML"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 33,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "1152acf2dd4170dd8ef0560bcf9e999e7d06bd02",
+   "judged_at": "2026-10-24T08:40:15+00:00",
+   "updated_at": "2026-10-24T07:41:24Z",
+   "llm_used": false
+  },
+  {
+   "id": "26",
+   "number": 26,
+   "title": "feat(tools): add local Ollama evaluation CLI",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/26",
+   "author": "VIPIN-creator",
+   "author_avatar": "https://avatars.githubusercontent.com/u/59695863?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "agent-eval-lite",
+   "overall": 80,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 73,
+    "functionality": 100,
+    "ai_native": 40,
+    "docs": 64,
+    "innovation": 97
+   },
+   "frameworks": [],
+   "providers": [
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add: Overview, Technical Stack, Architecture & Data Flow, Configuration & Environment Variables.",
+   "head_sha": "37e0b91e2aac2623547d9e1d6aabe27ce51439a6",
+   "judged_at": "2026-10-24T08:40:15+00:00",
+   "updated_at": "2026-10-24T07:45:41Z",
+   "llm_used": false
+  },
+  {
+   "id": "25",
+   "number": 25,
+   "title": "feat(agents): add shift-planner-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/25",
+   "author": "themudasirpasha",
+   "author_avatar": "https://avatars.githubusercontent.com/u/265457905?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "shift-planner-agent",
+   "overall": 84,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 94,
+    "quality": 76,
+    "functionality": 100,
+    "ai_native": 45,
+    "docs": 100,
+    "innovation": 100
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "94e714550d32c8a82b1357d07f15843851985c8d",
+   "judged_at": "2026-10-24T08:40:15+00:00",
+   "updated_at": "2026-10-24T07:43:00Z",
+   "llm_used": false
+  },
+  {
+   "id": "24",
+   "number": 24,
+   "title": "Add RepoGuide AI repository onboarding assistant",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/24",
+   "author": "MartinChetty",
+   "author_avatar": "https://avatars.githubusercontent.com/u/162825422?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "repoready-assistant",
+   "overall": 75,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 90,
+    "security": 94,
+    "quality": 75,
+    "functionality": 100,
+    "ai_native": 18,
+    "docs": 73,
+    "innovation": 96
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "0a4c6dd4480248489969382e8ab6bf71d8596cea",
+   "judged_at": "2026-10-24T08:40:15+00:00",
+   "updated_at": "2026-10-24T07:37:02Z",
+   "llm_used": false
+  },
+  {
+   "id": "23",
+   "number": 23,
+   "title": "Added CodeLens Doc Gen tool for automated Gemini-powered documentatio…",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/23",
+   "author": "ArshdeepSinghVirdi",
+   "author_avatar": "https://avatars.githubusercontent.com/u/126101099?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "code-lens-doc-gen",
+   "overall": 85,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 98,
+    "security": 100,
+    "quality": 63,
+    "functionality": 100,
+    "ai_native": 56,
+    "docs": 100,
+    "innovation": 90
+   },
+   "frameworks": [
+    "CLI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 9,
+    "info": 0
+   },
+   "top_fix": "Go beyond a single prompt: structured output, tool calling, or an agent loop.",
+   "head_sha": "aca6938849b3d7ca75ad1bc340bc25842f72d000",
+   "judged_at": "2026-10-24T08:40:14+00:00",
+   "updated_at": "2026-10-24T07:34:49Z",
+   "llm_used": false
+  },
+  {
+   "id": "22",
+   "number": 22,
+   "title": "feat(tools): add agentguard",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/22",
+   "author": "Iris3014",
+   "author_avatar": "https://avatars.githubusercontent.com/u/168291438?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "agentguard",
+   "overall": 83,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 79,
+    "functionality": 95,
+    "ai_native": 40,
+    "docs": 100,
+    "innovation": 95
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "d0e9f4a2a8fe5e37a5df0c455ece8e52d94bd041",
+   "judged_at": "2026-10-24T08:40:14+00:00",
+   "updated_at": "2026-10-24T07:33:47Z",
+   "llm_used": false
+  },
+  {
+   "id": "21",
+   "number": 21,
+   "title": "feat(agents): add ai-codebase-explorer",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/21",
+   "author": "rochishajaiswal",
+   "author_avatar": "https://avatars.githubusercontent.com/u/48403169?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "ai-codebase-explorer",
+   "overall": 73,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 85,
+    "quality": 69,
+    "functionality": 90,
+    "ai_native": 24,
+    "docs": 92,
+    "innovation": 72
+   },
+   "frameworks": [],
+   "providers": [
+    "OpenAI"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add proper error handling and retries around the OpenAI API call (e.g., backoff, timeout, token limits)",
+   "head_sha": "603f6492ce037ec27aab9d7b6e2090f696a4c0f5",
+   "judged_at": "2026-10-24T08:40:14+00:00",
+   "updated_at": "2026-10-24T07:33:30Z",
+   "llm_used": true
+  },
+  {
+   "id": "20",
+   "number": 20,
+   "title": "feat(tools): add mcp-tool-poisoning-scanner",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/20",
+   "author": "soumick",
+   "author_avatar": "https://avatars.githubusercontent.com/u/11615915?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "mcp-tool-poisoning-scanner",
+   "overall": 77,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 90,
+    "quality": 65,
+    "functionality": 95,
+    "ai_native": 36,
+    "docs": 92,
+    "innovation": 72
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 9,
+    "info": 0
+   },
+   "top_fix": "Refactor the high‑complexity functions in cli.py and client.py into smaller helpers (reduce cyclomatic complexity below 10).",
+   "head_sha": "dca454e300b4b71498f5f41af644b47654d54f4a",
+   "judged_at": "2026-10-24T08:40:14+00:00",
+   "updated_at": "2026-10-24T07:39:17Z",
+   "llm_used": true
+  },
+  {
+   "id": "19",
+   "number": 19,
+   "title": "feat(agents): add research-assistant with MCP server and HTML dashboard",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/19",
+   "author": "PavaS279",
+   "author_avatar": "https://avatars.githubusercontent.com/u/118591603?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "research-assistant",
+   "overall": 83,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 85,
+    "quality": 59,
+    "functionality": 95,
+    "ai_native": 77,
+    "docs": 85,
+    "innovation": 76
+   },
+   "frameworks": [
+    "MCP"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 10,
+    "info": 0
+   },
+   "top_fix": "Replace bare except blocks with specific exception handling and proper logging",
+   "head_sha": "b9b89ba6a2711a4b18c74a2080f7c851c61a2817",
+   "judged_at": "2026-10-24T08:40:14+00:00",
+   "updated_at": "2026-10-24T07:27:07Z",
+   "llm_used": true
+  },
+  {
+   "id": "18",
+   "number": 18,
+   "title": "Feat/sql analyst agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/18",
+   "author": "tarunkalikiri",
+   "author_avatar": "https://avatars.githubusercontent.com/u/106794764?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "sql-analyst-agent",
+   "overall": 67,
+   "verdict": "needs_changes",
+   "confidence": 100,
+   "scores": {
+    "compliance": 98,
+    "security": 85,
+    "quality": 63,
+    "functionality": 83,
+    "ai_native": 29,
+    "docs": 53,
+    "innovation": 54
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 1,
+    "info": 0
+   },
+   "top_fix": "Add proper input validation and enforce read‑only SQL parsing before execution",
+   "head_sha": "dfb2ee9ab93dca4e8b32f8f09ddd40d956ec5b2b",
+   "judged_at": "2026-10-24T08:40:13+00:00",
+   "updated_at": "2026-10-24T07:28:55Z",
+   "llm_used": true
+  },
+  {
+   "id": "17",
+   "number": 17,
+   "title": "feat(agents): add github-pr-guardian autonomous security reviewer agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/17",
+   "author": "sourabh1005kumar",
+   "author_avatar": "https://avatars.githubusercontent.com/u/6844289?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "github-pr-guardian",
+   "overall": 75,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 90,
+    "quality": 61,
+    "functionality": 84,
+    "ai_native": 46,
+    "docs": 85,
+    "innovation": 59
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 8,
+    "info": 0
+   },
+   "top_fix": "Refactor large functions (e.g., parse_unified_diff, main, _execute_pipeline) to reduce cyclomatic complexity below 10.",
+   "head_sha": "a8468b10d58949596224376d1e46d8c3a6bb2e77",
+   "judged_at": "2026-10-24T08:40:13+00:00",
+   "updated_at": "2026-10-24T07:37:55Z",
+   "llm_used": true
+  },
+  {
+   "id": "16",
+   "number": 16,
+   "title": "feat(agents): add incident-triage-agent-go",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/16",
+   "author": "pradeep1112lanka",
+   "author_avatar": "https://avatars.githubusercontent.com/u/129276941?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "incident-triage-agent-go",
+   "overall": 78,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 92,
+    "security": 100,
+    "quality": 12,
+    "functionality": 100,
+    "ai_native": 61,
+    "docs": 100,
+    "innovation": 91
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Ollama",
+    "Gemini"
+   ],
+   "languages": [
+    "Go",
+    "Shell"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "091d2d4cb454c987b685be4d2aacbd201599fec3",
+   "judged_at": "2026-10-24T08:40:13+00:00",
+   "updated_at": "2026-10-24T08:35:48Z",
+   "llm_used": false
+  },
+  {
+   "id": "15",
+   "number": 15,
+   "title": "feat(agents): add diff-risk-reviewer",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/15",
+   "author": "naman0867",
+   "author_avatar": "https://avatars.githubusercontent.com/u/147086418?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "diff-risk-reviewer",
+   "overall": 74,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 85,
+    "quality": 70,
+    "functionality": 90,
+    "ai_native": 33,
+    "docs": 92,
+    "innovation": 63
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "Structured prompting",
+   "severity_counts": {
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add proper input validation and sanitisation for the diff text and environment variables.",
+   "head_sha": "96976cc02cc5e043e4aa2a679c9b5d5ef93559c7",
+   "judged_at": "2026-10-24T08:40:13+00:00",
+   "updated_at": "2026-10-24T07:30:45Z",
+   "llm_used": true
+  },
+  {
+   "id": "14",
+   "number": 14,
+   "title": "feat(civic): Namma Sahayaka (ನಮ್ಮ ಸಹಾಯಕ) – Autonomous Bilingual Civic Agent & MCP Server (Gemini 3.8 Flash)",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/14",
+   "author": "pranavbharadwaj007",
+   "author_avatar": "https://avatars.githubusercontent.com/u/55646472?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "namma-sahayaka",
+   "overall": 69,
+   "verdict": "needs_changes",
+   "confidence": 100,
+   "scores": {
+    "compliance": 90,
+    "security": 76,
+    "quality": 60,
+    "functionality": 79,
+    "ai_native": 47,
+    "docs": 66,
+    "innovation": 81
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "TypeScript",
+    "HTML"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add input validation and output sanitisation for user messages and model responses to prevent injection attacks",
+   "head_sha": "caaaf651c0addea16e3f041cbdbe8acd507528c2",
+   "judged_at": "2026-10-24T08:40:12+00:00",
+   "updated_at": "2026-10-24T08:38:08Z",
+   "llm_used": true
+  },
+  {
+   "id": "12",
+   "number": 12,
+   "title": "feat(tools): add tool-schema-lint with documentation and tests",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/12",
+   "author": "iamsatyatiwari",
+   "author_avatar": "https://avatars.githubusercontent.com/u/73740821?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "tool-schema-lint",
+   "overall": 86,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 91,
+    "functionality": 100,
+    "ai_native": 40,
+    "docs": 100,
+    "innovation": 96
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Split complex functions into smaller helpers.",
+   "head_sha": "7d59a4c808dfbcb2e2ae7d74df9029004f180295",
+   "judged_at": "2026-10-24T08:40:11+00:00",
+   "updated_at": "2026-10-24T08:32:43Z",
+   "llm_used": false
+  },
+  {
+   "id": "11",
+   "number": 11,
+   "title": "feat(tools): add contrib-sentinel",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/11",
+   "author": "Rutuja-Dhamal",
+   "author_avatar": "https://avatars.githubusercontent.com/u/142413881?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "contrib-sentinel",
+   "overall": 72,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 92,
+    "security": 85,
+    "quality": 61,
+    "functionality": 90,
+    "ai_native": 29,
+    "docs": 92,
+    "innovation": 70
+   },
+   "frameworks": [],
+   "providers": [
+    "Anthropic"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Add proper exception handling and logging instead of bare `except` and `print` statements",
+   "head_sha": "42c6aae481791baf621b703594f6f2b995fd72f5",
+   "judged_at": "2026-10-24T08:40:11+00:00",
+   "updated_at": "2026-10-24T07:18:20Z",
+   "llm_used": true
+  },
+  {
+   "id": "10",
+   "number": 10,
+   "title": "feat(agents): add devops-pipeline-analyzer",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/10",
+   "author": "AshwiniS-ui",
+   "author_avatar": "https://avatars.githubusercontent.com/u/67921353?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "devops-pipeline-analyzer",
+   "overall": 58,
+   "verdict": "needs_changes",
+   "confidence": 100,
+   "scores": {
+    "compliance": 88,
+    "security": 85,
+    "quality": 65,
+    "functionality": 76,
+    "ai_native": 0,
+    "docs": 49,
+    "innovation": 55
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 0,
+   "ai_level_label": "No AI detected",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 2,
+    "info": 0
+   },
+   "top_fix": "Add a proper entry‑point (if __name__ == '__main__') that parses command‑line arguments, validates the file path, and calls analyze_log.",
+   "head_sha": "d0bb7e94f7fd43f323106584a09e74c02c161ca3",
+   "judged_at": "2026-10-24T08:40:11+00:00",
+   "updated_at": "2026-10-24T07:17:22Z",
+   "llm_used": true
+  },
+  {
+   "id": "9",
+   "number": 9,
+   "title": "feat(agents): add resume-jd-match-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/9",
+   "author": "abhinavmaharana",
+   "author_avatar": "https://avatars.githubusercontent.com/u/59000244?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "resume-jd-match-agent",
+   "overall": 91,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 100,
+    "quality": 72,
+    "functionality": 92,
+    "ai_native": 84,
+    "docs": 100,
+    "innovation": 95
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "Shell"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 15,
+    "info": 0
+   },
+   "top_fix": "Add the missing variables to .env.example with placeholder values.",
+   "head_sha": "a741008d3aaf612636ce4b80cdaa00889649eab0",
+   "judged_at": "2026-10-24T08:40:11+00:00",
+   "updated_at": "2026-10-24T08:36:36Z",
+   "llm_used": false
+  },
+  {
+   "id": "8",
+   "number": 8,
+   "title": "Feat/browser qa mcp",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/8",
+   "author": "adityadixit07",
+   "author_avatar": "https://avatars.githubusercontent.com/u/96368151?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "browser-qa-mcp",
+   "overall": 82,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 98,
+    "security": 77,
+    "quality": 92,
+    "functionality": 95,
+    "ai_native": 54,
+    "docs": 92,
+    "innovation": 81
+   },
+   "frameworks": [
+    "MCP"
+   ],
+   "providers": [
+    "Gemini",
+    "Anthropic"
+   ],
+   "languages": [
+    "TypeScript",
+    "JavaScript"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 6,
+    "low": 0,
+    "info": 0
+   },
+   "top_fix": "Sanitize innerHTML assignments in fixtures/demo-app/server.js to prevent XSS (use a proper HTML‑escaping library).",
+   "head_sha": "86353057af140efad452820ba48df90a32d862ad",
+   "judged_at": "2026-10-24T08:40:10+00:00",
+   "updated_at": "2026-10-24T07:38:57Z",
+   "llm_used": true
+  },
+  {
+   "id": "7",
+   "number": 7,
+   "title": "feat(agents): add contribution-review-agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/7",
+   "author": "abhisekmishra1709",
+   "author_avatar": "https://avatars.githubusercontent.com/u/74945783?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "contribution-review-agent",
+   "overall": 80,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 76,
+    "quality": 92,
+    "functionality": 87,
+    "ai_native": 58,
+    "docs": 85,
+    "innovation": 69
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "TypeScript"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 3,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add retry/backoff and timeout handling around all external API calls (GitHub, Gemini) to avoid hangs",
+   "head_sha": "3d355b26b105623820f152341d92bae2d8a24e3e",
+   "judged_at": "2026-10-24T08:40:10+00:00",
+   "updated_at": "2026-10-24T07:14:13Z",
+   "llm_used": true
+  },
+  {
+   "id": "6",
+   "number": 6,
+   "title": "feat(agents): add invoice validation agent",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/6",
+   "author": "maruthikr",
+   "author_avatar": "https://avatars.githubusercontent.com/u/86239742?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "invoice-validation-agent",
+   "overall": 77,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 90,
+    "quality": 79,
+    "functionality": 81,
+    "ai_native": 53,
+    "docs": 65,
+    "innovation": 73
+   },
+   "frameworks": [
+    "Google ADK"
+   ],
+   "providers": [
+    "Gemini",
+    "Ollama"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 4,
+   "ai_level_label": "Agent loop",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 3,
+    "low": 5,
+    "info": 0
+   },
+   "top_fix": "Add retry/backoff and timeout handling around Ollama and Gemini calls to meet robustness requirements",
+   "head_sha": "8b6aa4d65ecde1a61f7f382e7176d04d9a20a84f",
+   "judged_at": "2026-10-24T08:40:09+00:00",
+   "updated_at": "2026-10-24T08:40:26Z",
+   "llm_used": true
+  },
+  {
+   "id": "5",
+   "number": 5,
+   "title": "feat(agents): add MergeWarden, a Maintainer Copilot that reviews PRs against CONTRIBUTING.md",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/5",
+   "author": "naaji-navas",
+   "author_avatar": "https://avatars.githubusercontent.com/u/104789565?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "mergewarden",
+   "overall": 79,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 70,
+    "quality": 62,
+    "functionality": 93,
+    "ai_native": 72,
+    "docs": 85,
+    "innovation": 80
+   },
+   "frameworks": [
+    "Google ADK",
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python",
+    "HTML"
+   ],
+   "ai_level": 5,
+   "ai_level_label": "Multi-agent / RAG / MCP",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 19,
+    "low": 13,
+    "info": 0
+   },
+   "top_fix": "Replace raw SQL string formatting with parameterised queries to eliminate injection risk (mergewarden/coach/store.py).",
+   "head_sha": "70072d14336b9e925d08cd80e6d67d5d2c9c77d8",
+   "judged_at": "2026-10-24T08:40:09+00:00",
+   "updated_at": "2026-10-24T07:57:46Z",
+   "llm_used": true
+  },
+  {
+   "id": "4",
+   "number": 4,
+   "title": "feat: add StackTrace Copilot log analyzer",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/4",
+   "author": "nirajanDevHub108",
+   "author_avatar": "https://avatars.githubusercontent.com/u/160125373?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "stacktrace-copilot",
+   "overall": 67,
+   "verdict": "needs_changes",
+   "confidence": 100,
+   "scores": {
+    "compliance": 92,
+    "security": 95,
+    "quality": 64,
+    "functionality": 86,
+    "ai_native": 2,
+    "docs": 92,
+    "innovation": 54
+   },
+   "frameworks": [],
+   "providers": [],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 0,
+   "ai_level_label": "No AI detected",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 3,
+    "info": 0
+   },
+   "top_fix": "Add type hints to all public functions and return values (e.g., extract_error, extract_frames).",
+   "head_sha": "c4a6b0c77fe135f9e6fb0bf60c6a90c49dca0195",
+   "judged_at": "2026-10-24T08:40:08+00:00",
+   "updated_at": "2026-10-24T06:53:09Z",
+   "llm_used": true
+  },
+  {
+   "id": "3",
+   "number": 3,
+   "title": "feat(tools): add token-cost-estimator with Gemini API support",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/3",
+   "author": "stackbyrahaf",
+   "author_avatar": "https://avatars.githubusercontent.com/u/98692877?v=4",
+   "state": "open",
+   "category": "tools",
+   "slug": "token-cost-estimator",
+   "overall": 70,
+   "verdict": "ready",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 90,
+    "quality": 51,
+    "functionality": 77,
+    "ai_native": 34,
+    "docs": 85,
+    "innovation": 70
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 2,
+   "ai_level_label": "AI tooling (no model calls)",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Add proper argument parsing and implement the advertised flags (e.g., --all-models, --json, --budget, --file, --batch).",
+   "head_sha": "b4d9d8a83b9abace0f0d0b131d5a5b578b0380b7",
+   "judged_at": "2026-10-24T08:40:08+00:00",
+   "updated_at": "2026-10-24T07:48:58Z",
+   "llm_used": true
+  },
+  {
+   "id": "2",
+   "number": 2,
+   "title": "feat(agents): add pdf-qa-agent — Ask questions about any PDF using Gemini API",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/2",
+   "author": "Muhammed-fahad",
+   "author_avatar": "https://avatars.githubusercontent.com/u/112763205?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "pdf-qa-agent",
+   "overall": 68,
+   "verdict": "needs_changes",
+   "confidence": 100,
+   "scores": {
+    "compliance": 100,
+    "security": 85,
+    "quality": 46,
+    "functionality": 88,
+    "ai_native": 25,
+    "docs": 92,
+    "innovation": 54
+   },
+   "frameworks": [],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "Python"
+   ],
+   "ai_level": 1,
+   "ai_level_label": "Prompt wrapper",
+   "severity_counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 4,
+    "info": 0
+   },
+   "top_fix": "Refactor main.py: split PDF loading, prompt building, and API call into separate functions to reduce the 97‑line main function.",
+   "head_sha": "30c549241725268269379a4ada02c1ca2b473c6d",
+   "judged_at": "2026-10-24T08:40:07+00:00",
+   "updated_at": "2026-10-24T08:29:39Z",
+   "llm_used": true
+  },
+  {
+   "id": "1",
+   "number": 1,
+   "title": "feat(agents): add namma-traffic-agent for Bengaluru transit intelligence",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/1",
+   "author": "shaikjafar559",
+   "author_avatar": "https://avatars.githubusercontent.com/u/218779716?v=4",
+   "state": "open",
+   "category": "agents",
+   "slug": "namma-traffic-agent",
+   "overall": 76,
+   "verdict": "ready",
+   "confidence": 69,
+   "scores": {
+    "compliance": 100,
+    "security": 86,
+    "quality": 65,
+    "functionality": 92,
+    "ai_native": 32,
+    "docs": 91,
+    "innovation": 100
+   },
+   "frameworks": [
+    "FastAPI"
+   ],
+   "providers": [
+    "Gemini"
+   ],
+   "languages": [
+    "HTML",
+    "Python"
+   ],
+   "ai_level": 3,
+   "ai_level_label": "Tool use",
+   "severity_counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 5,
+    "low": 6,
+    "info": 0
+   },
+   "top_fix": "Add retries with backoff on 429, timeouts and max token/step limits.",
+   "head_sha": "75eb24ef78ac50bf06ca0ab552f3bd19187d257f",
+   "judged_at": "2026-10-24T08:40:07+00:00",
+   "updated_at": "2026-10-24T08:35:08Z",
+   "llm_used": false
+  }
+ ],
+ "insights": {
+  "count": 84,
+  "by_verdict": {
+   "ready": 68,
+   "needs_changes": 12,
+   "blocked": 4
+  },
+  "by_category": {
+   "tools": 28,
+   "agents": 56
+  },
+  "by_state": {
+   "open": 82,
+   "closed": 2
+  },
+  "avg_overall": 81,
+  "median_overall": 82,
+  "dimension_avg": {
+   "compliance": 95,
+   "security": 94,
+   "quality": 73,
+   "functionality": 93,
+   "ai_native": 48,
+   "docs": 91,
+   "innovation": 83
+  },
+  "dimension_median": {
+   "compliance": 100,
+   "security": 100,
+   "quality": 73,
+   "functionality": 96,
+   "ai_native": 50,
+   "docs": 100,
+   "innovation": 92
+  },
+  "histogram": [
+   {
+    "bucket": "0-9",
+    "count": 0
+   },
+   {
+    "bucket": "10-19",
+    "count": 0
+   },
+   {
+    "bucket": "20-29",
+    "count": 0
+   },
+   {
+    "bucket": "30-39",
+    "count": 0
+   },
+   {
+    "bucket": "40-49",
+    "count": 0
+   },
+   {
+    "bucket": "50-59",
+    "count": 1
+   },
+   {
+    "bucket": "60-69",
+    "count": 6
+   },
+   {
+    "bucket": "70-79",
+    "count": 28
+   },
+   {
+    "bucket": "80-89",
+    "count": 37
+   },
+   {
+    "bucket": "90-100",
+    "count": 12
+   }
+  ],
+  "providers": [
+   {
+    "name": "Gemini",
+    "count": 64
+   },
+   {
+    "name": "Ollama",
+    "count": 13
+   },
+   {
+    "name": "OpenAI",
+    "count": 2
+   },
+   {
+    "name": "Anthropic",
+    "count": 2
+   },
+   {
+    "name": "Hugging Face",
+    "count": 1
+   }
+  ],
+  "frameworks": [
+   {
+    "name": "Google ADK",
+    "count": 32
+   },
+   {
+    "name": "MCP",
+    "count": 13
+   },
+   {
+    "name": "FastAPI",
+    "count": 12
+   },
+   {
+    "name": "CLI",
+    "count": 5
+   },
+   {
+    "name": "Streamlit",
+    "count": 3
+   },
+   {
+    "name": "LangGraph",
+    "count": 2
+   },
+   {
+    "name": "OpenAI Agents SDK",
+    "count": 2
+   },
+   {
+    "name": "Flask",
+    "count": 1
+   },
+   {
+    "name": "React",
+    "count": 1
+   }
+  ],
+  "languages": [
+   {
+    "name": "Python",
+    "count": 72
+   },
+   {
+    "name": "HTML",
+    "count": 9
+   },
+   {
+    "name": "TypeScript",
+    "count": 7
+   },
+   {
+    "name": "JavaScript",
+    "count": 5
+   },
+   {
+    "name": "Shell",
+    "count": 3
+   },
+   {
+    "name": "Go",
+    "count": 2
+   },
+   {
+    "name": "Java",
+    "count": 1
+   }
+  ],
+  "ai_levels": [
+   {
+    "level": 0,
+    "count": 6
+   },
+   {
+    "level": 1,
+    "count": 10
+   },
+   {
+    "level": 2,
+    "count": 22
+   },
+   {
+    "level": 3,
+    "count": 8
+   },
+   {
+    "level": 4,
+    "count": 25
+   },
+   {
+    "level": 5,
+    "count": 13
+   }
+  ],
+  "common_issues": [
+   {
+    "check_id": "observability",
+    "dimension": "ai_native",
+    "label": "Tracks token usage / tracing",
+    "fail": 0,
+    "warn": 63,
+    "share": 0.75
+   },
+   {
+    "check_id": "complexity",
+    "dimension": "quality",
+    "label": "Functions stay simple (cyclomatic complexity ≤ 10)",
+    "fail": 38,
+    "warn": 24,
+    "share": 0.74
+   },
+   {
+    "check_id": "robustness",
+    "dimension": "ai_native",
+    "label": "Robust model calls (retries, timeouts, limits, error handling)",
+    "fail": 33,
+    "warn": 22,
+    "share": 0.65
+   },
+   {
+    "check_id": "docstrings",
+    "dimension": "quality",
+    "label": "Modules, classes and public functions documented",
+    "fail": 12,
+    "warn": 30,
+    "share": 0.5
+   },
+   {
+    "check_id": "ai_level",
+    "dimension": "ai_native",
+    "label": "AI maturity: prompt → structured → tools → agent → multi-agent/RAG/MCP",
+    "fail": 6,
+    "warn": 32,
+    "share": 0.45
+   },
+   {
+    "check_id": "function_length",
+    "dimension": "quality",
+    "label": "Functions are short (≤ 60 lines)",
+    "fail": 21,
+    "warn": 16,
+    "share": 0.44
+   },
+   {
+    "check_id": "error_handling",
+    "dimension": "quality",
+    "label": "No bare or silently swallowed exceptions",
+    "fail": 10,
+    "warn": 27,
+    "share": 0.44
+   },
+   {
+    "check_id": "portability",
+    "dimension": "ai_native",
+    "label": "Provider-portable (model via env, mock/offline mode, local models)",
+    "fail": 11,
+    "warn": 23,
+    "share": 0.4
+   },
+   {
+    "check_id": "tests",
+    "dimension": "quality",
+    "label": "Automated tests exist and cover the code",
+    "fail": 18,
+    "warn": 15,
+    "share": 0.39
+   },
+   {
+    "check_id": "modularity",
+    "dimension": "quality",
+    "label": "Code split into focused modules",
+    "fail": 4,
+    "warn": 25,
+    "share": 0.35
+   },
+   {
+    "check_id": "evals",
+    "dimension": "ai_native",
+    "label": "AI behaviour is tested (mocked-LLM tests, eval sets)",
+    "fail": 20,
+    "warn": 7,
+    "share": 0.32
+   },
+   {
+    "check_id": "guardrails",
+    "dimension": "ai_native",
+    "label": "Guardrails (input limits, safety settings, confirmations)",
+    "fail": 0,
+    "warn": 27,
+    "share": 0.32
+   }
+  ],
+  "clusters": [
+   {
+    "members": [
+     "19",
+     "61"
+    ],
+    "titles": [
+     "feat(agents): add research-assistant with MCP server and HTML dashboard",
+     "feat(agents): add multi-agent-editorial-team collaborative pipeline"
+    ]
+   },
+   {
+    "members": [
+     "27",
+     "28"
+    ],
+    "titles": [
+     "feat(tools): add adk-leak-arena – red-team harness for Google ADK multi-tenant memory leakage",
+     "feat(tools): add adk-memshield – RLS-enforced multi-tenant memory service for Google ADK"
+    ]
+   },
+   {
+    "members": [
+     "36",
+     "38"
+    ],
+    "titles": [
+     "Add AccessAble AI accessibility and its evaluation pipeline",
+     "♿🤖🚀 AccessAble AI: Turn Any Website into an Accessibility Detective 🔍🌐"
+    ]
+   },
+   {
+    "members": [
+     "41",
+     "45"
+    ],
+    "titles": [
+     "FlightWise - agent for personalised flight suggestions - initial commit",
+     "First attempt"
+    ]
+   },
+   {
+    "members": [
+     "49",
+     "52"
+    ],
+    "titles": [
+     "Add MetroAgent for metro crowd insights",
+     "feat(agents): add push-guard — AI-powered pre-push security scanner"
+    ]
+   }
+  ],
+  "secrets_found": 1,
+  "manipulation_attempts": 0,
+  "llm_tokens": 85891
+ },
+ "errors": [
+  {
+   "id": "13",
+   "title": "feat(agents): add TracePilot AI agent for evidence-based troubleshooting",
+   "url": "https://github.com/gdgcblr/open-source-agents/pull/13",
+   "error": "No agents/<slug>/ or tools/<slug>/ folder in this PR"
+  }
+ ]
+}
