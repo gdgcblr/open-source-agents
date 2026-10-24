@@ -1,0 +1,28 @@
+[tools]
+python = "3.12.13"
+uv = "0.11.23"
+node = "22.22.0"
+"npm:@fission-ai/openspec" = "1.4.1"
+
+[env]
+OPENSPEC_TELEMETRY = "0"
+
+[tasks.setup]
+description = "Install locked dependencies"
+run = "make setup"
+
+[tasks.check]
+description = "Lint, typecheck, test, validate specs"
+run = "make check"
+
+[tasks.demo]
+description = "Run full offline synthetic demonstration"
+run = "make demo"
+
+[tasks."demo-agent"]
+description = "Run the ADK + native Ollama synthetic demonstration"
+run = "make demo-agent"
+
+[tasks.doctor]
+description = "Check tools and Docker availability"
+run = "make doctor"

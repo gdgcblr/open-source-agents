@@ -1,0 +1,48 @@
+openapi: 3.1.0
+info:
+  title: Deliberately lying Notes API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      responses:
+        '200':
+          description: Healthy positive control
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    const: ok
+  /notes:
+    get:
+      responses:
+        '200':
+          description: Notes with integer IDs (the fixture violates this)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+  /export:
+    get:
+      responses:
+        '200':
+          description: Export (the fixture does not implement this)
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    Note:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
