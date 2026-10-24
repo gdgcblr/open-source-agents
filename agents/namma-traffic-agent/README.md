@@ -25,6 +25,14 @@ Standard navigation apps often give raw point-to-point times without contextual 
 
 ---
 
+## 📚 In-Depth Guides & Presentation
+
+- **[📖 Bengaluru Traffic AI Agent Guide (In-Depth)](BENGALURU_TRAFFIC_AI_AGENT_GUIDE.md):** Complete guide with advantages, real-world constraints, and Bengaluru traffic dynamics.
+- **[📊 Interactive DevFest Presentation Deck (HTML)](presentation.html):** 10-slide interactive slide deck for demos and presentations.
+- **[🎤 Presentation Speaker Notes (Markdown)](PRESENTATION.md):** Slide-by-slide script and talking points.
+
+---
+
 ## 🏛️ Architecture Overview
 
 ```mermaid
