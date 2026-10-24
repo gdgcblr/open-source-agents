@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`context-orchestration-engine`](context-orchestration-engine/) | **Monarch Memory**: independent LLM workers finish one long task in sequence with zero raw conversation passed between them: a reconciler owns canonical state, a compiler builds token-budgeted briefings, SQLite makes runs resumable. Offline mock included. | Multi-agent context / handoff library (Python) | @VivanRajath |

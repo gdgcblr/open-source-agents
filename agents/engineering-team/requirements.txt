@@ -1,0 +1,10 @@
+# Agents
+google-adk==2.13.0
+
+# Used by the context-orchestration-engine (tools/context-orchestration-engine)
+pydantic>=2.7.0
+python-dotenv>=1.0.0
+
+# Tests
+pytest>=8.0.0
+pyflakes>=3.0.0

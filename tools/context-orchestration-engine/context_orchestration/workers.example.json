@@ -1,0 +1,10 @@
+{
+  "_comment": "Copy to ./workers.json and edit. 'model' is '<provider>/<model id>' (openai, groq, openrouter, gemini, anthropic, ollama) or any id plus an explicit 'api_base'. 'api_key_env' names the environment variable holding that worker's key.",
+  "workers": [
+    {"id": "worker-1", "model": "groq/openai/gpt-oss-120b", "api_key_env": "WORKER_1_API_KEY", "max_tokens": 2200},
+    {"id": "worker-2", "model": "groq/qwen/qwen3.8-27b", "api_key_env": "WORKER_2_API_KEY", "max_tokens": 2200},
+    {"id": "worker-3", "model": "groq/openai/gpt-oss-20b", "api_key_env": "WORKER_3_API_KEY", "max_tokens": 2200},
+    {"id": "worker-4", "model": "groq/qwen/qwen3.6-27b", "api_key_env": "WORKER_4_API_KEY", "max_tokens": 2200},
+    {"id": "worker-5", "model": "groq/openai/gpt-oss-120b", "api_key_env": "WORKER_5_API_KEY", "temperature": 0.1, "max_tokens": 2200}
+  ]
+}
