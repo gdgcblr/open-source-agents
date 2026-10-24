@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [merge-ready](merge-ready/) | Contribution validator for open-source AI projects enforcing repo standards, static safety, and diff scope | Developer Tool / Validator | [@Rithvik-krishna](https://github.com/Rithvik-krishna) |

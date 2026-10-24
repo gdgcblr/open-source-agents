@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MergeReady — Open-Source Contribution Validation CLI</title>
+  <meta name="description" content="MergeReady is an offline-first CLI that validates open-source tools and AI agent contributions against repository standards, security policies, and Git diff boundaries.">
+  <meta name="theme-color" content="#080808">
+
+  <!-- Open Graph / Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MergeReady — Open-Source Contribution Validation CLI">
+  <meta property="og:description" content="Ship better contributions. Catch problems before review with an offline-first, fail-safe validation CLI.">
+  <meta property="og:url" content="https://github.com/Rithvik-krishna/open-source-agents">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MergeReady — Open-Source Contribution Validation CLI">
+  <meta name="twitter:description" content="Ship better contributions. Catch problems before review.">
+
+  <!-- Favicon (Inline Minimal Monochrome SVG) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Crect x='6' y='6' width='20' height='20' rx='3' stroke='%23FAFAFA' stroke-width='2' fill='none'/%3E%3Cpath d='M11 16h10M16 11v10' stroke='%23FAFAFA' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#" class="brand-link" aria-label="MergeReady Home">
+        <svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+          <path d="M14 9l3 3-3 3"/>
+        </svg>
+        <span class="brand-name">MergeReady</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Main Navigation">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#architecture" class="nav-link">Fail-Safe Model</a>
+        <a href="#workflow" class="nav-link">How It Works</a>
+        <a href="#commands" class="nav-link">Commands</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="https://github.com/Rithvik-krishna/open-source-agents/tree/feat/merge-ready/tools/merge-ready" class="btn btn-secondary btn-sm github-btn" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <div class="container hero-container">
+        <h1 id="hero-heading" class="hero-title">
+          Ship better contributions.<br>
+          Catch problems before review.
+        </h1>
+
+        <p class="hero-description">
+          MergeReady is an offline-first CLI that validates open-source tools and AI agent contributions against repository standards, security policies, and Git diff boundaries.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="https://github.com/Rithvik-krishna/open-source-agents/tree/feat/merge-ready/tools/merge-ready" class="btn btn-primary github-btn" target="_blank" rel="noopener noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+            <span>View on GitHub</span>
+          </a>
+          <a href="#demo" class="btn btn-secondary">
+            <span>Explore the Demo</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <polyline points="19 12 12 19 5 12"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="hero-attributes" aria-label="Core Attributes">
+          <span class="attribute-item">Offline-first</span>
+          <span class="attribute-separator" aria-hidden="true">&middot;</span>
+          <span class="attribute-item">Static analysis</span>
+          <span class="attribute-separator" aria-hidden="true">&middot;</span>
+          <span class="attribute-item">CI-ready</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Terminal Demo -->
+    <section id="demo" class="demo-section" aria-labelledby="demo-heading">
+      <div class="container">
+        <div class="terminal-wrapper">
+          <div class="terminal-panel" role="region" aria-label="Interactive Terminal Preview">
+            <!-- Terminal Chrome Header -->
+            <div class="terminal-header">
+              <div class="terminal-dots" aria-hidden="true">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <div class="terminal-title">
+                <span>merge-ready check agents/example-agent</span>
+              </div>
+              <div class="terminal-tag">
+                <span>Interactive Demo</span>
+              </div>
+            </div>
+
+            <!-- Interactive Toggle Controls -->
+            <div class="terminal-controls">
+              <span class="controls-label" id="scenario-label">Contribution Scenario:</span>
+              <div class="segmented-control" role="radiogroup" aria-labelledby="scenario-label">
+                <button type="button" class="segment-btn active" id="btn-problematic" role="radio" aria-checked="true" data-scenario="problematic">
+                  Problematic contribution
+                </button>
+                <button type="button" class="segment-btn" id="btn-compliant" role="radio" aria-checked="false" data-scenario="compliant">
+                  Compliant contribution
+                </button>
+              </div>
+            </div>
+
+            <!-- Terminal Screen / Output -->
+            <div class="terminal-body" id="terminal-screen" tabindex="0" role="region" aria-live="polite" aria-label="Terminal Output Display">
+              <!-- Content injected via app.js -->
+            </div>
+
+            <!-- Terminal Footer Status Bar -->
+            <div class="terminal-footer">
+              <div class="footer-left">
+                <span class="status-indicator" id="terminal-status-dot" aria-hidden="true"></span>
+                <span id="terminal-status-text">Exit code: 1</span>
+              </div>
+              <div class="footer-right">
+                <span>Deterministic static evaluation · Zero code execution</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- The Problem and Solution -->
+    <section class="comparison-section" aria-labelledby="comparison-heading">
+      <div class="container">
+        <div class="section-intro">
+          <h2 id="comparison-heading" class="section-title">Catch contribution problems before they reach maintainers.</h2>
+          <p class="section-subtitle">
+            Maintainers spend hours debugging environment files, unredacted tokens, and scope creep. MergeReady makes validation deterministic and contributor-facing.
+          </p>
+        </div>
+
+        <div class="comparison-grid">
+          <!-- Left: Without MergeReady -->
+          <div class="comparison-card card-before">
+            <div class="card-header">
+              <span class="card-eyebrow">WITHOUT MERGEREADY</span>
+              <h3 class="card-title">Reactive maintainer friction</h3>
+            </div>
+            <ul class="comparison-list">
+              <li>
+                <span class="list-bullet bullet-before" aria-hidden="true">&minus;</span>
+                <span>Manual checks for required files, manifests, and documentation templates</span>
+              </li>
+              <li>
+                <span class="list-bullet bullet-before" aria-hidden="true">&minus;</span>
+                <span>Hardcoded secrets, local cache databases, and virtualenvs discovered late</span>
+              </li>
+              <li>
+                <span class="list-bullet bullet-before" aria-hidden="true">&minus;</span>
+                <span>Undeclared dependencies and deceptive Unicode found during review</span>
+              </li>
+              <li>
+                <span class="list-bullet bullet-before" aria-hidden="true">&minus;</span>
+                <span>Inconsistent contribution validation across reviewers and PRs</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Right: With MergeReady -->
+          <div class="comparison-card card-after">
+            <div class="card-header">
+              <span class="card-eyebrow">WITH MERGEREADY</span>
+              <h3 class="card-title">Proactive automated standards</h3>
+            </div>
+            <ul class="comparison-list">
+              <li>
+                <span class="list-bullet bullet-after" aria-hidden="true">&plus;</span>
+                <span>Repeatable rule-based validation checking layout, template, and files</span>
+              </li>
+              <li>
+                <span class="list-bullet bullet-after" aria-hidden="true">&plus;</span>
+                <span>Secret detection with in-place redaction for safe diagnostics</span>
+              </li>
+              <li>
+                <span class="list-bullet bullet-after" aria-hidden="true">&plus;</span>
+                <span>Static safety inspection for infinite loops, execution hooks, and Unicode</span>
+              </li>
+              <li>
+                <span class="list-bullet bullet-after" aria-hidden="true">&plus;</span>
+                <span>Explicit verdicts, strict mode enforcement, and machine-readable reports</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature Grid -->
+    <section id="features" class="features-section" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-intro">
+          <h2 id="features-heading" class="section-title">Purpose-built validation for open-source AI repos.</h2>
+          <p class="section-subtitle">
+            Going beyond generic linting to address the specific structural and safety needs of agentic developer tools.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <!-- Card 1 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Contribution Structure</h3>
+            <p class="feature-desc">
+              Checks directory layout, naming conventions, template placeholder residue, and required file manifests.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Secret Detection</h3>
+            <p class="feature-desc">
+              Detects suspected hardcoded credentials, real environment files, and redacts sensitive tokens across all reports.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Static Safety Checks</h3>
+            <p class="feature-desc">
+              Flags suspicious bidirectional Unicode, potentially unbounded loops, and high-impact shell calls for disclosure.
+            </p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Dependency Validation</h3>
+            <p class="feature-desc">
+              Verifies imported modules against declared manifest packages and checks environment variable drift against templates.
+            </p>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="18" r="3"/>
+                <circle cx="6" cy="6" r="3"/>
+                <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
+                <line x1="6" y1="9" x2="6" y2="21"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">Diff Scope Enforcement</h3>
+            <p class="feature-desc">
+              Validates contribution boundaries against a Git base reference, preventing unauthorized edits to root files and workflows.
+            </p>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <h3 class="feature-title">CI-Friendly Reporting</h3>
+            <p class="feature-desc">
+              Supports human-readable terminal output, structured JSON, Markdown summaries, and native GitHub Actions inline annotations.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fail-Safe Architecture Section -->
+    <section id="architecture" class="architecture-section" aria-labelledby="arch-heading">
+      <div class="container">
+        <div class="section-intro">
+          <h2 id="arch-heading" class="section-title">A successful check must mean something.</h2>
+          <p class="section-subtitle">
+            MergeReady employs a strict fail-safe verdict engine where checks cannot silently pass or override critical failures.
+          </p>
+        </div>
+
+        <!-- Flow Diagram -->
+        <div class="arch-flow" aria-label="Fail-Safe Execution Sequence">
+          <div class="flow-step">
+            <div class="step-box">
+              <span class="step-num">01</span>
+              <span class="step-name">Inspect</span>
+            </div>
+            <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+          </div>
+
+          <div class="flow-step">
+            <div class="step-box">
+              <span class="step-num">02</span>
+              <span class="step-name">Validate</span>
+            </div>
+            <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+          </div>
+
+          <div class="flow-step">
+            <div class="step-box">
+              <span class="step-num">03</span>
+              <span class="step-name">Verify completeness</span>
+            </div>
+            <span class="flow-arrow" aria-hidden="true">&rarr;</span>
+          </div>
+
+          <div class="flow-step">
+            <div class="step-box">
+              <span class="step-num">04</span>
+              <span class="step-name">Report verdict</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Three Outcomes -->
+        <div class="verdict-grid">
+          <div class="verdict-card">
+            <div class="verdict-header">
+              <span class="verdict-badge badge-pass">PASS</span>
+              <span class="verdict-code">Exit 0</span>
+            </div>
+            <p class="verdict-desc">
+              All required checks completed successfully without blocking findings or unhandled warnings.
+            </p>
+          </div>
+
+          <div class="verdict-card">
+            <div class="verdict-header">
+              <span class="verdict-badge badge-fail">FAIL</span>
+              <span class="verdict-code">Exit 1</span>
+            </div>
+            <p class="verdict-desc">
+              One or more repository contribution policy violations or static safety risks were detected.
+            </p>
+          </div>
+
+          <div class="verdict-card">
+            <div class="verdict-header">
+              <span class="verdict-badge badge-error">ERROR</span>
+              <span class="verdict-code">Exit 2</span>
+            </div>
+            <p class="verdict-desc">
+              Validation could not complete reliably due to syntax errors, unreadable files, scanner exceptions, or missing checks.
+            </p>
+          </div>
+        </div>
+
+        <!-- Fail-Safe Axiom Statement -->
+        <div class="arch-callout">
+          <p class="callout-statement">
+            Missing required checks, unexpected scanner failures, and incomplete validation must never silently produce a successful verdict.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="workflow" class="workflow-section" aria-labelledby="workflow-heading">
+      <div class="container">
+        <div class="section-intro">
+          <h2 id="workflow-heading" class="section-title">Deterministic workflow in three steps.</h2>
+          <p class="section-subtitle">
+            Integrates directly into contributor local environments and CI pipelines with zero external dependencies.
+          </p>
+        </div>
+
+        <div class="workflow-steps">
+          <!-- Step 1 -->
+          <div class="workflow-step-card">
+            <div class="step-index">01</div>
+            <h3 class="step-heading">Install</h3>
+            <p class="step-body">
+              Install MergeReady in your local Python virtual environment using standard tooling.
+            </p>
+            <div class="step-code">
+              <code>pip install -e tools/merge-ready</code>
+              <button class="copy-btn" data-clipboard="pip install -e tools/merge-ready" aria-label="Copy install command">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copy-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="workflow-step-card">
+            <div class="step-index">02</div>
+            <h3 class="step-heading">Validate</h3>
+            <p class="step-body">
+              Run the CLI against a tool or agent directory and optionally provide a Git base reference.
+            </p>
+            <div class="step-code">
+              <code>merge-ready check tools/my-tool --base upstream/main</code>
+              <button class="copy-btn" data-clipboard="merge-ready check tools/my-tool --base upstream/main" aria-label="Copy validate command">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copy-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="workflow-step-card">
+            <div class="step-index">03</div>
+            <h3 class="step-heading">Fix and submit</h3>
+            <p class="step-body">
+              Review actionable findings with exact line numbers and fixes, resolve issues, and open your PR with confidence.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Example Commands -->
+    <section id="commands" class="commands-section" aria-labelledby="commands-heading">
+      <div class="container">
+        <div class="section-intro">
+          <h2 id="commands-heading" class="section-title">Verified CLI usage.</h2>
+          <p class="section-subtitle">
+            Core commands verified against the MergeReady implementation and automated test suite.
+          </p>
+        </div>
+
+        <div class="commands-list">
+          <!-- Command 1 -->
+          <div class="command-block">
+            <div class="command-info">
+              <span class="command-label">Basic project check</span>
+              <span class="command-desc">Scans local files, layout, manifests, and secrets offline</span>
+            </div>
+            <div class="command-code-row">
+              <code>merge-ready check tools/&lt;path&gt;</code>
+              <button class="copy-btn" data-clipboard="merge-ready check tools/<path>" aria-label="Copy basic check command">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copy-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Command 2 -->
+          <div class="command-block">
+            <div class="command-info">
+              <span class="command-label">Pull request diff-scope validation</span>
+              <span class="command-desc">Validates changed paths against base Git branch and checks category index table</span>
+            </div>
+            <div class="command-code-row">
+              <code>merge-ready check tools/&lt;path&gt; --base upstream/main</code>
+              <button class="copy-btn" data-clipboard="merge-ready check tools/<path> --base upstream/main" aria-label="Copy PR check command">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copy-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Command 3 -->
+          <div class="command-block">
+            <div class="command-info">
+              <span class="command-label">Strict CI mode</span>
+              <span class="command-desc">Fails on any warning or skipped check; recommended for automated merge gates</span>
+            </div>
+            <div class="command-code-row">
+              <code>merge-ready check tools/&lt;path&gt; --base upstream/main --strict</code>
+              <button class="copy-btn" data-clipboard="merge-ready check tools/<path> --base upstream/main --strict" aria-label="Copy strict check command">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span class="copy-text">Copy</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta-section" aria-labelledby="cta-heading">
+      <div class="container cta-container">
+        <h2 id="cta-heading" class="cta-title">
+          Better contributions.<br>Less review friction.
+        </h2>
+        <p class="cta-desc">
+          Give contributors actionable feedback before maintainers spend time on review.
+        </p>
+        <div class="cta-actions">
+          <a href="https://github.com/Rithvik-krishna/open-source-agents/tree/feat/merge-ready/tools/merge-ready" class="btn btn-primary btn-lg github-btn" target="_blank" rel="noopener noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+            <span>Explore MergeReady on GitHub</span>
+          </a>
+          <a href="https://github.com/Rithvik-krishna/open-source-agents/blob/feat/merge-ready/tools/merge-ready/README.md" class="btn-link" target="_blank" rel="noopener noreferrer">
+            <span>Read the documentation &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="brand-link">
+          <svg class="brand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+            <path d="M14 9l3 3-3 3"/>
+          </svg>
+          <span class="brand-name">MergeReady</span>
+        </div>
+        <p class="footer-tagline">Deterministic validation for open-source contributions.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="https://github.com/Rithvik-krishna/open-source-agents/tree/feat/merge-ready/tools/merge-ready" class="footer-link github-btn" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/Rithvik-krishna/open-source-agents/blob/feat/merge-ready/tools/merge-ready/README.md" class="footer-link" target="_blank" rel="noopener noreferrer">Documentation</a>
+        <a href="https://github.com/Rithvik-krishna/open-source-agents/blob/feat/merge-ready/LICENSE" class="footer-link" target="_blank" rel="noopener noreferrer">License</a>
+      </div>
+
+      <div class="footer-copy">
+        <span>&copy; <span id="current-year">2026</span> MergeReady. Open source under MIT.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

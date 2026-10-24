@@ -1,0 +1,114 @@
+# MergeReady Rule Catalog Configuration
+# Defines the rule definitions, default severities, and target repository requirements.
+
+[rules.L01]
+name = "Dedicated Directory Location"
+severity = "ERROR"
+category = "layout"
+description = "Project must reside in its own dedicated directory under agents/<slug>/ or tools/<slug>/."
+source_rule = "CONTRIBUTING.md Step 4 & Directory Standards"
+
+[rules.L02]
+name = "Naming Conventions"
+severity = "ERROR"
+category = "naming"
+description = "Project directory must use lowercase kebab-case, avoid generic names, and be unique."
+source_rule = "CONTRIBUTING.md Directory & Naming Rules"
+
+[rules.F01]
+name = "Required File Standards"
+severity = "ERROR"
+category = "layout"
+description = "Project must include README.md, .env.example, .gitignore, manifest, and adhere to scan size/file limits."
+source_rule = "CONTRIBUTING.md Step 5 & Step 7"
+
+[rules.D01]
+name = "Template Residue Detection"
+severity = "ERROR"
+category = "template"
+description = "Documentation must not contain unedited template placeholders or sample outputs."
+source_rule = "template/README.md & CONTRIBUTING.md Step 7"
+
+[rules.D02]
+name = "Required Documentation Sections"
+severity = "WARNING"
+category = "template"
+description = "README.md must contain all required template sections (or explicit N/A justification)."
+source_rule = "template/README.md"
+
+[rules.S01]
+name = "Zero Secrets Policy"
+severity = "ERROR"
+category = "secrets"
+description = "No API keys, credentials, private keys, or tracked .env files may be present."
+source_rule = "CONTRIBUTING.md Quality & Security Standards"
+
+[rules.S02]
+name = "No Virtual Environments or Local Databases"
+severity = "ERROR"
+category = "secrets"
+description = "No .venv, node_modules, *.sqlite, or *.db files may be tracked in Git."
+source_rule = "CONTRIBUTING.md Step 8"
+
+[rules.P01]
+name = "Contribution Diff Scope"
+severity = "ERROR"
+category = "scope"
+description = "Pull request diff must be strictly confined to project directory and category index."
+source_rule = "CONTRIBUTING.md Scoping Your Pull Request"
+
+[rules.I01]
+name = "Category Index Entry"
+severity = "ERROR"
+category = "scope"
+description = "Index table modification must add exactly one row corresponding to the project slug."
+source_rule = "CONTRIBUTING.md Scoping Your Pull Request & tools/README.md"
+
+[rules.E01]
+name = "Environment Variable Drift"
+severity = "ERROR"
+category = "env"
+description = "Environment variables read in source code must be documented in .env.example and README."
+source_rule = "CONTRIBUTING.md Step 7"
+
+[rules.E02]
+name = "Paid API and Model Disclosure"
+severity = "WARNING"
+category = "env"
+description = "Imports of paid model provider SDKs must disclose requirements, API keys, or billing."
+source_rule = "CONTRIBUTING.md Quality & Security Standards"
+
+[rules.R01]
+name = "Declared Dependency Manifest"
+severity = "WARNING"
+category = "deps"
+description = "External third-party imports in source code must be declared in the dependency manifest."
+source_rule = "CONTRIBUTING.md Step 7 & Quality Standards"
+
+[rules.R02]
+name = "README Command References Consistency"
+severity = "WARNING"
+category = "template"
+description = "Commands in README setup and usage sections must reference scripts and files that exist."
+source_rule = "PULL_REQUEST_TEMPLATE.md Reproducible Setup"
+
+[rules.A01]
+name = "Unbounded Execution Loops"
+severity = "WARNING"
+category = "safety"
+description = "Static heuristics detect unbounded while-loops around model calls or unbounded LoopAgents."
+source_rule = "CONTRIBUTING.md Quality & Security Standards (Safety & Respect)"
+
+[rules.A02]
+name = "Hidden and Deceptive Unicode"
+severity = "ERROR"
+category = "safety"
+description = "Detects Trojan Source bidirectional overrides (CVE-2021-42574) and Plane 14 Unicode tag prompt injection attacks."
+source_rule = "Agent Safety Standard & Trojan Source Defense"
+
+[rules.A03]
+name = "High-Impact Capabilities Disclosure"
+severity = "WARNING"
+category = "safety"
+description = "Code executing subprocess, system commands, or dynamic eval must disclose safety considerations in README."
+source_rule = "template/README.md Security & Privacy Considerations"

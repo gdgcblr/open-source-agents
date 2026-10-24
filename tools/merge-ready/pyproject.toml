@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "merge-ready"
+version = "0.1.0"
+description = "Contribution Validator for Open-Source AI Agents and Developer Tools."
+readme = "README.md"
+authors = [{ name = "MergeReady Contributors" }]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+merge-ready = "merge_ready.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

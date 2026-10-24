@@ -1,0 +1,2 @@
+# Standard library only, dev dependencies:
+pytest>=8.0.0

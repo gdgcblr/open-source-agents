@@ -1,0 +1,59 @@
+name: MergeReady Contribution Check
+
+# Secure CI workflow for validating pull requests from forks
+# Trigger on pull_request to run in unprivileged context with read-only permissions
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'agents/**'
+      - 'tools/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install MergeReady
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e tools/merge-ready
+
+      - name: Identify Modified Project Directory
+        id: detect-project
+        run: |
+          # Detect the modified contribution directory under agents/ or tools/
+          CHANGED_DIR=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^(agents|tools)/[^/]+/' | cut -d/ -f1-2 | sort -u | head -n 1)
+          if [ -z "$CHANGED_DIR" ]; then
+            echo "No agent or tool directory changed."
+            exit 0
+          fi
+          echo "project_dir=$CHANGED_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Run MergeReady Validation
+        if: steps.detect-project.outputs.project_dir != ''
+        run: |
+          PROJECT_DIR="${{ steps.detect-project.outputs.project_dir }}"
+          echo "Validating contribution in $PROJECT_DIR against origin/${{ github.base_ref }}..."
+
+          # 1. Output GitHub inline annotations
+          merge-ready check "$PROJECT_DIR" --base "origin/${{ github.base_ref }}" --format github
+
+          # 2. Generate Markdown report for GitHub Actions Job Summary
+          merge-ready check "$PROJECT_DIR" --base "origin/${{ github.base_ref }}" --format markdown --output "$GITHUB_STEP_SUMMARY"
+
+          # 3. Final enforcement check with terminal output and exit code
+          merge-ready check "$PROJECT_DIR" --base "origin/${{ github.base_ref }}" --format terminal

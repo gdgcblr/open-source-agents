@@ -1,0 +1,3 @@
+# MergeReady Core Runtime uses Python 3.11+ Standard Library exclusively.
+# Development & Test Dependencies:
+pytest>=8.0.0
