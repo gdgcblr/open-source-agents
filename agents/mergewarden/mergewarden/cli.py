@@ -1,8 +1,8 @@
 """Command-line interface.
 
-  gatekeeper review <PR-URL | path>   review one contribution
-  gatekeeper triage <owner/repo>      review every open PR -> HTML board
-  gatekeeper fix <path> [--apply]     plan / apply fixes for your own contribution
+  mergewarden review <PR-URL | path>   review one contribution
+  mergewarden triage <owner/repo>      review every open PR -> HTML board
+  mergewarden fix <path> [--apply]     plan / apply fixes for your own contribution
 
 Exit codes: 0 ready, 1 changes requested, 2 blocked (usable as a CI gate).
 """
@@ -34,9 +34,9 @@ def _log(msg: str, quiet: bool = False) -> None:
 async def _run(target: str, use_llm: bool, run_setup: bool, project: str | None, quiet: bool,
                model: str | None = None):
     pipeline = gk.build(use_llm=use_llm, model=model or gk.MODEL)
-    runner = InMemoryRunner(agent=pipeline, app_name="contribution_gatekeeper")
+    runner = InMemoryRunner(agent=pipeline, app_name="mergewarden")
     session = await runner.session_service.create_session(
-        app_name="contribution_gatekeeper", user_id="cli",
+        app_name="mergewarden", user_id="cli",
         state={"target": target, "run_setup": run_setup, "project": project},
     )
     msg = types.Content(role="user", parts=[types.Part(text=target)])
@@ -129,7 +129,7 @@ def cmd_fix(a) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="gatekeeper", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p = argparse.ArgumentParser(prog="mergewarden", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = p.add_subparsers(dest="cmd", required=True)
     llm_default = gk.llm_available()
 

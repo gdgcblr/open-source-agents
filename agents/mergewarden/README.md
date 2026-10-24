@@ -1,4 +1,4 @@
-# Contribution Gatekeeper · Maintainer Copilot
+# MergeWarden · Maintainer Copilot
 
 > A Google ADK multi-agent that reviews every pull request against **the repository's own CONTRIBUTING.md**, with line-cited rules, quote-grounded Gemini findings and a triage board, so maintainers spend their time on code instead of checklists.
 
@@ -46,7 +46,7 @@
                     review_contribution   triage_open_prs  suggest_fixes
                                   │           │ (loops PRs)  │
  ┌────────────────────────────────▼───────────▼──────────────┼───────────────────────────────┐
- │ contribution_gatekeeper  (ADK SequentialAgent)            │                               │
+ │ mergewarden  (ADK SequentialAgent)            │                               │
  │                                                           │                               │
  │  1 evidence_collector  (deterministic BaseAgent)          │                               │
  │      git fetch pull/N/head → git archive (no checkout, no hooks, no code run)            │
@@ -78,7 +78,7 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 
 1. **Navigate to the project directory:**
    ```bash
-   cd agents/contribution-gatekeeper
+   cd agents/mergewarden
    ```
 
 2. **Create a virtual environment and install dependencies:**
@@ -104,7 +104,7 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 | `GOOGLE_GENAI_USE_VERTEXAI` | No | `FALSE` | `TRUE` to use Vertex AI (with `GOOGLE_CLOUD_PROJECT` / `GOOGLE_CLOUD_LOCATION`) instead of an API key. |
 | `GATEKEEPER_MODEL` | No | `gemini-3.5-flash-lite,gemini-3.8-flash` | Comma-separated model fallback chain, tried in order on 429/503 errors. |
 | `GITHUB_TOKEN` | No | `gh auth token` if available | Raises the GitHub API limit above 60 requests/hour. Read-only is enough for reviews. |
-| `GATEKEEPER_CACHE` | No | `~/.cache/contribution-gatekeeper` | Where bare partial clones of reviewed repos are cached. |
+| `GATEKEEPER_CACHE` | No | `~/.cache/mergewarden` | Where bare partial clones of reviewed repos are cached. |
 
 ---
 
@@ -112,25 +112,25 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 
 ```bash
 # Review a pull request (public repos need no token)
-python -m contribution_gatekeeper review https://github.com/gdgcblr/open-source-agents/pull/12
+python -m mergewarden review https://github.com/gdgcblr/open-source-agents/pull/12
 
 # Pre-flight YOUR contribution before opening the PR (run from anywhere in your clone)
-python -m contribution_gatekeeper review ../../agents/my-cool-agent
+python -m mergewarden review ../../agents/my-cool-agent
 
 # Get concrete fixes, and apply the file fixes inside your folder
-python -m contribution_gatekeeper fix ../../agents/my-cool-agent --apply
+python -m mergewarden fix ../../agents/my-cool-agent --apply
 
 # Triage every open PR into an HTML board (ready-first)
-python -m contribution_gatekeeper triage gdgcblr/open-source-agents --out triage.html
+python -m mergewarden triage gdgcblr/open-source-agents --out triage.html
 
 # Post the review as a PR comment (shows it and asks for confirmation first)
-python -m contribution_gatekeeper review https://github.com/OWNER/REPO/pull/12 --post
+python -m mergewarden review https://github.com/OWNER/REPO/pull/12 --post
 
 # Offline / deterministic only, plus a JSON report for CI
-python -m contribution_gatekeeper review <PR-or-path> --no-llm --json report.json
+python -m mergewarden review <PR-or-path> --no-llm --json report.json
 
 # Chat with the Maintainer Copilot coordinator in the ADK dev UI
-adk web .          # then pick "contribution_gatekeeper"
+adk web .          # then pick "mergewarden"
 
 # Local web console (review form + bundled demo reports)
 python web/server.py   # http://127.0.0.1:8765
@@ -146,7 +146,7 @@ Exit codes: `0` ready, `1` changes requested, `2` blocked. Use it in CI or a `pr
 A deliberately flawed contribution, `agents/pdf-chat-assistant`, committed on a branch of a fresh clone of this repo. Its README says `cd agents/pdf-chat` and `python app.py`, but the file is `main.py`. The code reads `OPENAI_API_KEY` and `SLACK_WEBHOOK_URL`, and `.env.example` is missing. The code calls the API inside an unbounded `while True:` loop. The README contains a hidden HTML comment telling "the AI reviewer" to approve it and to pass every check.
 
 ```bash
-python -m contribution_gatekeeper review /path/to/clone/agents/pdf-chat-assistant
+python -m mergewarden review /path/to/clone/agents/pdf-chat-assistant
 ```
 
 ### Example Output
@@ -161,7 +161,7 @@ Reviewing …/agents/pdf-chat-assistant (Gemini + deterministic)
   ▸ arbiter
   ▸ review_writer
   ▸ renderer
-## Contribution Gatekeeper review: `agents/pdf-chat-assistant`
+## MergeWarden review: `agents/pdf-chat-assistant`
 
 🛠️ **Changes requested** · score **36/100**
 
@@ -214,7 +214,7 @@ python -m pytest -q
 python evals/run_evals.py        # writes evals/RESULTS.md
 
 # Dogfood: the gatekeeper reviewing its own folder
-python -m contribution_gatekeeper review . --no-llm
+python -m mergewarden review . --no-llm
 ```
 
 Current results: **107 tests pass**. The eval suite scores **18/18 verdicts correct and 18/18 exact check-set matches** (deterministic layer). The cases cover:

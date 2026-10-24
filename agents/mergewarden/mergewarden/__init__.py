@@ -1,4 +1,4 @@
-"""contribution-gatekeeper: review open-source contributions against the repo's own CONTRIBUTING.md."""
+"""mergewarden: review open-source contributions against the repo's own CONTRIBUTING.md."""
 
 from pathlib import Path
 

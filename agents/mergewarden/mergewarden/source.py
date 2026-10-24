@@ -22,7 +22,7 @@ from .checks.scope import project_dirs
 from .models import Submission
 from .policy import Policy, compile_policy
 
-CACHE = Path(os.environ.get("GATEKEEPER_CACHE", Path.home() / ".cache" / "contribution-gatekeeper"))
+CACHE = Path(os.environ.get("GATEKEEPER_CACHE", Path.home() / ".cache" / "mergewarden"))
 PR_RX = re.compile(r"(?:https?://github\.com/)?([\w.-]+)/([\w.-]+)(?:/pull/|#)(\d+)")
 # Base-branch paths we snapshot: the rules plus existing projects (for overlap checks).
 POLICY_PATHS = ["CONTRIBUTING.md", "README.md", "template", ".github", "agents", "tools"]
@@ -54,7 +54,7 @@ def github_api(path: str) -> dict:
         r = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True)
         token = r.stdout.strip() if r.returncode == 0 else None
     req = urllib.request.Request(f"https://api.github.com/{path.lstrip('/')}",
-                                 headers={"Accept": "application/vnd.github+json", "User-Agent": "contribution-gatekeeper"})
+                                 headers={"Accept": "application/vnd.github+json", "User-Agent": "mergewarden"})
     if token:
         req.add_header("Authorization", f"Bearer {token}")
     with urllib.request.urlopen(req, timeout=30) as resp:

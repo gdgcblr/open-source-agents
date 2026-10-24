@@ -10,9 +10,9 @@ from google.adk.runners import InMemoryRunner
 from google.genai import types
 
 import testkit
-from contribution_gatekeeper import agent as gk
-from contribution_gatekeeper import cli
-from contribution_gatekeeper.models import Severity, Submission, Verdict
+from mergewarden import agent as gk
+from mergewarden import cli
+from mergewarden.models import Severity, Submission, Verdict
 
 
 def test_offline_pipeline_good(contrib, upstream_repo):

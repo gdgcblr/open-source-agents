@@ -31,10 +31,10 @@ try:
 except ImportError:
     pass
 
-from contribution_gatekeeper import agent as gk  # noqa: E402
-from contribution_gatekeeper import cli  # noqa: E402
-from contribution_gatekeeper import report as render  # noqa: E402
-from contribution_gatekeeper import sandbox  # noqa: E402
+from mergewarden import agent as gk  # noqa: E402
+from mergewarden import cli  # noqa: E402
+from mergewarden import report as render  # noqa: E402
+from mergewarden import sandbox  # noqa: E402
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 _one_at_a_time = threading.Lock()  # the pipeline keeps per-run state in module globals

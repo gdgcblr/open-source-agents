@@ -13,7 +13,7 @@ anything to "blocker", or change the verdict on its own. Each LLM finding
 must quote the submission. Quotes that aren't found are demoted to info.
 
 Run `adk web` in the project folder to drive it from the ADK dev UI, or use
-the CLI (`python -m contribution_gatekeeper ...`).
+the CLI (`python -m mergewarden ...`).
 """
 
 from __future__ import annotations
@@ -293,7 +293,7 @@ def build(use_llm: bool = True, model: str = MODEL) -> SequentialAgent:
                               output_key="summary", include_contents="none",
                               generate_content_config=types.GenerateContentConfig(temperature=0.4)))
     steps.append(Renderer(name="renderer"))
-    return SequentialAgent(name="contribution_gatekeeper", sub_agents=steps,
+    return SequentialAgent(name="mergewarden", sub_agents=steps,
                            description="Reviews a PR against the repository's CONTRIBUTING.md.")
 
 

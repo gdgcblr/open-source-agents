@@ -19,10 +19,10 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 REPO = HERE.parents[2]  # open-source-agents/
 
-from contribution_gatekeeper import report as render  # noqa: E402
-from contribution_gatekeeper.checks import run_static  # noqa: E402
-from contribution_gatekeeper.models import Report, Submission  # noqa: E402
-from contribution_gatekeeper.policy import compile_policy  # noqa: E402
+from mergewarden import report as render  # noqa: E402
+from mergewarden.checks import run_static  # noqa: E402
+from mergewarden.models import Report, Submission  # noqa: E402
+from mergewarden.policy import compile_policy  # noqa: E402
 
 # Fixture strings are assembled from pieces so the gatekeeper's own scanners
 # don't flag this file when it reviews itself.

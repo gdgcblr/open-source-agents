@@ -10,9 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from contribution_gatekeeper import cli, fixer
-from contribution_gatekeeper.fixer import Fix
-from contribution_gatekeeper.models import Criterion, Finding, Report, Severity, Submission
+from mergewarden import cli, fixer
+from mergewarden.fixer import Fix
+from mergewarden.models import Criterion, Finding, Report, Severity, Submission
 
 REPO = Path(__file__).resolve().parents[3]
 PROJECT = "agents/weather-bot"

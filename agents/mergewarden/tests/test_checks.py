@@ -5,11 +5,11 @@ from __future__ import annotations
 import pytest
 
 import testkit
-from contribution_gatekeeper.checks import (
+from mergewarden.checks import (
     checklist, envvars, injection, readme, run_static, safety, scope, secrets, structure,
 )
-from contribution_gatekeeper.models import Criterion, Severity
-from contribution_gatekeeper.policy import compile_policy
+from mergewarden.models import Criterion, Severity
+from mergewarden.policy import compile_policy
 
 A = "agents/weather-brief"
 

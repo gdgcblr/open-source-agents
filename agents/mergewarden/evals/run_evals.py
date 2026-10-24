@@ -26,8 +26,8 @@ sys.path.insert(0, str(HERE.parent))
 
 from cases import CASES  # noqa: E402  (also puts tests/ on sys.path)
 import testkit  # noqa: E402
-from contribution_gatekeeper.checks import run_static  # noqa: E402
-from contribution_gatekeeper.models import Report, Severity  # noqa: E402
+from mergewarden.checks import run_static  # noqa: E402
+from mergewarden.models import Report, Severity  # noqa: E402
 
 
 def run() -> tuple[list[dict], dict[str, Counter]]:

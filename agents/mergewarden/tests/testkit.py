@@ -20,9 +20,9 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from contribution_gatekeeper import source
-from contribution_gatekeeper.models import Submission
-from contribution_gatekeeper.policy import Policy
+from mergewarden import source
+from mergewarden.models import Submission
+from mergewarden.policy import Policy
 
 UPSTREAM = Path(__file__).resolve().parents[3]  # open-source-agents/
 BASE_PATHS = ["CONTRIBUTING.md", "README.md", "template", ".github", "agents/README.md", "tools/README.md"]

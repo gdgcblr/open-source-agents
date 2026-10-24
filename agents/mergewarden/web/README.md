@@ -3,7 +3,7 @@
 A browser front end for MergeWarden (the contribution gatekeeper): review a PR or a local folder, browse findings with their fix commands and rule citations, preview the PR comment, and triage many PRs on one board.
 
 ```bash
-# from agents/contribution-gatekeeper, with the project's venv active
+# from agents/mergewarden, with the project's venv active
 python web/server.py          # http://127.0.0.1:8765  (pass a port to change it)
 ```
 
