@@ -240,6 +240,8 @@ claude mcp add issue-scout -e PYTHONPATH=/ABS/PATH/agents/issue-scout -- /ABS/PA
 
 Tools exposed: `find_issues`, `inspect_issue`, `related_issues`, `repo_conventions` and `starter_brief_facts`.
 
+**Put `GITHUB_TOKEN` in `agents/issue-scout/.env`.** MCP hosts start the server with only a minimal environment, so a token exported in your shell doesn't reach it. The server reads the project's `.env` itself, wherever the host launches it from. Without a token it falls back to GitHub's anonymous limit (60 requests per hour), and code pointers can't use code search.
+
 ---
 
 ## Example Input & Output
