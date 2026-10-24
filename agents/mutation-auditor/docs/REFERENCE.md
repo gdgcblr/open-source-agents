@@ -28,10 +28,10 @@ Imported XML is labeled `not-verified-imported-report`: its baseline, age, confi
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `--output` | `./mutation-audit` | Parent of the unique run folder. |
-| `--timeout-seconds` | `600` | Per-command timeout; AI event inactivity timeout. Valid range: 1–86400. |
-| `--model` | `gemini-2.5-flash` | Gemini model for `--ai`. |
+| `--timeout-seconds` | `600` | Per-command timeout; total AI investigation deadline. Valid range: 1–86400. |
+| `--model` | `gemini-3.5-flash-lite` | Gemini model for `--ai`. |
 | `GOOGLE_API_KEY` | None | Required only with `--ai`. |
-| `MUTATION_AUDITOR_MODEL` | `gemini-2.5-flash` | Model default overridden by `--model`. |
+| `MUTATION_AUDITOR_MODEL` | `gemini-3.5-flash-lite` | Model default overridden by `--model`. |
 | `--maven` | Chosen by launcher | Maven executable override. |
 | `--gradle` | Wrapper or automatic download | Gradle executable override. |
 | `MUTATION_AUDITOR_MAVEN` | Set by launcher | Default Maven command for direct invocation. |
@@ -67,7 +67,7 @@ Gradle uses an existing wrapper or downloads checksum-pinned Gradle 9.1.0. Exist
 
 Copies exclude `.git`, `target`, `build`, `.gradle`, editor folders, `node_modules`, and `mutation-audit`. Symlinks are rejected. Only the selected project folder is copied: local parent POMs, sibling modules, and arbitrary external files are not reproduced. Repository-resolved Maven parents need `<relativePath/>`. Reactor and Gradle multi-project builds are unsupported.
 
-Each run writes `report.md` and `report.json`. Executed analyses also save `mutations.xml`, `baseline.log`, and `pit.log`; GitHub runs add clone logs and source metadata. AI runs with findings add `recommendations.md`. No model call is made when there are no surviving/uncovered mutants. Measured reports remain saved if AI fails.
+Each run writes `report.md` and `report.json`. Executed analyses also save `mutations.xml`, `baseline.log`, and `pit.log`; GitHub runs add clone logs and source metadata. Successful AI runs add `recommendations.md`. Failures save `ai-error.md`; `report.json` records AI status as `completed`, `failed`, `skipped-no-findings`, or `not-requested`. The terminal shows source-tool progress during investigation. No model call is made when there are no surviving/uncovered mutants. Measured reports remain saved if AI fails.
 
 Markdown lists the first 100 findings; JSON contains every mutant. Exit codes are `0` for completion, `1` for execution/AI errors or explicitly incomplete reports, and `2` for invalid syntax. A low score alone does not fail the command.
 
@@ -83,7 +83,7 @@ This preserves PIT's detection semantics, including detected timeouts, non-viabl
 
 ADK exposes read-only tools for Java source and tests. The model cannot run commands, write files, alter scores, or verify proposed tests. Suggestions are explicitly unverified.
 
-An investigation receives at most 30 findings, can list up to 200 Java files, reads up to 32 KB per file, and makes at most 12 model calls. The timeout measures inactivity between events; it is not a total time or token-cost budget. Large investigations may be incomplete.
+An investigation receives at most 30 findings, can list up to 200 Java files, reads up to 32 KB per file, and makes at most 12 model calls. The timeout caps the total AI investigation; there is no separate token-cost budget. Large investigations may be incomplete.
 
 `--ai` sends findings and selected source/test content to Gemini. No model requests occur without it. Provider charges, quotas, and privacy policies apply. Source tools check real paths and restrict access to standard Java source directories; comments are treated as untrusted data.
 
@@ -102,7 +102,7 @@ Builds run with your user permissions. Model key variables and common GitHub tok
 | No mutations | Check compiled production classes and target filters. An empty run has no meaningful score. |
 | Private clone fails | Install GitHub CLI, run `auth`, and check repository permission/SSO and clone logs. |
 | Missing sibling dependency | Select an independent project. `--subdir` does not preserve `../common-lib` or similar paths. |
-| AI fails | Check the key, model, network, and quota. Reuse saved XML with the `report` command. |
+| AI fails | Read `ai-error.md`. Check the key, model, network, and quota. If you exported an older `MUTATION_AUDITOR_MODEL`, update it or pass `--model gemini-3.5-flash-lite`. Reuse saved XML with the `report` command. |
 
 ## Development
 
@@ -115,9 +115,9 @@ Stack: Java 17+, Google ADK Java 1.13.0, Gemini, PIT 1.30.1, PIT JUnit 5 adapter
 ./mutation-auditor examples/discount-gradle
 ```
 
-The 40 automated tests cover parsing/scoring, incomplete reports, XML entity rejection, source boundaries, ADK tool registration, isolated copies, process failures/timeouts, GitHub clone/authentication flows, project discovery, Maven bootstrap, Gradle wrapper validation, and archive extraction. Network authentication and model calls are simulated or omitted.
+Automated tests cover parsing/scoring, incomplete reports, XML entity rejection, source boundaries, ADK tool registration, isolated copies, process failures/timeouts, GitHub clone/authentication flows, project discovery, Maven bootstrap, Gradle wrapper validation, and archive extraction. Network authentication and model calls are simulated or omitted.
 
-End-to-end runs verified Maven and Gradle Java examples, including Groovy/Kotlin build DSLs. The boundary-test experiment improved 66.7% to 100% after a manual test addition. Live Gemini requests and real private-account browser login remain unverified.
+End-to-end runs verified Maven and Gradle Java examples, including Groovy/Kotlin build DSLs. The boundary-test experiment improved 66.7% to 100% after a manual test addition. Live Gemini 3.5 Flash-Lite investigation was verified against the Jenkins Java example, including actual source-tool calls and a saved recommendation. Legacy Gemini 2.5 access was rejected for the API project; Gemini 3.8 generation timed out during validation. Real private-account browser login remains unverified.
 
 Tested locally on macOS ARM64 with OpenJDK 25.0.2, Maven 3.9.11, and Gradle 9.1.0. Linux, Windows, and a Java 17 runtime have not been tested locally.
 

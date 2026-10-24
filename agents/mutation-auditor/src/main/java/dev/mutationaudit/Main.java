@@ -57,8 +57,8 @@ public final class Main implements Runnable {
         @Option(names = "--ai", description = "Send mutation findings and selected Java source/tests to Gemini through ADK.")
         boolean ai;
         @Option(names = "--model", description = "Gemini model (default: ${DEFAULT-VALUE}).")
-        String model = System.getenv().getOrDefault("MUTATION_AUDITOR_MODEL", "gemini-2.5-flash");
-        @Option(names = "--timeout-seconds", description = "Time limit per Maven stage / AI inactivity (default: ${DEFAULT-VALUE}).")
+        String model = System.getenv().getOrDefault("MUTATION_AUDITOR_MODEL", AiDiagnostics.DEFAULT_MODEL);
+        @Option(names = "--timeout-seconds", description = "Time limit per build command / total AI investigation (default: ${DEFAULT-VALUE}).")
         long timeout = 600;
 
         Path newOutput() throws Exception {
@@ -155,11 +155,24 @@ public final class Main implements Runnable {
             throw new IllegalArgumentException("--ai requires the GOOGLE_API_KEY environment variable.");
     }
 
+    @FunctionalInterface interface Advisor {
+        String explain(MutationReport report, Path project, String model, Duration timeout) throws Exception;
+    }
+
     private static int write(MutationReport report, Path project, Options options, Path output, String baseline,
                              Map<String, String> source) throws Exception {
+        return write(report, project, options, output, baseline, source, AiAdvisor::explain);
+    }
+
+    static int write(MutationReport report, Path project, Options options, Path output, String baseline,
+                     Map<String, String> source, Advisor advisor) throws Exception {
         var summary = new LinkedHashMap<>(report.summary());
         summary.put("baseline", baseline);
         summary.put("source", source);
+        var ai = new LinkedHashMap<String, Object>();
+        ai.put("status", !options.ai ? "not-requested" : report.findings().isEmpty() ? "skipped-no-findings" : "running");
+        if (options.ai) ai.put("model", options.model);
+        summary.put("ai", ai);
         if (baseline.equals("baseline-passed")) summary.put("analysisSetup", Map.of(
                 "pitVersion", ProjectRunner.PIT_VERSION, "junit5AdapterVersion", PitBootstrap.JUNIT_PLUGIN_VERSION,
                 "configuration", "Automatically provisioned in a temporary build configuration; existing target filters are preserved."));
@@ -173,15 +186,26 @@ public final class Main implements Runnable {
         System.out.println(report.consoleSummary());
         System.out.println("Reports: " + output);
         if (options.ai && !report.findings().isEmpty()) {
-            System.out.println("Sending findings and selected Java source/tests to Gemini via ADK...");
+            System.out.println("AI: investigating findings with " + options.model + " via ADK. Selected Java source/tests will be sent to Gemini...");
             try {
-                String advice = AiAdvisor.explain(report, project, options.model, Duration.ofSeconds(options.timeout));
+                String advice = advisor.explain(report, project, options.model, Duration.ofSeconds(options.timeout));
                 Files.writeString(output.resolve("recommendations.md"), advice);
+                ai.put("status", "completed");
                 System.out.println(advice);
             } catch (Exception error) {
-                System.err.println("AI explanation failed. Measured reports are saved at " + output);
-                throw error;
+                String diagnostic = AiDiagnostics.message(error, options.model);
+                ai.put("status", "failed");
+                ai.put("error", diagnostic);
+                Files.writeString(output.resolve("ai-error.md"), "# AI analysis failed\n\n" + diagnostic
+                        + "\n\nMeasured mutation results are saved in report.md and report.json. No recommendations were generated.\n");
+                new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("report.json").toFile(), summary);
+                System.err.println(diagnostic);
+                System.err.println("Measured results are saved. AI error details: " + output.resolve("ai-error.md"));
+                return 1;
             }
+            new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(output.resolve("report.json").toFile(), summary);
+        } else if (options.ai) {
+            System.out.println("AI skipped: this report has no surviving or uncovered mutations to investigate.");
         }
         return report.complete() ? 0 : 1;
     }

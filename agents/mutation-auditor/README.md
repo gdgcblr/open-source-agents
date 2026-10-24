@@ -89,9 +89,9 @@ export GOOGLE_API_KEY="YOUR_KEY"
 ./mutation-auditor /path/to/project --ai
 ```
 
-Get a key from [Google AI Studio](https://aistudio.google.com/apikey). The default model is `gemini-2.5-flash`; change it with `--model`. `.env` files are not loaded automatically.
+Get a key from [Google AI Studio](https://aistudio.google.com/apikey). The default model is `gemini-3.5-flash-lite`; change it with `--model`. `.env` files are not loaded automatically.
 
-**Scores come from PIT results. AI suggestions are unverified:** the agent does not apply, compile, or execute its proposed tests. Review them against your requirements. Live Gemini requests have not been validated in the local test run.
+**Scores come from PIT results. AI suggestions are unverified:** the agent does not apply, compile, or execute its proposed tests. Review them against your requirements. Provider failures are reported explicitly and saved as `ai-error.md`; measured mutation results remain available.
 
 AI mode sends findings and selected Java source/test contents to Gemini. Enable it only when you are allowed to share that code. Provider costs and quotas may apply. Without `--ai`, the tool makes no model requests.
 
