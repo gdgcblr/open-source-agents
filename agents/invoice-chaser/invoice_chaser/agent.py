@@ -13,7 +13,7 @@ import uuid
 from pathlib import Path
 
 from google.adk.agents import LlmAgent
-from google.adk.models import BaseLlm
+from google.adk.models import BaseLlm, Gemini
 from google.adk.tools.mcp_tool import McpToolset, StdioConnectionParams
 from google.genai import types
 from mcp import StdioServerParameters
@@ -81,8 +81,16 @@ def _static(text: str):
     return lambda _ctx: text
 
 
-def _model(model: str | BaseLlm | None) -> str | BaseLlm:
-    return model or os.getenv("MODEL_NAME") or DEFAULT_MODEL
+# Free-tier Gemini allows only a few requests per minute. Back off and retry on 429/5xx
+# instead of failing the run halfway (the ledger is consistent either way).
+RETRY = types.HttpRetryOptions(attempts=6, initial_delay=10, max_delay=65, exp_base=2, jitter=2,
+                               http_status_codes=[429, 500, 502, 503, 504])
+
+
+def _model(model: str | BaseLlm | None) -> BaseLlm:
+    if isinstance(model, BaseLlm):
+        return model
+    return Gemini(model=model or os.getenv("MODEL_NAME") or DEFAULT_MODEL, retry_options=RETRY)
 
 
 def build_matcher(model: str | BaseLlm | None = None, mode: str | None = "single_turn") -> LlmAgent:

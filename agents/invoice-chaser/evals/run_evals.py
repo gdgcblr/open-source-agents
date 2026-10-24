@@ -32,6 +32,21 @@ TODAY = "2026-10-24"  # the sample data is written for this date
 
 # ------------------------------------------------------------------ plumbing
 
+class DailyQuotaExhausted(Exception):
+    pass
+
+
+def _check_daily_quota(error: Exception) -> None:
+    """Free-tier keys have a small per-day request quota. Retrying cannot help, so stop
+    the whole run instead of failing every remaining case."""
+    seen, e = set(), error
+    while e is not None and id(e) not in seen:
+        seen.add(id(e))
+        if "PerDay" in str(e) or "per day" in str(e).lower():
+            raise DailyQuotaExhausted(str(e).splitlines()[0][:200]) from error
+        e = e.__cause__ or e.__context__
+
+
 def fresh_ledger(tmp: Path, with_payments: bool = True) -> Path:
     db = tmp / "ledger.db"
     led = Ledger(db, LedgerConfig.from_env())
@@ -90,6 +105,7 @@ def suite_matcher(model=None, only: list[str] | None = None) -> dict:
                 asyncio.run(run_agent(build_matcher(model, mode=None), ["Match new payments."]))
                 error = None
             except Exception as e:  # recorded, not hidden: the case counts as failed
+                _check_daily_quota(e)
                 error = f"{type(e).__name__}: {e}"
             outcome = scoring.matcher_outcome(Ledger(db, LedgerConfig.from_env()))
             results.append({"id": case["id"], "tag": case["tag"], "expected": case["expected"],
@@ -113,6 +129,7 @@ def suite_drafter(model=None, judge_model=None) -> dict:
             turns = asyncio.run(run_agent(build_drafter(model, mode=None), ["Draft today's reminders."]))
             rejections = scoring.count_tool_errors(turns[0]["events"], "queue_reminder", "RENDER_REJECTED")
         except Exception as e:
+            _check_daily_quota(e)
             error, rejections = f"{type(e).__name__}: {e}", None
         queued = {r["invoice_id"]: r for r in led.list_reminders("QUEUED")["reminders"]}
 
@@ -143,6 +160,7 @@ def suite_scenarios(model=None) -> dict:
             turns = asyncio.run(run_agent(build_root_agent(model),
                                           ["Run today's chase.", "Run today's chase again."]))
         except Exception as e:
+            _check_daily_quota(e)
             error, turns = f"{type(e).__name__}: {e}", []
         led = Ledger(db, LedgerConfig.from_env())
         scenarios.append(scoring.scenario_sample_chase(led, turns[0] if turns else None, error))
@@ -162,6 +180,7 @@ def main() -> int:
     parser.add_argument("--suite", choices=["matcher", "drafter", "scenarios", "all"], default="all")
     parser.add_argument("--repeat", type=int, default=1)
     args = parser.parse_args()
+    sys.stdout.reconfigure(line_buffering=True)  # progress is visible even when piped to a file
 
     try:
         from dotenv import load_dotenv
@@ -180,17 +199,23 @@ def main() -> int:
               "judge_model": os.getenv("JUDGE_MODEL") or model,
               "prompt_version": prompts.PROMPT_VERSION, "runs": []}
     suites = ["matcher", "drafter", "scenarios"] if args.suite == "all" else [args.suite]
-    for n in range(args.repeat):
-        run = {}
-        for suite in suites:
-            print(f"\n== {suite} (run {n + 1}/{args.repeat}) ==")
-            if suite == "matcher":
-                run[suite] = suite_matcher()
-            elif suite == "drafter":
-                run[suite] = suite_drafter(judge_model=report["judge_model"])
-            else:
-                run[suite] = suite_scenarios()
-        report["runs"].append(run)
+    try:
+        for n in range(args.repeat):
+            run = {}
+            report["runs"].append(run)
+            for suite in suites:
+                print(f"\n== {suite} (run {n + 1}/{args.repeat}) ==")
+                if suite == "matcher":
+                    run[suite] = suite_matcher()
+                elif suite == "drafter":
+                    run[suite] = suite_drafter(judge_model=report["judge_model"])
+                else:
+                    run[suite] = suite_scenarios()
+    except DailyQuotaExhausted as e:
+        report["aborted"] = f"daily API quota exhausted: {e}"
+        print(f"\n✗ Stopped: the API key's daily quota is used up ({e}).\n"
+              "  A full eval needs roughly 120 model requests; free-tier keys allow about 20 per "
+              "model per day. Use a paid key or run one suite at a time on different days.")
 
     RESULTS.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")

@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`invoice-chaser`](invoice-chaser/) | Reconciles bank payments to invoices (TDS-aware) and drafts tone-appropriate payment reminders for owner approval, grounded in a deterministic ledger | Google ADK · Gemini · MCP · Python | [@malhotramanik](https://github.com/malhotramanik) |

@@ -270,7 +270,10 @@ def markdown_report(report: dict) -> str:
              f"- Model: `{report['model']}` · Judge: `{report['judge_model']}` · "
              f"Prompt version: `{report['prompt_version']}`",
              f"- Runs: {len(report['runs'])}",
-             f"- **All thresholds met: {'yes' if all_thresholds_met(report) else 'no'}**", ""]
+             f"- **All thresholds met: {'yes' if all_thresholds_met(report) and not report.get('aborted') else 'no'}**"]
+    if report.get("aborted"):
+        lines.append(f"- **Run aborted:** {report['aborted']}. Results below are partial.")
+    lines.append("")
     for n, run in enumerate(report["runs"], start=1):
         lines.append(f"## Run {n}")
         if m := run.get("matcher", {}).get("metrics"):

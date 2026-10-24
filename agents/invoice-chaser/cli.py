@@ -211,9 +211,9 @@ def cmd_audit(args):
     return 0
 
 
-def run_agent(message: str) -> int:
+def run_agent(message: str, replay: bool = False) -> int:
     key = os.getenv("GOOGLE_API_KEY", "")
-    if (not key or key.startswith("your_")) and \
+    if not replay and (not key or key.startswith("your_")) and \
             os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "").upper() != "TRUE":
         print("GOOGLE_API_KEY is not set. Copy .env.example to .env and add your key from "
               "https://aistudio.google.com/apikey")
@@ -224,17 +224,29 @@ def run_agent(message: str) -> int:
     from google.adk.runners import InMemoryRunner
     from google.genai import types
 
-    from invoice_chaser.agent import root_agent
+    if replay:
+        from invoice_chaser.replay import build_replay_agent, load_recording
+        rec = load_recording()
+        print(f"REPLAY: model decisions recorded from a real {rec['model']} run on "
+              f"{rec['recorded_on']}; the ledger computes everything live. No API calls.\n")
+        agent = build_replay_agent(rec)
+    else:
+        from invoice_chaser.agent import root_agent as agent
 
     async def go():
-        runner = InMemoryRunner(agent=root_agent, app_name="invoice_chaser")
+        runner = InMemoryRunner(agent=agent, app_name="invoice_chaser")
         session = await runner.session_service.create_session(app_name="invoice_chaser",
                                                               user_id="owner")
-        final = None
+        final, usage = None, {"requests": 0, "input": 0, "output": 0}
         try:
             async for event in runner.run_async(
                     user_id="owner", session_id=session.id,
                     new_message=types.Content(role="user", parts=[types.Part.from_text(text=message)])):
+                if (meta := event.usage_metadata) and not event.partial:
+                    usage["requests"] += 1
+                    usage["input"] += meta.prompt_token_count or 0
+                    usage["output"] += (meta.candidates_token_count or 0) + \
+                        (meta.thoughts_token_count or 0)
                 for part in (event.content.parts if event.content else None) or []:
                     if part.function_call:
                         print(f"  · {event.author} → {part.function_call.name}")
@@ -242,10 +254,10 @@ def run_agent(message: str) -> int:
                         final = part.text
         finally:
             await runner.close()
-        return final
+        return final, usage
 
     try:
-        reply = asyncio.run(go())
+        reply, usage = asyncio.run(go())
     except Exception as e:  # e.g. invalid key, quota exhausted, network down
         message = getattr(e, "message", None) or str(e).splitlines()[0]
         cause = e.__cause__ or e.__context__
@@ -256,11 +268,15 @@ def run_agent(message: str) -> int:
               "and listed in `python cli.py audit`.")
         return 1
     print(f"\n{reply or '(no reply)'}")
+    if replay:
+        return 0
+    print(f"\n[{usage['requests']} model responses · {usage['input']:,} input tokens · "
+          f"{usage['output']:,} output tokens (incl. thinking)]")
     return 0
 
 
 def cmd_chase(args):
-    return run_agent("Run today's chase.")
+    return run_agent("Run today's chase.", replay=args.replay)
 
 
 def cmd_ask(args):
@@ -282,7 +298,10 @@ def main(argv=None) -> int:
     p.set_defaults(func=cmd_import)
 
     sub.add_parser("status", help="ranked chase list and pending work").set_defaults(func=cmd_status)
-    sub.add_parser("chase", help="run the agent (needs GOOGLE_API_KEY)").set_defaults(func=cmd_chase)
+    p = sub.add_parser("chase", help="run the agent (needs GOOGLE_API_KEY)")
+    p.add_argument("--replay", action="store_true",
+                   help="offline demo: replay a recorded Gemini run (no API key or quota used)")
+    p.set_defaults(func=cmd_chase)
 
     p = sub.add_parser("ask", help="ask the agent a question (needs GOOGLE_API_KEY)")
     p.add_argument("question", nargs="+")

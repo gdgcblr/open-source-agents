@@ -104,3 +104,17 @@ def test_matcher_suite_plumbing_with_scripted_model(monkeypatch):
     assert by_id["M01"]["outcome"]["kind"] == "AUTO_APPLIED" and by_id["M01"]["passed"]
     assert by_id["M14"]["outcome"]["kind"] == "NONE" and by_id["M14"]["passed"]
     assert result["metrics"]["critical_errors"] == 0
+
+
+def test_daily_quota_detected_through_wrapped_errors():
+    from evals.run_evals import DailyQuotaExhausted, _check_daily_quota
+    inner = RuntimeError("429 RESOURCE_EXHAUSTED quotaId GenerateRequestsPerDayPerProjectPerModel-FreeTier")
+    try:
+        try:
+            raise inner
+        except RuntimeError as e:
+            raise ValueError("Dynamic node invoice_chaser failed") from e
+    except ValueError as wrapped:
+        with pytest.raises(DailyQuotaExhausted):
+            _check_daily_quota(wrapped)
+    _check_daily_quota(RuntimeError("429 GenerateRequestsPerMinute"))  # per-minute: retried, not fatal

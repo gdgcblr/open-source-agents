@@ -192,3 +192,19 @@ def test_injection_in_narration_cannot_mark_invoices_paid(env, config):
     pending = led.list_pending_matches()["proposals"]
     assert [p["invoice_ids"] for p in pending] == [["INV-2026-002"]]  # multi-client call rejected
     assert led.check_invariants()["ok"]
+
+
+def test_replay_demo_reproduces_recorded_live_run(env, config):
+    """`cli.py chase --replay` must give the same ledger outcome the live Gemini run did."""
+    from invoice_chaser.replay import build_replay_agent
+    result = run(build_replay_agent(), "Run today's chase.")
+    led = Ledger(env, config)
+    assert {i: led.get_invoice(i)["invoice"]["status"] for i in
+            ("INV-2026-001", "INV-2026-003", "INV-2026-012")} == dict.fromkeys(
+        ("INV-2026-001", "INV-2026-003", "INV-2026-012"), "PAID")
+    assert sorted(p["invoice_ids"] for p in led.list_pending_matches()["proposals"]) == [
+        ["INV-2026-004", "INV-2026-011"], ["INV-2026-006"]]
+    assert len(led.list_reminders("QUEUED")["reminders"]) == 7
+    assert led.list_reminders("DROPPED")["reminders"] == []
+    assert "7 payment reminders" in result["final_text"]
+    assert led.check_invariants()["ok"]

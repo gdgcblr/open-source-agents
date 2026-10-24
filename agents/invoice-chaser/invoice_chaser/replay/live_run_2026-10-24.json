@@ -1,0 +1,101 @@
+{
+  "about": "Model decisions recorded from a genuine Gemini run on the bundled sample data (INVOICE_CHASER_TODAY=2026-10-24). Replayed through the real ADK runner, MCP server and ledger so the demo works without API quota. Amounts, statuses and the number guard are computed live by the ledger; only the model's choices are replayed.",
+  "recorded_on": "2026-10-24",
+  "model": "gemini-3.5-flash (served as gemini-3.6-flash)",
+  "prompt_version": "2026-10-24.2",
+  "matcher_proposals": [
+    {
+      "payment_id": 2,
+      "invoice_ids": [
+        "INV-2026-003"
+      ],
+      "name_confidence": 0.95,
+      "reason": "NORTHWIND ANALYTICS INC"
+    },
+    {
+      "payment_id": 5,
+      "invoice_ids": [
+        "INV-2026-012"
+      ],
+      "name_confidence": 0.95,
+      "reason": "GREEN LEAF FOODS PVT LTD"
+    },
+    {
+      "payment_id": 1,
+      "invoice_ids": [
+        "INV-2026-001"
+      ],
+      "name_confidence": 0.95,
+      "reason": "ACME DESIGN PVT LTD"
+    },
+    {
+      "payment_id": 4,
+      "invoice_ids": [
+        "INV-2026-006"
+      ],
+      "name_confidence": 0.9,
+      "reason": "SHARMA AND SONS"
+    },
+    {
+      "payment_id": 3,
+      "invoice_ids": [
+        "INV-2026-004",
+        "INV-2026-011"
+      ],
+      "name_confidence": 0.95,
+      "reason": "CHAIPOINT CAFE"
+    }
+  ],
+  "drafts": [
+    {
+      "invoice_id": "INV-2026-005",
+      "tone_level": 3,
+      "language": "en",
+      "subject_template": "Final Notice: Overdue Invoice {invoice_no} for {client_name}",
+      "body_template": "Dear {client_first_name},\n\nThis is a final notice regarding invoice {invoice_no} for {amount_due}, which is now {days_overdue} days overdue.\n\nWe kindly request that you settle this payment within the week. Please process the transfer using the details below:\n\n{payment_details}\n\nIf you have already made the payment or if there are any issues preventing settlement, please reach out to us immediately.\n\nWarm regards,\n{sender_name}"
+    },
+    {
+      "invoice_id": "INV-2026-006",
+      "tone_level": 2,
+      "language": "hinglish",
+      "subject_template": "Payment status inquiry: Invoice {invoice_no}",
+      "body_template": "Namaste {client_first_name} ji,\n\nAap kaise hain? Invoice {invoice_no} ke regarding reminder bhej rahi hoon. Iska amount {amount_due} abhi tak pay nahi hua hai aur ye {days_overdue} days overdue ho chuka hai.\n\nKripya karke payment details check karein aur mujhe confirm karein ki payment kab tak schedule hogi:\n\n{payment_details}\n\nAgar koi discrepancy ya question ho toh please batayein taaki hum resolve kar sakein.\n\nWarm regards,\n{sender_name}"
+    },
+    {
+      "invoice_id": "INV-2026-002",
+      "tone_level": 1,
+      "language": "hinglish",
+      "subject_template": "Reminder for Invoice {invoice_no} - {client_name}",
+      "body_template": "Namaste {client_first_name} ji,\n\nAap kaise hain? Brief reminder tha ki invoice {invoice_no} ka payment amount {amount_due} abhi pending hai, aur ye {days_overdue} days overdue ho gaya hai.\n\nLagta hai shayad ye misses ho gaya. Agar aapko invoice ki copy phirse chahiye toh please batayein, main resend kar dungi. Payment details niche diye gaye hain:\n\n{payment_details}\n\nAgar payment ho chuka hai toh request hai ki confirmation share karein.\n\nThanks and regards,\n{sender_name}"
+    },
+    {
+      "invoice_id": "INV-2026-008",
+      "tone_level": 0,
+      "language": "en",
+      "subject_template": "Upcoming Invoice {invoice_no} for {client_name}",
+      "body_template": "Dear {client_first_name},\n\nI hope you are doing well. This is a quick heads-up regarding invoice {invoice_no} for {amount_due}, which is coming due soon on {due_date}.\n\nI am sharing the payment details below for your convenient reference:\n\n{payment_details}\n\nThank you very much for your continued partnership, and please let me know if you need any assistance with this invoice.\n\nWarm regards,\n{sender_name}"
+    },
+    {
+      "invoice_id": "INV-2026-010",
+      "tone_level": 2,
+      "language": "en",
+      "subject_template": "Payment Reminder: Invoice {invoice_no} Overdue",
+      "body_template": "Dear {client_first_name},\n\nI hope you are doing well. I am writing to remind you regarding invoice {invoice_no} for {amount_due}, which is currently overdue by {days_overdue} days.\n\nCould you please review this invoice and share an expected payment date? You can process the payment using the following details:\n\n{payment_details}\n\nPlease let me know if you need any additional information or documentation from my side.\n\nBest regards,\n{sender_name}"
+    },
+    {
+      "invoice_id": "INV-2026-004",
+      "tone_level": 2,
+      "language": "hinglish",
+      "subject_template": "Payment update request for Invoice {invoice_no}",
+      "body_template": "Namaste {client_first_name} ji,\n\nAapka kaam kaisa chal raha hai? Main invoice {invoice_no} regarding follow up kar rahi hoon, jiska amount {amount_due} overdue hai by {days_overdue} days.\n\nAapse request hai ki kripya status check karke confirm karein ki payment kab tak expect kar sakte hain. Payment details niche share ki hain:\n\n{payment_details}\n\nKripya payment clear karwayein ya expected date batayein. Koi issue ho toh zarur batayein.\n\nBest regards,\n{sender_name}"
+    },
+    {
+      "invoice_id": "INV-2026-007",
+      "tone_level": 1,
+      "language": "en",
+      "subject_template": "Gentle Reminder: Invoice {invoice_no} for {client_name}",
+      "body_template": "Dear {client_first_name},\n\nI hope you are having a good week. I am following up on invoice {invoice_no} for {amount_due}, which was due recently and is now {days_overdue} days overdue.\n\nIt might have simply slipped through, so please let me know if you would like me to resend the invoice details. You can also make the payment using:\n\n{payment_details}\n\nPlease drop a message once the payment has been initiated.\n\nWarm regards,\n{sender_name}"
+    }
+  ],
+  "root_summary": "Here is the summary for today's chase run:\n\n* **Payments Auto-Matched:** 3 bank payments were automatically reconciled.\n* **Matches Pending Confirmation:** 2 payment matches require your review (`python cli.py matches`).\n* **Reminders Queued:** 7 payment reminders have been drafted and queued for your approval (`python cli.py review`).\n* **Skipped/Dropped:** 0 reminders skipped due to policy."
+}
