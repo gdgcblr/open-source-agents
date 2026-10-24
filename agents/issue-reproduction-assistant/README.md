@@ -149,7 +149,19 @@ npm start -- --github "tahirhsn91/SchoolManagementSystem#12"
 - What did you expect to happen, and what happened instead?
 ```
 
-Model-assisted output adds a summary, severity, hypotheses, and a draft failing test. It has not been recorded here because it depends on the model and key you use.
+Model-assisted run (`--allow-upload`, Gemini; trimmed from a real run, wording varies by model):
+
+```markdown
+## Summary
+TypeError occurs on GET /api/dashboard when accessing 'count' on an undefined element of teacherCountRows.
+**Estimated severity:** medium
+
+## Likely areas
+- `artifacts/api-server/src/routes/dashboard.ts` (high) — handles GET /api/dashboard and queries count rows for teachers, students, classrooms.
+
+## Candidate tests
+- GET /api/dashboard with an empty teachers table falls back to 0 without throwing.
+```
 
 ## How to Test
 
