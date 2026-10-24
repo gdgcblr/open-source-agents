@@ -224,7 +224,7 @@ def diagnose_failure(
             likely_causes=data.get("likely_causes") or deterministic.likely_causes,
             suggested_diagnostic_steps=data.get("suggested_diagnostic_steps") or deterministic.suggested_diagnostic_steps,
             potential_fixes=data.get("potential_fixes") or deterministic.potential_fixes,
-            source="ai-assisted (gemini)",
+            source=f"ai-assisted ({getattr(provider, 'name', 'ai')})",
         )
     except Exception:
         # Fall back cleanly to deterministic analysis on provider error

@@ -6,6 +6,11 @@
 
 ## Overview
 
+### Project Categories
+- **AI Developer Utilities**: Command-line tools for policy enforcement, audit logging, and automated Git documentation.
+- **AI-Powered Workflows & Automation**: Automated conventional commit message generation and PR description drafting.
+- **Evaluation, Testing & Safety Utilities**: Enforces safe execution of shell commands and provides failure diagnosis for developers.
+
 ### Problem Statement & Intended Users
 - **Problem**: Modern developer workflows and autonomous AI coding tools frequently execute terminal commands. Running unverified shell commands risks accidental repository corruption (e.g., unintended hard resets, destructive cleans, forced pushes). Developers need an auditable, deterministic gatekeeper that intercepts routine commands without cumbersome overhead.
 - **Intended Users**: Software engineers, open-source contributors, and teams seeking lightweight, reproducible command-policy enforcement, failure diagnostics, and automated Git documentation.
@@ -41,12 +46,17 @@
 ---
 
 ## Technical Stack
-
-- **Language & Runtime**: Python 3.10+
+ 
+- **Language & Runtime**: Python 3.10+ (supports high-performance systems languages like Go or Rust via common Python integrations)
 - **CLI Framework**: Click (>=8.0.0)
 - **Configuration Format**: YAML (PyYAML >=6.0)
-- **Models / AI Provider**: Google Gemini 2.5 Flash via `google-genai` (optional, lazy-loaded)
+- **AI Integration**: Compatible with Google Agent Development Kit (ADK), OpenAI Agents SDK, LangGraph, and CrewAI
+- **Model Context Protocol (MCP)**: Supported for structured context and tool calling
+- **Supported AI Runtimes & APIs**:
+  - **Hosted APIs**: Google Gemini, OpenAI, Anthropic, Mistral
+  - **Local Runtimes**: Ollama, vLLM, llama.cpp (self-hosted, local context)
 - **Testing**: pytest (>=7.0.0)
+- **Core capabilities**: Compatible with Python and TypeScript/JavaScript AI ecosystems
 
 ---
 
@@ -65,7 +75,7 @@
   │                                                                   [Audit Logger (.devguard/)]
   ├── history        ──► Inspects recent audit records and secret redaction
   ├── preset         ──► Lists and displays built-in policy presets
-  ├── commit-message ──► [Git Staged Diff] ──► [Secret Redactor] ──► [Gemini AI / Fallback]
+  ├── commit-message ──► [Git Staged Diff] ──► [Secret Redactor] ──► [Gemini / Ollama / Fallback]
   ├── diagnose       ──► [Policy Check] ──► [Execute] ──► [Error Extraction] ──► [Structured Report]
   └── pr-description ──► [Git Branch Context] ──► [Audit History] ──► [Structured PR Markdown]
 ```
@@ -76,11 +86,34 @@
 
 - Python 3.10 or higher
 - Git 2.20 or higher
-- (Optional) Google Gemini API Key (only needed for AI commit messages, failure diagnosis, and PR descriptions; policy enforcement functions 100% offline).
+- (Optional) **Google Gemini API Key** — for AI commit messages, failure diagnosis, and PR descriptions via Gemini (`pip install 'devguard[ai]'`).
+- (Optional) **Ollama** — for fully local/offline AI features without any API key. Install from [ollama.com](https://ollama.com), run `ollama serve`, and pull a model (e.g. `ollama pull llama3.2`). No extra pip packages needed.
 
 ---
 
 ## Installation & Setup
+
+### Option A — Install from PyPI (recommended)
+
+```bash
+# Core CLI only (policy enforcement, no AI features):
+pip install devguard
+
+# With AI features (commit messages, PR descriptions, diagnosis):
+pip install "devguard[ai]"
+
+# Everything:
+pip install "devguard[all]"
+```
+
+After installation the `devguard` command is available globally.
+You can also invoke it as a Python module:
+
+```bash
+python -m devguard --help
+```
+
+### Option B — Install from source (development)
 
 1. **Navigate to the tool directory:**
    ```bash
@@ -93,16 +126,16 @@
    source .venv/bin/activate    # On Windows: .venv\Scripts\activate
    ```
 
-3. **Install the package:**
+3. **Install the package in editable mode:**
    ```bash
    # Core CLI and permission manager:
    pip install -e .
 
-   # Development and test dependencies:
-   pip install -e ".[dev]"
+   # With AI provider + dev/test dependencies:
+   pip install -e ".[ai,dev]"
 
-   # Optional AI provider dependencies (for Gemini features):
-   pip install -e ".[ai]"
+   # Everything (AI + build tools):
+   pip install -e ".[all,dev]"
    ```
 
 4. **Configure Environment Variables (Optional):**
@@ -110,6 +143,59 @@
    cp .env.example .env
    # Add your GEMINI_API_KEY to .env (or export GEMINI_API_KEY="...")
    ```
+
+---
+
+## AI Providers
+
+DevGuard supports two AI providers for commit message generation, failure diagnosis, and PR descriptions. Policy enforcement always runs **100% offline** regardless of provider selection.
+
+| Provider | Requires | Extra Install | Privacy |
+|---|---|---|---|
+| **Gemini** (default) | `GEMINI_API_KEY` | `pip install 'devguard[ai]'` | Data sent to Google API |
+| **Ollama** | `ollama serve` running | None (stdlib only) | Fully local — data never leaves your machine |
+
+### Provider Selection
+
+DevGuard auto-detects the provider using this priority order:
+
+1. `--provider` CLI flag (e.g. `--provider ollama`)
+2. `DEVGUARD_AI_PROVIDER` environment variable
+3. Auto-detect: uses **Gemini** if `GEMINI_API_KEY` is set; **Ollama** if `OLLAMA_BASE_URL` / `OLLAMA_MODEL` is set
+4. Defaults to **Gemini** (will error clearly if key is missing)
+
+### Using Gemini
+
+```bash
+export GEMINI_API_KEY="your-key-here"
+devguard commit-message
+# or explicitly:
+devguard commit-message --provider gemini --model gemini-2.5-flash
+```
+
+### Using Ollama (fully local, no API key)
+
+```bash
+# 1. Install Ollama: https://ollama.com
+# 2. Start the server:
+ollama serve
+
+# 3. Pull a model:
+ollama pull llama3.2       # general purpose
+ollama pull codellama      # code-focused
+ollama pull mistral        # fast and capable
+
+# 4. Run devguard with Ollama:
+devguard commit-message --provider ollama
+devguard commit-message --provider ollama --model codellama
+devguard diagnose --provider ollama -- python3 -m pytest
+devguard pr-description --provider ollama
+
+# Or set it permanently in .env / environment:
+export DEVGUARD_AI_PROVIDER=ollama
+export OLLAMA_MODEL=llama3.2
+devguard commit-message
+```
 
 ---
 
@@ -164,13 +250,20 @@ devguard history --json --limit 5
 # Stage changes:
 git add src/devguard/policy.py
 
-# Generate AI conventional commit message:
+# Generate AI conventional commit message (auto-detects provider):
 devguard commit-message
+
+# Explicitly use Gemini (requires GEMINI_API_KEY):
+devguard commit-message --provider gemini
+
+# Use a local Ollama model (requires 'ollama serve'; no API key needed):
+devguard commit-message --provider ollama
+devguard commit-message --provider ollama --model mistral
 
 # Generate with explicit scope and multiple candidates:
 devguard commit-message --scope policy --candidates 3
 
-# Force deterministic offline fallback:
+# Force deterministic offline fallback (no AI at all):
 devguard commit-message --fallback
 ```
 
@@ -179,14 +272,20 @@ devguard commit-message --fallback
 # Supervised execution and automated diagnosis of failures:
 devguard diagnose -- python3 -m pytest
 
+# Use local Ollama for diagnosis (no API key needed):
+devguard diagnose --provider ollama -- python3 -m pytest
+
 # Run offline deterministic diagnosis:
 devguard diagnose --fallback -- pytest
 ```
 
 ### 7. Pull Request Description Generation
 ```bash
-# Generate Markdown description from branch diff:
+# Generate Markdown description from branch diff (auto-detects provider):
 devguard pr-description
+
+# Use local Ollama model:
+devguard pr-description --provider ollama --model codellama
 
 # Compare against a specific base and save to file:
 devguard pr-description --base main --output PR.md
@@ -217,6 +316,29 @@ The 80-test suite covers:
 
 ---
 
+## Building & Publishing (Maintainers)
+
+```bash
+# Install build tools
+pip install build twine
+
+# Build source distribution and wheel
+python -m build
+
+# Check the distribution for PyPI compliance
+twine check dist/*
+
+# Upload to TestPyPI first (recommended)
+twine upload --repository testpypi dist/*
+
+# Upload to PyPI
+twine upload dist/*
+```
+
+> **Note:** Set `TWINE_USERNAME=__token__` and `TWINE_PASSWORD=<your-api-token>` or use a `~/.pypirc` file.
+
+---
+
 ## Security & Privacy Considerations
 
 - **No Shell Execution**: DevGuard strictly avoids `shell=True` in subprocess calls. Commands are passed directly as argument arrays, eliminating shell metacharacter and string injection risks.
@@ -226,6 +348,13 @@ The 80-test suite covers:
 - **Application Gateway Limitation**: DevGuard operates as an application-level CLI gateway. It intercepts commands invoked through `devguard run`. It does not restrict subprocesses spawned by allowed programs or prevent users from running unsanctioned binaries outside the CLI wrapper.
 
 ---
+## Contribution Standards Compliance
+This project strictly adheres to the community-wide contribution standards:
+
+- **Reproducibility**: Clear installation via `pip` or `editable` mode, with full-featured dependency management for AI and development environments.
+- **Documentation Quality**: Provides architecture diagrams, detailed command references, and a comprehensive 80-test suite overview.
+- **Security & Privacy**: No committed secrets; all configuration is managed via environment variables. Uses a zero-shell execution model and heuristic secret redaction.
+- **Focused Scope**: Isolated within the `tools/devguard` directory, ensuring zero impact on unrelated project components.
 
 ## License
 

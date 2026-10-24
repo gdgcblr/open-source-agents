@@ -196,7 +196,7 @@ def generate_commit_message_result(
                 return CommitMessageResult(
                     candidates=lines[:candidates_count],
                     is_fallback=False,
-                    source="gemini",
+                    source=getattr(provider, "name", "ai"),
                     binary_files_detected=binary_files,
                 )
         except Exception as exc:

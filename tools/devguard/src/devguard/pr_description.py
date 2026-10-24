@@ -262,7 +262,7 @@ def generate_pr_description(
                 result = PRDescriptionResult(
                     markdown=clean_resp,
                     title=title,
-                    source="ai-assisted (gemini)",
+                    source=f"ai-assisted ({getattr(provider, 'name', 'ai')})",
                     current_branch=curr_branch,
                     base_branch=base,
                     verified_tests=verified,

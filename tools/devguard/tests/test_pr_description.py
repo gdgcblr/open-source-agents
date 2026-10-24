@@ -18,8 +18,10 @@ from devguard.cli import main
 
 class MockPRProvider:
     """Mock AI provider returning PR Markdown."""
-    def __init__(self, should_fail: bool = False):
+
+    def __init__(self, should_fail: bool = False, name: str = "gemini"):
         self.should_fail = should_fail
+        self.name = name
         self.last_prompt = None
 
     def generate(self, prompt: str) -> str:
@@ -95,6 +97,18 @@ def test_secret_redaction_in_pr_description():
     assert mock_provider.last_prompt is not None
     assert "AIzaSy" not in mock_provider.last_prompt
     assert "[REDACTED_GEMINI_KEY]" in mock_provider.last_prompt
+
+
+def test_pr_description_source_reflects_provider_name():
+    """AI-assisted PR source label includes the provider name (e.g. ollama)."""
+    mock_provider = MockPRProvider(name="ollama")
+    with patch("devguard.pr_description.get_branch_diff", return_value="diff --git a/a.py\n+print(1)\n"), \
+         patch("devguard.pr_description.get_branch_commits", return_value=["feat: x"]), \
+         patch("devguard.pr_description.get_current_branch", return_value="feat/x"), \
+         patch("devguard.pr_description.resolve_base_branch", return_value="main"):
+        res = generate_pr_description(provider=mock_provider)
+
+    assert res.source == "ai-assisted (ollama)"
 
 
 def test_cli_pr_description_fallback_and_save(runner: CliRunner, tmp_path: Path):

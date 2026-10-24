@@ -24,7 +24,7 @@ from devguard.commit_message import (
     generate_commit_message_result,
     generate_fallback_message,
 )
-from devguard.ai_provider import GeminiProvider
+from devguard.ai_provider import create_provider
 
 
 DEFAULT_CONFIG_NAME = "devguard.yaml"
@@ -352,7 +352,13 @@ def run_cmd(ctx: click.Context, config: str, non_interactive: bool):
 @click.option(
     "-m", "--model",
     default=None,
-    help="Gemini model identifier for AI diagnostics.",
+    help="Model identifier for AI diagnostics (provider-specific).",
+)
+@click.option(
+    "-p", "--provider",
+    default=None,
+    type=click.Choice(["gemini", "ollama"], case_sensitive=False),
+    help="AI provider to use: 'gemini' or 'ollama' (default: auto-detect from env).",
 )
 @click.option(
     "--timeout",
@@ -362,7 +368,7 @@ def run_cmd(ctx: click.Context, config: str, non_interactive: bool):
     help="Execution timeout limit in seconds.",
 )
 @click.pass_context
-def diagnose_cmd(ctx: click.Context, config: str, fallback: bool, model: str | None, timeout: int):
+def diagnose_cmd(ctx: click.Context, config: str, fallback: bool, model: str | None, provider: str | None, timeout: int):
     """Execute a command under policy supervision and diagnose failures.
 
     Usage: devguard diagnose -- <COMMAND> [ARGS...]
@@ -462,19 +468,19 @@ def diagnose_cmd(ctx: click.Context, config: str, fallback: bool, model: str | N
 
     # Command failed -> perform diagnosis
     timed_out = (result.exit_code == 124)
-    provider = None
+    ai_provider = None
     if not fallback:
         try:
-            provider = GeminiProvider(model=model)
+            ai_provider = create_provider(provider_name=provider, model=model)
         except Exception:
-            provider = None
+            ai_provider = None
 
     report = diagnose_failure(
         command=command_args,
         result=result,
         duration_ms=duration_ms,
         timed_out=timed_out,
-        provider=provider,
+        provider=ai_provider,
     )
 
     click.echo("\n" + "=" * 70)
@@ -639,9 +645,15 @@ def policy_explain_cmd(ctx: click.Context, config: str):
 @click.option(
     "-m", "--model",
     default=None,
-    help="Gemini model identifier (default: gemini-2.5-flash).",
+    help="Model identifier (provider-specific; default: gemini-2.5-flash or llama3.2).",
 )
-def commit_message_cmd(scope: str | None, candidates_count: int, fallback: bool, model: str | None):
+@click.option(
+    "-p", "--provider",
+    default=None,
+    type=click.Choice(["gemini", "ollama"], case_sensitive=False),
+    help="AI provider to use: 'gemini' or 'ollama' (default: auto-detect from env).",
+)
+def commit_message_cmd(scope: str | None, candidates_count: int, fallback: bool, model: str | None, provider: str | None):
     """Generate a conventional commit message from staged git changes."""
     # Read staged diff
     try:
@@ -655,14 +667,14 @@ def commit_message_cmd(scope: str | None, candidates_count: int, fallback: bool,
         click.secho("Hint: Stage files using 'git add <files>' first, then re-run.", fg="cyan")
         sys.exit(0)
 
-    provider = None
+    ai_provider = None
     if not fallback:
         try:
-            provider = GeminiProvider(model=model)
+            ai_provider = create_provider(provider_name=provider, model=model)
         except (ValueError, RuntimeError) as exc:
             click.secho(f"Notice: AI provider unavailable ({exc}).", fg="yellow")
             click.secho("Falling back to deterministic commit message generator.\n", fg="cyan")
-            provider = None
+            ai_provider = None
 
     staged_files = get_staged_stats()
 
@@ -673,7 +685,7 @@ def commit_message_cmd(scope: str | None, candidates_count: int, fallback: bool,
     try:
         res = generate_commit_message_result(
             diff,
-            provider=provider,
+            provider=ai_provider,
             staged_files=staged_files,
             scope=scope,
             candidates_count=candidates_count,
@@ -731,22 +743,28 @@ def commit_message_cmd(scope: str | None, candidates_count: int, fallback: bool,
 @click.option(
     "-m", "--model",
     default=None,
-    help="Gemini model identifier (default: gemini-2.5-flash).",
+    help="Model identifier (provider-specific; default: gemini-2.5-flash or llama3.2).",
 )
-def pr_description_cmd(base: str | None, output: str | None, fallback: bool, model: str | None):
+@click.option(
+    "-p", "--provider",
+    default=None,
+    type=click.Choice(["gemini", "ollama"], case_sensitive=False),
+    help="AI provider to use: 'gemini' or 'ollama' (default: auto-detect from env).",
+)
+def pr_description_cmd(base: str | None, output: str | None, fallback: bool, model: str | None, provider: str | None):
     """Generate a structured Markdown pull request description from current git state."""
-    provider = None
+    ai_provider = None
     if not fallback:
         try:
-            provider = GeminiProvider(model=model)
+            ai_provider = create_provider(provider_name=provider, model=model)
         except Exception as exc:
             click.secho(f"Notice: AI provider unavailable ({exc}). Using deterministic generator.\n", fg="yellow")
-            provider = None
+            ai_provider = None
 
     try:
         res = generate_pr_description(
             base_branch=base,
-            provider=provider,
+            provider=ai_provider,
             output_path=output,
         )
     except Exception as exc:

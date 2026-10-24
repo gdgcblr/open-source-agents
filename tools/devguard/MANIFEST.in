@@ -1,0 +1,5 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include devguard_config.example.yaml
+recursive-include src/devguard *.py *.typed

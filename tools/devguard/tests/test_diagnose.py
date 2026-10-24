@@ -18,6 +18,8 @@ from devguard.cli import main
 
 class MockDiagnosisProvider:
     """Mock AI provider returning structured diagnostic JSON."""
+    name: str = "gemini"
+
     def __init__(self, should_fail: bool = False):
         self.should_fail = should_fail
         self.last_prompt = None
