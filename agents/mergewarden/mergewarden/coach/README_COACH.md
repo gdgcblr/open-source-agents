@@ -11,27 +11,33 @@ deterministic code: points, PR verification, file writes, secret detection and p
 
 ## What a student sees
 
+The goal: **attract developers to open source**. The coach gets to know them, shows the kinds of projects
+they can work on and why each fits, guides them to a first contribution, then hands their PR to MergeWarden.
+
 ```
-Student: नमस्ते                                   (any language, text or voice)
-Coach:   welcome + privacy note + 3 questions (language? skills? time per week?)
-Student: answers                                -> save_profile
-Coach:   3 recommendations: event challenges (challenges.yaml) + good-first issues from allowlisted repos
-Student: "2"                                    -> choose_issue
-Coach:   explains like a mentor, asks back: "what do you think causes it? which file would you change?"
-Student: explains the fix (text or 🎙️ voice)    -> solution_drafter (FixPlan) -> save_fix_plan
-Coach:   FIX_PLAN.md + draft file attached, +10 points, gatekeeper pre-flight findings to fix first
-Student: "how do I submit?"                     -> pr_guide: fork -> clone -> branch -> copy -> commit -> push -> PR
-                                                   one step per message, exact commands for their OS
-Student: https://github.com/.../pull/42         -> verified with the GitHub API -> +20 (and +50 when merged)
-                                                -> FINAL STEP, in the background: MergeWarden (the maintainers'
-                                                   gatekeeper) reviews the PR against CONTRIBUTING.md
-Coach:   (a minute later) ✅/🛠️/⛔ verdict + score, what's good, top 3 fixes with the CONTRIBUTING rule,
-         all in the student's language. "Push to the same branch, then send 'review again'."
+Student: "Hi! I'm a 3rd-year student, I use React and Node, curious about AI agents"   (any language, text or 🎙️)
+Coach:   privacy note, then a short natural chat: what they've built, stack, experience, goals, time
+         "May I look at your public GitHub?" -> analyze_github_profile (languages, topics, projects, outside PRs)
+         -> save_profile (background, skills, level, interests, goals)
+Coach:   3 picks that fit THEM -> find_matching_work across GitHub (open, unassigned, good-first-issue,
+         active repos, ranked by language/topic/level) + event challenges, each with "why it fits you"
+Student: "the 2nd one"                          -> choose_issue -> get_issue_details (issue, comments, the repo's
+                                                   own CONTRIBUTING.md, likely files)
+Coach:   explains it in their terms, reads the real code with them (read_repo_file), asks back:
+         "what do you think causes it? which file would you change?"
+Student: explains the fix (text or voice)       -> solution_drafter -> FIX_PLAN.md (+ draft file)
+Coach:   FIX_PLAN.md with a ready-to-paste GitHub Copilot (Agent mode) prompt, pre-flight findings
+Student: "how do I submit?"                     -> pr_guide: fork -> clone -> branch -> commit -> push -> PR, one step
+                                                   per message, exact commands for their OS
+Student: pastes the PR link, or "check my PRs"  -> list_my_prs (only PRs they authored) -> verify_pr
+         -> MergeWarden reviews the PR against that repo's CONTRIBUTING.md in the background
+Coach:   (a minute later) ✅/🛠️/⛔ verdict + score, what's good, top 3 fixes, in their language.
+         "Push to the same branch, then send 'review again'."
 ```
 
-The final step closes the loop between the two halves of Maintainer Copilot. The student gets the same
-review a maintainer will see, explained like a mentor would, and can fix everything before a human spends
-time on it. A "ready" verdict earns the ✅ Clean PR badge.
+Event repos (`COACH_REPOS`) earn points and the exact review maintainers will see. PRs to any other active
+project earn the 🌍 Explorer badge (never points) and still get a MergeWarden review against that repo's own
+CONTRIBUTING.md, shown as suggestions. A "ready" verdict earns ✅ Clean PR.
 
 ## Architecture
 
@@ -65,6 +71,7 @@ time on it. A "ready" verdict earns the ✅ Clean PR badge.
 | `tools.py` | deterministic tools: profile, issues, points, PR verification, drafts, pre-flight, PR steps |
 | `guardrails.py` | hashing, secret/injection detection, redaction, rate limit, audio limits, sandbox paths |
 | `store.py` | sqlite users, ledger, badges, transcript |
+| `github_match.py` | public GitHub profile analysis, skill-matched issue discovery, issue deep-dive, the student's own PRs |
 | `review.py` | final step: runs the gatekeeper review on the student's PR, summarises it for the coach |
 | `llm.py` | Gemini with automatic fallback model on 429/5xx |
 | `whatsapp.py` | Twilio webhook signature check, media download, TwiML, async REST replies |
@@ -146,6 +153,10 @@ webhook answers with an empty TwiML and the reply is sent through the Twilio Mes
 | `COACH_REVIEW_COOLDOWN_S` | `300` | wait before the same PR can be reviewed again |
 | `COACH_MAX_REVIEWS_PER_DAY` | `5` | reviews per student per UTC day |
 | `COACH_REVIEW_CONCURRENCY` | `2` | reviews running at once (each clones the PR) |
+| `COACH_REVIEW_MAX_REPO_MB` | `200` | skip automatic reviews of larger repos (clone cost) |
+| `COACH_DISCOVERY` | `github` | `github` = recommend skill-matched issues from all of GitHub; `allowlist` = only `COACH_REPOS` + challenges |
+| `COACH_MIN_STARS` | `20` | ignore smaller repos when recommending issues |
+| `COACH_EXPLORER_MIN_STARS` | `50` | a verified PR to a repo this popular (not your own) earns 🌍 Explorer |
 | `GATEKEEPER_MODEL` | `gemini-flash-latest` | model used by the gatekeeper reviewers (existing setting) |
 | `GITHUB_TOKEN` | optional | not needed if the `gh` CLI is logged in (`gh auth login`): the coach uses its token automatically (5000 req/h instead of 60) |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `PUBLIC_BASE_URL` | empty | WhatsApp only |
@@ -193,6 +204,17 @@ finding texts (which can quote the PR) go inside `<untrusted>` tags, and it is t
 verdict or invent findings. The coach never posts the review on GitHub: that stays the maintainers' choice
 (`python -m mergewarden review --post`).
 
+**GitHub data.** The coach reads only public GitHub data, only after asking ("may I look at your public
+GitHub?"), and only PRs the student authored. It never acts on anyone's account. It stores a summary
+(top languages, topics, level), not the raw profile. Bios, issue bodies, comments, PR titles and file
+contents are wrapped in `<untrusted>` tags. Recommendations skip archived, forked, tiny and student-owned
+repos, and assigned or crowded issues. GitHub's secondary rate limit punishes bursts, so the matcher uses
+about 4 searches per student journey, spaces them 2 s apart, caches for 30 minutes and backs off for
+GitHub's Retry-After (falling back to event challenges) instead of failing.
+
+**Copilot, not autopilot.** FIX_PLAN.md includes a GitHub Copilot (Agent mode) prompt, but the student runs
+it in their own editor, reviews every change, and is asked to explain the change back before opening the PR.
+
 **Allowlists.** Issues, challenges and PR points come only from `COACH_REPOS`. Twilio media is fetched
 only from Twilio hosts, with a size cap while streaming.
 
@@ -221,7 +243,8 @@ kids, short WhatsApp-sized messages, and Socratic questions before solutions.
 | Open a PR | 20 | GitHub API: PR exists, allowlisted repo, author matches |
 | PR merged | 50 | GitHub API: `merged=true` |
 
-Badges: 🌱 First Steps (first points), 🗣️ Polyglot (chatted in 2+ languages), 🐞 Bug Hunter (bug report),
+Badges: 🌍 Explorer (verified PR to another active project), ✅ Clean PR (MergeWarden verdict "ready"),
+🌱 First Steps (first points), 🗣️ Polyglot (chatted in 2+ languages), 🐞 Bug Hunter (bug report),
 📚 Docs Hero (docs challenge plan/PR), 🏆 Merged! (merged PR).
 
 ## Known limitations
@@ -244,6 +267,12 @@ Badges: 🌱 First Steps (first points), 🗣️ Polyglot (chatted in 2+ languag
   `review_status` or "review again" recovers it.
 - A PR review clones the repo into the gatekeeper cache (`~/.cache/mergewarden`), so the first
   review of a repo is slower.
+- MergeWarden's checks were designed for agent/tool catalogs like this repo. On other repos, the coach
+  presents findings as suggestions and points students to that repo's own CONTRIBUTING.md first.
+- Discovery depends on maintainers labelling issues `good first issue` / `help wanted`. Very new or niche
+  stacks may only get event challenges.
+- One `gh` login is shared by every student on the server. At a large event, give the coach its own
+  `GITHUB_TOKEN` so other tools don't eat its rate limit.
 - GitHub handle ownership isn't proven (no GitHub OAuth). The first student to register a handle owns it
   for points. A maintainer can resolve disputes with `delete my data` on the wrong account.
 - Without `gh auth login` or `GITHUB_TOKEN`, GitHub's anonymous limit is 60 requests/hour. That's too low for an event.

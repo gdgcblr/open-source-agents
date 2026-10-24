@@ -254,7 +254,7 @@ class Coach:
             if not last:
                 return CoachReply("🔗 Send me your PR link first, and I'll check it against CONTRIBUTING.md.", lang)
             res = tools.check_pr(uh, last["pr_url"])
-            if not res.get("verified"):
+            if not res.get("verified") or not res.get("reviewable"):
                 return CoachReply(f"⚠️ {res.get('error')}", lang)
             started = self.start_review(uh, res["url"])
             key = "review_started" if started.get("started") else REVIEW_REASON[started["reason"]]
@@ -281,7 +281,7 @@ class Coach:
             pr_points, pr_badges = res.get("points_awarded", 0), res.get("new_badges", [])
             notes.append("The code already verified the PR link in this message with the GitHub API; result: "
                          + json.dumps(res) + ". Tell the student the outcome; do not call verify_pr again.")
-            if res.get("verified"):
+            if res.get("verified") and res.get("reviewable"):  # any PR the student authored
                 started = self.start_review(uh, res["url"])
                 notes.append("Gatekeeper review: " + ("started in the background; tell the student you are checking "
                              "their PR against CONTRIBUTING.md like a maintainer would and will message them in a "

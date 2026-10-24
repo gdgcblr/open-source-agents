@@ -102,6 +102,23 @@ def test_pr_link_triggers_gatekeeper_review_and_localised_result(setup):
         config.REVIEW_COOLDOWN_S, config.MAX_REVIEWS_PER_DAY = 300, 5
 
 
+def test_review_runs_for_pr_outside_event_repos_without_points(setup, monkeypatch):
+    coach, gk, uh, pr = setup
+    ext = "https://github.com/acme/fastkit/pull/99"
+    monkeypatch.setattr(source, "github_api", lambda path: (
+        {"html_url": ext, "title": "docs", "state": "open", "merged": False, "user": {"login": "asha-dev"}}
+        if "pulls" in path else {"owner": {"login": "acme"}, "stargazers_count": 500, "size": 2000}))
+
+    async def run():
+        r = await coach.handle_message(UID, text=f"my PR {ext}")
+        await _drain(coach)
+        return r
+
+    r = asyncio.run(run())
+    assert gk.calls == [ext] and r.points_awarded == 0
+    assert coach.store.total(uh) == 0 and "explorer" in coach.store.badges(uh)
+
+
 def test_no_review_for_someone_elses_pr(setup):
     coach, gk, uh, pr = setup
     pr["user"]["login"] = "someone-else"

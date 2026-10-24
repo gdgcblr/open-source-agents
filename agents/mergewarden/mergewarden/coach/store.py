@@ -37,6 +37,7 @@ BADGES = {
     "docs_hero": "📚 Docs Hero",
     "merged": "🏆 Merged!",
     "clean_pr": "✅ Clean PR",
+    "explorer": "🌍 Explorer",
 }
 KEEP_TURNS = 20
 

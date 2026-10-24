@@ -17,6 +17,12 @@ def _int(name: str, default: int) -> int:
 
 MODEL = os.environ.get("GATEKEEPER_COACH_MODEL", "gemini-3.8-flash")
 FALLBACK_MODEL = os.environ.get("GATEKEEPER_COACH_FALLBACK_MODEL", "gemini-3.5-flash-lite")
+# "github": recommend skill-matched issues from all of GitHub (points still only for REPOS);
+# "allowlist": only REPOS and event challenges.
+DISCOVERY = os.environ.get("COACH_DISCOVERY", "github").lower()
+MIN_STARS = _int("COACH_MIN_STARS", 20)  # ignore tiny/abandoned repos when recommending
+REVIEW_MAX_REPO_MB = _int("COACH_REVIEW_MAX_REPO_MB", 200)  # skip MergeWarden reviews of huge repos (clone cost)
+EXPLORER_MIN_STARS = _int("COACH_EXPLORER_MIN_STARS", 50)  # verified PR to such a repo earns the Explorer badge
 REPOS = [r.strip() for r in os.environ.get("COACH_REPOS", "gdgcblr/open-source-agents").split(",") if r.strip()]
 DATA_DIR = Path(os.environ.get("COACH_DATA_DIR", PROJECT_ROOT / ".coach-data")).resolve()
 SALT = os.environ.get("COACH_SALT", "")  # set a long random value in production

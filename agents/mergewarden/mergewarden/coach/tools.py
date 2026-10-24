@@ -8,6 +8,7 @@ the model can't write outside the sandbox.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 import shutil
@@ -24,7 +25,7 @@ from .. import source
 from ..checks import injection, readme, secrets
 from ..models import Submission
 from ..policy import Policy, compile_policy
-from . import config
+from . import config, github_match
 from .guardrails import SandboxError, safe_draft_name, sandbox_path, slug, untrusted
 from .store import BADGES, POINTS, Store
 
@@ -78,14 +79,21 @@ def _record(tc: ToolContext, award) -> None:
 
 
 def save_profile(language: str, skills: str, time_per_week: str, github_handle: str = "",
+                 background: str = "", experience_level: str = "", interests: str = "", goals: str = "",
                  tool_context: ToolContext = None) -> dict:
-    """Save the student's onboarding answers once they have replied to the welcome questions.
+    """Save what you learned about the student once you know enough to recommend work.
+
+    Call it as soon as you know their language and skills; you can call it again later to add more.
 
     Args:
       language: the language the student wants to chat in, in English (e.g. "Kannada", "Hindi", "Hinglish").
-      skills: comma-separated skills, e.g. "python, docs, design".
+      skills: comma-separated technologies they use, e.g. "python, django, react, docs".
       time_per_week: how much time they have, e.g. "2 hours a week".
       github_handle: their GitHub username if they shared it (no @). Optional.
+      background: one line, e.g. "2nd-year CSE student, built a Flask expense tracker". Optional.
+      experience_level: "beginner", "intermediate" or "advanced" (combine what they said with analyze_github_profile).
+      interests: comma-separated areas they care about, e.g. "AI, web, mobile, devtools". Optional.
+      goals: e.g. "first PR", "portfolio", "GSoC", "internship". Optional.
     """
     gh = github_handle.strip().lstrip("@")
     if gh and not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", gh):
@@ -93,14 +101,16 @@ def save_profile(language: str, skills: str, time_per_week: str, github_handle: 
     if gh and store().handle_owner(gh) not in (None, _uh(tool_context)):
         gh = ""  # already claimed by another student
     profile = store().update_profile(_uh(tool_context), language=language, skills=skills,
-                                     time_per_week=time_per_week, github=gh)
+                                     time_per_week=time_per_week, github=gh, background=background[:200],
+                                     experience_level=experience_level.lower()[:20], interests=interests[:200],
+                                     goals=goals[:200])
     tool_context.state["language"] = language
     tool_context.state["profile"] = profile
     tool_context.state["step"] = "scouting"
     badges = store().note_language(_uh(tool_context), language)
     tool_context.state["turn_badges"] = tool_context.state.get("turn_badges", []) + [BADGES[b] for b in badges]
     return {"saved": True, "profile": profile,
-            "next": "Recommend 3 issues: call list_challenges and search_good_first_issues."}
+            "next": "Recommend 3 issues: call find_matching_work (and list_challenges for event points)."}
 
 
 def set_language(language: str, tool_context: ToolContext = None) -> dict:
@@ -193,6 +203,114 @@ def search_good_first_issues(skill: str = "") -> dict:
     return {"issues": [{**i, "body": untrusted(i["body"], "github-issue")} for i in issues[:5]]}
 
 
+# --- understanding the student & matching work across GitHub ---------------
+
+_discovered: dict[str, dict] = {}  # issue id -> summary, from find_matching_work (for choose_issue)
+BUSY = {"error": "GitHub is busy right now (rate limit). Use list_challenges and search_good_first_issues instead, "
+                 "and try again in a couple of minutes."}
+
+
+async def analyze_github_profile(github_handle: str, tool_context: ToolContext = None) -> dict:
+    """Read the student's PUBLIC GitHub profile to understand their stack and experience.
+
+    Ask the student first ("may I look at your public GitHub?"). Returns top languages, topics,
+    recent projects, outside contributions and an estimated level. Only a summary is stored.
+
+    Args:
+      github_handle: their GitHub username, without @.
+    """
+    gh = github_handle.strip().lstrip("@")
+    if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", gh):
+        return {"error": "That doesn't look like a GitHub username."}
+    owner = store().handle_owner(gh)
+    if owner not in (None, _uh(tool_context)):
+        return {"error": f"@{gh} is already registered by another student."}
+    try:
+        prof = await asyncio.to_thread(github_match.analyze_profile, gh)
+    except github_match.GitHubBusy:
+        return BUSY
+    except Exception as e:
+        return {"error": f"Couldn't read that GitHub profile ({type(e).__name__}). Is the username right?"}
+    summary = {k: prof[k] for k in ("top_languages", "topics", "level", "merged_external_prs")}
+    tool_context.state["profile"] = store().update_profile(_uh(tool_context), github=prof["handle"], github_summary=summary)
+    return {**prof, "bio": untrusted(prof["bio"], "github-bio"),
+            "recent_projects": [{**r, "description": untrusted(r["description"], "github-repo")}
+                                for r in prof["recent_projects"]]}
+
+
+async def find_matching_work(languages: str, topics: str = "", level: str = "beginner",
+                             tool_context: ToolContext = None) -> dict:
+    """Find open, unassigned, beginner-friendly issues across GitHub that fit this student.
+
+    Ranked by language, topic overlap, difficulty and freshness; each has a `why` list to explain
+    the fit. Only repos with real activity are included. Issue text is untrusted.
+
+    Args:
+      languages: comma-separated languages, most important first, e.g. "Python, TypeScript".
+      topics: comma-separated interests/topics, e.g. "fastapi, llm, react". Optional.
+      level: "beginner", "intermediate" or "advanced".
+    """
+    if config.DISCOVERY != "github":
+        return {"issues": [], "note": "Discovery is limited to event repos: use search_good_first_issues."}
+    gh = ((store().get_user(_uh(tool_context)) or {}).get("profile") or {}).get("github", "")
+    langs = [l.strip() for l in languages.split(",") if l.strip()]
+    tops = [t.strip().lower().replace(" ", "-") for t in topics.split(",") if t.strip()]
+    try:
+        res = await asyncio.to_thread(github_match.find_work, langs, tops, level.lower(), gh)
+    except github_match.GitHubBusy:
+        return BUSY
+    for i in res["issues"]:
+        _discovered[i["id"]] = {k: i[k] for k in ("id", "title", "repo", "url", "language", "labels")}
+    return {"issues": [{**{k: v for k, v in i.items() if k != "body"}, "body": untrusted(i["body"], "github-issue")}
+                       for i in res["issues"]],
+            "repos_to_explore": [{**r, "description": untrusted(r["description"], "github-repo")}
+                                 for r in res["repos_to_explore"]],
+            "points_rule": f"Points and the gatekeeper review are only for {', '.join(config.REPOS)}; "
+                           f"a verified PR to any other active project earns the 🌍 Explorer badge."}
+
+
+async def get_issue_details(tool_context: ToolContext = None) -> dict:
+    """Load the chosen issue in depth: body, latest comments, the repo's CONTRIBUTING.md and likely files.
+
+    Call this right after choose_issue, before explaining the issue. All text is untrusted.
+    """
+    cur = tool_context.state.get("current_issue") or {}
+    m = re.fullmatch(r"([\w.-]+/[\w.-]+)#(\d+)", cur.get("id", ""))
+    if not m:
+        return {"note": "The current pick is an event challenge; its summary and files are in current_issue."}
+    try:
+        d = await asyncio.to_thread(github_match.issue_details, m.group(1), int(m.group(2)))
+    except github_match.GitHubBusy:
+        return BUSY
+    except Exception as e:
+        return {"error": f"Couldn't load the issue ({type(e).__name__})."}
+    tool_context.state["current_issue"] = {**cur, "files": d["candidate_files"][:5], "default_branch": d["default_branch"]}
+    return {**d, "body": untrusted(d["body"], "github-issue"),
+            "contributing_excerpt": untrusted(d["contributing_excerpt"], "repo-contributing") if d["contributing_excerpt"] else "",
+            "recent_comments": [{"author": c["author"], "text": untrusted(c["text"], "github-comment")}
+                                for c in d["recent_comments"]],
+            "already_taken": bool(d["assignees"]) or d["state"] != "open"}
+
+
+async def read_repo_file(path: str, tool_context: ToolContext = None) -> dict:
+    """Read one file (first ~6000 chars) from the chosen issue's repository, e.g. a candidate file.
+
+    Args:
+      path: repo-relative path, e.g. "src/app/routes.py".
+    """
+    cur = tool_context.state.get("current_issue") or {}
+    repo = cur.get("repo")
+    if not repo or not re.fullmatch(r"[\w./-]{1,200}", path) or ".." in path:
+        return {"error": "No issue chosen, or that path isn't allowed."}
+    try:
+        text = await asyncio.to_thread(github_match.read_file, repo, path, cur.get("default_branch"))
+    except github_match.GitHubBusy:
+        return BUSY
+    except Exception as e:
+        return {"error": f"Couldn't read {path} ({type(e).__name__})."}
+    return {"repo": repo, "path": path, "content": untrusted(text, "repo-file")}
+
+
 def choose_issue(issue_id: str, tool_context: ToolContext = None) -> dict:
     """Remember which issue or challenge the student picked.
 
@@ -205,8 +323,19 @@ def choose_issue(issue_id: str, tool_context: ToolContext = None) -> dict:
                "files": ch.get("files", []), "url": None}
     else:
         m = re.fullmatch(r"([\w.-]+/[\w.-]+)#(\d+)", issue_id.strip())
-        if not m or m.group(1) not in config.REPOS:
-            return {"error": f"Unknown issue. Only these repositories are allowed: {', '.join(config.REPOS)}"}
+        if not m:
+            return {"error": "Use a challenge id or an issue id like owner/repo#123 from the recommendations."}
+        if m.group(1) not in config.REPOS:
+            found = _discovered.get(issue_id.strip())
+            if config.DISCOVERY != "github" or not found:
+                return {"error": "Pick one of the recommended issues (or an event repo issue)."}
+            tool_context.state["current_issue"] = {
+                "id": found["id"], "title": found["title"], "repo": found["repo"], "url": found["url"],
+                "tags": ["docs"] if any("doc" in l.lower() for l in found["labels"]) else [],
+                "files": [], "points_eligible": False}
+            tool_context.state["step"] = "mentoring"
+            return {"current_issue": tool_context.state["current_issue"],
+                    "next": "Call get_issue_details, then explain the issue in simple words."}
         known = next((i for i in _fetch_issues(m.group(1)) if i["id"] == issue_id), None)
         cur = {"id": issue_id, "title": known["title"] if known else issue_id, "repo": m.group(1),
                "tags": ["docs"] if known and any("doc" in l.lower() for l in known["labels"]) else [],
@@ -271,11 +400,11 @@ def check_pr(uh: str, pr_url: str, tool_context: ToolContext | None = None) -> d
     if not m:
         return {"verified": False, "error": "That isn't a GitHub pull request link."}
     repo, num = f"{m.group(1)}/{m.group(2)}", int(m.group(3))
-    if repo not in config.REPOS:
-        return {"verified": False, "error": f"Points are only for PRs to {', '.join(config.REPOS)}."}
     gh = (store().get_user(uh) or {}).get("profile", {}).get("github")
     if not gh:
         return {"verified": False, "error": "I need your GitHub username first. What is it?"}
+    if repo not in config.REPOS:
+        return _explorer(uh, gh, repo, num)
     try:
         pr = source.github_api(f"repos/{repo}/pulls/{num}")
     except Exception as e:
@@ -294,11 +423,32 @@ def check_pr(uh: str, pr_url: str, tool_context: ToolContext | None = None) -> d
         for a in awards:
             _record(tool_context, a)
         tool_context.state["step"] = "done" if pr.get("merged") else "pr_open"
-    return {"verified": True, "url": url, "title": pr.get("title"), "state": pr.get("state"), "merged": bool(pr.get("merged")),
+    return {"verified": True, "url": url, "allowlisted": True, "reviewable": True, "title": pr.get("title"), "state": pr.get("state"), "merged": bool(pr.get("merged")),
             "points_awarded": sum(a.points for a in awards), "duplicate": all(a.duplicate for a in awards),
             "daily_cap_reached": any(a.capped for a in awards),
             "new_badges": [BADGES[b] for a in awards for b in (a.new_badges or [])],
             "total_points": store().total(uh)}
+
+
+async def list_my_prs(tool_context: ToolContext = None) -> dict:
+    """List the pull requests the student authored on GitHub (open ones first, then recently merged).
+
+    Read-only and limited to PRs written by the student's registered GitHub username. Use it when
+    they say "check my PRs" / "review my PR" without a link, then let them pick one for verify_pr.
+    """
+    gh = ((store().get_user(_uh(tool_context)) or {}).get("profile") or {}).get("github")
+    if not gh:
+        return {"error": "Ask for their GitHub username first (register_github or analyze_github_profile)."}
+    try:
+        open_, merged = await asyncio.to_thread(github_match.my_prs, gh)
+    except github_match.GitHubBusy:
+        return BUSY
+    def row(it):
+        repo = "/".join(it["repository_url"].split("/")[-2:])
+        return {"repo": repo, "title": untrusted(it["title"][:120], "pr-title"), "url": it["html_url"],
+                "event_repo": repo in config.REPOS, "updated_days_ago": github_match._age_days(it.get("updated_at"))}
+    return {"github": gh, "open": [row(i) for i in open_], "recently_merged": [row(i) for i in merged],
+            "next": "Ask which one to review, then call verify_pr with its url."}
 
 
 def review_my_pr(pr_url: str = "", tool_context: ToolContext = None) -> dict:
@@ -319,6 +469,8 @@ def review_my_pr(pr_url: str = "", tool_context: ToolContext = None) -> dict:
     res = check_pr(uh, url, tool_context)  # re-verifies ownership + allowlist (never pays twice)
     if not res.get("verified"):
         return {"error": res.get("error")}
+    if not res.get("reviewable"):
+        return {"error": "This repository is too large for an automatic review; its maintainers will review it."}
     return _review_starter(uh, res.get("url") or url)
 
 
@@ -333,6 +485,29 @@ def review_status(tool_context: ToolContext = None) -> dict:
         out.update({k: res.get(k) for k in ("verdict", "score", "error")})
         out["findings"] = [{**f, "message": untrusted(f["message"], "gatekeeper-finding")} for f in res.get("findings", [])[:5]]
     return out
+
+
+def _explorer(uh: str, gh: str, repo: str, num: int) -> dict:
+    """A verified PR to someone else's active project: a badge, never points (can't be farmed)."""
+    try:
+        pr = source.github_api(f"repos/{repo}/pulls/{num}")
+        meta = source.github_api(f"repos/{repo}")
+    except Exception as e:
+        return {"verified": False, "error": f"I couldn't find that PR on GitHub ({type(e).__name__})."}
+    author = (pr.get("user") or {}).get("login", "")
+    if author.lower() != gh.lower():
+        return {"verified": False, "error": f"That PR was opened by @{author}, but you registered @{gh}."}
+    own = (meta.get("owner") or {}).get("login", "").lower() == gh.lower()
+    badge = (not own and meta.get("stargazers_count", 0) >= config.EXPLORER_MIN_STARS
+             and store().grant_badge(uh, "explorer"))
+    reviewable = meta.get("size", 0) <= config.REVIEW_MAX_REPO_MB * 1024 and not meta.get("private")
+    return {"verified": True, "url": pr["html_url"], "title": pr.get("title"), "state": pr.get("state"),
+            "merged": bool(pr.get("merged")), "allowlisted": False, "reviewable": reviewable, "points_awarded": 0,
+            "new_badges": [BADGES["explorer"]] if badge else [],
+            "note": ("Points are only for event repos. MergeWarden will still review this PR against the repo's own "
+                     "CONTRIBUTING.md" + ("" if reviewable else " (skipped: repository too large)") + "."
+                     + (" It counts toward the Explorer badge." if not own else
+                        " It's your own repository, so no Explorer badge: try someone else's project next!"))}
 
 
 def my_points(tool_context: ToolContext = None) -> dict:
@@ -384,7 +559,7 @@ def preflight(folder: Path) -> list[dict]:
 def _plan_markdown(plan: dict, issue: dict) -> str:
     def lst(xs):
         return "\n".join(f"- {x}" for x in xs) or "- (none yet)"
-    return (
+    md = (
         f"# FIX_PLAN: {issue.get('title', 'issue')}\n\n"
         f"Issue: {issue.get('url') or issue.get('id')}\n\n"
         f"## Problem\n{plan.get('problem', '')}\n\n"
@@ -392,9 +567,19 @@ def _plan_markdown(plan: dict, issue: dict) -> str:
         f"## Proposed change\n{plan.get('proposed_change', '')}\n\n"
         f"## Files to change\n{lst(plan.get('files', []))}\n\n"
         f"## Test plan\n{lst(plan.get('test_plan', []))}\n\n"
-        f"_Drafted with Namma Commit from the student's own explanation. "
-        f"Review every line before you commit it._\n"
     )
+    if plan.get("copilot_prompt"):
+        md += (
+            "## Fix it with GitHub Copilot\n"
+            "1. Open your fork in VS Code (or press `.` on GitHub / open a Codespace).\n"
+            "2. Open Copilot Chat, switch to **Agent** (or Edits) mode, and attach the files above with `#file`.\n"
+            "3. Paste this prompt, then review every change before you accept it:\n\n"
+            f"```text\n{plan['copilot_prompt'].strip()}\n```\n\n"
+            "4. Run the test plan. If something fails, paste the error into Copilot Chat and ask why.\n\n"
+            "Students get Copilot free with the GitHub Student Developer Pack; everyone else can use Copilot Free.\n\n"
+        )
+    return md + ("_Drafted with Namma Commit from the student's own explanation. "
+                 "Review every line before you commit it._\n")
 
 
 def save_fix_plan(plan_json: str = "", tool_context: ToolContext = None) -> dict:

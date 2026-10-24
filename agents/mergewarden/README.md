@@ -21,7 +21,7 @@
 - **Gemini reviewers (ADK `ParallelAgent`)** judge what rules can't, such as an example that isn't a genuine run, dishonest limitations or an unbounded agent loop. **Every AI finding must quote the submission.** A quote not found in the contributor's files is demoted to `info`. The LLM can never raise anything to `blocker`, remove a deterministic finding, or approve a PR.
 - **Maintainer Copilot coordinator**: an ADK `LlmAgent` that routes plain-English requests ("review this PR", "which PRs are ready?", "help me fix my folder") to specialist tools.
 - **Fix-It specialist**: turns findings into concrete patches (missing files, `.env.example` entries, README skeletons, `git` commands). It writes only inside the contributor's own folder and never runs commands.
-- **Newcomer Coach, "Namma Commit"**: the student-facing half. First-timers chat on WhatsApp (or a local simulator) in any language, by text or voice note. The coach recommends good-first issues and event challenges, explains them like a mentor and asks Socratic questions back. It drafts a `FIX_PLAN.md` into a per-student sandbox and walks the student through fork → branch → PR one step at a time. Then it runs MergeWarden on their PR and explains the verdict in their language. Points and badges are awarded only after GitHub verifies the PR. See [`mergewarden/coach/README_COACH.md`](mergewarden/coach/README_COACH.md).
+- **Newcomer Coach, "Namma Commit"**: the student-facing half. First-timers chat on WhatsApp (or a local simulator) in any language, by text or voice note. With the student's consent, it reads their public GitHub profile. It recommends skill-matched good-first issues from active repos across GitHub, each with a "why it fits", plus event challenges. It explains them like a mentor, reads the repo's own CONTRIBUTING.md, and asks Socratic questions back. It drafts a `FIX_PLAN.md` (with a ready-to-paste GitHub Copilot prompt) into a per-student sandbox and walks the student through fork → branch → PR one step at a time. Then it runs MergeWarden on their PR and explains the verdict in their language. Points and badges are awarded only after GitHub verifies the PR. See [`mergewarden/coach/README_COACH.md`](mergewarden/coach/README_COACH.md).
 - **Triage board**: one command reviews every open PR and writes a single-file HTML board sorted ready-first.
 - **Works offline**: no key means deterministic-only. Exit codes `0/1/2` make it a CI gate or pre-push hook.
 - **Optional Docker sandbox**: fresh-install test with no capabilities, memory/CPU/PID limits, a read-only mount and a timeout.
@@ -125,6 +125,8 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 | `COACH_DATA_DIR` / `COACH_PORT` / `LOG_LEVEL` | No | `./.coach-data` / `8090` / `INFO` | Coach SQLite + draft sandbox location, server port, log level. |
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_WHATSAPP_FROM` | Only for WhatsApp | *(empty)* | Twilio credentials and sender (`whatsapp:+14155238886` for the Sandbox). The auth token also verifies every webhook signature. |
 | `PUBLIC_BASE_URL` | Only for WhatsApp | *(empty)* | Public HTTPS URL Twilio calls (e.g. ngrok). Must match exactly for signature checks. |
+| `COACH_DISCOVERY` | No | `github` | `github` = recommend issues from all of GitHub; `allowlist` = only `COACH_REPOS` + event challenges. |
+| `COACH_MIN_STARS` / `COACH_EXPLORER_MIN_STARS` / `COACH_REVIEW_MAX_REPO_MB` | No | `20` / `50` / `200` | Minimum stars for recommended repos; stars needed for the Explorer badge; largest repo (MB) it will auto-review. |
 | `COACH_RATE_LIMIT_*`, `COACH_MAX_*`, `COACH_DAILY_POINT_CAP`, `COACH_REVIEW_*` | No | see `.env.example` | Abuse limits, point cap and PR-review limits; all documented with defaults in `.env.example`. |
 
 ---
@@ -244,7 +246,7 @@ python evals/run_evals.py        # writes evals/RESULTS.md
 python -m mergewarden review . --no-llm
 ```
 
-Current results: **128 tests pass** (21 of them for the Newcomer Coach). The eval suite scores **18/18 verdicts correct and 18/18 exact check-set matches** (deterministic layer). The cases cover:
+Current results: **138 tests pass** (31 of them for the Newcomer Coach). The eval suite scores **18/18 verdicts correct and 18/18 exact check-set matches** (deterministic layer). The cases cover:
 - leaked keys and committed `.env` files
 - governance-file edits and multiple projects in one PR
 - untouched template text, broken setup and missing manifest
@@ -281,6 +283,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
   - Every Twilio webhook is HMAC-verified. Media is fetched only from Twilio hosts, with size caps.
   - Phone numbers are stored only as `sha256(phone + COACH_SALT)`, and phone numbers and emails are redacted before storage or model calls. Voice bytes are dropped after transcription. `delete my data` wipes a student completely.
   - Messages that contain secrets are refused and never stored or sent to the model.
+  - GitHub access is read-only. The coach reads only a student's *public* profile, and only after they agree. Reviews of PRs outside the event repo are presented as suggestions and never posted.
   - The coach never runs code, pushes or opens PRs. Drafts are written only inside a per-student sandbox, with traversal refused.
   - Points come only from deterministic tools, after GitHub verification, through an append-only ledger with a daily cap.
   - The server binds to `127.0.0.1` by default.
