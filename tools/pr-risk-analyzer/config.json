@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "secret_detection": true,
+    "sensitive_paths": true,
+    "infrastructure_changes": true,
+    "dependency_changes": true,
+    "test_changes": true,
+    "change_size": true
+  },
+  "thresholds": {
+    "max_changed_files": 20,
+    "max_added_lines": 1000
+  },
+  "sensitive_paths": [
+    "auth",
+    "security",
+    "permissions",
+    "middleware",
+    "crypto",
+    "session"
+  ]
+}

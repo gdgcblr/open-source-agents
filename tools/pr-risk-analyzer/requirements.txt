@@ -1,0 +1,3 @@
+# Runtime: Python standard library only.
+# Development and testing:
+pytest>=8.0,<9.0
