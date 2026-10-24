@@ -1,0 +1,14 @@
+{
+  "name": "rce-sentinel-eslint",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ESLint backend for rce-sentinel: RCE sink rules with AST taint tracking",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": "^20.19.0 || ^22.13.0 || >=24" },
+  "dependencies": {
+    "@typescript-eslint/parser": "8.71.1",
+    "eslint": "10.12.0",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,193 @@
+[
+ {
+  "id": "GHSA-6757-jp84-gxfx",
+  "summary": "Improper Input Validation in PyYAML",
+  "details": "A vulnerability was discovered in the PyYAML library in versions before 5.3.1, where it is susceptible to arbitrary code execution when it processes untrusted YAML files through the full_load method or with the FullLoader loader. Applications that use the library to process untrusted input may be vulnerable to this flaw. An attacker could use this flaw to execute arbitrary code on the system by abusing the python/object/new constructor.",
+  "aliases": [
+   "CVE-2020-1747",
+   "PYSEC-2020-96"
+  ],
+  "modified": "2026-05-04T08:57:14.897560893Z",
+  "published": "2021-04-20T16:14:24Z",
+  "database_specific": {
+   "cwe_ids": [
+    "CWE-20"
+   ],
+   "severity": "CRITICAL"
+  },
+  "severity": [
+   {
+    "type": "CVSS_V3",
+    "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "type": "CVSS_V4",
+    "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"
+   }
+  ],
+  "affected": [
+   {
+    "package": {
+     "name": "pyyaml",
+     "ecosystem": "PyPI",
+     "purl": "pkg:pypi/pyyaml"
+    },
+    "ranges": [
+     {
+      "type": "ECOSYSTEM",
+      "events": [
+       {
+        "introduced": "5.1b7"
+       },
+       {
+        "fixed": "5.3.1"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "references": [
+   {
+    "type": "ADVISORY",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-1747"
+   },
+   {
+    "type": "WEB",
+    "url": "https://github.com/github/advisory-database/pull/4942"
+   },
+   {
+    "type": "WEB",
+    "url": "https://github.com/yaml/pyyaml/pull/386"
+   }
+  ]
+ },
+ {
+  "id": "GHSA-8q59-q68h-6hv4",
+  "summary": "Improper Input Validation in PyYAML",
+  "details": "A vulnerability was discovered in the PyYAML library in versions before 5.4, where it is susceptible to arbitrary code execution when it processes untrusted YAML files through the full_load method or with the FullLoader loader. Applications that use the library to process untrusted input may be vulnerable to this flaw. This flaw allows an attacker to execute arbitrary code on the system by abusing the python/object/new constructor. This flaw is due to an incomplete fix for CVE-2020-1747.",
+  "aliases": [
+   "CVE-2020-14343",
+   "PYSEC-2021-142"
+  ],
+  "modified": "2026-02-04T03:33:10.792778Z",
+  "published": "2021-03-25T21:26:26Z",
+  "database_specific": {
+   "cwe_ids": [
+    "CWE-20"
+   ],
+   "severity": "CRITICAL"
+  },
+  "severity": [
+   {
+    "type": "CVSS_V3",
+    "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "type": "CVSS_V4",
+    "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"
+   }
+  ],
+  "affected": [
+   {
+    "package": {
+     "name": "pyyaml",
+     "ecosystem": "PyPI",
+     "purl": "pkg:pypi/pyyaml"
+    },
+    "ranges": [
+     {
+      "type": "ECOSYSTEM",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "5.4"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "references": [
+   {
+    "type": "ADVISORY",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-14343"
+   },
+   {
+    "type": "WEB",
+    "url": "https://github.com/SeldonIO/seldon-core/issues/2252"
+   },
+   {
+    "type": "WEB",
+    "url": "https://github.com/yaml/pyyaml/issues/420"
+   }
+  ]
+ },
+ {
+  "id": "GHSA-3f63-hfp8-52jq",
+  "summary": "Arbitrary Code Execution in Pillow",
+  "details": "Pillow through 10.1.0 allows PIL.ImageMath.eval Arbitrary Code Execution via the environment parameter, a different vulnerability than CVE-2022-22817 (which was about the expression parameter).",
+  "aliases": [
+   "BIT-pillow-2023-50447",
+   "CVE-2023-50447",
+   "PYSEC-2026-457"
+  ],
+  "modified": "2026-09-10T03:50:04.766695102Z",
+  "published": "2024-01-19T21:30:35Z",
+  "database_specific": {
+   "cwe_ids": [
+    "CWE-94",
+    "CWE-95"
+   ],
+   "severity": "CRITICAL"
+  },
+  "severity": [
+   {
+    "type": "CVSS_V3",
+    "score": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   },
+   {
+    "type": "CVSS_V4",
+    "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"
+   }
+  ],
+  "affected": [
+   {
+    "package": {
+     "name": "pillow",
+     "ecosystem": "PyPI",
+     "purl": "pkg:pypi/pillow"
+    },
+    "ranges": [
+     {
+      "type": "ECOSYSTEM",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "10.2.0"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "references": [
+   {
+    "type": "ADVISORY",
+    "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-50447"
+   },
+   {
+    "type": "WEB",
+    "url": "https://github.com/python-pillow/Pillow/commit/45c726fd4daa63236a8f3653530f297dc87b160a"
+   },
+   {
+    "type": "WEB",
+    "url": "https://devhub.checkmarx.com/cve-details/CVE-2023-50447"
+   }
+  ]
+ }
+]

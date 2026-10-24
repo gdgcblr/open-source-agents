@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`rce-sentinel`](rce-sentinel/README.md) | Git-hook RCE scanner with cost-aware model routing, cache memory that survives model switches, and a zero-day intel agent that drafts mitigations | Git Hooks / Security / Multi-agent | [@prakhar-khurana](https://github.com/prakhar-khurana) |

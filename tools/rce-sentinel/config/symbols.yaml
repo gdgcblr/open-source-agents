@@ -1,0 +1,29 @@
+# Curated affected-symbol overlay for reachability.
+# Used when an advisory has no machine-readable symbols (OSV `ecosystem_specific.imports`
+# or `affected_functions`). Keys are OSV/GHSA ids or CVE aliases. Symbols are dotted Python
+# names as callers write them after import resolution.
+GHSA-8q59-q68h-6hv4:   # PyYAML CVE-2020-14343, FullLoader / full_load
+  - yaml.load
+  - yaml.load_all
+  - yaml.full_load
+  - yaml.full_load_all
+  - yaml.unsafe_load
+GHSA-6757-jp84-gxfx:   # PyYAML CVE-2020-1747
+  - yaml.load
+  - yaml.full_load
+GHSA-3f63-hfp8-52jq:   # Pillow CVE-2023-50447, ImageMath.eval environment parameter
+  - PIL.ImageMath.eval
+  - PIL.ImageMath.unsafe_eval
+GHSA-8vj2-vxx3-667w:   # Pillow CVE-2022-22817, ImageMath.eval expression parameter
+  - PIL.ImageMath.eval
+
+# Distribution name -> top-level import names, where they differ.
+import_names:
+  pyyaml: [yaml]
+  pillow: [PIL]
+  beautifulsoup4: [bs4]
+  scikit-learn: [sklearn]
+  python-dateutil: [dateutil]
+  pyjwt: [jwt]
+  opencv-python: [cv2]
+  protobuf: [google.protobuf]

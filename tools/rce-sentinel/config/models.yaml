@@ -1,0 +1,70 @@
+# Model tiers for the cost-aware router. Swap a model with a one-line edit.
+#
+# Prices are USD per 1M tokens, checked 2026-10-24:
+#   Gemini:   https://ai.google.dev/gemini-api/docs/pricing (official page, updated 2026-10-22)
+#   DeepSeek: https://api-docs.deepseek.com/quick_start/pricing (page returned 403; rates
+#             taken from https://cloudzero.com/blog/deepseek-pricing/ - verify before relying)
+#   Kimi:     https://platform.kimi.com (not reachable; rates from
+#             https://www.spheron.network/blog/kimi-api-pricing-vs-self-hosted-llms-cost-privacy-2026/)
+#   GLM:      https://docs.z.ai/guides/overview/pricing (not reachable; rates from
+#             https://anotherwrapper.com/llm-pricing/glm-5)
+# Model ids marked "verify" could not be confirmed against the provider's own docs.
+#
+# Each tier is an ordered fallback list: the first *available* model wins.
+# A model is available when its provider is local and up (apfel /health reports
+# model_available, or Ollama answers) or its API key env var is set.
+# `context_tokens` (default 128000) keeps prompts that do not fit away from small models.
+# `family` drives cross-family verification: the verifier never shares the finder's family.
+
+providers:
+  apfel:     # Apple's on-device Foundation Model via https://github.com/Arthur-Ficial/apfel
+    base_url_env: APFEL_BASE_URL
+    base_url: http://127.0.0.1:11435/v1   # `apfel --serve --port 11435` (11434 is Ollama's)
+    local: true
+    health: /health                        # available only when model_available is true
+    json_schema: true                      # constrained decoding (verified 2026-10-24)
+  ollama:
+    base_url_env: OLLAMA_BASE_URL
+    base_url: http://localhost:11434/v1
+    local: true
+    json_schema: true
+  gemini:
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    api_key_env: GEMINI_API_KEY
+  deepseek:
+    base_url: https://api.deepseek.com/v1
+    api_key_env: DEEPSEEK_API_KEY
+  moonshot:
+    base_url: https://api.moonshot.ai/v1
+    api_key_env: MOONSHOT_API_KEY
+  zai:
+    base_url: https://api.z.ai/api/paas/v4
+    api_key_env: ZAI_API_KEY
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+
+tiers:
+  tier1:   # triage, classification, cheap confirmation
+    # Base model: Apple Foundation Model (~3B, on-device, free, 4096-token context).
+    - { id: apple-foundationmodel, provider: apfel, family: apple, price_in: 0.0, price_out: 0.0, price_cached_in: 0.0, context_tokens: 4096 }
+    - { id: "qwen2.5:3b", provider: ollama, family: qwen, price_in: 0.0, price_out: 0.0, price_cached_in: 0.0, context_tokens: 4096 }  # ollama pull qwen2.5:3b
+    - { id: gemini-3.5-flash-lite, provider: gemini, family: google, price_in: 0.30, price_out: 2.50, price_cached_in: 0.03 }
+  tier2:   # taint tracing, reachability, uncertain cases, merge
+    # Ollama cloud model: runs on ollama.com, so prompts leave the machine; needs
+    # `ollama signin`. Checked 2026-10-24 on the Free plan: gemma4:31b-cloud answers, while
+    # deepseek-v4.1-flash:cloud returns HTTP 402 (Pro plan only), so it is not listed.
+    # On a 401/402/403 the router drops a model for the run, tells the user, and switches
+    # to the next model in this tier.
+    - { id: "gemma4:31b-cloud", provider: ollama, family: gemma, price_in: 0.0, price_out: 0.0, price_cached_in: 0.0 }
+    - { id: deepseek-v4-flash, provider: deepseek, family: deepseek, price_in: 0.14, price_out: 0.28, price_cached_in: 0.014 }  # id: verify
+    - { id: gemini-3.8-flash, provider: gemini, family: google, price_in: 0.75, price_out: 3.75, price_cached_in: 0.075 }
+  tier3:   # critical findings, exploit-path reasoning, fix patches on retry
+    - { id: kimi-k2.6, provider: moonshot, family: moonshot, price_in: 0.95, price_out: 4.00, price_cached_in: 0.19 }  # id: verify
+    - { id: glm-5, provider: zai, family: zhipu, price_in: 1.00, price_out: 3.20, price_cached_in: 0.20 }  # id: verify
+
+# The naive baseline the cost report compares against: every unit judged by this model, no caches.
+baseline_model: kimi-k2.6
+
+# Provider prompt caches expire; a prefix used within this window counts as warm.
+prompt_cache_ttl_seconds: 300

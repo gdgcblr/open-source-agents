@@ -1,0 +1,88 @@
+# Threat-intel collectors. Each emits normalized IntelItem metadata only:
+# ids, links, package names, versions. No exploit payloads are stored.
+#
+# credibility: official advisory > vendor > mailing list > research blog > social.
+# Social-only items are "unconfirmed" and never block a commit on their own.
+
+poll_interval_minutes: 30
+user_agent: "rce-sentinel/0.1 (+https://github.com/gdgcblr/open-source-agents)"
+max_response_bytes: 5000000
+request_timeout_seconds: 15
+
+# Outbound requests go only to these hosts. URLs found in fetched text or model output are
+# never fetched.
+allowed_hosts:
+  - www.cisa.gov
+  - services.nvd.nist.gov
+  - api.osv.dev
+  - api.first.org
+  - api.github.com
+  - seclists.org
+  - www.exploit-db.com
+  - googleprojectzero.blogspot.com
+  - infosec.exchange
+  - public.api.bsky.app
+  - api.x.com
+  - hooks.slack.com
+  - discord.com
+  - msrc.microsoft.com
+  - security.apache.org
+
+collectors:
+  cisa_kev:
+    enabled: true
+    credibility: 1.0
+    url: https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json
+  nvd:
+    enabled: true
+    credibility: 0.95
+    url: https://services.nvd.nist.gov/rest/json/cves/2.0
+    lookback_hours: 48
+    api_key_env: NVD_API_KEY        # optional, free; raises the rate limit
+  osv:
+    enabled: true
+    credibility: 0.95
+    url: https://api.osv.dev/v1/querybatch   # targeted at this repo's SBOM
+  ghsa:
+    enabled: true
+    credibility: 0.95
+    url: https://api.github.com/advisories?type=reviewed&sort=published&direction=desc&per_page=50
+    token_env: GITHUB_TOKEN          # optional, free; raises the rate limit
+  oss_security:
+    enabled: true
+    credibility: 0.7
+    kind: rss
+    url: https://seclists.org/rss/oss-sec.rss
+  exploitdb:
+    enabled: true
+    credibility: 0.6
+    kind: rss
+    url: https://www.exploit-db.com/rss.xml   # titles and links only; exploit bodies are never fetched
+  project_zero:
+    enabled: true
+    credibility: 0.75
+    kind: rss
+    url: https://googleprojectzero.blogspot.com/feeds/posts/default
+  vendor_rss:
+    enabled: false
+    credibility: 0.8
+    kind: rss
+    urls:
+      - https://msrc.microsoft.com/blog/feed
+  mastodon:
+    enabled: true
+    credibility: 0.3
+    instance: https://infosec.exchange
+    hashtags: [rce, cve, zeroday]
+  bluesky:
+    enabled: false
+    credibility: 0.3
+    actors: []                        # allowlisted handles, e.g. "cisa.gov"
+  x_twitter:
+    enabled: false                    # needs a paid X API v2 bearer token
+    credibility: 0.3
+    token_env: X_BEARER_TOKEN
+    query: "(RCE OR \"remote code execution\") CVE -is:retweet lang:en"
+  darkweb:
+    enabled: false                    # interface stub only; see collectors/darkweb_stub.py
+    allowlist: []
