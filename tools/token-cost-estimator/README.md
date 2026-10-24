@@ -8,7 +8,7 @@
 
 ### Problem Statement & Intended Users
 
-When building with the Gemini API, developers have no way to know how many tokens a prompt will consume or how much it will cost until after the API call completes. This is painful for:
+When building with any LLM API — Gemini, OpenAI, Anthropic, or others — developers have no way to know how many tokens a prompt will consume or how much it will cost until after the API call completes. This is painful for:
 
 - Long prompts (research documents, code files, video generation scripts)
 - Batch jobs running hundreds of prompts
@@ -16,7 +16,7 @@ When building with the Gemini API, developers have no way to know how many token
 
 By the time you see the bill, the tokens are already spent.
 
-**token-cost-estimator** solves this by checking the cost of any prompt *before* sending it. It uses Google's `count_tokens` endpoint — completely free, no generation, no charges — to give an exact input token count and a projected total cost.
+**token-cost-estimator** solves this by checking the cost of any prompt *before* sending it. This version uses Google's `count_tokens` endpoint — completely free, no generation, no charges — with support for more providers planned.
 
 **Intended Users**: Developers and AI engineers building with the Google Gemini API who want visibility into token usage and cost during development.
 
