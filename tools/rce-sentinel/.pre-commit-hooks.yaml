@@ -1,0 +1,17 @@
+# Hook definitions for the pre-commit framework (https://pre-commit.com).
+# This tool lives in a monorepo subfolder, so consume it as a `local` hook;
+# see pre-commit-config.example.yaml.
+- id: rce-sentinel
+  name: rce-sentinel (RCE scan of staged changes)
+  entry: rce-sentinel hook pre-commit
+  language: system
+  pass_filenames: false
+  always_run: true
+  stages: [pre-commit]
+- id: rce-sentinel-rescan
+  name: rce-sentinel (full rescan after commit/merge)
+  entry: rce-sentinel hook post-commit
+  language: system
+  pass_filenames: false
+  always_run: true
+  stages: [post-commit, post-merge]

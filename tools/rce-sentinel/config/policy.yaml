@@ -1,0 +1,22 @@
+# Blocking, budget, and escalation policy. Override per repo in .rce-sentinel/config/policy.yaml.
+
+block_on: [critical, high]        # risk labels that block a commit
+pre_commit_budget_seconds: 10     # exceed it and the scan degrades to rules-only
+allow_inline_suppressions: true   # "# rce-sentinel: ignore[rule-id]"; suppressed findings stay in the report
+
+budget:                           # per-run caps; hitting any one degrades to rules-only
+  max_tokens: 200000
+  max_usd: 0.05
+  max_llm_seconds: 180          # local models need a cold start
+
+router:
+  confidence_threshold: 0.75      # default bar for accepting a verdict
+  safe_confidence_threshold: 0.90 # asymmetric gate: "safe" on a dangerous sink needs more
+  self_consistency_samples: 2     # tier1 runs compared before accepting "safe"
+  max_workers: 4                  # parallel fan-out, one agent per file
+  shadow_rate: 0.0                # fraction of units also judged by tier3 to measure accuracy
+  learn_thresholds: true          # tune per-task thresholds from SQLite history
+  learn_min_samples: 20
+  learn_target_overturn_rate: 0.05
+
+caveman: true                     # env CAVEMAN=on|off overrides

@@ -1,0 +1,76 @@
+# JS/TS rules. Primary backend: ESLint with the rce-sentinel plugin (linters/eslint/), which
+# matches the same rule ids on the real AST and does scope-aware taint tracking.
+# Metadata below (title, CWE, severity, attacker_path, fix) applies to both backends.
+# `pattern` is the regex fallback, used only when node or the ESLint install is missing.
+language: javascript
+linter: eslint
+extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"]
+
+sources: ['req\.(query|body|params|headers|cookies)', 'process\.argv', 'process\.env',
+          'location\.(hash|search)', 'event\.data', 'fs\.readFileSync']
+
+rules:
+  - id: js-eval
+    title: eval of data
+    cwe: CWE-95
+    severity: high
+    pattern: '\beval\s*\(\s*(?![''"`][^''"`$]*[''"`]\s*\))'
+    attacker_path: "Attacker-controlled {source} reaches eval(), so `require('child_process').execSync('id')` runs."
+    fix: "Parse data with JSON.parse; never eval input."
+
+  - id: js-new-function
+    title: new Function from data
+    cwe: CWE-95
+    severity: high
+    pattern: '\bnew\s+Function\s*\('
+    attacker_path: "Attacker-controlled {source} becomes the body of new Function(), which runs as code."
+    fix: "Remove dynamic code generation."
+
+  - id: js-child-process-exec
+    title: child_process exec with interpolated command
+    cwe: CWE-78
+    severity: high
+    # Bare exec(...) or child_process.exec(...); skips RegExp#exec via the lookbehind.
+    pattern: '(?:(?<![\w.$])|\bchild_process\.|\bcp\.)(exec|execSync)\s*\(\s*(`[^`]*\$\{|[^,)]*\+|[A-Za-z_$][\w$.]*\s*[,)])'
+    attacker_path: "Attacker-controlled {source} is interpolated into exec(), which runs through /bin/sh."
+    fix: "Use execFile/spawn with an argument array and shell: false."
+
+  - id: js-spawn-shell
+    title: spawn with shell true
+    cwe: CWE-78
+    severity: high
+    pattern: '\b(spawn|spawnSync|execFile|execFileSync)\s*\(.*shell\s*:\s*true'
+    attacker_path: "Attacker-controlled {source} reaches spawn() with shell: true, so metacharacters run commands."
+    fix: "Set shell: false and pass arguments as an array."
+
+  - id: js-vm-run
+    title: vm module runs data
+    cwe: CWE-94
+    severity: high
+    pattern: '\bvm\.(runInNewContext|runInThisContext|runInContext|compileFunction)\s*\('
+    attacker_path: "Attacker-controlled {source} runs in the vm module, which is not a security sandbox."
+    fix: "Do not run untrusted code; use a separate process with no privileges if unavoidable."
+
+  - id: js-string-timer
+    title: setTimeout/setInterval with a string
+    cwe: CWE-95
+    severity: medium
+    pattern: '\bset(Timeout|Interval)\s*\(\s*([A-Za-z_$][\w$.]*\s*\+|[''"`])'
+    attacker_path: "Attacker-controlled {source} is evaluated as code by a string timer."
+    fix: "Pass a function, not a string."
+
+  - id: js-node-serialize
+    title: node-serialize unserialize
+    cwe: CWE-502
+    severity: high
+    pattern: '\bunserialize\s*\('
+    attacker_path: "Attacker supplies a serialized `_$$ND_FUNC$$_` payload in {source}, which unserialize() invokes."
+    fix: "Use JSON.parse with schema validation."
+
+  - id: js-dynamic-require
+    title: require of a data-controlled path
+    cwe: CWE-94
+    severity: medium
+    pattern: '\brequire\s*\(\s*(?![''"`])'
+    attacker_path: "Attacker controls the module path in {source}, so require() loads and runs their file."
+    fix: "Map input to an allowlist of module names."

@@ -1,0 +1,33 @@
+# Go rules. Primary backend: gosec, when it is on PATH. gosec G204 maps to go-exec-shell or
+# go-exec-variable; rules gosec does not cover (go-template-parse) always use the regex
+# fallback, which strips comments before matching.
+language: go
+linter: gosec
+extensions: [".go"]
+
+sources: ['r\.URL\.Query\(\)', 'r\.FormValue\(', 'r\.PostFormValue\(', 'os\.Args', 'os\.Getenv\(', 'c\.(Query|Param|PostForm)\(']
+
+rules:
+  - id: go-exec-shell
+    title: exec.Command through a shell
+    cwe: CWE-78
+    severity: high
+    pattern: 'exec\.Command(Context)?\s*\((ctx\s*,\s*)?"(sh|bash|/bin/sh|/bin/bash|cmd|cmd\.exe|powershell)"\s*,\s*"(-c|/c|-Command)"'
+    attacker_path: "Attacker-controlled {source} is passed to `sh -c`, so shell metacharacters run commands."
+    fix: "Call the target binary directly with separate arguments."
+
+  - id: go-exec-variable
+    title: exec.Command with a data-controlled program
+    cwe: CWE-78
+    severity: medium
+    pattern: 'exec\.Command(Context)?\s*\((ctx\s*,\s*)?[A-Za-z_][\w.]*\s*[,)]'
+    attacker_path: "Attacker-controlled {source} selects the program exec.Command runs."
+    fix: "Map input to a fixed allowlist of programs."
+
+  - id: go-template-parse
+    title: text/template parsed from data (SSTI)
+    cwe: CWE-1336
+    severity: medium
+    pattern: '\.Parse\s*\(\s*[A-Za-z_][\w.]*\s*\)'
+    attacker_path: "Attacker-controlled {source} becomes template text; exported methods on the data become callable."
+    fix: "Parse fixed templates only; pass input as data."
