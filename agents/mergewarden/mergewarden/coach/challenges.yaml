@@ -1,0 +1,64 @@
+# Event challenges Namma Commit can recommend alongside GitHub issues.
+# Keep each one small enough for a first-timer to finish in an afternoon.
+# `points` is the most a student can earn on it (FIX_PLAN 10 + PR 20 + merged 50).
+- id: kn-contributing-quickstart
+  title: Add a Kannada translation of the CONTRIBUTING quick-start
+  repo: gdgcblr/open-source-agents
+  difficulty: easy
+  points: 80
+  skills: [docs, translation, kannada]
+  tags: [docs]
+  files: [docs/i18n/kn/CONTRIBUTING-quickstart.md]
+  summary: >
+    Translate Steps 1-3 of CONTRIBUTING.md (fork, clone, branch) into simple Kannada
+    so students in Karnataka can follow along. Keep the commands in English.
+
+- id: mcp-tool-readme-example
+  title: Write a genuine "Example Input & Output" for an MCP tool README
+  repo: gdgcblr/open-source-agents
+  difficulty: easy
+  points: 80
+  skills: [docs, mcp]
+  tags: [docs]
+  files: [template/README.md]
+  summary: >
+    The README template asks for a real example run. Write a short worked example
+    showing how an MCP server tool is called and what it returns, as a model others can copy.
+
+- id: test-readme-placeholder-check
+  title: Add a test for the README placeholder check
+  repo: gdgcblr/open-source-agents
+  difficulty: medium
+  points: 80
+  skills: [python, testing]
+  tags: [code]
+  files: [agents/mergewarden/tests/test_checks.py]
+  summary: >
+    The gatekeeper flags README files that still contain template text like
+    "[Project Name]". Add a pytest case proving a README with that placeholder
+    gets a "readme.placeholders" finding.
+
+- id: windows-setup-notes
+  title: Add Windows PowerShell setup notes to the template README
+  repo: gdgcblr/open-source-agents
+  difficulty: easy
+  points: 80
+  skills: [docs, windows]
+  tags: [docs]
+  files: [template/README.md]
+  summary: >
+    Many students use Windows. Add the PowerShell equivalents for creating a
+    virtual environment and copying .env.example next to the existing macOS/Linux commands.
+
+- id: secret-pattern-test
+  title: Add a test that a Hugging Face token is caught by the secrets check
+  repo: gdgcblr/open-source-agents
+  difficulty: medium
+  points: 80
+  skills: [python, security, testing]
+  tags: [code]
+  files: [agents/mergewarden/tests/test_checks.py]
+  summary: >
+    The secrets check knows Hugging Face token formats. Write a pytest case that
+    builds a fake token at runtime (never a real-looking literal) and asserts it is
+    reported as a blocker.

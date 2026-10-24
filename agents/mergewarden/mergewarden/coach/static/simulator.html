@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Namma Commit</title>
+<style>
+  :root {
+    --bg: #efeae2; --panel: #f0f2f5; --header: #008069; --header-ink: #fff;
+    --me: #d9fdd3; --them: #ffffff; --ink: #111b21; --muted: #667781;
+    --accent: #00a884; --chip: #ffffff; --toast: #111b21; --toast-ink: #fff; --doc: #f5f6f6;
+    --pattern: rgba(0,0,0,.035);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b141a; --panel: #202c33; --header: #202c33; --header-ink: #e9edef;
+      --me: #005c4b; --them: #202c33; --ink: #e9edef; --muted: #8696a0;
+      --accent: #00a884; --chip: #202c33; --toast: #e9edef; --toast-ink: #111b21; --doc: #1d282f;
+      --pattern: rgba(255,255,255,.025);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b141a; --panel: #202c33; --header: #202c33; --header-ink: #e9edef;
+    --me: #005c4b; --them: #202c33; --ink: #e9edef; --muted: #8696a0;
+    --accent: #00a884; --chip: #202c33; --toast: #e9edef; --toast-ink: #111b21; --doc: #1d282f;
+    --pattern: rgba(255,255,255,.025);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Kannada", "Noto Sans Devanagari", sans-serif;
+    background: var(--bg); color: var(--ink); display: flex; justify-content: center;
+  }
+  .app { width: 100%; max-width: 760px; height: 100dvh; display: flex; flex-direction: column; background: var(--bg); }
+  header {
+    background: var(--header); color: var(--header-ink); display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
+  }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: #25d366; display: grid; place-items: center; font-size: 22px; flex: none; }
+  .who { flex: 1; min-width: 0; }
+  .who b { display: block; font-size: 16px; }
+  .who span { font-size: 12.5px; opacity: .85; }
+  header a, header button {
+    color: var(--header-ink); background: none; border: 1px solid currentColor; border-radius: 16px;
+    padding: 4px 10px; font-size: 12.5px; text-decoration: none; cursor: pointer; opacity: .9; white-space: nowrap;
+  }
+  #chat {
+    flex: 1; overflow-y: auto; padding: 14px 16px 8px;
+    background-image: radial-gradient(var(--pattern) 1px, transparent 1px); background-size: 18px 18px;
+  }
+  .notice {
+    margin: 0 auto 12px; max-width: 90%; text-align: center; font-size: 12.5px; color: var(--muted);
+    background: var(--chip); padding: 6px 10px; border-radius: 8px;
+  }
+  .row { display: flex; margin: 4px 0; }
+  .row.me { justify-content: flex-end; }
+  .bubble {
+    max-width: min(82%, 520px); padding: 7px 10px 6px; border-radius: 10px; box-shadow: 0 1px .5px rgba(0,0,0,.13);
+    background: var(--them); white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .me .bubble { background: var(--me); border-top-right-radius: 2px; }
+  .them .bubble { border-top-left-radius: 2px; }
+  .bubble a { color: #027eb5; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bubble a { color: #53bdeb; } }
+  :root[data-theme="dark"] .bubble a { color: #53bdeb; }
+  .bubble code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; background: rgba(127,127,127,.15); padding: 1px 4px; border-radius: 4px; }
+  .meta { display: flex; gap: 6px; justify-content: flex-end; align-items: center; margin-top: 3px; font-size: 11px; color: var(--muted); }
+  .lang { border: 1px solid var(--muted); border-radius: 8px; padding: 0 5px; }
+  .heard { font-size: 12.5px; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .doc {
+    display: flex; align-items: center; gap: 10px; margin-top: 6px; padding: 8px 10px; border-radius: 8px;
+    background: var(--doc); color: var(--ink); text-decoration: none;
+  }
+  .doc .ic { font-size: 22px; }
+  .typing .bubble { color: var(--muted); }
+  .review { display: flex; width: fit-content; align-items: center; gap: 8px; margin-bottom: 6px; padding: 4px 10px; border-radius: 12px;
+    font-weight: 600; font-size: 13px; background: rgba(127,127,127,.15); }
+  .review.ready { background: rgba(0,168,132,.18); }
+  .review.changes_requested { background: rgba(245,179,1,.2); }
+  .review.blocked { background: rgba(229,57,53,.2); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 16px; }
+  .chips[hidden] { display: none; }
+  .chips button {
+    background: var(--chip); color: var(--ink); border: 1px solid rgba(127,127,127,.25); border-radius: 16px;
+    padding: 6px 12px; font: inherit; font-size: 13.5px; cursor: pointer;
+  }
+  form {
+    display: flex; gap: 8px; align-items: flex-end; padding: 8px 10px; background: var(--panel);
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  textarea {
+    flex: 1; min-width: 0; resize: none; border: none; outline: none; border-radius: 20px; padding: 10px 14px;
+    font: inherit; background: var(--them); color: var(--ink); max-height: 120px;
+  }
+  .round {
+    width: 44px; height: 44px; flex: none; border-radius: 50%; border: none; background: var(--accent); color: #fff;
+    font-size: 20px; cursor: pointer; display: grid; place-items: center;
+  }
+  .round.rec { background: #e53935; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.08); } }
+  #rec-time { font-size: 12px; color: var(--muted); align-self: center; min-width: 34px; }
+  #toast {
+    position: fixed; left: 50%; top: 76px; transform: translate(-50%, -20px); opacity: 0; transition: .3s;
+    background: var(--toast); color: var(--toast-ink); padding: 10px 16px; border-radius: 20px; font-weight: 600;
+    pointer-events: none; max-width: calc(100% - 32px); text-align: center; z-index: 5;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 420px) { header a.hide-sm { display: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="avatar" aria-hidden="true">🤝</div>
+    <div class="who"><b>Namma Commit</b><span id="status">your first PR, in your language · simulator</span></div>
+    <a href="/leaderboard" target="_blank" rel="noopener" class="hide-sm">🏆 Leaderboard</a>
+    <button id="newuser" type="button" title="Start as a new student">New student</button>
+  </header>
+  <div id="chat" aria-live="polite">
+    <div class="notice">🔒 This is a simulator of the WhatsApp chat. Type, or tap 🎤 to record a voice note (tap again to send). Any language.</div>
+  </div>
+  <div class="chips" id="chips">
+    <button type="button">നമസ്കാരം</button>
+    <button type="button">hi</button>
+    <button type="button">नमस्ते</button>
+    <button type="button">ನಮಸ್ಕಾರ</button>
+    <button type="button">வணக்கம்</button>
+    <button type="button">leaderboard</button>
+    <button type="button">my points</button>
+    <button type="button">review again</button>
+  </div>
+  <form id="f" autocomplete="off">
+    <textarea id="t" rows="1" placeholder="Message" aria-label="Message"></textarea>
+    <span id="rec-time" hidden></span>
+    <button class="round" id="mic" type="button" title="Record a voice note (tap to start / stop)" aria-label="Record voice note">🎤</button>
+    <button class="round" id="send" type="submit" title="Send" aria-label="Send">➤</button>
+  </form>
+</div>
+<div id="toast" role="status"></div>
+<script>
+(() => {
+  const chat = document.getElementById('chat'), form = document.getElementById('f'), t = document.getElementById('t');
+  const mic = document.getElementById('mic'), recTime = document.getElementById('rec-time'), toast = document.getElementById('toast');
+  const MAX_SECONDS = 120;
+
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function newId() { return 'sim-' + Math.random().toString(36).slice(2, 10); }
+  let uid = store('coach-uid') || newId(); store('coach-uid', uid);
+
+  document.getElementById('newuser').onclick = () => {
+    uid = newId(); store('coach-uid', uid);
+    chat.querySelectorAll('.row').forEach(r => r.remove());
+    showToast('👋 New student session');
+  };
+
+  function esc(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function fmt(s) {
+    return esc(s)
+      .replace(/```([\s\S]*?)```/g, (_, c) => '<code>' + c.trim() + '</code>')
+      .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>')
+      .replace(/(^|\s)\*([^*\n]+)\*/g, '$1<b>$2</b>')
+      .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+  function now() { return new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); }
+
+  function bubble(who, html, extra = {}) {
+    const row = document.createElement('div'); row.className = 'row ' + who;
+    const b = document.createElement('div'); b.className = 'bubble'; b.innerHTML = html;
+    if (extra.review) {
+      const icon = {ready: '✅', changes_requested: '🛠️', blocked: '⛔'}[extra.review.verdict] || '🔍';
+      const r = document.createElement('div'); r.className = 'review ' + extra.review.verdict;
+      r.textContent = icon + ' Gatekeeper review · ' + String(extra.review.verdict).replace('_', ' ') + ' · ' + extra.review.score + '/100';
+      b.prepend(r);
+    }
+    if (extra.heard) { const h = document.createElement('div'); h.className = 'heard'; h.textContent = '🎙️ heard: ' + extra.heard; b.appendChild(h); }
+    for (const a of extra.attachments || []) {
+      const d = document.createElement('a'); d.className = 'doc'; d.href = a.url; d.target = '_blank'; d.rel = 'noopener';
+      d.innerHTML = '<span class="ic">📄</span><span>' + esc(a.name) + '</span>'; b.appendChild(d);
+    }
+    const m = document.createElement('div'); m.className = 'meta';
+    m.innerHTML = (extra.lang ? '<span class="lang">' + esc(extra.lang) + '</span>' : '') + '<span>' + now() + (who === 'me' ? ' ✓✓' : '') + '</span>';
+    b.appendChild(m); row.appendChild(b); chat.appendChild(row); chat.scrollTop = chat.scrollHeight;
+    return row;
+  }
+  function typing() { const r = bubble('them typing', 'typing…'); return r; }
+  function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(showToast.t); showToast.t = setTimeout(() => toast.classList.remove('show'), 3500); }
+
+  async function send({text = '', audio = null, mime = ''}) {
+    if (!text && !audio) return;
+    document.getElementById('chips').hidden = true;
+    bubble('me', audio ? '🎙️ Voice note' + (text ? '\n' + fmt(text) : '') : fmt(text));
+    const fd = new FormData(); fd.append('user_id', uid); fd.append('text', text);
+    if (audio) fd.append('audio', audio, 'voice.' + (mime.includes('ogg') ? 'ogg' : mime.includes('mp4') ? 'm4a' : 'webm'));
+    const tp = typing();
+    try {
+      const r = await fetch('/api/message', {method: 'POST', body: fd});
+      const j = await r.json();
+      tp.remove();
+      if (!r.ok) throw new Error(j.detail || r.status);
+      showReply(j);
+    } catch (e) { tp.remove(); bubble('them', '⚠️ Could not reach the coach: ' + esc(String(e.message || e))); }
+  }
+
+  function showReply(j) {
+    bubble('them', fmt(j.text), {lang: j.language, attachments: j.attachments, heard: j.transcript, review: j.review});
+    const bits = [];
+    if (j.points_awarded) bits.push('⭐ +' + j.points_awarded + ' points');
+    if (j.badges && j.badges.length) bits.push('🏅 ' + j.badges.join(', '));
+    if (bits.length) showToast(bits.join('  '));
+  }
+
+  // Replies that arrive later (the gatekeeper review of a PR) wait in a server inbox.
+  async function poll() {
+    if (document.hidden) return;
+    try {
+      const j = await (await fetch('/api/inbox?user_id=' + encodeURIComponent(uid))).json();
+      for (const m of j.messages || []) showReply(m);
+    } catch (e) { /* offline: try again next tick */ }
+  }
+  setInterval(poll, 4000);
+
+  form.onsubmit = e => { e.preventDefault(); const v = t.value.trim(); t.value = ''; t.style.height = ''; send({text: v}); };
+  t.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+  t.addEventListener('input', () => { t.style.height = ''; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; });
+  document.querySelectorAll('#chips button').forEach(b => b.onclick = () => send({text: b.textContent}));
+
+  // Voice notes: MediaRecorder -> multipart POST. Max 2 minutes, enforced again on the server.
+  let rec = null, chunks = [], started = 0, timer = null;
+  function pickMime() {
+    for (const m of ['audio/ogg;codecs=opus', 'audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'])
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+    return '';
+  }
+  async function startRec() {
+    if (!navigator.mediaDevices || !window.MediaRecorder) { showToast('🎙️ Voice notes need a browser with microphone support'); return; }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({audio: true}); }
+    catch (e) { showToast('🎙️ Microphone permission denied'); return; }
+    const mime = pickMime();
+    rec = new MediaRecorder(stream, mime ? {mimeType: mime, audioBitsPerSecond: 32000} : {audioBitsPerSecond: 32000});
+    chunks = [];
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = () => {
+      stream.getTracks().forEach(tr => tr.stop());
+      clearInterval(timer); recTime.hidden = true; mic.classList.remove('rec'); mic.textContent = '🎤';
+      const type = (rec.mimeType || 'audio/webm').split(';')[0];
+      const blob = new Blob(chunks, {type});
+      if (blob.size > 0 && (Date.now() - started) > 600) send({audio: blob, mime: type, text: t.value.trim()}), t.value = '';
+      rec = null;
+    };
+    rec.start(250); started = Date.now();
+    mic.classList.add('rec'); mic.textContent = '■'; recTime.hidden = false; recTime.textContent = '0:00';
+    timer = setInterval(() => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      recTime.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+      if (s >= MAX_SECONDS) rec && rec.stop();
+    }, 250);
+  }
+  mic.onclick = () => rec ? rec.stop() : startRec();
+})();
+</script>
+</body>
+</html>

@@ -11,6 +11,7 @@
 - **Intended Users**:
   - **Maintainers**, who triage and review many PRs.
   - **Contributors**, who pre-flight their folder before opening a PR.
+  - **Students and first-time contributors**, through the Newcomer Coach on WhatsApp, in their own language.
   - **Any repo** with a `CONTRIBUTING.md`. Rules are compiled from the guide, not hard-coded.
 
 ### Key Features
@@ -20,6 +21,7 @@
 - **Gemini reviewers (ADK `ParallelAgent`)** judge what rules can't, such as an example that isn't a genuine run, dishonest limitations or an unbounded agent loop. **Every AI finding must quote the submission.** A quote not found in the contributor's files is demoted to `info`. The LLM can never raise anything to `blocker`, remove a deterministic finding, or approve a PR.
 - **Maintainer Copilot coordinator**: an ADK `LlmAgent` that routes plain-English requests ("review this PR", "which PRs are ready?", "help me fix my folder") to specialist tools.
 - **Fix-It specialist**: turns findings into concrete patches (missing files, `.env.example` entries, README skeletons, `git` commands). It writes only inside the contributor's own folder and never runs commands.
+- **Newcomer Coach, "Namma Commit"**: the student-facing half. First-timers chat on WhatsApp (or a local simulator) in any language, by text or voice note. The coach recommends good-first issues and event challenges, explains them like a mentor and asks Socratic questions back. It drafts a `FIX_PLAN.md` into a per-student sandbox and walks the student through fork → branch → PR one step at a time. Then it runs MergeWarden on their PR and explains the verdict in their language. Points and badges are awarded only after GitHub verifies the PR. See [`mergewarden/coach/README_COACH.md`](mergewarden/coach/README_COACH.md).
 - **Triage board**: one command reviews every open PR and writes a single-file HTML board sorted ready-first.
 - **Works offline**: no key means deterministic-only. Exit codes `0/1/2` make it a CI gate or pre-push hook.
 - **Optional Docker sandbox**: fresh-install test with no capabilities, memory/CPU/PID limits, a read-only mount and a timeout.
@@ -31,6 +33,7 @@
 - **Language & Runtime**: Python 3.10+ (developed on 3.12)
 - **Agent Framework**: [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/) 2.13: `SequentialAgent`, `ParallelAgent`, `LlmAgent` with Pydantic `output_schema`, custom deterministic `BaseAgent`s, and an `LlmAgent` coordinator with function tools
 - **Models**: Gemini via Google AI Studio or Vertex AI. Default chain `gemini-3.5-flash-lite` → `gemini-3.8-flash` → deterministic-only
+- **Newcomer Coach**: FastAPI + uvicorn web server, SQLite (stdlib) for points and profiles, Gemini native audio understanding for voice notes, Twilio WhatsApp (optional, no SDK)
 - **External APIs / Tools**: GitHub REST API (PR metadata, unauthenticated or with a token), `git` (bare partial clone + `git archive`), optional Docker, optional `gh` CLI for posting comments
 
 ---
@@ -61,6 +64,16 @@
  └──────────────────────────────────────────────────────────┴── fixer.plan → patches ─────┘
 ```
 
+The **Newcomer Coach** is a second ADK `LlmAgent` coordinator (onboarding, issue scout, mentor, solution drafter and PR guide), reachable as a sub-agent of `maintainer_copilot` and served on its own:
+
+```
+WhatsApp ─Twilio (signed webhook)─┐
+Web simulator ────────────────────┼─► guardrails (secrets · injection · rate limits · redaction)
+                                  └─► coach_agent (Gemini) ─► deterministic tools: award_points · verify_pr
+                                                              save_fix_plan (sandbox) · run_preflight_checks
+                                                              review_my_pr ─► the MergeWarden pipeline above
+```
+
 Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and explanations, but it is never the gate.
 
 ---
@@ -71,6 +84,7 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 - *(optional)* A free **Gemini API key** from [Google AI Studio](https://aistudio.google.com/apikey). Without one, the deterministic checks still run.
 - *(optional)* `gh` CLI logged in, only for `--post` (commenting on PRs)
 - *(optional)* Docker, only for `--run-setup`
+- *(optional)* A Twilio account (the free WhatsApp Sandbox works) and `ngrok`, only to connect the Coach to real WhatsApp
 
 ---
 
@@ -105,6 +119,13 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 | `GATEKEEPER_MODEL` | No | `gemini-3.5-flash-lite,gemini-3.8-flash` | Comma-separated model fallback chain, tried in order on 429/503 errors. |
 | `GITHUB_TOKEN` | No | `gh auth token` if available | Raises the GitHub API limit above 60 requests/hour. Read-only is enough for reviews. |
 | `GATEKEEPER_CACHE` | No | `~/.cache/mergewarden` | Where bare partial clones of reviewed repos are cached. |
+| `GATEKEEPER_COACH_MODEL` / `GATEKEEPER_COACH_FALLBACK_MODEL` | No | `gemini-3.8-flash` / `gemini-3.5-flash-lite` | Coach model, and the fallback used on 429/5xx or timeout. |
+| `COACH_SALT` | Yes, for real users | *(empty)* | Long random secret for hashing phone numbers and signing draft links. Never change it after launch. |
+| `COACH_REPOS` | No | `gdgcblr/open-source-agents` | Allowlist of repos the coach recommends issues from and awards PR points for. |
+| `COACH_DATA_DIR` / `COACH_PORT` / `LOG_LEVEL` | No | `./.coach-data` / `8090` / `INFO` | Coach SQLite + draft sandbox location, server port, log level. |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_WHATSAPP_FROM` | Only for WhatsApp | *(empty)* | Twilio credentials and sender (`whatsapp:+14155238886` for the Sandbox). The auth token also verifies every webhook signature. |
+| `PUBLIC_BASE_URL` | Only for WhatsApp | *(empty)* | Public HTTPS URL Twilio calls (e.g. ngrok). Must match exactly for signature checks. |
+| `COACH_RATE_LIMIT_*`, `COACH_MAX_*`, `COACH_DAILY_POINT_CAP`, `COACH_REVIEW_*` | No | see `.env.example` | Abuse limits, point cap and PR-review limits; all documented with defaults in `.env.example`. |
 
 ---
 
@@ -134,6 +155,12 @@ adk web .          # then pick "mergewarden"
 
 # Local web console (review form + bundled demo reports)
 python web/server.py   # http://127.0.0.1:8765
+
+# Newcomer Coach: WhatsApp-style simulator + leaderboard, no accounts needed
+python -m mergewarden.coach serve      # http://127.0.0.1:8090 (localhost only by default)
+python -m mergewarden.coach chat       # same coach in the terminal
+# Real WhatsApp: set the TWILIO_* vars, run `ngrok http 8090`, point the Sandbox webhook at
+# <ngrok-url>/twilio/webhook. Step by step in mergewarden/coach/README_COACH.md.
 ```
 
 Exit codes: `0` ready, `1` changes requested, `2` blocked. Use it in CI or a `pre-push` hook.
@@ -217,7 +244,7 @@ python evals/run_evals.py        # writes evals/RESULTS.md
 python -m mergewarden review . --no-llm
 ```
 
-Current results: **107 tests pass**. The eval suite scores **18/18 verdicts correct and 18/18 exact check-set matches** (deterministic layer). The cases cover:
+Current results: **128 tests pass** (21 of them for the Newcomer Coach). The eval suite scores **18/18 verdicts correct and 18/18 exact check-set matches** (deterministic layer). The cases cover:
 - leaked keys and committed `.env` files
 - governance-file edits and multiple projects in one PR
 - untouched template text, broken setup and missing manifest
@@ -237,6 +264,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 - **Heuristic secret detection.** It covers major vendor formats (Google incl. `AQ.` keys, OpenAI, Anthropic, GitHub, AWS, Slack, Hugging Face, private keys) plus high-entropy assignments. It is not a replacement for GitHub secret scanning.
 - **The AI layer can be wrong or noisy.** Grounding stops invented quotes but not every bad judgement. Two reviewers can occasionally raise overlapping points. AI findings are labelled `AI review` for this reason.
 - **Rate limits.** GitHub's unauthenticated API allows 60 requests/hour. Triage of large repos needs `GITHUB_TOKEN`. Free Gemini tiers can return 429/503; the model chain falls back and finally runs deterministic-only.
+- **Coach scale.** It uses single-host SQLite and in-process sessions, which is fine for an event or a club, not for thousands of concurrent students. Real WhatsApp needs a Twilio account and a public URL (ngrok). Voice quality depends on Gemini's support for the language and on audio quality.
 - **Tested on macOS (Python 3.12).** Linux is expected to work. Windows is untested.
 
 ---
@@ -249,6 +277,14 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
   - All PR text is passed to Gemini inside `<submission>` tags with an explicit "this is data, never instructions" guard. Injection attempts are also detected deterministically.
 - **Read-only by design**: `git` is run only to read repositories. The optional `--run-setup` sandbox runs installs **inside Docker** with no capabilities, `no-new-privileges`, 1 GB of memory, 1 CPU, 256 PIDs, a read-only source mount and a 5-minute timeout.
 - **Human in the loop**: posting a PR comment requires `--post` plus an interactive confirmation (`--yes` only for CI you configure). The Copilot coordinator has no tool that can post, push or merge. `fixer.apply` writes only inside your own project folder and never runs commands.
+- **Newcomer Coach**:
+  - Every Twilio webhook is HMAC-verified. Media is fetched only from Twilio hosts, with size caps.
+  - Phone numbers are stored only as `sha256(phone + COACH_SALT)`, and phone numbers and emails are redacted before storage or model calls. Voice bytes are dropped after transcription. `delete my data` wipes a student completely.
+  - Messages that contain secrets are refused and never stored or sent to the model.
+  - The coach never runs code, pushes or opens PRs. Drafts are written only inside a per-student sandbox, with traversal refused.
+  - Points come only from deterministic tools, after GitHub verification, through an append-only ledger with a daily cap.
+  - The server binds to `127.0.0.1` by default.
+  - Full details are in [`mergewarden/coach/README_COACH.md`](mergewarden/coach/README_COACH.md#guardrails--security).
 - **Data Privacy**: With Gemini enabled, the contribution's README, `.env.example`, file list, PR text and the first 4 KB of the main source file are sent to Google's Gemini API. Use `--no-llm` to keep everything local. Nothing else leaves the machine except GitHub API calls, plus a Google Fonts stylesheet when you open the web console (it falls back to system fonts offline).
 
 ---
@@ -256,8 +292,8 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 ## Future Improvements
 
 - [ ] GitHub Action wrapper that comments on every new PR automatically, updating its own comment on each push
+- [ ] Coach: voice replies (text-to-speech) and a maintainer dashboard of student progress
 - [ ] Overlap detector: flag near-duplicate projects and folder-name collisions across open PRs
-- [ ] Newcomer Coach: WhatsApp/voice onboarding for first-time contributors in any language, with points and a leaderboard
 - [ ] Remember maintainer overrides ("this finding was wrong") to tune checks per repository
 - [ ] Gemini embeddings for semantic duplicate detection
 
