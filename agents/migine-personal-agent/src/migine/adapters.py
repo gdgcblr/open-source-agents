@@ -19,7 +19,9 @@ class NativeToolError(RuntimeError):
     def __init__(self, operation, code):
         self.operation = operation
         self.code = code
-        resource = "Calendar" if operation.startswith("calendar.") else "Contacts"
+        resource = {"calendar": "Calendar", "contacts": "Contacts", "mail": "Mail"}[
+            operation.split(".")[0]
+        ]
         if code == "permission_required":
             message = (
                 f"macOS denied or could not prompt for {resource} access. "
@@ -29,6 +31,8 @@ class NativeToolError(RuntimeError):
             )
         elif code == "helper_timeout":
             message = f"{resource} access timed out. Check for a macOS permission prompt and retry."
+        elif resource == "Mail":
+            message = "Mail access failed. Open the macOS Mail app and check Automation access for your terminal."
         else:
             message = f"The {resource} helper failed. Run sh scripts/setup-local.sh and retry."
         super().__init__(message)
@@ -83,6 +87,10 @@ class NativeAdapter:
                     sources.extend(json.loads(result.stdout))
                 except subprocess.TimeoutExpired:
                     skipped.append({"offset": offset, "count": 1, "reason": "Mail read timed out"})
+                except subprocess.CalledProcessError as error:
+                    stderr = (error.stderr or "").casefold()
+                    code = "permission_required" if "-1743" in stderr else "helper_failed"
+                    raise NativeToolError(operation, code) from None
             return {
                 "sources": sources,
                 "skipped_batches": skipped,

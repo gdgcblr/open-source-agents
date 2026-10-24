@@ -28,7 +28,8 @@ Open [ADK Web](http://127.0.0.1:8000), select `migine_web`, and ask:
 “What is on my calendar for the next seven days?” Allow Calendar access when requested.
 
 To populate bill and subscription reports, [import and review your email](USAGE.md#use-personal-records).
-Mail import is explicit; setup does not read your Inbox or accept financial records.
+Setup does not read your Inbox or accept financial records. ADK Web mail search reads
+12 Inbox positions per call from the past 90 days, then searches the local cache.
 Keep the terminal running; press **Ctrl+C** to stop. ADK Web is for local development.
 See [usage](USAGE.md) for permissions, configuration, and approval commands.
 

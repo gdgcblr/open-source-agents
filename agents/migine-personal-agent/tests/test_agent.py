@@ -144,3 +144,48 @@ def test_calendar_permission_failure_is_a_tool_result(tmp_path, monkeypatch):
     monkeypatch.setattr("migine.agent.build_agent", lambda *_args: agent)
     result = asyncio.run(chat(settings, store, adapter, "What events do I have today?", "denied"))
     assert "unavailable" in result
+
+
+def test_mail_search_refreshes_empty_cache_and_reports_scope(tmp_path):
+    class MailAdapter:
+        def call(self, operation, payload):
+            assert operation == "mail.read"
+            assert payload["limit"] == 12
+            assert payload["offset"] == 12
+            return {
+                "sources": [
+                    {
+                        "id": "live-test",
+                        "title": "Invoice",
+                        "body": "Synthetic receipt",
+                        "received": "2026-10-24T00:00:00Z",
+                        "url": "message://test",
+                    }
+                ],
+                "partial": True,
+                "skipped_batches": [{"offset": 13, "count": 1}],
+                "scanned_positions": 12,
+                "requested_positions": 12,
+            }
+
+    store = Store(tmp_path)
+    agent = build_agent(settings_at(tmp_path), store, MailAdapter())
+    tool = next(t for t in agent.tools if t.__name__ == "search_mail")
+    result = tool("invoice", offset=12)
+    assert result["sources"][0]["id"] == "live-test"
+    assert result["scan"]["partial"] is True
+    assert result["next_offset"] == 24
+    assert "not all mail" in result["coverage"]
+
+
+def test_mail_search_denial_does_not_claim_empty_inbox(tmp_path):
+    class DeniedAdapter:
+        def call(self, *_args):
+            raise NativeToolError("mail.read", "permission_required")
+
+    agent = build_agent(settings_at(tmp_path), Store(tmp_path), DeniedAdapter())
+    tool = next(t for t in agent.tools if t.__name__ == "search_mail")
+    result = tool("invoice")
+    assert result["status"] == "unavailable"
+    assert "Mail" in result["error"]["message"]
+    assert "sources" not in result

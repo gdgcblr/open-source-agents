@@ -99,6 +99,11 @@ Changes require an exact preview and a typed challenge in the Mac terminal. Requ
 expire after five minutes and cannot be reused. The model can only propose changes.
 Supported changes: Mail flag/read status and Contacts create/update name/add email.
 Contact updates preserve other fields; the supplied given/family names replace those fields.
+ADK Web `search_mail` reads 12 Inbox positions per call from the past 90 days, then
+searches the cache by keywords. Ask for another page to advance the offset by 12.
+Results include scan limits and skipped messages. This does not search all mail.
+The CLI `migine search` searches cached mail only.
+
 Mail sending, payments, deletion, calendar edits, attachments, and background scheduling
 are outside this MVP. Mail reads/changes cover Inbox only. Contacts search uses names.
 Birthdays/anniversaries appear when supplied by an enabled Calendar; Contacts also exposes dates.
