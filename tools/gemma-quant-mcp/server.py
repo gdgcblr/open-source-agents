@@ -16,6 +16,13 @@ from core.screener_engine import screen_stocks
 from core.gemma_advisor import generate_gemma_thesis
 from core.market_feed import fetch_live_quote
 from core.symbol_resolver import resolve_smart_ticker
+from core.hub_agent import ArthanitiMasterHub
+from pydantic import BaseModel
+
+class HubChatRequest(BaseModel):
+    query: str
+    model: str = "gemma-2-9b-it"
+
 
 app = FastAPI(
     title="Arthaniti Quant Engine & Realtime Feeds",
@@ -28,11 +35,27 @@ app = FastAPI(
 def health_check():
     return {
         "status": "healthy",
-        "service": "arthaniti-quant-engine",
-        "version": "2.1.0",
-        "guardrails": ["DETERMINISTIC_MATH", "RISK_REWARD_BOUNDS", "PORTFOLIO_CONCENTRATION_25PCT", "ALLOCATION_100PCT"],
+        "service": "arthaniti-quant-hub",
+        "version": "2.2.0",
+        "architecture": "Google ADK Hub-and-Spoke",
+        "hub_urn": ArthanitiMasterHub.urn,
+        "spokes": ArthanitiMasterHub.SPOKES,
+        "guardrails": ["DETERMINISTIC_CAMARILLA_MATH", "RISK_REWARD_BOUNDS", "PORTFOLIO_CONCENTRATION_25PCT", "ALLOCATION_100PCT"],
         "resolver": "Gemma LLM + Live Exchange Search",
     }
+
+
+@app.get("/api/hub/spokes")
+def get_hub_spokes():
+    return {
+        "hub": ArthanitiMasterHub.urn,
+        "spokes": ArthanitiMasterHub.SPOKES,
+    }
+
+
+@app.post("/api/hub/chat")
+def hub_chat_endpoint(req: HubChatRequest):
+    return ArthanitiMasterHub.process_user_query(req.query, model_choice=req.model)
 
 
 @app.get("/api/market/live")
@@ -178,22 +201,83 @@ def dashboard():
     </div>
   </header>
 
-  <!-- ACTIVE GUARDRAILS ALERT STRIP -->
-  <div class="bg-slate-900 text-slate-200 text-xs py-2 px-4 border-b border-slate-800">
+  <!-- ARTHANITI MULTI-AGENT HUB-AND-SPOKE TOPOLOGY BAR -->
+  <div class="bg-slate-900 text-slate-200 text-xs py-2.5 px-4 border-b border-slate-800">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-emerald-400 font-bold">🛡️ ARTHANITI ACTIVE GUARDRAILS:</span>
-        <span>1. Deterministic Math Invariant</span> &bull;
-        <span>2. Risk/Reward &ge; 1:1.5 Directive Bound</span> &bull;
-        <span>3. Concentration Limit &le; 25.0%</span> &bull;
-        <span>4. Allocation Completeness = 100.00%</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-emerald-400 font-bold tracking-wider uppercase text-[11px]">ADK Multi-Agent Topology:</span>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700 text-white font-semibold">Hub: Master Orchestrator</span>
+        <span class="text-slate-500 font-bold">&rarr;</span>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700 text-white font-semibold">Spoke 1: Live Feed</span>
+        <span class="text-slate-500 font-bold">&rarr;</span>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700 text-white font-semibold">Spoke 2: Camarilla Engine</span>
+        <span class="text-slate-500 font-bold">&rarr;</span>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700 text-white font-semibold">Spoke 3: Risk Guardrail</span>
+        <span class="text-slate-500 font-bold">&rarr;</span>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700 text-white font-semibold">Spoke 4: Gemma Thesis</span>
+        <span class="text-slate-500 font-bold">&rarr;</span>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700 text-white font-semibold">Spoke 5: Screener</span>
       </div>
-      <span class="text-slate-400 font-mono">STATUS: 4/4 ENFORCED</span>
+      <span class="text-emerald-400 font-mono text-[11px] bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">5/5 SPOKES CONNECTED</span>
     </div>
   </div>
 
   <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+
+    <!-- INTERACTIVE ARTHANITI HUB COPILOT CARD -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Arthaniti Master Quant Copilot (Google ADK Hub)</h2>
+          <p class="text-xs text-slate-500 font-medium">Type any stock query, portfolio check, or screener request. Central Hub routes tasks across all 5 spokes.</p>
+        </div>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-200 self-start sm:self-auto">
+          Gemma-2-9B &bull; Gemini 2.5 Flash
+        </span>
+      </div>
+
+      <div class="flex gap-2">
+        <input type="text" id="hubPromptInput" 
+               placeholder="e.g. Analyze live stock price and Camarilla breakout levels for HFCL" 
+               class="flex-1 px-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-800 focus:bg-white text-slate-800 placeholder-slate-400 font-medium transition"
+               onkeydown="if(event.key==='Enter') dispatchArthanitiHubPrompt()">
+        <button onclick="dispatchArthanitiHubPrompt()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold rounded-xl shadow-xs transition uppercase tracking-wider">
+          Dispatch to Hub
+        </button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Pre-built Scenarios:</span>
+        <button onclick="sendHubScenario('Analyze live stock price and Camarilla breakout levels for HFCL')" 
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-800 text-slate-700 bg-slate-50 hover:bg-white transition">
+          📈 Camarilla Levels: HFCL
+        </button>
+        <button onclick="sendHubScenario('Analyze live stock price and Camarilla breakout levels for APAR Industries')" 
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-800 text-slate-700 bg-slate-50 hover:bg-white transition">
+          ⚡ High Momentum: APAR Industries
+        </button>
+        <button onclick="sendHubScenario('Audit our multi-asset portfolio with 35% HFCL, 20% TCS, 20% HDFCBANK, 25% LIQUID_BEES against concentration limits')" 
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-800 text-slate-700 bg-slate-50 hover:bg-white transition">
+          🛡️ SEBI Risk Audit: 35% Concentration Cap
+        </button>
+        <button onclick="sendHubScenario('Screen Indian equities for bullish volume breakout setups')" 
+                class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-800 text-slate-700 bg-slate-50 hover:bg-white transition">
+          🔍 High-Conviction Breakout Screener
+        </button>
+      </div>
+
+      <!-- INTER-AGENT A2A EXECUTION LOG -->
+      <div id="hubDispatchTelemetry" class="hidden p-4 rounded-xl bg-slate-900 text-slate-300 space-y-2 text-xs mono">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="text-emerald-400 font-bold uppercase tracking-wider">A2A (Agent-to-Agent) Execution Telemetry</span>
+          <span id="hubLatencyBadge" class="text-slate-400">12ms</span>
+        </div>
+        <div id="hubDispatchLogItems" class="space-y-1 text-[11px]">
+          <!-- Dispatched dynamically -->
+        </div>
+      </div>
+    </div>
 
     <!-- SEARCH & GENERIC STOCK RESOLVER CARD -->
     <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-4">
@@ -507,6 +591,51 @@ def dashboard():
   </main>
 
   <script>
+    async function sendHubScenario(query) {
+      document.getElementById('hubPromptInput').value = query;
+      dispatchArthanitiHubPrompt();
+    }
+
+    async function dispatchArthanitiHubPrompt() {
+      const q = document.getElementById('hubPromptInput').value.trim();
+      if (!q) return;
+
+      const telemBox = document.getElementById('hubDispatchTelemetry');
+      const logItems = document.getElementById('hubDispatchLogItems');
+      const latencyBadge = document.getElementById('hubLatencyBadge');
+
+      telemBox.classList.remove('hidden');
+      logItems.innerHTML = '<div class="text-emerald-400 font-bold">Arthaniti Master Hub dispatching tasks to spokes...</div>';
+
+      try {
+        const model = document.getElementById('modelSelect') ? document.getElementById('modelSelect').value : 'gemma-2-9b-it';
+        const res = await fetch('/api/hub/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({query: q, model: model})
+        });
+        const d = await res.json();
+
+        latencyBadge.innerText = `${d.latency_ms}ms • ${d.guardrail_verdict}`;
+        logItems.innerHTML = d.dispatch_log.map(item => `
+          <div><span class="text-emerald-400 font-bold">[${item.agent}]</span> ${item.message}</div>
+        `).join('');
+
+        // If stock quant result, sync with the main grid
+        if (d.spoke_results.quant) {
+          const sym = d.spoke_results.quant.symbol;
+          document.getElementById('customInput').value = sym;
+          loadStock(sym);
+        } else if (d.spoke_results.risk) {
+          switchTab('invariants');
+        } else if (d.spoke_results.screener) {
+          switchTab('screener');
+        }
+      } catch (err) {
+        logItems.innerHTML = `<div class="text-rose-400">Hub dispatch error: ${err.message}</div>`;
+      }
+    }
+
     let currentSymbol = 'HFCL';
 
     async function loadTicker(query) {

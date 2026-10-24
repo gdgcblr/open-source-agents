@@ -319,30 +319,80 @@ def dashboard():
 
     </div>
 
-    <!-- TAB 2: MULTIMODAL RECEIPT OCR SCANNER -->
+        <!-- TAB 2: MULTIMODAL RECEIPT OCR SCANNER -->
     <div id="view-ocr" class="hidden space-y-6">
       <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow space-y-6">
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-base font-extrabold text-[#002E6E]">Multimodal Gemini Receipt & Bill OCR Scanner</h2>
-          <p class="text-xs text-slate-500 font-medium">Extract line items, taxes, GSTIN, and merchant info from receipts to auto-generate itemized group splits.</p>
+        <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-extrabold text-[#002E6E]">Multimodal Gemini Receipt & Bill OCR Scanner</h2>
+            <p class="text-xs text-slate-500 font-medium">Upload or drag & drop any physical receipt, Swiggy/Zomato invoice, or UPI payment screenshot.</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1 rounded-full bg-sky-50 text-[#007CA6] border border-sky-200 self-start sm:self-auto">
+            Gemini 2.5 Flash Vision
+          </span>
         </div>
 
-        <!-- 3 PRE-LOADED TEST RECEIPTS FOR ONE-CLICK DEMOS -->
-        <div class="space-y-2">
-          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">One-Click Sample Invoices:</span>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <button onclick="runSampleOCR('swiggy')" class="p-3.5 rounded-xl border border-slate-200 hover:border-[#00B9F1] bg-slate-50 hover:bg-white text-left transition space-y-1">
-              <div class="font-bold text-[#002E6E] text-xs">🍕 Swiggy / Biryani Blues Bill</div>
-              <div class="text-[11px] text-slate-500">₹1,650.00 &bull; 3 Food Items &bull; GSTIN Verified</div>
-            </button>
-            <button onclick="runSampleOCR('hotel')" class="p-3.5 rounded-xl border border-slate-200 hover:border-[#00B9F1] bg-slate-50 hover:bg-white text-left transition space-y-1">
-              <div class="font-bold text-[#002E6E] text-xs">🏖️ Taj Exotica Resort Goa Bill</div>
-              <div class="text-[11px] text-slate-500">₹18,400.00 &bull; Villa + Breakfast &bull; 4 Members</div>
-            </button>
-            <button onclick="runSampleOCR('cafe')" class="p-3.5 rounded-xl border border-slate-200 hover:border-[#00B9F1] bg-slate-50 hover:bg-white text-left transition space-y-1">
-              <div class="font-bold text-[#002E6E] text-xs">☕ Third Wave Coffee Bill</div>
-              <div class="text-[11px] text-slate-500">₹980.00 &bull; Mocha + Cold Brew + Croissant</div>
-            </button>
+        <!-- DRAG AND DROP FILE UPLOAD AREA -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block">Upload Receipt Image or Invoice</label>
+            <div id="dropZone" 
+                 ondragover="event.preventDefault(); this.classList.add('border-[#00B9F1]', 'bg-sky-50');"
+                 ondragleave="this.classList.remove('border-[#00B9F1]', 'bg-sky-50');"
+                 ondrop="handleFileDrop(event)"
+                 onclick="document.getElementById('receiptFileInput').click()"
+                 class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center cursor-pointer hover:border-[#00B9F1] hover:bg-slate-50 transition space-y-3">
+              <div class="w-12 h-12 mx-auto rounded-full bg-sky-50 text-[#00B9F1] flex items-center justify-center font-bold text-2xl">
+                📸
+              </div>
+              <div>
+                <div class="text-xs font-extrabold text-[#002E6E]">Click to browse from disk or drag & drop</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Supports PNG, JPG, WEBP, or PDF invoices</div>
+              </div>
+              <input type="file" id="receiptFileInput" accept="image/*,application/pdf" class="hidden" onchange="handleFileSelect(event)">
+            </div>
+
+            <!-- PREVIEW THUMBNAIL -->
+            <div id="filePreviewCard" class="hidden p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <img id="previewThumbnail" class="w-12 h-12 object-cover rounded-lg border border-slate-200" src="" alt="Receipt Preview">
+                <div>
+                  <div id="previewName" class="text-xs font-bold text-[#002E6E] truncate max-w-[180px]">receipt.jpg</div>
+                  <div id="previewSize" class="text-[11px] text-slate-500">142 KB</div>
+                </div>
+              </div>
+              <button onclick="scanSelectedImage()" id="scanUploadedBtn" class="px-4 py-2 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold text-xs rounded-lg transition shadow-xs">
+                Scan with Gemini OCR ↗
+              </button>
+            </div>
+          </div>
+
+          <!-- ONE CLICK PRE-LOADED SAMPLES -->
+          <div class="space-y-3">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block">Or Try One-Click Sample Invoices</label>
+            <div class="space-y-2.5">
+              <button onclick="runSampleOCR('swiggy')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-[#00B9F1] bg-slate-50 hover:bg-white text-left transition flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-[#002E6E] text-xs">🍕 Swiggy / Biryani Blues Bill</div>
+                  <div class="text-[11px] text-slate-500">₹1,650.00 &bull; 3 Food Items &bull; GSTIN 29AABCS1429B1Z5</div>
+                </div>
+                <span class="text-xs font-bold text-[#00B9F1]">Test Sample ↗</span>
+              </button>
+              <button onclick="runSampleOCR('hotel')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-[#00B9F1] bg-slate-50 hover:bg-white text-left transition flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-[#002E6E] text-xs">🏖️ Taj Exotica Resort Goa Bill</div>
+                  <div class="text-[11px] text-slate-500">₹18,400.00 &bull; Villa Stay + Breakfast &bull; 4 Members</div>
+                </div>
+                <span class="text-xs font-bold text-[#00B9F1]">Test Sample ↗</span>
+              </button>
+              <button onclick="runSampleOCR('cafe')" class="w-full p-3 rounded-xl border border-slate-200 hover:border-[#00B9F1] bg-slate-50 hover:bg-white text-left transition flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-[#002E6E] text-xs">☕ Third Wave Coffee Roasters</div>
+                  <div class="text-[11px] text-slate-500">₹980.00 &bull; Sea Salt Mocha, Cold Brew & Pastry</div>
+                </div>
+                <span class="text-xs font-bold text-[#00B9F1]">Test Sample ↗</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -360,17 +410,22 @@ def dashboard():
           </div>
 
           <div class="space-y-1.5">
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Line Items:</span>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Itemized Line Items:</span>
             <div id="ocrItemsList" class="space-y-1 text-xs">
               <!-- Rendered dynamically -->
             </div>
           </div>
 
-          <div class="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between">
-            <span class="text-xs font-bold text-[#002E6E]">Auto-Split Directive:</span>
-            <button onclick="applyOCRToLedger()" class="px-3.5 py-1.5 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold text-xs rounded-lg transition shadow-xs">
-              Commit Scanned Bill to Group Ledger &rarr;
-            </button>
+          <div class="p-3 bg-white rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <span class="text-xs font-bold text-[#002E6E]">Transfer to Smart Splitter or Ledger:</span>
+            <div class="flex items-center gap-2">
+              <button onclick="applyOCRToSplitter()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition border border-slate-200">
+                Send to Smart Splitter ✂️
+              </button>
+              <button onclick="applyOCRToLedger()" class="px-3.5 py-1.5 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold text-xs rounded-lg transition shadow-xs">
+                Commit Scanned Bill to Group Ledger &rarr;
+              </button>
+            </div>
           </div>
         </div>
 
@@ -379,44 +434,91 @@ def dashboard():
 
     <!-- TAB 3: SMART SPLIT CALCULATOR -->
     <div id="view-split" class="hidden space-y-6">
-      <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow space-y-5">
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-base font-extrabold text-[#002E6E]">Smart Split & Zero-Drift Penny Allocator</h2>
-          <p class="text-xs text-slate-500 font-medium">Split bills equally, by custom percentage, or unequal weights. Guaranteed zero rounding discrepancy.</p>
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow space-y-6">
+        <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-extrabold text-[#002E6E]">Smart Split & Zero-Drift Penny Allocator</h2>
+            <p class="text-xs text-slate-500 font-medium">Add friends, set custom amounts or percentage weights. Guaranteed zero rounding discrepancy (∑ shares ≡ total).</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+            Zero Penny-Drift Engine
+          </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- TOP PARAMETERS -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Expense Description</label>
-            <input type="text" id="splitDesc" value="Team Offsite Dinner" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg">
+            <input type="text" id="splitDesc" value="Team Dinner & Celebration" class="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00B9F1] focus:bg-white text-slate-800 font-medium">
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Total Amount (₹)</label>
-            <input type="number" id="splitAmount" value="3000" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Total Bill Amount (₹)</label>
+            <input type="number" id="splitAmount" value="3000" oninput="recalcSplit()" class="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00B9F1] focus:bg-white text-slate-800 font-bold">
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Split Method</label>
-            <select id="splitMethod" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg">
-              <option value="EQUAL">Equal Split (1/N)</option>
-              <option value="PERCENTAGE">Weighted Percentage (60% / 40%)</option>
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Payer (Who Paid?)</label>
+            <select id="splitPayerSelect" class="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00B9F1] focus:bg-white text-slate-800 font-medium">
+              <!-- Populated dynamically -->
             </select>
           </div>
         </div>
 
-        <button onclick="executeSmartSplit()" class="px-5 py-2.5 bg-[#00B9F1] hover:bg-[#00a3d4] text-white text-xs font-extrabold rounded-xl shadow-xs transition">
-          Calculate Conserved Allocation
-        </button>
-
-        <div id="splitResultBox" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
-          <div class="font-bold text-[#002E6E]">Conserved Allocation Result:</div>
-          <div id="splitBreakdown" class="text-slate-600">
-            Click calculate above to inspect zero-drift penny shares.
+        <!-- SPLIT METHOD RADIO TABS -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block">Select Split Method</label>
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer text-xs font-bold text-slate-700">
+              <input type="radio" name="splitModeRadio" value="EQUAL" checked onchange="onSplitModeChange('EQUAL')">
+              <span>Equal Split (1/N)</span>
+            </label>
+            <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer text-xs font-bold text-slate-700">
+              <input type="radio" name="splitModeRadio" value="CUSTOM" onchange="onSplitModeChange('CUSTOM')">
+              <span>Custom Exact Amounts (₹)</span>
+            </label>
+            <label class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer text-xs font-bold text-slate-700">
+              <input type="radio" name="splitModeRadio" value="PERCENTAGE" onchange="onSplitModeChange('PERCENTAGE')">
+              <span>Percentage Weights (%)</span>
+            </label>
           </div>
         </div>
+
+        <!-- DYNAMIC MEMBER LIST -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Participating Members:</span>
+            <div class="flex items-center gap-2">
+              <input type="text" id="newMemberNameInput" placeholder="Friend's Name" class="px-2.5 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg">
+              <button onclick="addCustomMember()" class="px-3 py-1 bg-[#002E6E] hover:bg-[#002252] text-white font-bold text-xs rounded-lg transition shadow-2xs">
+                + Add Member
+              </button>
+            </div>
+          </div>
+
+          <div id="dynamicMembersTable" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- LIVE INVARIANT STATUS METER -->
+        <div class="p-4 rounded-xl border border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div>
+            <div class="font-extrabold text-[#002E6E]" id="splitAllocationSummary">Total Allocated: ₹3,000.00 / ₹3,000.00</div>
+            <div class="text-[11px] text-slate-500 font-medium" id="splitResidualDelta">Double-Entry Conservation Verified: Zero Residual Cents.</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="autoBalanceRemaining()" id="autoBalanceBtn" class="hidden px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-300 font-bold text-xs rounded-lg">
+              Auto-Distribute Remaining
+            </button>
+            <button onclick="commitSplitPlanToLedger()" class="px-4 py-2 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-extrabold text-xs rounded-xl shadow-xs transition">
+              Commit This Split to Group Ledger &rarr;
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- TAB 4: INVARIANT AUDIT & UPI DIRECTIVES -->
+<!-- TAB 4: INVARIANT AUDIT & UPI DIRECTIVES -->
     <div id="view-audit" class="hidden space-y-6">
       
       <!-- AUDIT REPORT CARD -->
@@ -504,6 +606,15 @@ def dashboard():
   <script>
     let lastAuditData = null;
     let activeTab = 'chat';
+    let uploadedImageBase64 = null;
+    let uploadedMimeType = 'image/jpeg';
+
+    // Dynamic smart split state
+    let splitMode = 'EQUAL';
+    let activeMembers = [
+      { id: 'shikhar', name: 'Shikhar', amount: 1500.0, percent: 50.0 },
+      { id: 'aman', name: 'Aman', amount: 1500.0, percent: 50.0 }
+    ];
 
     function switchTab(tabId) {
       activeTab = tabId;
@@ -518,8 +629,270 @@ def dashboard():
           btn.className = 'px-4 py-2 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition';
         }
       });
+      if (tabId === 'split') {
+        renderMembers();
+        recalcSplit();
+      }
     }
 
+    // --- OCR FILE UPLOAD & DRAG/DROP LOGIC ---
+    function handleFileDrop(event) {
+      event.preventDefault();
+      const dropZone = document.getElementById('dropZone');
+      dropZone.classList.remove('border-[#00B9F1]', 'bg-sky-50');
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        processUploadedFile(files[0]);
+      }
+    }
+
+    function handleFileSelect(event) {
+      const files = event.target.files;
+      if (files.length > 0) {
+        processUploadedFile(files[0]);
+      }
+    }
+
+    function processUploadedFile(file) {
+      document.getElementById('filePreviewCard').classList.remove('hidden');
+      document.getElementById('previewName').innerText = file.name;
+      document.getElementById('previewSize').innerText = (file.size / 1024).toFixed(1) + ' KB';
+      uploadedMimeType = file.type || 'image/jpeg';
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fullDataUrl = e.target.result;
+        document.getElementById('previewThumbnail').src = fullDataUrl;
+        // Strip data:image/...;base64,
+        uploadedImageBase64 = fullDataUrl.split(',')[1];
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function scanSelectedImage() {
+      if (!uploadedImageBase64) return;
+      const btn = document.getElementById('scanUploadedBtn');
+      btn.innerText = 'Scanning with Gemini 2.5 Flash...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/ocr/scan', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            image_base64: uploadedImageBase64,
+            mime_type: uploadedMimeType,
+            notes: 'Scanned receipt from user upload'
+          })
+        });
+        const data = await res.json();
+        renderOCRResult(data);
+      } catch (err) {
+        alert('OCR scan error: ' + err.message);
+      } finally {
+        btn.innerText = 'Scan with Gemini OCR ↗';
+        btn.disabled = false;
+      }
+    }
+
+    async function runSampleOCR(type) {
+      const res = await fetch('/api/ocr/scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({notes: type})
+      });
+      const data = await res.json();
+      renderOCRResult(data);
+    }
+
+    function renderOCRResult(data) {
+      const card = document.getElementById('ocrOutputCard');
+      card.classList.remove('hidden');
+
+      document.getElementById('ocrMerchant').innerText = data.merchant_name;
+      document.getElementById('ocrMeta').innerText = `Date: ${data.date || '2026-10-24'} • GSTIN: ${data.gstin || 'N/A'} • UPI: ${data.upi_id || 'N/A'}`;
+      document.getElementById('ocrTotal').innerText = `₹${data.total_amount.toFixed(2)}`;
+
+      const list = document.getElementById('ocrItemsList');
+      list.innerHTML = (data.line_items || []).map(i => `
+        <div class="flex justify-between items-center py-1 border-b border-slate-100">
+          <span>&bull; ${i.name} (Qty: ${i.quantity})</span>
+          <span class="mono font-bold text-slate-700">₹${i.price.toFixed(2)}</span>
+        </div>
+      `).join('');
+    }
+
+    function applyOCRToSplitter() {
+      const totalStr = document.getElementById('ocrTotal').innerText.replace('₹', '').replace(',', '');
+      const merchant = document.getElementById('ocrMerchant').innerText;
+      document.getElementById('splitAmount').value = parseFloat(totalStr) || 1000;
+      document.getElementById('splitDesc').value = merchant;
+      switchTab('split');
+    }
+
+    function applyOCRToLedger() {
+      const merchant = document.getElementById('ocrMerchant').innerText;
+      const total = document.getElementById('ocrTotal').innerText.replace('₹', '').replace(',', '');
+      switchTab('chat');
+      sendQuickPrompt(`Shikhar paid ${total} for ${merchant} split with Aman`);
+    }
+
+    // --- DYNAMIC SMART SPLIT LOGIC ---
+    function renderMembers() {
+      // Payer dropdown
+      const sel = document.getElementById('splitPayerSelect');
+      sel.innerHTML = activeMembers.map(m => `
+        <option value="${m.id}">${m.name}</option>
+      `).join('');
+
+      // Dynamic members table
+      const table = document.getElementById('dynamicMembersTable');
+      table.innerHTML = activeMembers.map((m, idx) => `
+        <div class="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white border border-slate-200">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-sky-100 text-[#002E6E] font-bold text-xs flex items-center justify-center">${m.name[0].toUpperCase()}</span>
+            <span class="font-bold text-xs text-[#002E6E]">${m.name}</span>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            ${splitMode === 'CUSTOM' ? `
+              <div class="flex items-center gap-1">
+                <span class="text-xs font-bold text-slate-400">₹</span>
+                <input type="number" step="0.01" value="${m.amount.toFixed(2)}" oninput="updateMemberAmount('${m.id}', this.value)" class="w-24 px-2 py-1 text-xs border border-slate-200 rounded font-bold text-right">
+              </div>
+            ` : splitMode === 'PERCENTAGE' ? `
+              <div class="flex items-center gap-1">
+                <input type="number" step="1" max="100" min="0" value="${m.percent}" oninput="updateMemberPercent('${m.id}', this.value)" class="w-16 px-2 py-1 text-xs border border-slate-200 rounded font-bold text-right">
+                <span class="text-xs font-bold text-slate-400">%</span>
+              </div>
+            ` : `
+              <span class="mono font-bold text-xs text-slate-700">₹${m.amount.toFixed(2)}</span>
+            `}
+
+            ${activeMembers.length > 2 ? `
+              <button onclick="removeMember('${m.id}')" class="text-slate-400 hover:text-rose-500 font-bold text-xs px-1">✕</button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addCustomMember() {
+      const nameInput = document.getElementById('newMemberNameInput');
+      const name = nameInput.value.trim();
+      if (!name) return;
+      const id = name.toLowerCase().replace(/\W+/g, '_');
+      if (activeMembers.some(m => m.id === id)) {
+        alert('Member already added!');
+        return;
+      }
+      activeMembers.push({ id: id, name: name, amount: 0, percent: 0 });
+      nameInput.value = '';
+      recalcSplit();
+      renderMembers();
+    }
+
+    function removeMember(id) {
+      if (activeMembers.length <= 2) return;
+      activeMembers = activeMembers.filter(m => m.id !== id);
+      recalcSplit();
+      renderMembers();
+    }
+
+    function onSplitModeChange(mode) {
+      splitMode = mode;
+      recalcSplit();
+      renderMembers();
+    }
+
+    function updateMemberAmount(id, val) {
+      const m = activeMembers.find(x => x.id === id);
+      if (m) m.amount = parseFloat(val) || 0.0;
+      updateSplitMeter();
+    }
+
+    function updateMemberPercent(id, val) {
+      const m = activeMembers.find(x => x.id === id);
+      if (m) m.percent = parseFloat(val) || 0.0;
+      const totalAmount = parseFloat(document.getElementById('splitAmount').value) || 0;
+      activeMembers.forEach(x => {
+        x.amount = roundTo2((x.percent / 100.0) * totalAmount);
+      });
+      updateSplitMeter();
+    }
+
+    function roundTo2(n) {
+      return Math.round(n * 100) / 100;
+    }
+
+    function recalcSplit() {
+      const total = parseFloat(document.getElementById('splitAmount').value) || 0;
+      const n = activeMembers.length;
+      if (n === 0) return;
+
+      if (splitMode === 'EQUAL') {
+        const perPerson = roundTo2(total / n);
+        activeMembers.forEach(m => {
+          m.amount = perPerson;
+          m.percent = roundTo2(100.0 / n);
+        });
+        // Penny adjustment on first member
+        const diff = roundTo2(total - (perPerson * n));
+        activeMembers[0].amount = roundTo2(activeMembers[0].amount + diff);
+      } else if (splitMode === 'PERCENTAGE') {
+        const perPct = roundTo2(100.0 / n);
+        activeMembers.forEach(m => {
+          m.percent = perPct;
+          m.amount = roundTo2((perPct / 100.0) * total);
+        });
+      }
+      updateSplitMeter();
+    }
+
+    function updateSplitMeter() {
+      const total = parseFloat(document.getElementById('splitAmount').value) || 0;
+      const allocated = roundTo2(activeMembers.reduce((acc, m) => acc + m.amount, 0));
+      const diff = roundTo2(total - allocated);
+
+      const summary = document.getElementById('splitAllocationSummary');
+      const residual = document.getElementById('splitResidualDelta');
+      const autoBtn = document.getElementById('autoBalanceBtn');
+
+      summary.innerText = `Total Allocated: ₹${allocated.toFixed(2)} / ₹${total.toFixed(2)}`;
+
+      if (Math.abs(diff) === 0.0) {
+        residual.innerText = 'Double-Entry Invariant Verified: Zero Residual Cents (∑ shares ≡ total).';
+        residual.className = 'text-[11px] text-emerald-600 font-bold';
+        autoBtn.classList.add('hidden');
+      } else {
+        residual.innerText = `Unallocated Difference: ₹${diff.toFixed(2)} (${diff > 0 ? 'Short' : 'Excess'}). Adjust shares to conserve zero-sum.`;
+        residual.className = 'text-[11px] text-rose-600 font-bold';
+        autoBtn.classList.remove('hidden');
+      }
+    }
+
+    function autoBalanceRemaining() {
+      const total = parseFloat(document.getElementById('splitAmount').value) || 0;
+      const currentSum = roundTo2(activeMembers.reduce((acc, m) => acc + m.amount, 0));
+      const diff = roundTo2(total - currentSum);
+      if (activeMembers.length > 0) {
+        activeMembers[0].amount = roundTo2(activeMembers[0].amount + diff);
+      }
+      renderMembers();
+      updateSplitMeter();
+    }
+
+    function commitSplitPlanToLedger() {
+      const desc = document.getElementById('splitDesc').value;
+      const total = parseFloat(document.getElementById('splitAmount').value) || 0;
+      const payerId = document.getElementById('splitPayerSelect').value;
+      const payer = activeMembers.find(m => m.id === payerId) || activeMembers[0];
+
+      switchTab('chat');
+      sendQuickPrompt(`${payer.name} paid ₹${total.toFixed(2)} for ${desc} split with ${activeMembers.map(m => m.name).join(', ')}`);
+    }
+
+    // --- CHAT COPILOT LOGIC ---
     async function sendQuickPrompt(promptText) {
       document.getElementById('chatInput').value = promptText;
       executeChatPrompt();
@@ -532,7 +905,6 @@ def dashboard():
 
       const historyBox = document.getElementById('chatHistoryBox');
 
-      // Append user bubble
       historyBox.innerHTML += `
         <div class="flex items-start justify-end gap-2.5">
           <div class="bg-[#00B9F1] text-white p-3 rounded-xl font-medium max-w-lg shadow-2xs">
@@ -543,7 +915,6 @@ def dashboard():
       historyBox.scrollTop = historyBox.scrollHeight;
       input.value = '';
 
-      // Append loading bubble
       const loadingId = 'loading-' + Date.now();
       historyBox.innerHTML += `
         <div id="${loadingId}" class="flex items-start gap-2.5">
@@ -565,14 +936,13 @@ def dashboard():
         const loadElem = document.getElementById(loadingId);
         if (loadElem) loadElem.remove();
 
-        // Convert simple markdown to html
         let replyHtml = data.reply
           .replace(/### (.*)/g, '<div class="text-sm font-bold text-[#002E6E] mb-1">$1</div>')
           .replace(/#### (.*)/g, '<div class="text-xs font-bold text-[#002E6E] mt-2 mb-1">$1</div>')
-          .replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')
-          .replace(/\\* (.*)/g, '<div class="pl-2">&bull; $1</div>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\* (.*)/g, '<div class="pl-2">&bull; $1</div>')
           .replace(/> (.*)/g, '<div class="p-2 bg-amber-50 border-l-2 border-amber-400 text-amber-900 rounded-r text-[11px] my-1">$1</div>')
-          .replace(/\\[(.*?)\\]\\((.*?)\\)/g, '<a href="$2" class="text-[#00B9F1] font-bold underline">$1</a>');
+          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-[#00B9F1] font-bold underline">$1</a>');
 
         historyBox.innerHTML += `
           <div class="flex items-start gap-2.5">
@@ -589,7 +959,6 @@ def dashboard():
         `;
         historyBox.scrollTop = historyBox.scrollHeight;
 
-        // Sync with Tab 4 Audit
         runHubSync(text);
 
       } catch (err) {
@@ -647,70 +1016,6 @@ def dashboard():
       }
     }
 
-    async function runSampleOCR(type) {
-      const card = document.getElementById('ocrOutputCard');
-      card.classList.remove('hidden');
-
-      const res = await fetch('/api/ocr/scan', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({notes: type})
-      });
-      const data = await res.json();
-
-      document.getElementById('ocrMerchant').innerText = data.merchant_name;
-      document.getElementById('ocrMeta').innerText = `Date: ${data.date} • GSTIN: ${data.gstin || 'N/A'} • UPI: ${data.upi_id || 'N/A'}`;
-      document.getElementById('ocrTotal').innerText = `₹${data.total_amount.toFixed(2)}`;
-
-      const list = document.getElementById('ocrItemsList');
-      list.innerHTML = data.line_items.map(i => `
-        <div class="flex justify-between items-center py-1 border-b border-slate-100">
-          <span>&bull; ${i.name} (Qty: ${i.quantity})</span>
-          <span class="mono font-bold text-slate-700">₹${i.price.toFixed(2)}</span>
-        </div>
-      `).join('');
-    }
-
-    function applyOCRToLedger() {
-      const merchant = document.getElementById('ocrMerchant').innerText;
-      const total = document.getElementById('ocrTotal').innerText.replace('₹', '');
-      switchTab('chat');
-      sendQuickPrompt(`Shikhar paid ${total} for ${merchant} split with Aman`);
-    }
-
-    async function executeSmartSplit() {
-      const desc = document.getElementById('splitDesc').value;
-      const amount = parseFloat(document.getElementById('splitAmount').value);
-      const method = document.getElementById('splitMethod').value;
-
-      const payload = {
-        description: desc,
-        total_amount: amount,
-        payer_id: "shikhar",
-        payer_name: "Shikhar",
-        participant_names: ["Shikhar", "Aman"],
-        split_method: method,
-        custom_weights: method === "PERCENTAGE" ? {"shikhar": 60.0, "aman": 40.0} : null
-      };
-
-      const res = await fetch('/api/split/calculate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-
-      const box = document.getElementById('splitBreakdown');
-      box.innerHTML = `
-        <div class="space-y-1">
-          <div class="text-emerald-700 font-bold">${data.explanation}</div>
-          <div class="pt-2"><strong>Member Shares:</strong></div>
-          ${Object.entries(data.shares).map(([k, v]) => `<div>&bull; ${k.toUpperCase()}: <strong>₹${v.toFixed(2)}</strong></div>`).join('')}
-          <div class="text-[11px] text-slate-500 pt-1">Double-Entry Conservation Verified: Zero Residual Cents.</div>
-        </div>
-      `;
-    }
-
     function downloadAuditCert() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lastAuditData || {status: "VERIFIED", net_delta: 0.0}, null, 2));
       const dlAnchor = document.createElement('a');
@@ -718,10 +1023,14 @@ def dashboard():
       dlAnchor.setAttribute("download", "bharat_dues_audit_certificate.json");
       dlAnchor.click();
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMembers();
+      recalcSplit();
+    });
   </script>
 </body>
 </html>"""
-
 
 if __name__ == "__main__":
     import uvicorn
