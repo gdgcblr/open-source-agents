@@ -1,0 +1,110 @@
+{
+  "_about": "Shared by tests/test_rule_cases.py (Python rules) and tests/test_offline_rules.js (browser rules), so the two cannot drift. expect: 'safe' = verdict safe; 'flagged' = suspicious or scam; 'scam' = scam. Do not copy messages from eval/heldout.jsonl here.",
+  "cases": [
+    {
+      "gap": "C4 family impersonation",
+      "expect": "flagged",
+      "text": "Hi Dad, this is my new number, my old phone fell in water. Please send money for the hostel fee today."
+    },
+    {
+      "gap": "C4 family impersonation",
+      "expect": "flagged",
+      "text": "Mummy ye mera naya number hai, jaldi 3000 paise bhej do, baad me bataunga."
+    },
+    {
+      "gap": "C4 family impersonation",
+      "expect": "flagged",
+      "text": "माँ, यह मेरा नया नंबर है, थोड़े पैसे भेज दो।"
+    },
+    {
+      "gap": "C4 family impersonation",
+      "expect": "safe",
+      "text": "Hey, this is my new number, please save it. See you at dinner."
+    },
+    {
+      "gap": "C5 romanised Hindi",
+      "expect": "flagged",
+      "text": "Aapki bijli kaat di jayegi aaj raat 9 baje. Turant officer ko call karein."
+    },
+    {
+      "gap": "C5 romanised Hindi",
+      "expect": "flagged",
+      "text": "Aapka bank khata band ho jayega, abhi verify karein."
+    },
+    {
+      "gap": "C5 romanised Hindi",
+      "expect": "safe",
+      "text": "Kal bijli nahi rahegi 10 se 2 baje tak, maintenance ka kaam hai."
+    },
+    {
+      "gap": "C6 OTP notice",
+      "expect": "safe",
+      "text": "123456 is your OTP for login to net banking. Do not share it with anyone. - SBI"
+    },
+    {
+      "gap": "C6 OTP notice",
+      "expect": "safe",
+      "text": "Never share your OTP, UPI PIN or CVV with anyone. Bank staff will never ask for them."
+    },
+    {
+      "gap": "C6 OTP notice",
+      "expect": "safe",
+      "text": "Your OTP is 5544 for your train booking. Valid for 10 minutes."
+    },
+    {
+      "gap": "C6 OTP request",
+      "expect": "flagged",
+      "text": "Sir please share the OTP you just received to complete your verification."
+    },
+    {
+      "gap": "C7 refund credited",
+      "expect": "safe",
+      "text": "Your refund of Rs 450 has been credited to your original payment method."
+    },
+    {
+      "gap": "C7 refund credited",
+      "expect": "safe",
+      "text": "Refund of ₹2,000 has been credited to your account XX1234."
+    },
+    {
+      "gap": "C7 refund lure",
+      "expect": "flagged",
+      "text": "Tax refund of Rs 15,490 approved. Submit your bank details at incometax-refund.top to receive it."
+    },
+    {
+      "gap": "baseline",
+      "expect": "scam",
+      "text": "Congratulations you have won the KBC lottery, pay registration fee Rs 5000 to claim."
+    },
+    {
+      "gap": "baseline",
+      "expect": "scam",
+      "text": "Update KYC now at https://sbi-kyc-update.xyz/login or your account will be blocked."
+    },
+    {
+      "gap": "baseline",
+      "expect": "scam",
+      "text": "Scan the QR to receive money and enter your UPI PIN."
+    },
+    {
+      "gap": "baseline",
+      "expect": "flagged",
+      "text": "Install AnyDesk so our executive can fix your account."
+    },
+    {
+      "gap": "baseline",
+      "expect": "safe",
+      "text": "Meeting moved to 4 pm tomorrow."
+    },
+    {
+      "gap": "baseline",
+      "expect": "safe",
+      "text": "Your order is out for delivery. Track it at amazon.in/orders."
+    },
+    {
+      "gap": "genuine UPI debit alert with payee VPA and helpline",
+      "expect": "safe",
+      "text": "Dear Customer, Rs.2500.00 is debited from your account ending 1234 towards VPA ravi.kumar12@okaxis (RAVI KUMAR) on 05-10-26. UPI transaction reference no.: 512345678901. If you did not authorize this transaction, please report it immediately at 1800 000 0000 or SMS 'BLOCK UPI' to 9000000000. Warm regards, Your Bank"
+    }
+  ]
+}

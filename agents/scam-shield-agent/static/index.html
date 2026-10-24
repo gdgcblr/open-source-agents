@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scam Shield</title>
+<meta name="description" content="Check if a message is a scam. Works offline, on any phone, in 8 Indian languages.">
+<meta name="theme-color" content="#0b57d0">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icon.svg">
+<style>
+:root{--bg:#f7f9fc;--card:#fff;--text:#111;--muted:#444;--border:#8a8f98;--line:#d6dce5;--primary:#0b57d0;--on-primary:#fff;--tint:#e8f0fe;
+--hero:radial-gradient(90% 70% at 85% 0,#d6e4fd 0,transparent 70%),linear-gradient(#eef3fd,#f7f9fc);--shadow:0 1px 2px #1018280f,0 16px 40px -12px #10182833;
+--scam:#b3261e;--scam-bg:#fde7e6;--sus:#7a4f00;--sus-bg:#fff4d6;--safe:#146c2e;--safe-bg:#e3f6e8;--focus:#ff8c00}
+@media (prefers-color-scheme:dark){:root:not([data-contrast=high]){--bg:#111418;--card:#1c2026;--text:#f1f3f6;--muted:#c4c7cc;
+--border:#8a8f98;--line:#343a44;--primary:#a8c7fa;--on-primary:#062e6f;--tint:#1f2b40;
+--hero:radial-gradient(90% 70% at 85% 0,#1c2f52 0,transparent 70%),linear-gradient(#141b26,#111418);--shadow:0 16px 40px -12px #000a;
+--scam:#ffb4ab;--scam-bg:#410e0b;--sus:#ffd47a;--sus-bg:#3a2a00;--safe:#8fd9a0;--safe-bg:#0e2e17}}
+:root[data-contrast=high]{--bg:#000;--card:#000;--text:#fff;--muted:#fff;--border:#fff;--line:#fff;--primary:#ff0;--on-primary:#000;--tint:#000;
+--hero:none;--shadow:none;--scam:#fff;--scam-bg:#000;--sus:#fff;--sus-bg:#000;--safe:#fff;--safe-bg:#000;--focus:#0ff}
+:root[data-large=on]{font-size:125%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:1rem/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;overflow-wrap:break-word}
+h1,h2,h3{line-height:1.25}
+a{color:var(--primary)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+.ic{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
+label{font-weight:600;display:block;margin-bottom:6px}
+textarea,select{width:100%;font:inherit;color:var(--text);background:var(--card);border:2px solid var(--border);border-radius:10px;padding:12px}
+textarea{min-height:8rem;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+button,.btn,.set>summary{min-height:48px;min-width:48px;font:inherit;font-weight:600;border-radius:10px;border:2px solid var(--primary);
+background:transparent;color:var(--text);padding:10px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center;text-decoration:none}
+.row>button,.row>.btn{flex:1 1 140px}
+@media (hover:hover){button:not(.primary):hover,.btn:not(.call):hover,.set>summary:hover{background:var(--tint)}}
+button.primary{background:var(--primary);color:var(--on-primary);width:100%;font-size:1.15rem;margin-top:12px;min-height:56px;border-radius:12px}
+button[aria-pressed=true]{background:var(--primary)!important;color:var(--on-primary)}
+button.link{border-color:transparent;color:var(--primary);text-decoration:underline;padding:8px 10px;margin:0 -10px 0 0}
+:focus-visible,label.btn:has(+input:focus-visible){outline:4px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:-999px;color:var(--text)}.skip:focus{left:16px;top:8px;background:var(--card);padding:12px;z-index:9}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.top{background:var(--card);border-bottom:1px solid var(--line)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding-top:10px;padding-bottom:10px;position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;margin-right:auto;letter-spacing:-.01em}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center}
+.lang{position:relative}.lang .ic{position:absolute;left:12px;top:12px;pointer-events:none}
+.lang select{width:auto;min-height:48px;padding:8px 10px 8px 44px}
+.set>summary{list-style:none}.set>summary::-webkit-details-marker{display:none}
+.toggles{display:grid;gap:8px}
+.set .toggles{position:absolute;z-index:5;right:16px;top:calc(100% - 4px);width:min(340px,calc(100vw - 32px));background:var(--card);
+border:1px solid var(--border);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
+.hero{background-color:var(--bg);background-image:var(--hero)}
+.hero>.wrap{display:grid;gap:16px;padding-top:20px;padding-bottom:48px}
+.hero h1{font-size:clamp(1.6rem,1.1rem + 2.6vw,3.1rem);letter-spacing:-.02em;margin:0;line-height:1.15}
+.checker>.card{box-shadow:var(--shadow);border-radius:20px;padding:20px}
+.lab{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0 8px;margin-bottom:6px}.lab label{margin:0}
+.lead{font-size:clamp(1rem,.95rem + .4vw,1.2rem);color:var(--muted);margin:0 0 16px;max-width:34em}
+.points{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px}
+.points li{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;font-weight:600}
+.points .ic,.badge{color:var(--primary)}
+.result{border-width:3px}
+.result.scam{background:var(--scam-bg);border-color:var(--scam);color:var(--scam)}
+.result.suspicious{background:var(--sus-bg);border-color:var(--sus);color:var(--sus)}
+.result.safe{background:var(--safe-bg);border-color:var(--safe);color:var(--safe)}
+.result h2{margin:0;font-size:1.5rem}
+.result p,.result li{color:var(--text)}
+.meter{height:12px;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin:8px 0}
+.meter>span{display:block;height:100%;background:currentColor}
+.note{font-size:.9rem;color:var(--muted)}
+details summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-weight:600}
+#thumb{max-width:120px;max-height:120px;border-radius:8px;border:1px solid var(--border)}
+.sec{padding:56px 0}
+.alt{background:var(--card);border-block:1px solid var(--line)}
+.sec h2{font-size:clamp(1.5rem,1.2rem + 1.4vw,2.25rem);letter-spacing:-.01em;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 24px;max-width:40em}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.tile,.step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+.alt .tile{background:var(--bg)}
+.tile h3,.step h3{font-size:1.1rem;margin:12px 0 4px}
+.tile p,.step p{margin:0;color:var(--muted)}
+.badge,.num{width:44px;height:44px;border-radius:12px;background:var(--tint);display:grid;place-items:center}
+.num{border-radius:50%;background:var(--primary);color:var(--on-primary);font-weight:800;font-size:1.1rem}
+.steps{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:24px}
+.step{position:relative}
+.step+.step::before{content:"";position:absolute;left:41px;top:-26px;height:24px;border-left:2px dashed var(--border)}
+.agents{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.agents li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--tint);border:1px solid var(--line)}
+.agents .ic{color:var(--primary)}
+.warn{background:var(--scam-bg)!important;border:2px solid var(--scam)}.warn .badge{color:var(--scam);background:var(--card)}
+.warn p{color:var(--text)}
+.foot{background:var(--card);border-top:1px solid var(--line);padding:32px 0 40px}
+.help{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;background:var(--scam-bg);border:2px solid var(--scam);border-radius:18px;padding:16px 20px}
+.help p{margin:0;flex:1 1 260px}
+.help a{color:var(--text);font-weight:700;display:inline-flex;align-items:center;min-height:48px}
+.help a.call{background:var(--scam);color:var(--scam-bg);border-color:var(--scam);font-size:1.25rem;padding:10px 22px}
+.meta{display:flex;flex-wrap:wrap;gap:0 32px;justify-content:space-between;margin-top:20px;color:var(--muted);font-size:.95rem}
+.meta p{margin:8px 0;flex:1 1 300px}.meta a{color:var(--text);display:inline-block;padding:12px 0;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+@media (min-width:600px){.wrap{padding:0 24px}.set .toggles{right:24px}}
+@media (min-width:900px){.hero>.wrap{grid-template-columns:1fr minmax(0,500px);grid-template-areas:"h c" "m c";align-items:start;column-gap:56px;
+padding-top:64px;padding-bottom:88px}.hero h1{grid-area:h;align-self:end}.checker{grid-area:c}.more{grid-area:m}
+.sec{padding:80px 0}.steps{grid-template-columns:1fr 1.3fr 1fr}
+.step+.step::before{left:-26px;top:42px;width:24px;height:0;border-left:0;border-top:2px dashed var(--border)}}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}button,.btn,.set>summary{transition:background-color .15s}
+.busy::after{content:"";width:1em;height:1em;border:3px solid currentColor;
+border-right-color:transparent;border-radius:50%;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(1turn)}}}
+@media (forced-colors:active){.meter>span{background:CanvasText}}
+</style>
+</head>
+<body>
+<a class="skip" href="#msg" data-i="skip">Skip to message box</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10.5-4.6-1.9-8-5.5-8-10.5v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-lang" viewBox="0 0 24 24"><path d="M3 5h10M8 3v2M5 5c1 4 4 7 7 8M11 5c-1 4-4 7-7 8M13 21l4-9 4 9M14.5 18h5"/></symbol>
+<symbol id="i-a11y" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><path d="M4 8.5l8 2 8-2M12 10.5v4.5l-3.5 6M12 15l3.5 6"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+<symbol id="i-cam" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+<symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+<symbol id="i-pay" viewBox="0 0 24 24"><path d="M6 4h12M6 9h12M8 4h1a5 5 0 0 1 0 10H6l8 7"/></symbol>
+<symbol id="i-find" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1Q11.3 6 12 6c5 0 9 6 9 6a17 17 0 0 1-2.6 3.2M6.6 7.6C4.3 9.2 3 12 3 12s4 6 9 6c1.6 0 3-.4 4.3-1.1"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></symbol>
+<symbol id="i-call" viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></symbol>
+</svg>
+<header class="top">
+  <div class="wrap bar">
+    <div class="brand"><span class="logo"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg></span><span data-i="title">Scam Shield</span></div>
+    <div class="lang">
+      <label for="lang" class="sr" data-i="language">Language</label>
+      <svg class="ic" aria-hidden="true"><use href="#i-lang"/></svg>
+      <select id="lang">
+        <option value="en">English</option><option value="hi">हिन्दी</option><option value="kn">ಕನ್ನಡ</option>
+        <option value="ta">தமிழ்</option><option value="te">తెలుగు</option><option value="ml">മലയാളം</option>
+        <option value="mr">मराठी</option><option value="bn">বাংলা</option>
+      </select>
+    </div>
+    <details class="set" id="set">
+      <summary><svg class="ic" aria-hidden="true"><use href="#i-a11y"/></svg><span data-i="settings">Accessibility settings</span></summary>
+      <div class="toggles">
+        <button type="button" id="t-large" aria-pressed="false" data-i="large">Larger text</button>
+        <button type="button" id="t-contrast" aria-pressed="false" data-i="contrast">High contrast</button>
+        <button type="button" id="t-simple" aria-pressed="false" data-i="simple">Simple words</button>
+        <button type="button" id="t-read" aria-pressed="false" data-i="autoread">Read result aloud automatically</button>
+      </div>
+    </details>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="wrap">
+      <h1 id="hero-h" data-i="hero">Check a message before you click, pay or reply.</h1>
+
+      <div class="checker">
+        <form class="card" id="form">
+          <div class="lab">
+            <label for="msg" data-i="label">Paste or speak the message</label>
+            <button type="button" id="ex" class="link" data-i="ex">Try an example</button>
+          </div>
+          <textarea id="msg" data-i-ph="placeholder" placeholder="Example: Your SBI account will be blocked today. Update KYC at sbi-kyc.xyz"></textarea>
+          <div class="row">
+            <button type="button" id="mic"><svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg> <span data-i="speak">Speak</span></button>
+            <label class="btn" for="photo" style="margin:0"><svg class="ic" aria-hidden="true"><use href="#i-cam"/></svg> <span data-i="photo">Screenshot</span></label>
+            <input type="file" id="photo" accept="image/*" class="sr">
+          </div>
+          <div class="row" id="thumbrow" hidden>
+            <img id="thumb" alt="">
+            <button type="button" id="rmphoto" data-i="remove">Remove screenshot</button>
+          </div>
+          <button type="submit" class="primary" id="go"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span data-i="check">Check message</span></button>
+        </form>
+
+        <p id="status" class="note" role="status" aria-live="polite"></p>
+
+        <section id="result" class="card result" hidden aria-labelledby="r-title">
+          <h2 id="r-title" tabindex="-1"></h2>
+          <div class="meter" aria-hidden="true"><span id="r-bar"></span></div>
+          <p id="r-score"></p>
+          <p id="r-summary"></p>
+          <h3 data-i="flags">Warning signs</h3>
+          <ul id="r-flags"></ul>
+          <h3 data-i="advice">What to do</h3>
+          <ul id="r-advice"></ul>
+          <button type="button" id="speakbtn"><svg class="ic" aria-hidden="true"><use href="#i-vol"/></svg> <span data-i="read">Read aloud</span></button>
+          <p id="r-mode" class="note"></p>
+        </section>
+      </div>
+
+      <div class="more">
+        <p class="lead" data-i="lead">Paste, speak, share or screenshot any SMS or WhatsApp message. Scam Shield tells you in your language if it is a scam, why, and what to do next.</p>
+        <ul class="points">
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i="ft_off_h">Works offline</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i="ft_lang_h">8 Indian languages</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span data-i="pv_track_h">No trackers</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec alt" aria-labelledby="how-h">
+    <div class="wrap">
+      <h2 id="how-h" data-i="how_h">How it works</h2>
+      <p class="sub" data-i="built">Built with Google ADK and Gemini.</p>
+      <ol class="steps">
+        <li class="step">
+          <span class="num" aria-hidden="true">1</span>
+          <h3 data-i="st1_h">Instant check on your phone</h3>
+          <p data-i="st1">Built-in rules check the message right away, even with no internet.</p>
+        </li>
+        <li class="step">
+          <span class="num" aria-hidden="true">2</span>
+          <h3 data-i="st2_h">Three AI investigators, in parallel</h3>
+          <ul class="agents">
+            <li><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg><span data-i="ag_link">Links: fake, short and look-alike websites</span></li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-pay"/></svg><span data-i="ag_pay">Payments: requests for OTP, UPI PIN, fees or QR scans</span></li>
+            <li><svg class="ic" aria-hidden="true"><use href="#i-find"/></svg><span data-i="ag_pat">Scam patterns: KYC, parcel, job, digital arrest and more</span></li>
+          </ul>
+        </li>
+        <li class="step">
+          <span class="num" aria-hidden="true">3</span>
+          <h3 data-i="st3_h">One clear verdict</h3>
+          <p data-i="st3">A verdict agent gives a risk score, the warning signs and what to do, in your language.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="feat-h">
+    <div class="wrap grid">
+      <div>
+        <h2 id="feat-h" data-i="feat_h">Made for every phone and every person</h2>
+        <p class="sub" data-i="feat_p">Built for low-cost phones, slow networks and people who need a little more help.</p>
+      </div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg></span>
+        <h3 data-i="ft_off_h">Works offline</h3><p data-i="ft_off">The quick check runs on your phone, with no internet.</p></div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-lang"/></svg></span>
+        <h3 data-i="ft_lang_h">8 Indian languages</h3><p>English · <span lang="hi">हिन्दी</span> · <span lang="kn">ಕನ್ನಡ</span> · <span lang="ta">தமிழ்</span> · <span lang="te">తెలుగు</span> · <span lang="ml">മലയാളം</span> · <span lang="mr">मराठी</span> · <span lang="bn">বাংলা</span></p></div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-cam"/></svg></span>
+        <h3 data-i="ft_shot_h">Screenshot check</h3><p data-i="ft_shot">Add a screenshot and the AI reads the message for you.</p></div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg></span>
+        <h3 data-i="ft_voice_h">Voice and read-aloud</h3><p data-i="ft_voice">Speak the message and hear the answer.</p></div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-a11y"/></svg></span>
+        <h3 data-i="ft_a11y_h">Accessible for everyone</h3><p data-i="ft_a11y">Large text, high contrast, simple words, keyboard and screen-reader support.</p></div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg></span>
+        <h3 data-i="ft_share_h">Share from WhatsApp</h3><p data-i="ft_share">On Android, add Scam Shield to your home screen, then share any message to it.</p></div>
+      <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg></span>
+        <h3 data-i="ft_tiny_h">Tiny and fast</h3><p data-i="ft_tiny">No big downloads. Made for 2G and 3G networks.</p></div>
+    </div>
+  </section>
+
+  <section class="sec alt" aria-labelledby="priv-h">
+    <div class="wrap">
+      <h2 id="priv-h" data-i="priv_h">Privacy and safety</h2>
+      <div class="grid">
+        <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg></span>
+          <h3 data-i="pv_store_h">Messages are not stored</h3><p data-i="pv_store">Each check is deleted when it ends. For the AI check, the message is sent to Google Gemini.</p></div>
+        <div class="tile"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg></span>
+          <h3 data-i="pv_track_h">No trackers</h3><p data-i="pv_track">No accounts, no ads, no analytics, no third-party scripts.</p></div>
+        <div class="tile warn"><span class="badge"><svg class="ic" aria-hidden="true"><use href="#i-warn"/></svg></span>
+          <h3 data-i="pv_bank_h">Banks never ask for OTP or PIN</h3><p data-i="pv_bank">Anyone who asks for your OTP, UPI PIN or password is a scammer. Never share them.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="help">
+      <p><strong data-i="lost">Lost money to a scam?</strong> <span data-i="help">Call 1930 immediately or report at</span>
+        <a href="https://cybercrime.gov.in" rel="noopener">cybercrime.gov.in</a></p>
+      <a class="btn call" href="tel:1930"><svg class="ic" aria-hidden="true"><use href="#i-call"/></svg>1930</a>
+    </div>
+    <div class="meta">
+      <p><span data-i="foot">Free and open source. Part of the GDG Cloud Bengaluru open-source agents project.</span>
+        <a href="https://github.com/gdgcblr/open-source-agents" rel="noopener">github.com/gdgcblr/open-source-agents</a></p>
+      <p data-i="foot_ai">AI can make mistakes. If in doubt, call the company on its official number.</p>
+    </div>
+  </div>
+</footer>
+<script>
+"use strict";
+const T={
+en:{hero:"Check a message before you click, pay or reply.",lead:"Paste, speak, share or screenshot any SMS or WhatsApp message. Scam Shield tells you in your language if it is a scam, why, and what to do next.",ex:"Try an example",how_h:"How it works",built:"Built with Google ADK and Gemini.",st1_h:"Instant check on your phone",st1:"Built-in rules check the message right away, even with no internet.",st2_h:"Three AI investigators, in parallel",ag_link:"Links: fake, short and look-alike websites",ag_pay:"Payments: requests for OTP, UPI PIN, fees or QR scans",ag_pat:"Scam patterns: KYC, parcel, job, digital arrest and more",st3_h:"One clear verdict",st3:"A verdict agent gives a risk score, the warning signs and what to do, in your language.",feat_h:"Made for every phone and every person",feat_p:"Built for low-cost phones, slow networks and people who need a little more help.",ft_off_h:"Works offline",ft_off:"The quick check runs on your phone, with no internet.",ft_lang_h:"8 Indian languages",ft_shot_h:"Screenshot check",ft_shot:"Add a screenshot and the AI reads the message for you.",ft_voice_h:"Voice and read-aloud",ft_voice:"Speak the message and hear the answer.",ft_a11y_h:"Accessible for everyone",ft_a11y:"Large text, high contrast, simple words, keyboard and screen-reader support.",ft_share_h:"Share from WhatsApp",ft_share:"On Android, add Scam Shield to your home screen, then share any message to it.",ft_tiny_h:"Tiny and fast",ft_tiny:"No big downloads. Made for 2G and 3G networks.",priv_h:"Privacy and safety",pv_store_h:"Messages are not stored",pv_store:"Each check is deleted when it ends. For the AI check, the message is sent to Google Gemini.",pv_track_h:"No trackers",pv_track:"No accounts, no ads, no analytics, no third-party scripts.",pv_bank_h:"Banks never ask for OTP or PIN",pv_bank:"Anyone who asks for your OTP, UPI PIN or password is a scammer. Never share them.",foot:"Free and open source. Part of the GDG Cloud Bengaluru open-source agents project.",foot_ai:"AI can make mistakes. If in doubt, call the company on its official number.",
+skip:"Skip to message box",title:"Scam Shield",language:"Language",settings:"Accessibility settings",large:"Larger text",contrast:"High contrast",simple:"Simple words",autoread:"Read result aloud automatically",label:"Paste or speak the message",placeholder:"Example: Your SBI account will be blocked today. Update KYC at sbi-kyc.xyz",speak:"Speak",photo:"Screenshot",remove:"Remove screenshot",check:"Check message",checking:"Checking…",flags:"Warning signs",advice:"What to do",read:"Read aloud",lost:"Lost money to a scam?",help:"Call 1930 immediately or report at",scam:"Scam",suspicious:"Be careful",safe:"Looks safe",risk:"Risk",listening:"Listening… speak now",nomic:"Voice input is not supported in this browser.",photook:"Screenshot added.",empty:"Please paste a message or add a screenshot.",quick:"Quick offline check. Detailed AI check in progress…",offline:"You are offline. This is the quick offline check.",ai:"Checked by AI",rules:"Checked with built-in rules",fail:"Could not reach the AI. Showing the offline check.",
+f_link:"Suspicious or shortened link",f_brand:"Website pretends to be a bank or company",f_otp:"Asks for OTP, PIN or card details",f_pay:"Asks you to pay or scan a QR code",f_remote:"Asks you to install an app",f_urgent:"Creates panic or urgency",f_kyc:"Threatens to block your account",f_prize:"Promises a prize, money or job",f_threat:"Threatens police or legal action",f_parcel:"Fake parcel or bill problem",
+a_noclick:"Do not click links or reply.",a_noshare:"Never share OTP, PIN or passwords.",a_block:"Block and report the sender.",a_report:"Report at 1930 or cybercrime.gov.in.",a_verify:"Check with the company using their official number.",a_safe:"No warning signs found, but stay alert."},
+hi:{hero:"क्लिक, भुगतान या जवाब देने से पहले संदेश जाँचें।",lead:"कोई भी SMS या WhatsApp संदेश चिपकाएँ, बोलें, शेयर करें या उसका स्क्रीनशॉट दें। स्कैम शील्ड आपकी भाषा में बताएगा कि यह धोखाधड़ी है या नहीं, क्यों, और अब क्या करें।",ex:"उदाहरण आज़माएँ",how_h:"यह कैसे काम करता है",built:"Google ADK और Gemini से बना।",st1_h:"आपके फ़ोन पर तुरंत जाँच",st1:"बिल्ट-इन नियम संदेश को तुरंत जाँचते हैं, इंटरनेट के बिना भी।",st2_h:"तीन AI जाँचकर्ता, एक साथ",ag_link:"लिंक: नकली, छोटे और मिलते-जुलते वेबसाइट पते",ag_pay:"भुगतान: OTP, UPI PIN, फ़ीस या QR स्कैन की माँग",ag_pat:"धोखाधड़ी के तरीके: KYC, पार्सल, नौकरी, डिजिटल अरेस्ट और भी",st3_h:"एक साफ़ फ़ैसला",st3:"फ़ैसला एजेंट आपकी भाषा में जोखिम स्कोर, चेतावनी के संकेत और आगे क्या करें, बताता है।",feat_h:"हर फ़ोन और हर व्यक्ति के लिए",feat_p:"सस्ते फ़ोन, धीमे नेटवर्क और थोड़ी ज़्यादा मदद चाहने वालों के लिए बनाया गया।",ft_off_h:"ऑफ़लाइन भी चलता है",ft_off:"त्वरित जाँच आपके फ़ोन पर ही होती है, बिना इंटरनेट के।",ft_lang_h:"8 भारतीय भाषाएँ",ft_shot_h:"स्क्रीनशॉट से जाँच",ft_shot:"स्क्रीनशॉट जोड़ें, AI संदेश को आपके लिए पढ़ लेगा।",ft_voice_h:"आवाज़ और पढ़कर सुनाना",ft_voice:"संदेश बोलें और जवाब सुनें।",ft_a11y_h:"सबके लिए सुलभ",ft_a11y:"बड़ा टेक्स्ट, हाई कॉन्ट्रास्ट, आसान शब्द, कीबोर्ड और स्क्रीन रीडर सपोर्ट।",ft_share_h:"WhatsApp से शेयर करें",ft_share:"Android पर स्कैम शील्ड को होम स्क्रीन पर जोड़ें, फिर कोई भी संदेश उसमें शेयर करें।",ft_tiny_h:"छोटा और तेज़",ft_tiny:"कोई बड़ा डाउनलोड नहीं। 2G और 3G नेटवर्क के लिए बना।",priv_h:"निजता और सुरक्षा",pv_store_h:"संदेश सहेजे नहीं जाते",pv_store:"हर जाँच खत्म होते ही मिटा दी जाती है। AI जाँच के लिए संदेश Google Gemini को भेजा जाता है।",pv_track_h:"कोई ट्रैकर नहीं",pv_track:"न अकाउंट, न विज्ञापन, न एनालिटिक्स, न बाहरी स्क्रिप्ट।",pv_bank_h:"बैंक कभी OTP या PIN नहीं माँगते",pv_bank:"जो भी आपका OTP, UPI PIN या पासवर्ड माँगे, वह धोखेबाज़ है। इन्हें कभी न बताएँ।",foot:"मुफ़्त और ओपन सोर्स। GDG Cloud Bengaluru के ओपन-सोर्स एजेंट प्रोजेक्ट का हिस्सा।",foot_ai:"AI से गलती हो सकती है। शक हो तो कंपनी के आधिकारिक नंबर पर कॉल करें।",
+skip:"संदेश बॉक्स पर जाएँ",title:"स्कैम शील्ड",language:"भाषा",settings:"सुलभता सेटिंग्स",large:"बड़ा टेक्स्ट",contrast:"हाई कॉन्ट्रास्ट",simple:"आसान शब्द",autoread:"नतीजा अपने-आप पढ़कर सुनाएँ",label:"संदेश चिपकाएँ या बोलें",placeholder:"उदाहरण: आपका SBI खाता आज बंद हो जाएगा। sbi-kyc.xyz पर KYC अपडेट करें",speak:"बोलें",photo:"स्क्रीनशॉट",remove:"स्क्रीनशॉट हटाएँ",check:"संदेश जाँचें",checking:"जाँच हो रही है…",flags:"चेतावनी के संकेत",advice:"क्या करें",read:"पढ़कर सुनाएँ",lost:"धोखाधड़ी में पैसे गँवाए?",help:"तुरंत 1930 पर कॉल करें या यहाँ रिपोर्ट करें",scam:"धोखाधड़ी",suspicious:"सावधान रहें",safe:"सुरक्षित लगता है",risk:"जोखिम",listening:"सुन रहे हैं… अब बोलें",nomic:"इस ब्राउज़र में आवाज़ से लिखना उपलब्ध नहीं है।",photook:"स्क्रीनशॉट जुड़ गया।",empty:"कृपया संदेश चिपकाएँ या स्क्रीनशॉट जोड़ें।",quick:"त्वरित ऑफ़लाइन जाँच। विस्तृत AI जाँच जारी है…",offline:"आप ऑफ़लाइन हैं। यह त्वरित ऑफ़लाइन जाँच है।",ai:"AI द्वारा जाँचा गया",rules:"बिल्ट-इन नियमों से जाँचा गया",fail:"AI से संपर्क नहीं हो सका। ऑफ़लाइन जाँच दिखाई जा रही है।",
+f_link:"संदिग्ध या छोटा किया गया लिंक",f_brand:"वेबसाइट बैंक या कंपनी होने का दिखावा करती है",f_otp:"OTP, PIN या कार्ड की जानकारी माँगता है",f_pay:"भुगतान या QR स्कैन करने को कहता है",f_remote:"ऐप इंस्टॉल करने को कहता है",f_urgent:"डर या जल्दबाज़ी पैदा करता है",f_kyc:"खाता बंद करने की धमकी",f_prize:"इनाम, पैसे या नौकरी का वादा",f_threat:"पुलिस या कानूनी कार्रवाई की धमकी",f_parcel:"नकली पार्सल या बिल की समस्या",
+a_noclick:"लिंक पर क्लिक न करें, जवाब न दें।",a_noshare:"OTP, PIN या पासवर्ड कभी न बताएँ।",a_block:"भेजने वाले को ब्लॉक और रिपोर्ट करें।",a_report:"1930 या cybercrime.gov.in पर रिपोर्ट करें।",a_verify:"कंपनी के आधिकारिक नंबर पर पुष्टि करें।",a_safe:"कोई चेतावनी संकेत नहीं मिला, फिर भी सतर्क रहें।"},
+kn:{hero:"ಕ್ಲಿಕ್ ಮಾಡುವ, ಹಣ ಕಳುಹಿಸುವ ಅಥವಾ ಉತ್ತರಿಸುವ ಮೊದಲು ಸಂದೇಶವನ್ನು ಪರಿಶೀಲಿಸಿ.",lead:"ಯಾವುದೇ SMS ಅಥವಾ WhatsApp ಸಂದೇಶವನ್ನು ಅಂಟಿಸಿ, ಹೇಳಿ, ಹಂಚಿ ಅಥವಾ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಸೇರಿಸಿ. ಅದು ಮೋಸವೇ, ಯಾಕೆ ಮತ್ತು ಈಗ ಏನು ಮಾಡಬೇಕು ಎಂದು ಸ್ಕ್ಯಾಮ್ ಶೀಲ್ಡ್ ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಹೇಳುತ್ತದೆ.",ex:"ಉದಾಹರಣೆ ಪ್ರಯತ್ನಿಸಿ",how_h:"ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ",built:"Google ADK ಮತ್ತು Gemini ಬಳಸಿ ನಿರ್ಮಿಸಲಾಗಿದೆ.",st1_h:"ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲೇ ತಕ್ಷಣದ ಪರಿಶೀಲನೆ",st1:"ಅಂತರ್ಗತ ನಿಯಮಗಳು ಸಂದೇಶವನ್ನು ತಕ್ಷಣ ಪರಿಶೀಲಿಸುತ್ತವೆ, ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದಿದ್ದರೂ.",st2_h:"ಮೂರು AI ತನಿಖಾಧಿಕಾರಿಗಳು, ಒಂದೇ ಸಮಯದಲ್ಲಿ",ag_link:"ಲಿಂಕ್‌ಗಳು: ನಕಲಿ, ಚಿಕ್ಕ ಮತ್ತು ಹೋಲುವ ವೆಬ್‌ಸೈಟ್‌ಗಳು",ag_pay:"ಪಾವತಿಗಳು: OTP, UPI PIN, ಶುಲ್ಕ ಅಥವಾ QR ಸ್ಕ್ಯಾನ್ ಬೇಡಿಕೆ",ag_pat:"ಮೋಸದ ವಿಧಾನಗಳು: KYC, ಪಾರ್ಸೆಲ್, ಉದ್ಯೋಗ, ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್ ಮತ್ತು ಇನ್ನಷ್ಟು",st3_h:"ಒಂದು ಸ್ಪಷ್ಟ ತೀರ್ಪು",st3:"ತೀರ್ಪು ಏಜೆಂಟ್ ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಅಪಾಯದ ಅಂಕ, ಎಚ್ಚರಿಕೆಯ ಸೂಚನೆಗಳು ಮತ್ತು ಏನು ಮಾಡಬೇಕು ಎಂದು ಹೇಳುತ್ತದೆ.",feat_h:"ಪ್ರತಿ ಫೋನ್‌ಗೂ, ಪ್ರತಿ ವ್ಯಕ್ತಿಗೂ",feat_p:"ಕಡಿಮೆ ಬೆಲೆಯ ಫೋನ್‌ಗಳು, ನಿಧಾನ ನೆಟ್‌ವರ್ಕ್ ಮತ್ತು ಸ್ವಲ್ಪ ಹೆಚ್ಚು ಸಹಾಯ ಬೇಕಾದವರಿಗಾಗಿ ಮಾಡಲಾಗಿದೆ.",ft_off_h:"ಆಫ್‌ಲೈನ್‌ನಲ್ಲೂ ಕೆಲಸ ಮಾಡುತ್ತದೆ",ft_off:"ತ್ವರಿತ ಪರಿಶೀಲನೆ ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲೇ, ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ನಡೆಯುತ್ತದೆ.",ft_lang_h:"8 ಭಾರತೀಯ ಭಾಷೆಗಳು",ft_shot_h:"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಪರಿಶೀಲನೆ",ft_shot:"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಸೇರಿಸಿ, AI ನಿಮಗಾಗಿ ಸಂದೇಶವನ್ನು ಓದುತ್ತದೆ.",ft_voice_h:"ಧ್ವನಿ ಮತ್ತು ಓದಿ ಕೇಳಿಸುವುದು",ft_voice:"ಸಂದೇಶವನ್ನು ಹೇಳಿ, ಉತ್ತರವನ್ನು ಕೇಳಿ.",ft_a11y_h:"ಎಲ್ಲರಿಗೂ ಸುಲಭ ಬಳಕೆ",ft_a11y:"ದೊಡ್ಡ ಅಕ್ಷರ, ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್, ಸರಳ ಪದಗಳು, ಕೀಬೋರ್ಡ್ ಮತ್ತು ಸ್ಕ್ರೀನ್ ರೀಡರ್ ಬೆಂಬಲ.",ft_share_h:"WhatsApp ನಿಂದ ಹಂಚಿ",ft_share:"Android ನಲ್ಲಿ ಸ್ಕ್ಯಾಮ್ ಶೀಲ್ಡ್ ಅನ್ನು ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ಗೆ ಸೇರಿಸಿ, ನಂತರ ಯಾವುದೇ ಸಂದೇಶವನ್ನು ಅದಕ್ಕೆ ಹಂಚಿ.",ft_tiny_h:"ಚಿಕ್ಕದು ಮತ್ತು ವೇಗ",ft_tiny:"ದೊಡ್ಡ ಡೌನ್‌ಲೋಡ್ ಇಲ್ಲ. 2G ಮತ್ತು 3G ನೆಟ್‌ವರ್ಕ್‌ಗಾಗಿ ಮಾಡಲಾಗಿದೆ.",priv_h:"ಗೌಪ್ಯತೆ ಮತ್ತು ಸುರಕ್ಷತೆ",pv_store_h:"ಸಂದೇಶಗಳನ್ನು ಉಳಿಸುವುದಿಲ್ಲ",pv_store:"ಪ್ರತಿ ಪರಿಶೀಲನೆ ಮುಗಿದ ತಕ್ಷಣ ಅಳಿಸಲಾಗುತ್ತದೆ. AI ಪರಿಶೀಲನೆಗಾಗಿ ಸಂದೇಶವನ್ನು Google Gemini ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.",pv_track_h:"ಯಾವುದೇ ಟ್ರ್ಯಾಕರ್ ಇಲ್ಲ",pv_track:"ಖಾತೆ ಇಲ್ಲ, ಜಾಹೀರಾತು ಇಲ್ಲ, ಅನಾಲಿಟಿಕ್ಸ್ ಇಲ್ಲ, ಹೊರಗಿನ ಸ್ಕ್ರಿಪ್ಟ್ ಇಲ್ಲ.",pv_bank_h:"ಬ್ಯಾಂಕ್ ಎಂದಿಗೂ OTP ಅಥವಾ PIN ಕೇಳುವುದಿಲ್ಲ",pv_bank:"ನಿಮ್ಮ OTP, UPI PIN ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಕೇಳುವವರು ಮೋಸಗಾರರು. ಅವನ್ನು ಎಂದಿಗೂ ಹಂಚಬೇಡಿ.",foot:"ಉಚಿತ ಮತ್ತು ಓಪನ್ ಸೋರ್ಸ್. GDG Cloud Bengaluru ಓಪನ್-ಸೋರ್ಸ್ ಏಜೆಂಟ್‌ಗಳ ಯೋಜನೆಯ ಭಾಗ.",foot_ai:"AI ತಪ್ಪು ಮಾಡಬಹುದು. ಸಂದೇಹವಿದ್ದರೆ ಕಂಪನಿಯ ಅಧಿಕೃತ ಸಂಖ್ಯೆಗೆ ಕರೆ ಮಾಡಿ.",
+skip:"ಸಂದೇಶ ಪೆಟ್ಟಿಗೆಗೆ ಹೋಗಿ",title:"ಸ್ಕ್ಯಾಮ್ ಶೀಲ್ಡ್",language:"ಭಾಷೆ",settings:"ಸುಲಭ ಬಳಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",large:"ದೊಡ್ಡ ಅಕ್ಷರ",contrast:"ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್",simple:"ಸರಳ ಪದಗಳು",autoread:"ಫಲಿತಾಂಶವನ್ನು ತಾನಾಗಿ ಓದಿ ಹೇಳು",label:"ಸಂದೇಶವನ್ನು ಅಂಟಿಸಿ ಅಥವಾ ಹೇಳಿ",placeholder:"ಉದಾ: ನಿಮ್ಮ SBI ಖಾತೆ ಇಂದು ಬ್ಲಾಕ್ ಆಗುತ್ತದೆ. sbi-kyc.xyz ನಲ್ಲಿ KYC ಅಪ್‌ಡೇಟ್ ಮಾಡಿ",speak:"ಮಾತನಾಡಿ",photo:"ಸ್ಕ್ರೀನ್‌ಶಾಟ್",remove:"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಹಾಕಿ",check:"ಸಂದೇಶ ಪರಿಶೀಲಿಸಿ",checking:"ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ…",flags:"ಎಚ್ಚರಿಕೆಯ ಸೂಚನೆಗಳು",advice:"ಏನು ಮಾಡಬೇಕು",read:"ಓದಿ ಕೇಳಿಸಿ",lost:"ಮೋಸದಲ್ಲಿ ಹಣ ಕಳೆದುಕೊಂಡಿರಾ?",help:"ತಕ್ಷಣ 1930 ಗೆ ಕರೆ ಮಾಡಿ ಅಥವಾ ಇಲ್ಲಿ ದೂರು ನೀಡಿ",scam:"ಮೋಸ",suspicious:"ಎಚ್ಚರಿಕೆ",safe:"ಸುರಕ್ಷಿತವಾಗಿ ಕಾಣುತ್ತದೆ",risk:"ಅಪಾಯ",listening:"ಕೇಳುತ್ತಿದೆ… ಈಗ ಮಾತನಾಡಿ",nomic:"ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ ಇನ್‌ಪುಟ್ ಇಲ್ಲ.",photook:"ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಸೇರಿಸಲಾಗಿದೆ.",empty:"ದಯವಿಟ್ಟು ಸಂದೇಶ ಅಂಟಿಸಿ ಅಥವಾ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಸೇರಿಸಿ.",quick:"ತ್ವರಿತ ಆಫ್‌ಲೈನ್ ಪರಿಶೀಲನೆ. ವಿವರವಾದ AI ಪರಿಶೀಲನೆ ನಡೆಯುತ್ತಿದೆ…",offline:"ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ. ಇದು ತ್ವರಿತ ಆಫ್‌ಲೈನ್ ಪರಿಶೀಲನೆ.",ai:"AI ಪರಿಶೀಲಿಸಿದೆ",rules:"ಅಂತರ್ಗತ ನಿಯಮಗಳಿಂದ ಪರಿಶೀಲಿಸಲಾಗಿದೆ",fail:"AI ಸಂಪರ್ಕ ಸಿಗಲಿಲ್ಲ. ಆಫ್‌ಲೈನ್ ಪರಿಶೀಲನೆ ತೋರಿಸಲಾಗುತ್ತಿದೆ.",
+f_link:"ಅನುಮಾನಾಸ್ಪದ ಅಥವಾ ಚಿಕ್ಕದಾದ ಲಿಂಕ್",f_brand:"ಬ್ಯಾಂಕ್ ಅಥವಾ ಕಂಪನಿಯಂತೆ ನಟಿಸುವ ವೆಬ್‌ಸೈಟ್",f_otp:"OTP, PIN ಅಥವಾ ಕಾರ್ಡ್ ವಿವರ ಕೇಳುತ್ತದೆ",f_pay:"ಪಾವತಿಸಲು ಅಥವಾ QR ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಹೇಳುತ್ತದೆ",f_remote:"ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಹೇಳುತ್ತದೆ",f_urgent:"ಭಯ ಅಥವಾ ಆತುರ ಹುಟ್ಟಿಸುತ್ತದೆ",f_kyc:"ಖಾತೆ ಬ್ಲಾಕ್ ಮಾಡುವ ಬೆದರಿಕೆ",f_prize:"ಬಹುಮಾನ, ಹಣ ಅಥವಾ ಉದ್ಯೋಗದ ಭರವಸೆ",f_threat:"ಪೊಲೀಸ್ ಅಥವಾ ಕಾನೂನು ಕ್ರಮದ ಬೆದರಿಕೆ",f_parcel:"ನಕಲಿ ಪಾರ್ಸೆಲ್ ಅಥವಾ ಬಿಲ್ ಸಮಸ್ಯೆ",
+a_noclick:"ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಾಡಬೇಡಿ, ಉತ್ತರಿಸಬೇಡಿ.",a_noshare:"OTP, PIN ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಎಂದಿಗೂ ಹಂಚಬೇಡಿ.",a_block:"ಕಳುಹಿಸಿದವರನ್ನು ಬ್ಲಾಕ್ ಮಾಡಿ, ವರದಿ ಮಾಡಿ.",a_report:"1930 ಅಥವಾ cybercrime.gov.in ನಲ್ಲಿ ದೂರು ನೀಡಿ.",a_verify:"ಕಂಪನಿಯ ಅಧಿಕೃತ ಸಂಖ್ಯೆಗೆ ಕರೆ ಮಾಡಿ ಖಚಿತಪಡಿಸಿ.",a_safe:"ಯಾವುದೇ ಎಚ್ಚರಿಕೆ ಸೂಚನೆ ಇಲ್ಲ, ಆದರೂ ಜಾಗರೂಕರಾಗಿರಿ."},
+ta:{hero:"கிளிக் செய்யும், பணம் அனுப்பும் அல்லது பதில் அளிக்கும் முன் செய்தியைச் சரிபார்க்கவும்.",lead:"எந்த SMS அல்லது WhatsApp செய்தியையும் ஒட்டவும், பேசவும், பகிரவும் அல்லது ஸ்கிரீன்ஷாட் சேர்க்கவும். அது மோசடியா, ஏன், இப்போது என்ன செய்ய வேண்டும் என்று ஸ்கேம் ஷீல்ட் உங்கள் மொழியில் சொல்லும்.",ex:"ஓர் உதாரணத்தை முயலவும்",how_h:"இது எப்படி வேலை செய்கிறது",built:"Google ADK மற்றும் Gemini கொண்டு உருவாக்கப்பட்டது.",st1_h:"உங்கள் போனிலேயே உடனடி சோதனை",st1:"உள்ளமைந்த விதிகள் செய்தியை உடனே சரிபார்க்கின்றன, இணையம் இல்லாவிட்டாலும்.",st2_h:"மூன்று AI புலனாய்வாளர்கள், ஒரே நேரத்தில்",ag_link:"லிங்குகள்: போலி, சுருக்கப்பட்ட, ஒத்த தோற்ற இணையதளங்கள்",ag_pay:"பணம்: OTP, UPI PIN, கட்டணம் அல்லது QR ஸ்கேன் கோரிக்கைகள்",ag_pat:"மோசடி வகைகள்: KYC, பார்சல், வேலை, டிஜிட்டல் அரெஸ்ட் மற்றும் பல",st3_h:"ஒரே தெளிவான முடிவு",st3:"முடிவு ஏஜென்ட் உங்கள் மொழியில் அபாய மதிப்பெண், எச்சரிக்கை அறிகுறிகள், என்ன செய்ய வேண்டும் என்பதைத் தருகிறது.",feat_h:"ஒவ்வொரு போனுக்கும், ஒவ்வொருவருக்கும்",feat_p:"குறைந்த விலை போன்கள், மெதுவான நெட்வொர்க், கொஞ்சம் கூடுதல் உதவி தேவைப்படுவோருக்காக உருவாக்கப்பட்டது.",ft_off_h:"ஆஃப்லைனிலும் வேலை செய்யும்",ft_off:"விரைவு சோதனை இணையம் இல்லாமல் உங்கள் போனிலேயே நடக்கும்.",ft_lang_h:"8 இந்திய மொழிகள்",ft_shot_h:"ஸ்கிரீன்ஷாட் சோதனை",ft_shot:"ஸ்கிரீன்ஷாட் சேர்த்தால், AI செய்தியை உங்களுக்காகப் படிக்கும்.",ft_voice_h:"குரல் மற்றும் வாசித்துக் காட்டுதல்",ft_voice:"செய்தியைப் பேசுங்கள், பதிலைக் கேளுங்கள்.",ft_a11y_h:"அனைவருக்கும் அணுகக்கூடியது",ft_a11y:"பெரிய எழுத்து, அதிக கான்ட்ராஸ்ட், எளிய சொற்கள், கீபோர்டு மற்றும் ஸ்கிரீன் ரீடர் ஆதரவு.",ft_share_h:"WhatsApp இலிருந்து பகிரவும்",ft_share:"Android இல் ஸ்கேம் ஷீல்டை முகப்புத் திரையில் சேர்த்து, எந்தச் செய்தியையும் அதற்குப் பகிரவும்.",ft_tiny_h:"சிறியது, வேகமானது",ft_tiny:"பெரிய பதிவிறக்கம் இல்லை. 2G, 3G நெட்வொர்க்குகளுக்காக உருவாக்கப்பட்டது.",priv_h:"தனியுரிமை மற்றும் பாதுகாப்பு",pv_store_h:"செய்திகள் சேமிக்கப்படுவதில்லை",pv_store:"ஒவ்வொரு சோதனையும் முடிந்ததும் நீக்கப்படும். AI சோதனைக்காக செய்தி Google Gemini க்கு அனுப்பப்படும்.",pv_track_h:"டிராக்கர்கள் இல்லை",pv_track:"கணக்கு இல்லை, விளம்பரம் இல்லை, அனலிட்டிக்ஸ் இல்லை, வெளி ஸ்கிரிப்டுகள் இல்லை.",pv_bank_h:"வங்கிகள் ஒருபோதும் OTP அல்லது PIN கேட்பதில்லை",pv_bank:"உங்கள் OTP, UPI PIN அல்லது கடவுச்சொல்லைக் கேட்பவர் மோசடிக்காரர். அவற்றை ஒருபோதும் பகிராதீர்கள்.",foot:"இலவசம், ஓப்பன் சோர்ஸ். GDG Cloud Bengaluru ஓப்பன் சோர்ஸ் ஏஜென்ட்கள் திட்டத்தின் ஒரு பகுதி.",foot_ai:"AI தவறு செய்யலாம். சந்தேகம் இருந்தால் நிறுவனத்தின் அதிகாரப்பூர்வ எண்ணை அழைக்கவும்.",
+skip:"செய்திப் பெட்டிக்குச் செல்",title:"ஸ்கேம் ஷீல்ட்",language:"மொழி",settings:"அணுகல்தன்மை அமைப்புகள்",large:"பெரிய எழுத்து",contrast:"அதிக கான்ட்ராஸ்ட்",simple:"எளிய சொற்கள்",autoread:"முடிவைத் தானாக வாசித்துக் காட்டு",label:"செய்தியை ஒட்டவும் அல்லது பேசவும்",placeholder:"உதா: உங்கள் SBI கணக்கு இன்று முடக்கப்படும். sbi-kyc.xyz இல் KYC புதுப்பிக்கவும்",speak:"பேசவும்",photo:"ஸ்கிரீன்ஷாட்",remove:"ஸ்கிரீன்ஷாட்டை நீக்கவும்",check:"செய்தியைச் சரிபார்க்கவும்",checking:"சரிபார்க்கிறது…",flags:"எச்சரிக்கை அறிகுறிகள்",advice:"என்ன செய்ய வேண்டும்",read:"வாசித்துக் காட்டவும்",lost:"மோசடியில் பணம் இழந்தீர்களா?",help:"உடனே 1930 ஐ அழைக்கவும் அல்லது இங்கே புகார் செய்யவும்",scam:"மோசடி",suspicious:"கவனம்",safe:"பாதுகாப்பானது போல் தெரிகிறது",risk:"அபாயம்",listening:"கேட்கிறது… இப்போது பேசுங்கள்",nomic:"இந்த உலாவியில் குரல் உள்ளீடு இல்லை.",photook:"ஸ்கிரீன்ஷாட் சேர்க்கப்பட்டது.",empty:"செய்தியை ஒட்டவும் அல்லது ஸ்கிரீன்ஷாட் சேர்க்கவும்.",quick:"விரைவு ஆஃப்லைன் சோதனை. விரிவான AI சோதனை நடக்கிறது…",offline:"நீங்கள் ஆஃப்லைனில் உள்ளீர்கள். இது விரைவு ஆஃப்லைன் சோதனை.",ai:"AI சரிபார்த்தது",rules:"உள்ளமைந்த விதிகளால் சரிபார்க்கப்பட்டது",fail:"AI ஐ அணுக முடியவில்லை. ஆஃப்லைன் சோதனை காட்டப்படுகிறது.",
+f_link:"சந்தேகமான அல்லது சுருக்கப்பட்ட லிங்க்",f_brand:"வங்கி அல்லது நிறுவனம் போல் நடிக்கும் இணையதளம்",f_otp:"OTP, PIN அல்லது அட்டை விவரங்களைக் கேட்கிறது",f_pay:"பணம் செலுத்த அல்லது QR ஸ்கேன் செய்யச் சொல்கிறது",f_remote:"ஆப்பை இன்ஸ்டால் செய்யச் சொல்கிறது",f_urgent:"பயம் அல்லது அவசரத்தை உண்டாக்குகிறது",f_kyc:"கணக்கை முடக்குவதாக மிரட்டுகிறது",f_prize:"பரிசு, பணம் அல்லது வேலை வாக்குறுதி",f_threat:"காவல்துறை அல்லது சட்ட நடவடிக்கை மிரட்டல்",f_parcel:"போலி பார்சல் அல்லது பில் பிரச்சனை",
+a_noclick:"லிங்கைக் கிளிக் செய்யாதீர்கள், பதில் அனுப்பாதீர்கள்.",a_noshare:"OTP, PIN, கடவுச்சொல்லை ஒருபோதும் பகிராதீர்கள்.",a_block:"அனுப்பியவரைத் தடுத்து புகார் செய்யுங்கள்.",a_report:"1930 அல்லது cybercrime.gov.in இல் புகார் செய்யுங்கள்.",a_verify:"நிறுவனத்தின் அதிகாரப்பூர்வ எண்ணில் உறுதிப்படுத்துங்கள்.",a_safe:"எச்சரிக்கை அறிகுறி இல்லை, இருந்தாலும் கவனமாக இருங்கள்."},
+te:{hero:"క్లిక్ చేసే, డబ్బు చెల్లించే లేదా జవాబు ఇచ్చే ముందు సందేశాన్ని తనిఖీ చేయండి.",lead:"ఏ SMS లేదా WhatsApp సందేశాన్నైనా అతికించండి, చెప్పండి, షేర్ చేయండి లేదా స్క్రీన్‌షాట్ జోడించండి. అది మోసమా, ఎందుకు, ఇప్పుడు ఏం చేయాలి అని స్కామ్ షీల్డ్ మీ భాషలో చెబుతుంది.",ex:"ఒక ఉదాహరణ ప్రయత్నించండి",how_h:"ఇది ఎలా పనిచేస్తుంది",built:"Google ADK మరియు Gemini తో రూపొందించబడింది.",st1_h:"మీ ఫోన్‌లోనే తక్షణ తనిఖీ",st1:"యాప్‌లోని నియమాలు సందేశాన్ని వెంటనే తనిఖీ చేస్తాయి, ఇంటర్నెట్ లేకపోయినా.",st2_h:"ముగ్గురు AI పరిశోధకులు, ఒకేసారి",ag_link:"లింక్‌లు: నకిలీ, కుదించిన, ఒకేలా కనిపించే వెబ్‌సైట్‌లు",ag_pay:"చెల్లింపులు: OTP, UPI PIN, ఫీజు లేదా QR స్కాన్ అభ్యర్థనలు",ag_pat:"మోసపు పద్ధతులు: KYC, పార్సెల్, ఉద్యోగం, డిజిటల్ అరెస్ట్ ఇంకా మరిన్ని",st3_h:"ఒకే స్పష్టమైన తీర్పు",st3:"తీర్పు ఏజెంట్ మీ భాషలో ప్రమాద స్కోరు, హెచ్చరిక సంకేతాలు, ఏం చేయాలో చెబుతుంది.",feat_h:"ప్రతి ఫోన్‌కూ, ప్రతి ఒక్కరికీ",feat_p:"తక్కువ ధర ఫోన్లు, నెమ్మదైన నెట్‌వర్క్‌లు, కొంచెం ఎక్కువ సహాయం కావలసిన వారి కోసం రూపొందించబడింది.",ft_off_h:"ఆఫ్‌లైన్‌లోనూ పనిచేస్తుంది",ft_off:"త్వరిత తనిఖీ ఇంటర్నెట్ లేకుండా మీ ఫోన్‌లోనే జరుగుతుంది.",ft_lang_h:"8 భారతీయ భాషలు",ft_shot_h:"స్క్రీన్‌షాట్ తనిఖీ",ft_shot:"స్క్రీన్‌షాట్ జోడించండి, AI మీ కోసం సందేశాన్ని చదువుతుంది.",ft_voice_h:"వాయిస్, చదివి వినిపించడం",ft_voice:"సందేశాన్ని చెప్పండి, జవాబును వినండి.",ft_a11y_h:"అందరికీ అందుబాటులో",ft_a11y:"పెద్ద అక్షరాలు, అధిక కాంట్రాస్ట్, సులభమైన పదాలు, కీబోర్డ్ మరియు స్క్రీన్ రీడర్ సపోర్ట్.",ft_share_h:"WhatsApp నుండి షేర్ చేయండి",ft_share:"Android లో స్కామ్ షీల్డ్‌ను హోమ్ స్క్రీన్‌కు జోడించి, ఏ సందేశాన్నైనా దానికి షేర్ చేయండి.",ft_tiny_h:"చిన్నది, వేగవంతమైనది",ft_tiny:"పెద్ద డౌన్‌లోడ్ లేదు. 2G, 3G నెట్‌వర్క్‌ల కోసం రూపొందించబడింది.",priv_h:"గోప్యత మరియు భద్రత",pv_store_h:"సందేశాలు నిల్వ చేయబడవు",pv_store:"ప్రతి తనిఖీ ముగియగానే తొలగించబడుతుంది. AI తనిఖీ కోసం సందేశం Google Gemini కి పంపబడుతుంది.",pv_track_h:"ట్రాకర్లు లేవు",pv_track:"ఖాతా లేదు, ప్రకటనలు లేవు, అనలిటిక్స్ లేదు, బయటి స్క్రిప్ట్‌లు లేవు.",pv_bank_h:"బ్యాంకులు ఎప్పుడూ OTP లేదా PIN అడగవు",pv_bank:"మీ OTP, UPI PIN లేదా పాస్‌వర్డ్ అడిగేవారు మోసగాళ్లు. వాటిని ఎప్పుడూ చెప్పకండి.",foot:"ఉచితం, ఓపెన్ సోర్స్. GDG Cloud Bengaluru ఓపెన్-సోర్స్ ఏజెంట్ల ప్రాజెక్ట్‌లో భాగం.",foot_ai:"AI పొరపాటు చేయవచ్చు. అనుమానం ఉంటే కంపెనీ అధికారిక నంబర్‌కు కాల్ చేయండి.",
+skip:"సందేశ పెట్టెకు వెళ్ళండి",title:"స్కామ్ షీల్డ్",language:"భాష",settings:"యాక్సెసిబిలిటీ సెట్టింగ్‌లు",large:"పెద్ద అక్షరాలు",contrast:"అధిక కాంట్రాస్ట్",simple:"సులభమైన పదాలు",autoread:"ఫలితాన్ని ఆటోమేటిక్‌గా చదివి వినిపించు",label:"సందేశాన్ని అతికించండి లేదా చెప్పండి",placeholder:"ఉదా: మీ SBI ఖాతా ఈరోజు బ్లాక్ అవుతుంది. sbi-kyc.xyz లో KYC అప్‌డేట్ చేయండి",speak:"మాట్లాడండి",photo:"స్క్రీన్‌షాట్",remove:"స్క్రీన్‌షాట్ తీసివేయండి",check:"సందేశం తనిఖీ చేయండి",checking:"తనిఖీ చేస్తోంది…",flags:"హెచ్చరిక సంకేతాలు",advice:"ఏం చేయాలి",read:"చదివి వినిపించండి",lost:"మోసంలో డబ్బు పోయిందా?",help:"వెంటనే 1930 కి కాల్ చేయండి లేదా ఇక్కడ ఫిర్యాదు చేయండి",scam:"మోసం",suspicious:"జాగ్రత్త",safe:"సురక్షితంగా అనిపిస్తోంది",risk:"ప్రమాదం",listening:"వింటోంది… ఇప్పుడు మాట్లాడండి",nomic:"ఈ బ్రౌజర్‌లో వాయిస్ ఇన్‌పుట్ లేదు.",photook:"స్క్రీన్‌షాట్ జోడించబడింది.",empty:"దయచేసి సందేశాన్ని అతికించండి లేదా స్క్రీన్‌షాట్ జోడించండి.",quick:"త్వరిత ఆఫ్‌లైన్ తనిఖీ. వివరమైన AI తనిఖీ జరుగుతోంది…",offline:"మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. ఇది త్వరిత ఆఫ్‌లైన్ తనిఖీ.",ai:"AI తనిఖీ చేసింది",rules:"యాప్‌లోని నియమాలతో తనిఖీ చేశాం",fail:"AI ని చేరుకోలేకపోయాం. ఆఫ్‌లైన్ తనిఖీ చూపిస్తున్నాం.",
+f_link:"అనుమానాస్పద లేదా కుదించిన లింక్",f_brand:"బ్యాంక్ లేదా కంపెనీలా నటించే వెబ్‌సైట్",f_otp:"OTP, PIN లేదా కార్డ్ వివరాలు అడుగుతుంది",f_pay:"చెల్లించమని లేదా QR స్కాన్ చేయమని అడుగుతుంది",f_remote:"యాప్ ఇన్‌స్టాల్ చేయమని అడుగుతుంది",f_urgent:"భయం లేదా తొందర కలిగిస్తుంది",f_kyc:"ఖాతా బ్లాక్ చేస్తామని బెదిరింపు",f_prize:"బహుమతి, డబ్బు లేదా ఉద్యోగ హామీ",f_threat:"పోలీసు లేదా చట్టపరమైన చర్య బెదిరింపు",f_parcel:"నకిలీ పార్సెల్ లేదా బిల్లు సమస్య",
+a_noclick:"లింక్ క్లిక్ చేయకండి, జవాబు ఇవ్వకండి.",a_noshare:"OTP, PIN లేదా పాస్‌వర్డ్ ఎప్పుడూ చెప్పకండి.",a_block:"పంపినవారిని బ్లాక్ చేసి ఫిర్యాదు చేయండి.",a_report:"1930 లేదా cybercrime.gov.in లో ఫిర్యాదు చేయండి.",a_verify:"కంపెనీ అధికారిక నంబర్‌కు కాల్ చేసి నిర్ధారించుకోండి.",a_safe:"హెచ్చరిక సంకేతాలు లేవు, అయినా జాగ్రత్తగా ఉండండి."},
+ml:{hero:"ക്ലിക്ക് ചെയ്യുന്നതിനോ പണം നൽകുന്നതിനോ മറുപടി നൽകുന്നതിനോ മുമ്പ് സന്ദേശം പരിശോധിക്കുക.",lead:"ഏത് SMS അല്ലെങ്കിൽ WhatsApp സന്ദേശവും ഒട്ടിക്കുക, പറയുക, ഷെയർ ചെയ്യുക അല്ലെങ്കിൽ സ്ക്രീൻഷോട്ട് ചേർക്കുക. അത് തട്ടിപ്പാണോ, എന്തുകൊണ്ട്, ഇനി എന്തു ചെയ്യണം എന്ന് സ്കാം ഷീൽഡ് നിങ്ങളുടെ ഭാഷയിൽ പറയും.",ex:"ഒരു ഉദാഹരണം പരീക്ഷിക്കുക",how_h:"ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു",built:"Google ADK, Gemini എന്നിവ ഉപയോഗിച്ച് നിർമ്മിച്ചത്.",st1_h:"നിങ്ങളുടെ ഫോണിൽ തന്നെ ഉടൻ പരിശോധന",st1:"ബിൽറ്റ്-ഇൻ നിയമങ്ങൾ സന്ദേശം ഉടൻ പരിശോധിക്കുന്നു, ഇന്റർനെറ്റ് ഇല്ലെങ്കിലും.",st2_h:"മൂന്ന് AI അന്വേഷകർ, ഒരേ സമയം",ag_link:"ലിങ്കുകൾ: വ്യാജ, ചുരുക്കിയ, സമാന രൂപമുള്ള വെബ്സൈറ്റുകൾ",ag_pay:"പണമിടപാട്: OTP, UPI PIN, ഫീസ് അല്ലെങ്കിൽ QR സ്കാൻ ആവശ്യങ്ങൾ",ag_pat:"തട്ടിപ്പ് രീതികൾ: KYC, പാഴ്സൽ, ജോലി, ഡിജിറ്റൽ അറസ്റ്റ് തുടങ്ങിയവ",st3_h:"ഒരു വ്യക്തമായ വിധി",st3:"വിധി ഏജന്റ് നിങ്ങളുടെ ഭാഷയിൽ അപകടസാധ്യത സ്കോർ, മുന്നറിയിപ്പ് സൂചനകൾ, എന്തു ചെയ്യണം എന്നിവ നൽകുന്നു.",feat_h:"എല്ലാ ഫോണിനും എല്ലാവർക്കും",feat_p:"വില കുറഞ്ഞ ഫോണുകൾ, വേഗത കുറഞ്ഞ നെറ്റ്‌വർക്കുകൾ, കുറച്ചുകൂടി സഹായം വേണ്ടവർ എന്നിവർക്കായി നിർമ്മിച്ചത്.",ft_off_h:"ഓഫ്‌ലൈനിലും പ്രവർത്തിക്കും",ft_off:"വേഗത്തിലുള്ള പരിശോധന ഇന്റർനെറ്റ് ഇല്ലാതെ നിങ്ങളുടെ ഫോണിൽ തന്നെ നടക്കും.",ft_lang_h:"8 ഇന്ത്യൻ ഭാഷകൾ",ft_shot_h:"സ്ക്രീൻഷോട്ട് പരിശോധന",ft_shot:"സ്ക്രീൻഷോട്ട് ചേർക്കുക, AI നിങ്ങൾക്കായി സന്ദേശം വായിക്കും.",ft_voice_h:"ശബ്ദവും വായിച്ചു കേൾപ്പിക്കലും",ft_voice:"സന്ദേശം പറയുക, മറുപടി കേൾക്കുക.",ft_a11y_h:"എല്ലാവർക്കും എളുപ്പം ഉപയോഗിക്കാം",ft_a11y:"വലിയ അക്ഷരം, ഉയർന്ന കോൺട്രാസ്റ്റ്, ലളിതമായ വാക്കുകൾ, കീബോർഡ്, സ്ക്രീൻ റീഡർ പിന്തുണ.",ft_share_h:"WhatsApp-ൽ നിന്ന് ഷെയർ ചെയ്യുക",ft_share:"Android-ൽ സ്കാം ഷീൽഡ് ഹോം സ്ക്രീനിൽ ചേർക്കുക, പിന്നെ ഏത് സന്ദേശവും അതിലേക്ക് ഷെയർ ചെയ്യുക.",ft_tiny_h:"ചെറുതും വേഗമേറിയതും",ft_tiny:"വലിയ ഡൗൺലോഡ് ഇല്ല. 2G, 3G നെറ്റ്‌വർക്കുകൾക്കായി നിർമ്മിച്ചത്.",priv_h:"സ്വകാര്യതയും സുരക്ഷയും",pv_store_h:"സന്ദേശങ്ങൾ സൂക്ഷിക്കുന്നില്ല",pv_store:"ഓരോ പരിശോധനയും കഴിഞ്ഞാലുടൻ മായ്ക്കും. AI പരിശോധനയ്ക്കായി സന്ദേശം Google Gemini-ലേക്ക് അയയ്ക്കുന്നു.",pv_track_h:"ട്രാക്കറുകളില്ല",pv_track:"അക്കൗണ്ടില്ല, പരസ്യമില്ല, അനലിറ്റിക്സില്ല, പുറത്തുനിന്നുള്ള സ്ക്രിപ്റ്റുകളില്ല.",pv_bank_h:"ബാങ്കുകൾ ഒരിക്കലും OTP അല്ലെങ്കിൽ PIN ചോദിക്കില്ല",pv_bank:"നിങ്ങളുടെ OTP, UPI PIN അല്ലെങ്കിൽ പാസ്‌വേഡ് ചോദിക്കുന്നവർ തട്ടിപ്പുകാരാണ്. അവ ഒരിക്കലും പങ്കിടരുത്.",foot:"സൗജന്യവും ഓപ്പൺ സോഴ്സും. GDG Cloud Bengaluru ഓപ്പൺ സോഴ്സ് ഏജന്റ്സ് പ്രോജക്റ്റിന്റെ ഭാഗം.",foot_ai:"AI-ക്ക് തെറ്റ് പറ്റാം. സംശയമുണ്ടെങ്കിൽ കമ്പനിയുടെ ഔദ്യോഗിക നമ്പറിൽ വിളിക്കുക.",
+skip:"സന്ദേശ ബോക്സിലേക്ക് പോകുക",title:"സ്കാം ഷീൽഡ്",language:"ഭാഷ",settings:"എളുപ്പ ഉപയോഗ ക്രമീകരണങ്ങൾ",large:"വലിയ അക്ഷരം",contrast:"ഉയർന്ന കോൺട്രാസ്റ്റ്",simple:"ലളിതമായ വാക്കുകൾ",autoread:"ഫലം സ്വയം വായിച്ചു കേൾപ്പിക്കുക",label:"സന്ദേശം ഒട്ടിക്കുക അല്ലെങ്കിൽ പറയുക",placeholder:"ഉദാ: നിങ്ങളുടെ SBI അക്കൗണ്ട് ഇന്ന് ബ്ലോക്ക് ആകും. sbi-kyc.xyz ൽ KYC അപ്ഡേറ്റ് ചെയ്യുക",speak:"സംസാരിക്കുക",photo:"സ്ക്രീൻഷോട്ട്",remove:"സ്ക്രീൻഷോട്ട് നീക്കുക",check:"സന്ദേശം പരിശോധിക്കുക",checking:"പരിശോധിക്കുന്നു…",flags:"മുന്നറിയിപ്പ് സൂചനകൾ",advice:"എന്തു ചെയ്യണം",read:"വായിച്ചു കേൾപ്പിക്കുക",lost:"തട്ടിപ്പിൽ പണം നഷ്ടപ്പെട്ടോ?",help:"ഉടൻ 1930 ൽ വിളിക്കുക അല്ലെങ്കിൽ ഇവിടെ പരാതിപ്പെടുക",scam:"തട്ടിപ്പ്",suspicious:"ശ്രദ്ധിക്കുക",safe:"സുരക്ഷിതമെന്ന് തോന്നുന്നു",risk:"അപകടസാധ്യത",listening:"കേൾക്കുന്നു… ഇപ്പോൾ സംസാരിക്കുക",nomic:"ഈ ബ്രൗസറിൽ വോയ്സ് ഇൻപുട്ട് ഇല്ല.",photook:"സ്ക്രീൻഷോട്ട് ചേർത്തു.",empty:"ദയവായി സന്ദേശം ഒട്ടിക്കുക അല്ലെങ്കിൽ സ്ക്രീൻഷോട്ട് ചേർക്കുക.",quick:"വേഗത്തിലുള്ള ഓഫ്‌ലൈൻ പരിശോധന. വിശദമായ AI പരിശോധന നടക്കുന്നു…",offline:"നിങ്ങൾ ഓഫ്‌ലൈനാണ്. ഇത് വേഗത്തിലുള്ള ഓഫ്‌ലൈൻ പരിശോധനയാണ്.",ai:"AI പരിശോധിച്ചു",rules:"ബിൽറ്റ്-ഇൻ നിയമങ്ങൾ ഉപയോഗിച്ച് പരിശോധിച്ചു",fail:"AI യുമായി ബന്ധപ്പെടാനായില്ല. ഓഫ്‌ലൈൻ പരിശോധന കാണിക്കുന്നു.",
+f_link:"സംശയാസ്പദമായ അല്ലെങ്കിൽ ചുരുക്കിയ ലിങ്ക്",f_brand:"ബാങ്കോ കമ്പനിയോ ആയി നടിക്കുന്ന വെബ്സൈറ്റ്",f_otp:"OTP, PIN അല്ലെങ്കിൽ കാർഡ് വിവരങ്ങൾ ചോദിക്കുന്നു",f_pay:"പണം നൽകാനോ QR സ്കാൻ ചെയ്യാനോ പറയുന്നു",f_remote:"ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ പറയുന്നു",f_urgent:"ഭയമോ തിടുക്കമോ ഉണ്ടാക്കുന്നു",f_kyc:"അക്കൗണ്ട് ബ്ലോക്ക് ചെയ്യുമെന്ന ഭീഷണി",f_prize:"സമ്മാനം, പണം അല്ലെങ്കിൽ ജോലി വാഗ്ദാനം",f_threat:"പോലീസ് അല്ലെങ്കിൽ നിയമനടപടി ഭീഷണി",f_parcel:"വ്യാജ പാഴ്സൽ അല്ലെങ്കിൽ ബിൽ പ്രശ്നം",
+a_noclick:"ലിങ്കിൽ ക്ലിക്ക് ചെയ്യരുത്, മറുപടി നൽകരുത്.",a_noshare:"OTP, PIN, പാസ്‌വേഡ് ഒരിക്കലും പങ്കിടരുത്.",a_block:"അയച്ചയാളെ ബ്ലോക്ക് ചെയ്ത് റിപ്പോർട്ട് ചെയ്യുക.",a_report:"1930 ലോ cybercrime.gov.in ലോ പരാതിപ്പെടുക.",a_verify:"കമ്പനിയുടെ ഔദ്യോഗിക നമ്പറിൽ ഉറപ്പാക്കുക.",a_safe:"മുന്നറിയിപ്പ് സൂചനകളില്ല, എങ്കിലും ജാഗ്രത പാലിക്കുക."},
+mr:{hero:"क्लिक, पैसे भरणे किंवा उत्तर देण्यापूर्वी संदेश तपासा.",lead:"कोणताही SMS किंवा WhatsApp संदेश पेस्ट करा, बोला, शेअर करा किंवा त्याचा स्क्रीनशॉट जोडा. तो फसवणुकीचा आहे का, का, आणि आता काय करावे हे स्कॅम शील्ड तुमच्या भाषेत सांगते.",ex:"उदाहरण वापरून पाहा",how_h:"हे कसे काम करते",built:"Google ADK आणि Gemini वापरून बनवले.",st1_h:"तुमच्या फोनवरच त्वरित तपासणी",st1:"अंगभूत नियम संदेश लगेच तपासतात, इंटरनेट नसतानाही.",st2_h:"तीन AI तपासनीस, एकाच वेळी",ag_link:"लिंक: बनावट, लहान आणि सारख्या दिसणाऱ्या वेबसाइट",ag_pay:"पैसे: OTP, UPI PIN, शुल्क किंवा QR स्कॅनची मागणी",ag_pat:"फसवणुकीचे प्रकार: KYC, पार्सल, नोकरी, डिजिटल अरेस्ट आणि बरेच",st3_h:"एक स्पष्ट निर्णय",st3:"निर्णय एजंट तुमच्या भाषेत धोका गुण, धोक्याची चिन्हे आणि काय करावे ते सांगतो.",feat_h:"प्रत्येक फोनसाठी, प्रत्येकासाठी",feat_p:"स्वस्त फोन, धीमे नेटवर्क आणि थोडी जास्त मदत लागणाऱ्यांसाठी बनवले.",ft_off_h:"ऑफलाइनही चालते",ft_off:"जलद तपासणी इंटरनेटशिवाय तुमच्या फोनवरच होते.",ft_lang_h:"8 भारतीय भाषा",ft_shot_h:"स्क्रीनशॉट तपासणी",ft_shot:"स्क्रीनशॉट जोडा, AI तुमच्यासाठी संदेश वाचेल.",ft_voice_h:"आवाज आणि वाचून दाखवणे",ft_voice:"संदेश बोला आणि उत्तर ऐका.",ft_a11y_h:"सर्वांसाठी सुलभ",ft_a11y:"मोठा मजकूर, उच्च कॉन्ट्रास्ट, सोपे शब्द, कीबोर्ड आणि स्क्रीन रीडर सपोर्ट.",ft_share_h:"WhatsApp वरून शेअर करा",ft_share:"Android वर स्कॅम शील्ड होम स्क्रीनवर जोडा, मग कोणताही संदेश त्यात शेअर करा.",ft_tiny_h:"लहान आणि वेगवान",ft_tiny:"मोठे डाउनलोड नाही. 2G आणि 3G नेटवर्कसाठी बनवले.",priv_h:"गोपनीयता आणि सुरक्षा",pv_store_h:"संदेश साठवले जात नाहीत",pv_store:"प्रत्येक तपासणी संपताच हटवली जाते. AI तपासणीसाठी संदेश Google Gemini ला पाठवला जातो.",pv_track_h:"ट्रॅकर नाहीत",pv_track:"खाते नाही, जाहिराती नाहीत, अ‍ॅनालिटिक्स नाही, बाहेरील स्क्रिप्ट नाहीत.",pv_bank_h:"बँका कधीही OTP किंवा PIN मागत नाहीत",pv_bank:"जो कोणी तुमचा OTP, UPI PIN किंवा पासवर्ड मागेल तो फसवणूक करणारा आहे. ते कधीही सांगू नका.",foot:"मोफत आणि ओपन सोर्स. GDG Cloud Bengaluru ओपन-सोर्स एजंट प्रकल्पाचा भाग.",foot_ai:"AI कडून चूक होऊ शकते. शंका असल्यास कंपनीच्या अधिकृत क्रमांकावर कॉल करा.",
+skip:"संदेश बॉक्सकडे जा",title:"स्कॅम शील्ड",language:"भाषा",settings:"सुलभता सेटिंग्ज",large:"मोठा मजकूर",contrast:"उच्च कॉन्ट्रास्ट",simple:"सोपे शब्द",autoread:"निकाल आपोआप वाचून दाखवा",label:"संदेश पेस्ट करा किंवा बोला",placeholder:"उदा: तुमचे SBI खाते आज बंद होईल. sbi-kyc.xyz वर KYC अपडेट करा",speak:"बोला",photo:"स्क्रीनशॉट",remove:"स्क्रीनशॉट हटवा",check:"संदेश तपासा",checking:"तपासत आहे…",flags:"धोक्याची चिन्हे",advice:"काय करावे",read:"वाचून दाखवा",lost:"फसवणुकीत पैसे गेले?",help:"लगेच 1930 वर कॉल करा किंवा येथे तक्रार करा",scam:"फसवणूक",suspicious:"सावध राहा",safe:"सुरक्षित वाटते",risk:"धोका",listening:"ऐकत आहे… आता बोला",nomic:"या ब्राउझरमध्ये आवाज इनपुट उपलब्ध नाही.",photook:"स्क्रीनशॉट जोडला.",empty:"कृपया संदेश पेस्ट करा किंवा स्क्रीनशॉट जोडा.",quick:"जलद ऑफलाइन तपासणी. सविस्तर AI तपासणी सुरू आहे…",offline:"तुम्ही ऑफलाइन आहात. ही जलद ऑफलाइन तपासणी आहे.",ai:"AI ने तपासले",rules:"अंगभूत नियमांनी तपासले",fail:"AI शी संपर्क होऊ शकला नाही. ऑफलाइन तपासणी दाखवत आहोत.",
+f_link:"संशयास्पद किंवा लहान केलेली लिंक",f_brand:"बँक किंवा कंपनी असल्याचे भासवणारी वेबसाइट",f_otp:"OTP, PIN किंवा कार्ड तपशील मागतो",f_pay:"पैसे भरण्यास किंवा QR स्कॅन करण्यास सांगतो",f_remote:"ॲप इन्स्टॉल करण्यास सांगतो",f_urgent:"भीती किंवा घाई निर्माण करतो",f_kyc:"खाते बंद करण्याची धमकी",f_prize:"बक्षीस, पैसे किंवा नोकरीचे आमिष",f_threat:"पोलीस किंवा कायदेशीर कारवाईची धमकी",f_parcel:"बनावट पार्सल किंवा बिलाची समस्या",
+a_noclick:"लिंकवर क्लिक करू नका, उत्तर देऊ नका.",a_noshare:"OTP, PIN किंवा पासवर्ड कधीही सांगू नका.",a_block:"पाठवणाऱ्याला ब्लॉक करा आणि तक्रार करा.",a_report:"1930 किंवा cybercrime.gov.in वर तक्रार करा.",a_verify:"कंपनीच्या अधिकृत क्रमांकावर खात्री करा.",a_safe:"धोक्याची चिन्हे आढळली नाहीत, तरीही सावध राहा."},
+bn:{hero:"ক্লিক, টাকা পাঠানো বা উত্তর দেওয়ার আগে বার্তাটি যাচাই করুন।",lead:"যেকোনো SMS বা WhatsApp বার্তা পেস্ট করুন, বলুন, শেয়ার করুন বা স্ক্রিনশট দিন। এটি প্রতারণা কি না, কেন, আর এখন কী করবেন, স্ক্যাম শিল্ড আপনার ভাষায় জানাবে।",ex:"একটি উদাহরণ দেখুন",how_h:"এটি কীভাবে কাজ করে",built:"Google ADK ও Gemini দিয়ে তৈরি।",st1_h:"আপনার ফোনেই সঙ্গে সঙ্গে যাচাই",st1:"অন্তর্নির্মিত নিয়ম বার্তাটি সঙ্গে সঙ্গে যাচাই করে, ইন্টারনেট ছাড়াও।",st2_h:"তিনজন AI তদন্তকারী, একসাথে",ag_link:"লিংক: ভুয়া, ছোট করা ও দেখতে একই রকম ওয়েবসাইট",ag_pay:"পেমেন্ট: OTP, UPI PIN, ফি বা QR স্ক্যানের অনুরোধ",ag_pat:"প্রতারণার ধরন: KYC, পার্সেল, চাকরি, ডিজিটাল অ্যারেস্ট ও আরও",st3_h:"একটি স্পষ্ট রায়",st3:"রায় এজেন্ট আপনার ভাষায় ঝুঁকির স্কোর, সতর্কতার লক্ষণ আর কী করবেন তা জানায়।",feat_h:"প্রতিটি ফোন ও প্রত্যেক মানুষের জন্য",feat_p:"কম দামের ফোন, ধীর নেটওয়ার্ক আর যাঁদের একটু বেশি সাহায্য দরকার, তাঁদের জন্য তৈরি।",ft_off_h:"অফলাইনেও চলে",ft_off:"দ্রুত যাচাই ইন্টারনেট ছাড়াই আপনার ফোনে হয়।",ft_lang_h:"8টি ভারতীয় ভাষা",ft_shot_h:"স্ক্রিনশট যাচাই",ft_shot:"স্ক্রিনশট দিন, AI আপনার হয়ে বার্তাটি পড়বে।",ft_voice_h:"ভয়েস ও পড়ে শোনানো",ft_voice:"বার্তাটি বলুন, উত্তর শুনুন।",ft_a11y_h:"সবার জন্য সহজ",ft_a11y:"বড় লেখা, উচ্চ কনট্রাস্ট, সহজ শব্দ, কিবোর্ড ও স্ক্রিন রিডার সাপোর্ট।",ft_share_h:"WhatsApp থেকে শেয়ার করুন",ft_share:"Android-এ স্ক্যাম শিল্ড হোম স্ক্রিনে যোগ করুন, তারপর যেকোনো বার্তা এতে শেয়ার করুন।",ft_tiny_h:"ছোট ও দ্রুত",ft_tiny:"বড় ডাউনলোড নেই। 2G ও 3G নেটওয়ার্কের জন্য তৈরি।",priv_h:"গোপনীয়তা ও নিরাপত্তা",pv_store_h:"বার্তা সংরক্ষণ করা হয় না",pv_store:"প্রতিটি যাচাই শেষ হলেই মুছে ফেলা হয়। AI যাচাইয়ের জন্য বার্তাটি Google Gemini-তে পাঠানো হয়।",pv_track_h:"কোনো ট্র্যাকার নেই",pv_track:"অ্যাকাউন্ট নেই, বিজ্ঞাপন নেই, অ্যানালিটিক্স নেই, বাইরের স্ক্রিপ্ট নেই।",pv_bank_h:"ব্যাংক কখনো OTP বা PIN চায় না",pv_bank:"যে আপনার OTP, UPI PIN বা পাসওয়ার্ড চায়, সে প্রতারক। এগুলো কখনো জানাবেন না।",foot:"বিনামূল্যে ও ওপেন সোর্স। GDG Cloud Bengaluru ওপেন-সোর্স এজেন্ট প্রকল্পের অংশ।",foot_ai:"AI ভুল করতে পারে। সন্দেহ হলে কোম্পানির অফিসিয়াল নম্বরে ফোন করুন।",
+skip:"বার্তা বাক্সে যান",title:"স্ক্যাম শিল্ড",language:"ভাষা",settings:"অ্যাক্সেসিবিলিটি সেটিংস",large:"বড় লেখা",contrast:"উচ্চ কনট্রাস্ট",simple:"সহজ শব্দ",autoread:"ফলাফল নিজে থেকে পড়ে শোনাও",label:"বার্তা পেস্ট করুন বা বলুন",placeholder:"উদাহরণ: আপনার SBI অ্যাকাউন্ট আজ বন্ধ হবে। sbi-kyc.xyz-এ KYC আপডেট করুন",speak:"বলুন",photo:"স্ক্রিনশট",remove:"স্ক্রিনশট সরান",check:"বার্তা যাচাই করুন",checking:"যাচাই হচ্ছে…",flags:"সতর্কতার লক্ষণ",advice:"কী করবেন",read:"পড়ে শোনান",lost:"প্রতারণায় টাকা হারিয়েছেন?",help:"এখনই 1930-এ ফোন করুন বা এখানে অভিযোগ করুন",scam:"প্রতারণা",suspicious:"সাবধান",safe:"নিরাপদ মনে হচ্ছে",risk:"ঝুঁকি",listening:"শুনছি… এখন বলুন",nomic:"এই ব্রাউজারে ভয়েস ইনপুট নেই।",photook:"স্ক্রিনশট যোগ হয়েছে।",empty:"অনুগ্রহ করে বার্তা পেস্ট করুন বা স্ক্রিনশট যোগ করুন।",quick:"দ্রুত অফলাইন যাচাই। বিস্তারিত AI যাচাই চলছে…",offline:"আপনি অফলাইনে আছেন। এটি দ্রুত অফলাইন যাচাই।",ai:"AI যাচাই করেছে",rules:"অন্তর্নির্মিত নিয়মে যাচাই করা",fail:"AI-এর সাথে যোগাযোগ হয়নি। অফলাইন যাচাই দেখানো হচ্ছে।",
+f_link:"সন্দেহজনক বা ছোট করা লিংক",f_brand:"ব্যাংক বা কোম্পানির ভান করা ওয়েবসাইট",f_otp:"OTP, PIN বা কার্ডের তথ্য চায়",f_pay:"টাকা দিতে বা QR স্ক্যান করতে বলে",f_remote:"অ্যাপ ইনস্টল করতে বলে",f_urgent:"ভয় বা তাড়াহুড়ো তৈরি করে",f_kyc:"অ্যাকাউন্ট বন্ধের হুমকি",f_prize:"পুরস্কার, টাকা বা চাকরির প্রলোভন",f_threat:"পুলিশ বা আইনি ব্যবস্থার হুমকি",f_parcel:"ভুয়া পার্সেল বা বিলের সমস্যা",
+a_noclick:"লিংকে ক্লিক করবেন না, উত্তর দেবেন না।",a_noshare:"OTP, PIN বা পাসওয়ার্ড কখনো জানাবেন না।",a_block:"প্রেরককে ব্লক ও রিপোর্ট করুন।",a_report:"1930 বা cybercrime.gov.in-এ অভিযোগ করুন।",a_verify:"কোম্পানির অফিসিয়াল নম্বরে যাচাই করুন।",a_safe:"কোনো সতর্কতার লক্ষণ নেই, তবুও সতর্ক থাকুন।"}};
+const SPEECH={en:"en-IN",hi:"hi-IN",kn:"kn-IN",ta:"ta-IN",te:"te-IN",ml:"ml-IN",mr:"mr-IN",bn:"bn-IN"};
+
+// Offline rules: a compact mirror of scam_shield/tools.py so checks work with no network.
+// tests/test_offline_rules.js runs this block against tests/rule_cases.json, as pytest does for tools.py.
+// [flag, weight, pattern, skip-if pattern]
+const RULES=[
+ ["f_otp",45,/(share|send|tell|provide)( the)? otp|otp received|otp (bata|bhej)|upi pin|enter (your )?pin|pin to receive|\bcvv\b|card number|net ?banking password|ओटीपी/i],
+ ["f_pay",30,/scan (the )?qr|collect request|processing fee|registration fee|release fee|pay (rs|₹)|gift card|usdt|bitcoin/i],
+ ["f_remote",45,/anydesk|teamviewer|quicksupport|rustdesk|screen shar|\.apk\b|install this app/i],
+ ["f_kyc",30,/\bkyc\b|account (will be|has been|is) (blocked|suspended|closed|deactivated)|pan card update|aadhaar update|खाता बंद|ಖಾತೆ|khata (band|block)|account band|account block ho/i],
+ ["f_prize",30,/you('ve| have) won|lottery|lucky (draw|winner)|claim your (prize|reward)|\bkbc\b|work from home|part[- ]time job|daily income|earn (rs|₹)|guaranteed (returns|profit)|double your money|pre-?approved loan/i],
+ ["f_prize",25,/refund of (rs|₹)|tax refund|refund approved/i,/\b(has been|have been|was|is|got)\s+(credited|refunded)\b|\bcredited (to|in|into) your\b/i],
+ ["f_threat",35,/digital arrest|\bcbi\b|narcotics|money laundering|arrest warrant|cyber police|sim will be blocked|number will be disconnected|\btrai\b|court notice/i],
+ ["f_parcel",25,/parcel|customs|delivery failed|address incomplete|package is on hold|electricity (will be|connection)|power will be disconnected|bill not updated|बिजली|ವಿದ್ಯುತ್|bijli (connection|kaat)|connection kaat|kaat di(ya)? jaye|kat jaye/i],
+ ["f_urgent",15,/urgent|immediately|within \d+ hours?|today itself|last warning|final notice|act now|expires? today|turant|तुरंत|ತಕ್ಷಣ|jaldi|fauran/i]];
+// "Do not share your OTP" is advice, not a request, so it is removed before the money/OTP rules run.
+const NEGATED=/\b(do not|don't|dont|never|not to)\s+(share|send|tell|disclose|give)\b[^.!?\n]*/gi;
+const ASKS=new Set(["f_otp","f_pay","f_remote"]);
+// Family impersonation: a "new number" combined with a request for money.
+const NEWNUM=/\bnew (phone |mobile )?number\b|\bchanged my number\b|\bnaya number\b|नया नंबर/i;
+const MONEYASK=/\b(send|transfer|need|pay|lend)\b.{0,40}?\b(money|rs|inr|amount|bill|fees?)\b|₹|\bpaise\b|\bpaisa\b|\bbhej|पैसे/i;
+const BRANDS={sbi:["sbi.co.in","onlinesbi.sbi","sbi.bank.in"],hdfc:["hdfcbank.com","hdfc.com"],icici:["icicibank.com"],axisbank:["axisbank.com"],
+ paytm:["paytm.com"],phonepe:["phonepe.com"],amazon:["amazon.in","amazon.com"],flipkart:["flipkart.com"],indiapost:["indiapost.gov.in"],
+ incometax:["incometax.gov.in"],uidai:["uidai.gov.in"],aadhaar:["uidai.gov.in"],epfo:["epfindia.gov.in"],irctc:["irctc.co.in"],whatsapp:["whatsapp.com"]};
+const SHORT=/^(bit\.ly|tinyurl\.com|cutt\.ly|rb\.gy|is\.gd|goo\.gl|ow\.ly|shorturl\.at|tiny\.cc|rebrand\.ly|t\.ly|s\.id|v\.gd|surl\.li)$/;
+const BADTLD=/\.(xyz|top|club|online|site|icu|buzz|live|shop|click|link|info|vip|cyou|rest|work|support|monster|cfd|sbs|lol|win|loan)$/;
+function offlineCheck(text){
+  let score=0;const flags=new Set();
+  const asked=text.replace(NEGATED," ");
+  for(const [k,w,re,skip] of RULES) if(re.test(ASKS.has(k)?asked:text)&&!(skip&&skip.test(text))){score+=w;flags.add(k)}
+  if(NEWNUM.test(text)&&MONEYASK.test(text)){score+=40;flags.add("f_pay")}
+  const urls=text.match(/https?:\/\/[^\s]+|(?<![@\w.-])(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s]*)?/gi)||[];
+  for(const u of urls){
+    let host;try{host=new URL(/^https?:/i.test(u)?u:"http://"+u).hostname.toLowerCase()}catch{continue}
+    if(host.length<5)continue;
+    const official=Object.values(BRANDS).flat().some(d=>host===d||host.endsWith("."+d));
+    if(SHORT.test(host)||BADTLD.test(host)||/^\d+\.\d+\.\d+\.\d+$/.test(host)||host.includes("xn--")){score+=25;flags.add("f_link")}
+    if(!official&&Object.keys(BRANDS).some(b=>host.split(/[.\-\d]/).some(l=>l===b||(b.length>=4&&l.includes(b))))){score+=45;flags.add("f_brand")}
+  }
+  if(flags.size>=2)score+=10;score=Math.min(score,100);
+  const verdict=score>=60?"scam":score>=25?"suspicious":"safe";
+  const advice=verdict==="scam"?["a_noclick","a_noshare","a_block","a_report"]:verdict==="suspicious"?["a_verify","a_noshare","a_noclick"]:["a_safe"];
+  return {verdict,risk_score:score,red_flags:[...flags].map(t),advice:advice.map(t),mode:"offline"};
+}
+
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+let lang=store.get("lang")||(Object.keys(T).find(l=>(navigator.language||"").startsWith(l)))||"en";
+let image=null,lastSpeech="",busy=false;
+const t=k=>(T[lang]&&T[lang][k])||T.en[k]||k;
+
+function applyLang(){
+  document.documentElement.lang=lang;$("lang").value=lang;
+  document.querySelectorAll("[data-i]").forEach(el=>el.textContent=t(el.dataset.i));
+  document.querySelectorAll("[data-i-ph]").forEach(el=>el.placeholder=t(el.dataset.iPh));
+  document.title=t("title");
+}
+function toggle(id,key,attr){
+  const btn=$(id),apply=on=>{btn.setAttribute("aria-pressed",on);if(attr)document.documentElement.dataset[attr]=on?(attr==="contrast"?"high":"on"):""};
+  apply(store.get(key)==="1");
+  btn.onclick=()=>{const on=btn.getAttribute("aria-pressed")!=="true";apply(on);store.set(key,on?"1":"0")};
+}
+const on=id=>$(id).getAttribute("aria-pressed")==="true";
+const status=msg=>{$("status").textContent=msg};
+
+function render(r,note){
+  const box=$("result"),v=["scam","suspicious","safe"].includes(r.verdict)?r.verdict:"suspicious";
+  const icon={scam:"⛔",suspicious:"⚠️",safe:"✅"}[v];
+  box.className="card result "+v;box.hidden=false;
+  $("r-title").textContent=icon+" "+t(v)+(r.scam_type?" — "+r.scam_type:"");
+  $("r-bar").style.width=(r.risk_score||0)+"%";
+  $("r-score").textContent=t("risk")+": "+(r.risk_score||0)+"/100";
+  $("r-summary").textContent=r.summary||"";$("r-summary").hidden=!r.summary;
+  const fill=(ul,items)=>{ul.replaceChildren(...(items||[]).map(x=>{const li=document.createElement("li");li.textContent=x;return li}))};
+  fill($("r-flags"),r.red_flags);fill($("r-advice"),r.advice);
+  $("r-flags").previousElementSibling.hidden=!(r.red_flags||[]).length;
+  $("r-mode").textContent=note||t(r.mode==="ai"?"ai":r.mode==="rules"?"rules":"offline")+(r.seconds?" · "+r.seconds+"s":"");
+  lastSpeech=[t(v),r.summary,...(r.red_flags||[]).slice(0,3),...(r.advice||[])].filter(Boolean).join(". ");
+  if(navigator.vibrate)navigator.vibrate({scam:[400,150,400,150,400],suspicious:[250,150,250],safe:[80]}[v]);
+  if(on("t-read"))speak();
+}
+function speak(){
+  if(!("speechSynthesis" in window)||!lastSpeech)return;
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(lastSpeech);u.lang=SPEECH[lang];
+  const voice=speechSynthesis.getVoices().find(x=>x.lang&&x.lang.toLowerCase().startsWith(lang));if(voice)u.voice=voice;
+  u.rate=on("t-simple")?.85:1;speechSynthesis.speak(u);
+}
+async function compress(file){
+  const bmp=await createImageBitmap(file),s=Math.min(1,1024/Math.max(bmp.width,bmp.height));
+  const c=document.createElement("canvas");c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
+  c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);return c.toDataURL("image/jpeg",.6);
+}
+async function check(){
+  if(busy)return;const text=$("msg").value.trim();
+  if(!text&&!image){status(t("empty"));$("msg").focus();return}
+  busy=true;const go=$("go");go.classList.add("busy");go.setAttribute("aria-busy","true");status(t("checking"));
+  if(text){render(offlineCheck(text),navigator.onLine?t("quick"):t("offline"));$("r-title").focus()}
+  if(!navigator.onLine&&text){done();return}
+  try{
+    const res=await fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({text,image_base64:image,language:lang,simple:on("t-simple")})});
+    if(!res.ok)throw new Error((await res.json().catch(()=>({}))).detail||res.status);
+    const r=await res.json();
+    if(r.mode==="rules"){const o=offlineCheck(text);r.red_flags=o.red_flags;r.advice=o.advice}
+    render(r);$("r-title").focus();status("");
+  }catch(e){if(text){render(offlineCheck(text),t("fail"));status(t("fail"))}else status(String(e.message||e))}
+  done();
+  function done(){busy=false;go.classList.remove("busy");go.removeAttribute("aria-busy")}
+}
+
+$("lang").onchange=e=>{lang=e.target.value;store.set("lang",lang);applyLang()};
+toggle("t-large","large","large");toggle("t-contrast","contrast","contrast");toggle("t-simple","simple");toggle("t-read","autoread");
+$("form").onsubmit=e=>{e.preventDefault();check()};
+$("speakbtn").onclick=speak;
+$("ex").onclick=()=>{$("msg").value=t("placeholder").replace(/^[^:]*:\s*/,"");$("msg").focus()};
+document.addEventListener("keydown",e=>{const d=$("set");if(e.key==="Escape"&&d.open){d.open=false;d.firstElementChild.focus()}});
+$("photo").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{image=await compress(f);$("thumb").src=image;$("thumbrow").hidden=false;status(t("photook"))}catch{status(t("empty"))}
+};
+$("rmphoto").onclick=()=>{image=null;$("photo").value="";$("thumbrow").hidden=true};
+$("mic").onclick=()=>{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){status(t("nomic"));return}
+  const r=new SR();r.lang=SPEECH[lang];r.interimResults=false;status(t("listening"));$("mic").setAttribute("aria-pressed","true");
+  r.onresult=e=>{const m=$("msg");m.value=(m.value?m.value+" ":"")+e.results[0][0].transcript;status("")};
+  r.onend=()=>$("mic").setAttribute("aria-pressed","false");r.onerror=()=>status(t("nomic"));r.start();
+};
+applyLang();
+// Web Share Target: Android "Share -> Scam Shield" opens /?text=...
+const q=new URLSearchParams(location.search),shared=[q.get("title"),q.get("text"),q.get("url")].filter(Boolean).join(" ");
+if(shared){$("msg").value=shared;history.replaceState(null,"","/");check()}
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+</script>
+</body>
+</html>

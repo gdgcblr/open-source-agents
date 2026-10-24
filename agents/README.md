@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`scam-shield-agent`](scam-shield-agent/) | Multilingual, accessible scam-message checker (text or screenshot) with an offline fallback | Google ADK, Gemini, FastAPI, PWA | [@EM-DeepakBehera](https://github.com/EM-DeepakBehera) |

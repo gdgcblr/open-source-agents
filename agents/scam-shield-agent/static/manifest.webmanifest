@@ -1,0 +1,18 @@
+{
+  "name": "Scam Shield",
+  "short_name": "Scam Shield",
+  "description": "Check if a message is a scam. Works offline, in 8 Indian languages.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f9fc",
+  "theme_color": "#0b57d0",
+  "icons": [
+    { "src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  }
+}
