@@ -10,6 +10,23 @@ Developers spend significant time interpreting long failure logs, separating sym
 
 It is intended for developers, students, open-source contributors, and small teams working with any language, build system, framework, or API.
 
+### Why BuildDoctor Exists Alongside Coding Agents
+
+Coding agents are optimized to edit code and execute tasks. BuildDoctor is an independent evidence-first investigator: it turns a failure into a reviewable diagnosis before a coding agent changes the project, then checks a developer-supplied result without claiming success prematurely.
+
+Its differentiators are evidence-linked hypotheses, language and API neutrality, a read-only safety boundary, repeatable structured reports, and native MCP interoperability.
+
+### Target User Workflow
+
+1. Run the normal build, test, or API check and save the relevant output.
+2. Connect the companion MCP server to an MCP-compatible client, or use the ADK agent directly.
+3. Submit the failure output and project path for diagnosis.
+4. Review the evidence, ranked root causes, missing evidence, and remediation plan.
+5. Apply a change manually or with a separate coding agent.
+6. Submit the new result; BuildDoctor marks the issue verified only when the supplied evidence supports that conclusion.
+
+This makes BuildDoctor a diagnostic gate and verification companion, not another autonomous code editor.
+
 ### Key Features
 
 - Classifies common compilation, dependency, test, runtime, and API failure signals.
@@ -47,7 +64,7 @@ The ADK root agent receives failure output and project context, calls two read-o
 - Maven 3.9 or newer
 - A Gemini API key only for the optional ADK model-driven flow
 
-The deterministic analyzer does not require an API key. The project uses standard Java and Maven commands and does not depend on OS-specific shell tools.
+The deterministic analyzer does not require an API key. The project uses standard Java and Maven commands and does not depend on OS-specific shell tools. Java and Maven installation methods are platform-specific, but the source code and commands are portable across macOS, Linux, and Windows.
 
 ## Installation & Setup
 
@@ -59,6 +76,8 @@ mvn test
 ```
 
 On Windows PowerShell, use the same command from this directory. If Maven is not installed, install Maven 3.9+ using the official Apache Maven instructions or run the deterministic analyzer from an environment that already provides Maven.
+
+On macOS and Linux, use `java` and `mvn` from a terminal. On Windows PowerShell or Command Prompt, use the same `java` and `mvn` commands after adding the JDK and Maven `bin` directories to `PATH`. The optional MCP connection uses the Python executable path appropriate to the platform: `.venv/bin/python` on macOS/Linux or `.venv\\Scripts\\python.exe` on Windows.
 
 The `.env.example` file documents configuration. Java does not automatically load `.env` files, so set variables in your shell instead. Never commit a real `.env` file or API key.
 
@@ -127,6 +146,13 @@ The tests cover compilation, dependency, test, and unknown failure signatures, c
 - The ADK path requires a configured Gemini model and an ADK-compatible runner or development UI.
 - Logs and manifests can contain secrets or personal data; review them before sending them to a hosted model.
 - The MCP bridge requires the companion server to be installed in the configured Python environment.
+
+## Next Four Steps
+
+1. Add native report parsers and evidence packs for the most common language and CI ecosystems.
+2. Add a before/after verification input flow that compares developer-supplied results without executing commands.
+3. Publish tested MCP client configuration presets for common editors and desktop clients on all supported operating systems.
+4. Add a public evaluation suite for evidence accuracy, root-cause ranking, secret redaction, and verification honesty.
 
 ## Security & Privacy Considerations
 

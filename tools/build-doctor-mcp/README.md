@@ -10,6 +10,29 @@ Failure diagnosis is slow when logs are large, symptoms are misleading, and proj
 
 Intended users include developers, open-source contributors, students, support engineers, and AI assistants connected through MCP.
 
+### Why BuildDoctor Exists Alongside Coding Agents
+
+Cursor, IDE copilots, and autonomous coding agents are optimized to change a codebase and execute a development task. BuildDoctor has a different role: it is an independent, evidence-first failure investigator that produces a reviewable diagnosis before anyone changes code.
+
+Its differentiators are:
+
+- **Evidence over confident guessing:** every hypothesis is linked to observed log or manifest evidence.
+- **Language and provider neutrality:** the input contract accepts build, test, runtime, and API output from any ecosystem.
+- **Verification discipline:** a suggested fix is never reported as successful until a new result is supplied.
+- **Safety boundary:** the MCP server reads bounded evidence and never edits files, executes commands, or installs dependencies.
+- **Portable integration:** any MCP-compatible client can use the same tools and structured response.
+
+### Target User Workflow
+
+1. The developer runs the normal build, test, or API check and saves the relevant output.
+2. The developer connects BuildDoctor to an MCP client and selects the project workspace.
+3. The client calls `summarize_diagnosis` with the failure output and project path.
+4. BuildDoctor returns evidence, ranked hypotheses, missing information, and a safe remediation plan.
+5. The developer reviews and applies a change using their normal coding agent or editor.
+6. The developer supplies the new result for a second diagnosis; only then can the issue be marked verified.
+
+BuildDoctor is therefore a diagnostic gate and verification companion, not another autonomous code editor.
+
 ### Key Features
 
 - `analyze_failure`: classify common compilation, dependency, test, runtime, and API failure signals.
@@ -64,7 +87,12 @@ source .venv/bin/activate
 
 # Windows PowerShell
 .venv\\Scripts\\Activate.ps1
+
+# Windows Command Prompt
+.venv\\Scripts\\activate.bat
 ```
+
+On Windows, `py -3 -m venv .venv` can be used instead of `python -m venv .venv` when the Python launcher is installed. On macOS and Linux, use `python3` if `python` is not available. The remaining commands are identical on all three platforms.
 
 Install the server:
 
@@ -91,6 +119,19 @@ For a client that supports an MCP server configuration file, use an absolute pat
 ```
 
 On Windows, use the absolute path to `.venv\\Scripts\\python.exe`. Do not commit personal machine paths to this repository.
+
+Set an optional workspace boundary before starting the server:
+
+```bash
+# macOS/Linux
+export BUILD_DOCTOR_ALLOWED_ROOT=/absolute/path/to/workspace
+
+# Windows PowerShell
+$env:BUILD_DOCTOR_ALLOWED_ROOT = "C:\\Users\\you\\workspace"
+
+# Windows Command Prompt
+set BUILD_DOCTOR_ALLOWED_ROOT=C:\\Users\\you\\workspace
+```
 
 ## Configuration & Environment Variables
 
@@ -167,6 +208,13 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 - Add opt-in structured parsers for common test-report formats.
 - Add explicit workspace roots and client-confirmed access policies.
 - Add post-fix verification input without allowing the server to execute fixes.
+
+## Next Four Steps
+
+1. Add opt-in parsers for JUnit, Surefire, pytest, npm, Gradle, and CI report formats.
+2. Add a verification tool that accepts a developer-supplied before/after result and compares it without executing commands.
+3. Publish tested MCP client presets for common editors and desktop clients on macOS, Linux, and Windows.
+4. Build a public evaluation fixture set measuring evidence accuracy, hypothesis quality, redaction, and verification honesty.
 
 ## License
 
