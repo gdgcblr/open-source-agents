@@ -73,6 +73,7 @@ def check_model_output(callback_context, llm_response):
 def ground_brief(brief: Dict[str, Any], facts: Dict[str, Any]) -> Dict[str, Any]:
     """Keep only file suggestions that the facts support; report the rest instead of hiding them."""
     allowed = {entry.get("path", "") for entry in facts.get("likely_files") or []}
+    allowed |= {p.get("path", "") for p in (facts.get("code_pointers") or {}).get("pointers") or []}
     issue = facts.get("issue") or {}
     named = mentioned_paths("%s\n%s" % (issue.get("title", ""), issue.get("body", "")))
     kept, dropped = [], []

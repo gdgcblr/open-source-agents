@@ -136,6 +136,7 @@ def analyze_timeline(timeline: List[dict], repo: str, assignees: List[str], now:
             body = event.get("body") or ""
             created = event.get("created_at", "")
             url = event.get("html_url", "")
+            signals.comments_read += 1
 
             if is_maintainer:
                 signals.maintainer_comments += 1
@@ -162,6 +163,7 @@ def analyze_timeline(timeline: List[dict], repo: str, assignees: List[str], now:
                 signals.injection_hints.append(Mention(author, created, url, injection, is_maintainer))
 
         elif kind == "cross-referenced":
+            signals.cross_references += 1
             source = (event.get("source") or {}).get("issue") or {}
             pull = source.get("pull_request")
             source_repo = (source.get("repository") or {}).get("full_name", "")

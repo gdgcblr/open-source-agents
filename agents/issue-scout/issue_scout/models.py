@@ -52,6 +52,8 @@ class IssueSignals:
     pulls: List[PullRef] = field(default_factory=list)
     maintainer_comments: int = 0
     last_maintainer_comment: Optional[str] = None
+    comments_read: int = 0
+    cross_references: int = 0
 
     def pulls_with_state(self, state: str) -> List[PullRef]:
         return [p for p in self.pulls if p.state == state]
@@ -118,6 +120,7 @@ class ScoutResult:
     repos_considered: int
     requests_made: int
     notes: List[str] = field(default_factory=list)
+    legwork: Dict[str, int] = field(default_factory=dict)
 
     def skip_summary(self) -> Dict[str, int]:
         counts: Dict[str, int] = {}
@@ -135,6 +138,7 @@ class ScoutResult:
             "skip_summary": self.skip_summary(),
             "repos_considered": self.repos_considered,
             "requests_made": self.requests_made,
+            "legwork": self.legwork,
             "notes": self.notes,
         }
 

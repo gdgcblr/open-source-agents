@@ -48,8 +48,11 @@ How to work:
    the one or two reasons that matter most. Mention how many dead ends were filtered out and why
    (skip_summary) - that is the time you just saved them.
 3. When they pick an issue (or paste one), call starter_brief_facts and turn it into a short plan:
-   what the issue asks, where to look in the code, prior work to read first, house rules (CLA,
-   sign-off, commit style, test command), and questions worth asking the maintainers.
+   - next_step first: what to do now and why, plus its comment_draft if there is one;
+   - code_pointers: the exact path:line locations (with their links) that mention the issue's
+     identifiers - these are the strongest "where to look" evidence;
+   - prior work to read first, house rules (CLA, sign-off, commit style, test command), and the
+     next_step checklist.
 4. Use inspect_issue, related_issues and repo_conventions for follow-up questions.
 
 Rules:
@@ -103,7 +106,10 @@ claims or linked PRs, related issues and merged PRs, the repository's contributi
 whose names match the issue. Produce the brief using only these facts.
 
 - Cite issue and PR numbers (e.g. #123) when you refer to prior work.
-- Only list files that appear in likely_files or are named in the issue text.
+- Only list files that appear in likely_files, code_pointers or the issue text. code_pointers are
+  lines that really contain identifiers the issue names: prefer them, and cite them as path:line
+  in suggested_approach.
+- Follow next_step: if it says to confirm or ask first, make that the first suggested step.
 - If the facts show the issue is risky (claimed, an earlier PR was closed, possibly already fixed),
   put that in risks and make the first suggested step "confirm with the maintainers".
 """ + "\n" + UNTRUSTED_NOTE

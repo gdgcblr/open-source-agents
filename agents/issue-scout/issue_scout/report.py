@@ -116,6 +116,15 @@ def render_find(result: ScoutResult, now: datetime, show_skipped: bool = False) 
         out.append("### Skipped")
         for candidate in result.skipped:
             out.append(render_candidate(candidate, now))
+    work = result.legwork
+    if work.get("issues_checked"):
+        out.append("")
+        out.append(
+            "**Legwork done for you:** checked %d issues, read %d comments, followed %d cross-references, "
+            "and reviewed %d closed PRs to measure how %d repos treat outside contributors."
+            % (work["issues_checked"], work["comments_read"], work["cross_references_followed"],
+               work["closed_prs_reviewed"], work["repos_merge_history_checked"])
+        )
     out.append("")
     out.append("_Checked %d repos with %d GitHub API calls._" % (result.repos_considered, result.requests_made))
     for note in result.notes:
@@ -148,6 +157,21 @@ def render_brief(facts: Dict[str, object], now: datetime, ai: Optional[Dict[str,
         out.append("- ! " + line)
     out.append("")
 
+    step = facts.get("next_step")
+    if step:
+        out.append("### Next step")
+        out.append("**%s** %s" % (step["action"], step["why"]))
+        if step.get("comment_draft"):
+            out.append("")
+            out.append("Suggested comment to post on the issue:")
+            out.append("> " + step["comment_draft"])
+        if step.get("checklist"):
+            out.append("")
+            out.append("Before you open the PR:")
+            for item in step["checklist"]:
+                out.append("- [ ] " + item)
+        out.append("")
+
     if ai:
         out.append("### Summary (%s)" % ai.get("model", "Gemini"))
         out.append(str(ai.get("summary", "")))
@@ -167,6 +191,15 @@ def render_brief(facts: Dict[str, object], now: datetime, ai: Optional[Dict[str,
             for risk in ai["risks"]:
                 out.append("- " + risk)
             out.append("")
+
+    pointers = (facts.get("code_pointers") or {}).get("pointers") or []
+    if pointers:
+        names = ", ".join("`%s`" % name for name in facts["code_pointers"]["identifiers"])
+        out.append("### Code pointers")
+        out.append("Lines that mention identifiers named in the issue (%s):" % names)
+        for pointer in pointers:
+            out.append("- [`%s:%d`](%s) `%s`" % (pointer["path"], pointer["line"], pointer["url"], pointer["code"].replace("`", "'")))
+        out.append("")
 
     out.append("### Where to look")
     files = (ai or {}).get("likely_files") or facts.get("likely_files") or []

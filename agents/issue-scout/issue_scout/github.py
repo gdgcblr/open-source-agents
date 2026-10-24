@@ -144,6 +144,13 @@ class GitHubClient:
     def get_community_profile(self, repo: str) -> dict:
         return self.get("/repos/%s/community/profile" % repo)
 
+    def search_code(self, query: str, per_page: int = 10) -> List[dict]:
+        """GitHub code search. Requires a token; anonymous calls get a 401."""
+        return self.get("/search/code", {"q": query, "per_page": per_page}).get("items", [])
+
+    def get_file(self, repo: str, path: str, ref: str) -> dict:
+        return self.get("/repos/%s/contents/%s" % (repo, urllib.parse.quote(path)), {"ref": ref})
+
     def get_tree(self, repo: str, ref: str) -> List[dict]:
         data = self.get("/repos/%s/git/trees/%s" % (repo, urllib.parse.quote(ref)), {"recursive": "1"})
         return data.get("tree", [])

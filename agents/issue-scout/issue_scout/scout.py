@@ -11,6 +11,8 @@ from . import conventions as conv
 from .github import GitHubClient, GitHubError, RateLimitError, parse_issue_url
 from .guardrails import check_repo, check_user, clamp, clean_profile, detect_injection
 from .models import Candidate, IssueSignals, Mention, Profile, ScoutResult
+from .plan import next_step
+from .pointers import code_pointers
 from .related import find_related, keywords
 from .report import evidence
 from .scoring import evaluate
@@ -98,7 +100,9 @@ class Scout:
 
         good = sorted((c for c in evaluated if c.verdict != "skip"), key=lambda c: -c.score)
         skipped = [c for c in evaluated if c.verdict == "skip"]
-        return ScoutResult(profile, good[:limit], skipped, len(repos), self.client.requests_made, notes)
+        result = ScoutResult(profile, good[:limit], skipped, len(repos), self.client.requests_made, notes)
+        result.legwork = _legwork(evaluated)
+        return result
 
     def _find_repos(self, profile: Profile) -> Dict[str, dict]:
         pushed_after = (self.now - timedelta(days=REPO_ACTIVE_DAYS)).strftime("%Y-%m-%d")
@@ -224,6 +228,7 @@ class Scout:
             "conventions": {"repo": candidate.repo, "contributing_url": None, "rules": [],
                             "setup_commands": [], "test_commands": [], "lint_commands": []},
             "likely_files": [],
+            "code_pointers": {"identifiers": [], "pointers": [], "searched_files": []},
             "notes": notes,
         }
         # The availability check above is essential; the extras below degrade gracefully.
@@ -235,12 +240,48 @@ class Scout:
             facts["conventions"] = self.conventions(candidate.repo)
         except GitHubError as exc:
             notes.append("Contributing guide unavailable: %s" % exc)
+        branch = health.default_branch if health else "HEAD"
+        tree_paths: List[str] = []
         try:
-            tree = self.client.get_tree(candidate.repo, health.default_branch if health else "HEAD")
+            tree = self.client.get_tree(candidate.repo, branch)
+            tree_paths = [entry["path"] for entry in tree if entry.get("type") == "blob"]
             facts["likely_files"] = conv.likely_files(tree, candidate.title, candidate.body)
         except GitHubError as exc:
             notes.append("File suggestions unavailable: %s" % exc)
+        try:
+            facts["code_pointers"] = code_pointers(
+                self.client, candidate.repo, branch, candidate.title, candidate.body,
+                [entry["path"] for entry in facts["likely_files"][:3]], tree_paths,
+            )
+        except GitHubError as exc:
+            notes.append("Code pointers unavailable: %s" % exc)
+
+        pointers = facts["code_pointers"]["pointers"]
+        # Files that actually contain the issue's identifiers beat files whose names merely match.
+        pointer_files: List[str] = []
+        for pointer in pointers:
+            if pointer["path"] not in pointer_files:
+                pointer_files.append(pointer["path"])
+        if pointer_files:
+            ranked = [{"path": path, "why": "contains " + ", ".join(sorted({"`%s`" % p["term"] for p in pointers if p["path"] == path}))}
+                      for path in pointer_files]
+            ranked += [entry for entry in facts["likely_files"] if entry["path"] not in pointer_files]
+            facts["likely_files"] = ranked[:8]
+        first_file = facts["likely_files"][0]["path"] if facts["likely_files"] else None
+        facts["next_step"] = next_step(candidate, facts["conventions"], first_file, self.now)
         return facts
+
+
+def _legwork(evaluated: List[Candidate]) -> Dict[str, int]:
+    """The manual checking this run did on the contributor's behalf."""
+    repos = {c.repo: c.repo_health for c in evaluated if c.repo_health is not None}
+    return {
+        "issues_checked": len(evaluated),
+        "comments_read": sum(c.signals.comments_read for c in evaluated if c.signals),
+        "cross_references_followed": sum(c.signals.cross_references for c in evaluated if c.signals),
+        "repos_merge_history_checked": len(repos),
+        "closed_prs_reviewed": sum(h.closed_sample for h in repos.values()),
+    }
 
 
 def _repo_from_issue(issue: dict) -> str:

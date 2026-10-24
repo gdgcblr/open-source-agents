@@ -6,6 +6,15 @@
 
 ## Pitch
 
+**In one line:** tell Issue Scout what you know and how much time you have. It searches GitHub for issues that are genuinely free, proves it with links, and hands you the exact lines of code to start from plus the comment to post.
+
+**What sets it apart:**
+1. **It catches hidden dead ends.** It reads every issue's timeline and finds PRs that GitHub's own "no linked PR" filter misses, "already fixed" comments and recent claims. Each one comes with a link to the evidence.
+2. **It takes you from the issue straight to the code.** Code pointers link to the exact lines the issue is about.
+3. **It follows each repo's own rules.** It tells you whether to just start, ask first, or confirm a fix, and drafts the comment.
+4. **It's measured and guarded.** A held-out accuracy eval, guardrails enforced in code, and a legwork receipt on every run.
+5. **It works where you already are.** A CLI, a Google ADK chat agent, and an MCP server for Gemini CLI, Claude Code and Cursor. No keys needed to start.
+
 ### The problem: "open" issues that aren't
 Finding an issue is the first step of every open-source contribution, and it's where newcomers lose the most time. An issue labelled `good first issue`, with no assignee and no linked PR, looks free. Often it isn't:
 - someone claimed it in a comment last week;
@@ -35,9 +44,13 @@ python -m issue_scout find --lang python --hours 3        # or: --user <your-git
 | Check whether the repo actually merges outside PRs, and how fast | Computed from the last 50 closed PRs, ignoring bots and the core team |
 | Search for related issues and previous fixes | Two to four targeted searches, with possible duplicates flagged |
 | Read CONTRIBUTING.md for CLA, DCO sign-off, commit style and test commands | Extracted into "house rules" |
-| Guess which files to open | Ranked from the repo tree; Gemini adds a step-by-step plan |
+| Open likely files one by one, hunting for the code the issue talks about | **Code pointers**: exact `file:line` links to the functions the issue names, found with GitHub code search. In the real example, `_storage` at `atlassian.py:1583` |
+| Decide whether to ask first, and write the comment | **Next step** that follows the repo's own norms: start now if maintainers say "just open a PR", ask the earlier claimant, or confirm a possible fix first. Comes with a ready-to-post comment and a pre-PR checklist (CLA, `git commit -s`, test command, `Fixes #N`) |
 
-**What one command does, measured:** a single unauthenticated `find` run checked 20 repositories and 10 issues using 20 GitHub API calls, in about 8 seconds ([example](#example-input--output)). It returns a ranked shortlist, the evidence behind every warning, and a count of the dead ends it removed. With a GitHub token it checks 25 issues per run. A starter brief with Gemini took about 30–40 seconds, including automatic fallback when a model was overloaded.
+**What one command does, measured:**
+- **Legwork receipt:** every `find` prints how much checking it did for you. In the latest real run it checked 13 issues, read 39 comments, followed 92 cross-references and reviewed 350 closed PRs across 7 repos, in about 35 seconds ([example](#example-input--output)).
+- **Without a token:** a run checked 20 repositories and 10 issues using 20 GitHub API calls, in about 8 seconds.
+- **Starter brief:** with code pointers and Gemini, it took about 20–40 seconds, including automatic fallback when a model was overloaded.
 
 ### Ready to use today, not a prototype
 
@@ -46,7 +59,7 @@ python -m issue_scout find --lang python --hours 3        # or: --user <your-git
 | Installs in three commands, works with **no API keys** | [Installation & Setup](#installation--setup); verified from a fresh clone in an empty directory |
 | Fits how people already work: CLI, a Google ADK chat agent (`adk web`), and an MCP server for Gemini CLI, Claude Code and Cursor | [How to Run](#how-to-run) |
 | Built on Google's stack | Google ADK 2.13 agents with Gemini, structured output and ADK guardrail callbacks |
-| Tested | 110 offline tests, including the real ADK runner; live runs against GitHub and Gemini ([How to Test](#how-to-test)) |
+| Tested | 123 offline tests, including the real ADK runner; live runs against GitHub and Gemini ([How to Test](#how-to-test)) |
 | Accuracy is measured | A held-out eval: every detector had 100% precision ([Detector accuracy](#detector-accuracy-evals)) |
 | Safe for a newcomer to run | Read-only; never comments, claims or opens PRs; guardrails against prompt injection, query injection, leaked secrets, invented links and runaway loops ([Guardrails](#guardrails)) |
 | Honest about limits | Pattern-based detectors miss some terse claims (57% recall), and every flag links to its source so you can judge ([Known Limitations](#known-limitations)) |
@@ -67,7 +80,10 @@ Maintainers benefit too: fewer duplicate PRs on issues someone already took, and
 - **Merge-likelihood check**: measures how often a repo merges PRs from outside contributors and how fast (median days), so you avoid repos where outside PRs go to die.
 - **Fit to your time**: ranks by freshness, competition, clarity and a rough effort estimate against the hours you have. Penalises RFC/discussion issues that still need a maintainer decision.
 - **Related work and duplicates**: finds similar open and closed issues and merged PRs in the same repo, so you learn from prior fixes and don't duplicate work.
-- **Starter brief**: likely files to touch, house rules from the repo's CONTRIBUTING guide (CLA, DCO sign-off, Conventional Commits, changelog, test and lint commands) and, with Gemini, a summary, suggested approach, risks and questions to ask maintainers.
+- **Code pointers**: finds the identifiers an issue names in backticks (`_storage`, `html.escape`), locates the files that contain them with GitHub code search, and links to the exact lines (`atlassian.py:1583`). It only opens files that exist in the repo's tree.
+- **Next step that follows the repo's norms**: start now, ask the earlier claimant, or confirm a possible fix first, decided from evidence. Includes a ready-to-post comment and a pre-PR checklist built from the repo's rules.
+- **Legwork receipt**: every `find` reports the issues, comments, cross-references and closed PRs it checked for you.
+- **Starter brief**: next step, code pointers, likely files, prior work, house rules from the repo's CONTRIBUTING guide (CLA, DCO sign-off, Conventional Commits, changelog, test and lint commands) and, with Gemini, a summary and a suggested approach that cites `file:line`.
 - **Three ways to use it**: a CLI, a conversational **Google ADK** agent (`adk web`) and an **MCP server** for Gemini CLI, Claude Code, Cursor and other MCP hosts.
 - **Works with no keys**: everything except the Gemini brief and chat runs on GitHub's public API alone. The core needs only the Python standard library.
 - **Guardrails enforced in code, not just prompts**: input validation against search-query injection, prompt-injection flags on issue text, secret masking, a host allowlist, an ADK tool-call budget, and checks that every link and file the model mentions came from real data. See [Guardrails](#guardrails).
@@ -112,6 +128,7 @@ Maintainers benefit too: fewer duplicate PRs on issues someone already took, and
         +--> ADK root_agent (adk web/run) -> Gemini explains and plans, calling the same tools
 
  brief <issue>: inspect + related issues/PRs + CONTRIBUTING rules + likely files (git tree)
+                + code pointers (code search -> exact lines) + repo-aware next step
                 --> ADK brief_writer (Gemini, structured StarterBrief) or facts-only without a key
 ```
 
@@ -227,34 +244,36 @@ Tools exposed: `find_issues`, `inspect_issue`, `related_issues`, `repo_conventio
 
 ## Example Input & Output
 
-All outputs below are from real runs on 24 Oct 2026, unauthenticated, trimmed only where marked. GitHub data changes constantly, so your results will differ.
+All outputs below are copied from real runs on 24 Oct 2026, trimmed only where marked. GitHub data changes constantly, so your results will differ.
 
 ### Example Input
 ```bash
-python -m issue_scout find --lang python --hours 3 --limit 4
+python -m issue_scout find --lang python --hours 3 --limit 3
 ```
 
 ### Example Output
+Run with a `GITHUB_TOKEN`. The last note is genuine: after a long day of test runs, GitHub's abuse protection throttled searches on the author's account, and Issue Scout said so instead of failing.
 ```
-## Issue Scout: 4 picks for python, ~3h
+## Issue Scout: 3 picks for python, ~3h
 
-1. **[READY 90]** [brekkylab/backlot#988](https://github.com/brekkylab/backlot/issues/988) confluence: a body's storage writes a character HTML 4 names as itself and ' as &#x27;, where real writes the named entity and ' as is
+1. **[READY 90]** [vllm-project/vllm-omni#9212](https://github.com/vllm-project/vllm-omni/issues/9212) [New Model]: Bria Fibo-2.0 (Dev + Edit Turbo)
+   - effort: medium (rough guess) | updated today | 0 comments | labels: help wanted, new model
+   - repo: 7.3k stars, merges 53% of recent outside PRs, median 2.3 days to merge
+   - why: active in the last two weeks; merges 53% of recent outside PRs; outside PRs merge in ~2.3 days; labelled for newcomers
+
+2. **[READY 90]** [brekkylab/backlot#988](https://github.com/brekkylab/backlot/issues/988) confluence: a body's storage writes a character HTML 4 names as itself and ' as &#x27;, where real writes the named entity and ' as is
    - effort: medium (rough guess) | updated 1 days ago | 0 comments | labels: good first issue, help wanted, fidelity, hacktoberfest
-   - repo: 298 stars, merges 92% of recent outside PRs, median 0.6 days to merge
+   - repo: 261 stars, merges 92% of recent outside PRs, median 0.6 days to merge
    - why: active in the last two weeks; merges 92% of recent outside PRs; outside PRs merge in ~0.6 days; labelled for newcomers
 
-2. **[CAUTION 84]** [repowise-dev/repowise#4575](https://github.com/repowise-dev/repowise/issues/4575) A named arrow function inside a function rolls up into it, and a function's NLOC counts the functions nested in it
-   - effort: large (rough guess) | updated today | 2 comments | labels: bug, help wanted
-   - repo: 7.9k stars, merges 92% of recent outside PRs, median 2.6 days to merge
-   - ! probably more work than the time you have
-   - why: active in the last two weeks; merges 92% of recent outside PRs; outside PRs merge in ~2.6 days; maintainers have commented
-
-[... picks 3 and 4 trimmed ...]
+[... pick 3 trimmed ...]
 
 **Filtered out 3 dead ends** that GitHub search still listed: 2 already had an open PR, 1 had a merged PR.
 
-_Checked 20 repos with 20 GitHub API calls._
-_Note: No GITHUB_TOKEN set: checked fewer issues to stay inside GitHub's anonymous rate limit._
+**Legwork done for you:** checked 13 issues, read 39 comments, followed 92 cross-references, and reviewed 350 closed PRs to measure how 7 repos treat outside contributors.
+
+_Checked 20 repos with 26 GitHub API calls._
+_Note: GitHub's abuse protection (secondary rate limit) paused requests after a burst of searches. Wait a few minutes and try again. Searched 12 of 20 repos._
 ```
 
 ### Catching an issue that only looks open
@@ -271,62 +290,72 @@ python -m issue_scout inspect https://github.com/Significant-Gravitas/AutoGPT/is
    - why: active in the last two weeks; labelled for newcomers
 ```
 
-### Starter brief (facts only, no Gemini key)
+### Starter brief with code pointers and Gemini
 ```bash
 python -m issue_scout brief brekkylab/backlot#988
 ```
+The issue names `_storage`, `_view` and `_export_view` in backticks. GitHub code search (with a token) finds the file that defines them, and the brief links to the exact lines. **Next step**, **Code pointers**, **Where to look**, **Prior work** and **House rules** are all deterministic. **Summary** and **Suggested approach** come from the ADK `brief_writer` agent (Gemini). Its output is validated against a schema, and its file suggestions are checked against the repo data.
 ```
 ## Starter brief: [brekkylab/backlot#988](https://github.com/brekkylab/backlot/issues/988) confluence: a body's storage writes a character HTML 4 names as itself and ' as &#x27;, where real writes the named entity and ' as is
 
 **Verdict:** READY (score 90) | effort: medium (rough guess)
 
+### Next step
+**Leave a short comment so others don't duplicate your work, then start.** No claims, open PRs or assignment policy found on the issue.
+
+Suggested comment to post on the issue:
+> Hi! I'd like to work on this. My plan is to make the change in `backlot/routers/atlassian.py` and add a test that covers it. I'll open a draft PR soon; let me know if someone is already on it.
+
+Before you open the PR:
+- [ ] Run the tests before pushing: `pytest`
+- [ ] Write `Fixes #988` in the PR description so the issue closes when it merges.
+
+### Summary (gemini-3.5-flash)
+In Confluence body representations, Backlot currently escapes single quotes as &#x27; across all representations and leaves HTML 4 characters unescaped in storage format. Done looks like updating _storage, _view, and _export_view to match Confluence Cloud entity conversion rules for HTML 4 named entities and single quote handling.
+
+### Suggested approach (Gemini, verify before coding)
+1. Leave a short comment on issue #988 to let maintainers and contributors know you are working on it.
+2. Examine `_storage` at backlot/routers/atlassian.py:1583, `_view` at backlot/routers/atlassian.py:1590, and `_export_view` at backlot/routers/atlassian.py:1598.
+3. Update `_storage` so HTML 4 characters from `html.entities.codepoint2name` (except U+0160 and U+0161) are escaped to entity names, while single quotes `'` remain unescaped.
+4. Modify `_view` and `_export_view` to escape only `"`, `&`, `<`, and `>`, ensuring `'` is left as is instead of being converted to `&#x27;` by `html.escape`.
+5. Run `pytest` to ensure all existing and new test cases pass.
+
+### Code pointers
+Lines that mention identifiers named in the issue (`html.escape`, `_storage`, `_view`, `_export_view`, `body.view`, `body.export_view`, `html.entities.html5`, `backlot.serve`):
+- [`backlot/routers/atlassian.py:1583`](https://github.com/brekkylab/backlot/blob/main/backlot/routers/atlassian.py#L1583) `def _storage(content: str) -> str:`
+- [`backlot/routers/atlassian.py:1590`](https://github.com/brekkylab/backlot/blob/main/backlot/routers/atlassian.py#L1590) `def _view(content: str) -> str:`
+- [`backlot/routers/atlassian.py:1598`](https://github.com/brekkylab/backlot/blob/main/backlot/routers/atlassian.py#L1598) `def _export_view(content: str) -> str:`
+
 ### Where to look
-- `backlot/graphql/body.py` - matches: body
-- `backlot/schemas/confluence.schema.json` - matches: confluence, json
-- `backlot/fidelity/baseline/confluence.json` - matches: confluence, json
-- `examples/using-official-sdk/confluence.py` - matches: confluence
-- `backlot/data/confluence_search_options.wadl` - matches: confluence
-- `examples/using-llamaindex-readers/confluence.py` - matches: confluence
+- `backlot/routers/atlassian.py` - Defines the _storage, _view, and _export_view rendering helpers for Confluence representations.
 
 ### Prior work
-#### Open related issues
-- [#983](https://github.com/brekkylab/backlot/issues/983) confluence: a character past U+FFFF in a title, a body or a comment is written as its UTF-8 bytes, where real writes two \u escapes
-- [#984](https://github.com/brekkylab/backlot/issues/984) confluence: content/{id} sent no expand expands body.storage, where real expands space, history and version, and a sent expand gets space added
-
-#### Closed related issues
-- none found
-
-#### Merged PRs on the same topic
-- none found
+[... 2 related open issues (#983, #984) trimmed ...]
 
 ### House rules
 From [the contributing guide](https://github.com/brekkylab/backlot/blob/main/CONTRIBUTING.md):
 - Setup: `uv venv && source .venv/bin/activate` | `uv pip install -e ".[dev]"` | `python scripts/prose_check.py` | `uv sync --all-extras --locked`
 - Test: `pytest` | `pytest -rs`
 - Lint: `ruff check . && ruff format --check .` | `ruff check --preview --select PLW1514 .`
-
-_Note: Gemini brief skipped: set GOOGLE_API_KEY to add a summary and plan._
 ```
+Without a Gemini key (or with `--no-ai`), you get the same brief minus the Summary and Suggested approach sections.
 
-### Starter brief with Gemini
-With `GOOGLE_API_KEY` set, the same command runs the ADK `brief_writer` agent. Its output is validated against the `StarterBrief` schema, and these sections are added above the facts (excerpt, same issue):
+### Asking the ADK agent for a plan
+A real single-turn session (excerpt). The agent calls `starter_brief_facts` and leads with the next step and code pointers. The links passed the grounding check, because they came from tool data.
 ```
-### Summary (gemini-3.5-flash)
-Backlot's Confluence emulator uses standard HTML escaping on body representations, escaping single quotes as &#x27; and leaving named entity characters as unescaped literals. Real Confluence Cloud leaves single quotes unescaped across view and storage formats and encodes HTML4 named characters (except U+0160 and U+0161) as entity references in storage mode.
+>>> USER: Make me a plan to start brekkylab/backlot#988.
+[tool call] starter_brief_facts {'issue': 'brekkylab/backlot#988'}
+<<< AGENT:
+### 1. Next Step
+**Action:** Leave a short comment on the issue so others know you are working on it, then begin setup.
+**Suggested Comment Draft:**
+> Hi! I'd like to work on this. My plan is to make the change in `backlot/routers/atlassian.py` and add a test that covers it. I'll open a draft PR soon; let me know if someone is already on it.
 
-### Suggested approach (Gemini, verify before coding)
-1. Locate where Confluence body representations (_storage, _view, _export_view) are constructed in the Confluence mock handlers.
-2. Replace standard html.escape with a custom helper function for Confluence body representations.
-3. For storage bodies, map non-ASCII characters present in Python's html.entities.codepoint2name to their named entities (excluding U+0160 and U+0161), and leave single quotes (') unescaped.
-4. For view and export_view bodies, ensure only &, <, >, and " are escaped while keeping single quotes (') as literal characters.
-5. Add reproduction unit tests over the HTTP endpoint verifying storage, view, and export_view output against expected entity encodings.
-6. Run pytest and ruff check . to verify tests pass and code style guidelines are met.
-
-### Questions worth asking first
-- Should the custom HTML4 entity escaping logic for Confluence be isolated to a helper within the Confluence provider or added as a general utility in Backlot?
-
-### Risks
-- Care must be taken to only convert raw text characters to HTML4 entity references without double-escaping existing markup tags or standard HTML entities like &quot;.
+### 2. Code Pointers
+* [`backlot/routers/atlassian.py:1583`](https://github.com/brekkylab/backlot/blob/main/backlot/routers/atlassian.py#L1583) — `def _storage(content: str) -> str:`
+* [`backlot/routers/atlassian.py:1590`](https://github.com/brekkylab/backlot/blob/main/backlot/routers/atlassian.py#L1590) — `def _view(content: str) -> str:`
+* [`backlot/routers/atlassian.py:1598`](https://github.com/brekkylab/backlot/blob/main/backlot/routers/atlassian.py#L1598) — `def _export_view(content: str) -> str:`
+[... related work, house rules and PR checklist trimmed ...]
 ```
 
 ### Chatting with the ADK agent
@@ -365,8 +394,8 @@ Here are 3 open Python issues matched to your 3-hour window.
 pytest
 ```
 
-- 110 offline tests: no network, no API keys. GitHub is replaced by a fake client.
-- Covered: claim, "already fixed" and maintainer-policy detection; timeline and PR parsing; repo merge statistics; scoring and verdicts; related-issue search; CONTRIBUTING parsing; likely-file ranking; the full `find` pipeline including rate-limit fallbacks; the GitHub client (search pacing, secondary-rate-limit retries, error messages); every guardrail; the CLI; and the tool layer.
+- 123 offline tests: no network, no API keys. GitHub is replaced by a fake client.
+- Covered: claim, "already fixed" and maintainer-policy detection; timeline and PR parsing; repo merge statistics; scoring and verdicts; related-issue search; CONTRIBUTING parsing; likely-file ranking; the full `find` pipeline including rate-limit fallbacks; the GitHub client (search pacing, secondary-rate-limit retries, error messages); every guardrail; code pointers, next steps and the legwork receipt; the CLI; and the tool layer.
 - `tests/test_adk_agent.py` drives the **real ADK runner** with a scripted model. It checks three things:
   - `root_agent` calls Issue Scout's tools and receives their results.
   - Gemini briefs are validated against `StarterBrief`.
@@ -410,6 +439,7 @@ Real output:
 - **Gemini availability**: popular models sometimes return 503 "high demand". `brief` falls back through `ISSUE_SCOUT_FALLBACK_MODELS` and, if every model fails, still prints the facts-only brief. The `adk web` chat uses the main model only.
 - **Sampling**: merge statistics use the 50 most recently updated closed PRs, and fewer than 3 outside PRs is treated as "not enough data". Bots and core-team PRs are excluded by GitHub's `author_association`.
 - **GitHub only**: GitLab, Codeberg and other forges are not supported.
+- **Code pointers**: work only when the issue names code in backticks (`_storage`, `html.escape`). Finding the right file needs GitHub code search, which requires `GITHUB_TOKEN`; without a token only files whose names match the issue are opened. At most 4 files and 3 lines per file are shown.
 - **Large repos**: likely-file suggestions use the git tree API, which GitHub truncates for very large repositories, so suggestions may be incomplete there.
 - **Gemini sections** depend on the model and can be wrong. The brief labels them as suggestions to verify.
 - **Testing**: tested on macOS (Python 3.12 for everything, 3.9 for the core). Linux should work; Windows is untested.
