@@ -1,0 +1,6 @@
+google-adk>=1.0.0
+google-genai>=1.0.0
+python-dotenv>=1.0.0
+rich>=13.0.0
+googlemaps>=4.10.0
+streamlit>=1.30.0

@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [planning-puppet](planning-puppet/) | GenAI-powered event planning concierge for weddings, birthdays & community events. Features budget calculations, timelines, vendor checklists, Pinterest mood boards, Google Maps venue search, Streamlit UI, and LLM-as-a-Judge quality evaluator. | Google ADK · Gemini Flash · Google Maps · Streamlit · Python | — |
