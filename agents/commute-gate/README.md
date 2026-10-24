@@ -10,8 +10,9 @@ Built for riders and for **app builders** who want reusable escalate / act / eva
 
 ### Problem Statement & Intended Users
 
-- **Problem:** AI commute answers often guess times and line numbers, or answer “get me to the airport” without origin or time.
-- **Intended users:** Bengaluru commuters (demo) and app builders who need a small, swappable **gate + eval** layer in front of any planner.
+- **Problem:** People (and in-car / in-app copilots) ask AI for the next trip while already under load — a rider heading to work, or a ride-hailing driver (Uber, Ola, Rapido) glancing at a new offer near drop-off. The model often answers a vague ask (“airport tomorrow”) as if it were complete, or it rewrites a real schedule into the wrong bus, metro line, or arrival time. That text is what the human trusts, not the hidden tool JSON.
+- **Intended Users:** Daily commuters who want a grounded Bengaluru plan; app builders shipping voice-first or glanceable trip copilots; teams who need an open **gate + eval** harness so their model does not act too soon or speak past the tools.
+- **Why It Matters:** A wrong route wastes a morning. A wrong line spoken to a driver competes with traffic. Open-source agents should **ask when the request is unclear**, **plan only from transit data**, and **refuse to show a reply the tools did not support** — and those rules should be editable, not locked inside a closed product.
 
 ### Key Features
 
