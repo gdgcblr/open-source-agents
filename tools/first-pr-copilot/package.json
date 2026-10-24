@@ -1,0 +1,13 @@
+{
+  "name": "first-pr-copilot",
+  "version": "1.0.0",
+  "description": "Pre-flight code hygiene auditor and PR description generator for open-source newcomers",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["developer-tools", "pr-generator", "code-hygiene", "open-source"],
+  "author": "",
+  "license": "Apache-2.0"
+}
