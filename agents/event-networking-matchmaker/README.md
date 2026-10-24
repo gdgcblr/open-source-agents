@@ -155,6 +155,19 @@ The tests cover the original open-source regression, project/interest retrieval,
 
 The base test suite uses lexical NLP and does not need internet or model weights. Provider tests use fake responses and do not claim a live Gemini run. A 200-profile catalog test checks functional retrieval, not 200 concurrent users. `evaluate.py` checks ten curated queries and sequential 200-profile retrieval timing. These are synthetic regression checks, not a held-out accuracy benchmark. Actual results and unverified components are recorded in [VERIFICATION.md](VERIFICATION.md). Run `python evaluate.py --model-dir /path/to/model` to evaluate an installed semantic model separately.
 
+## Does it meet the contribution rules?
+
+Local checks against the repository’s four standards (24 October 2026):
+
+| Standard | Verified evidence |
+| --- | --- |
+| Reproducibility | Fresh environment installed successfully; **38 tests passed**, `pip check` passed, and browser JavaScript syntax checked. Tested on macOS / Python 3.14.5. |
+| Documentation | README template topics, role guides, deployment steps and limitations covered. Browser-tested Adarsh’s open-source query and invitation sign-in; **10/10 curated retrieval checks passed**. |
+| Security & privacy | Tests cover consent, event isolation, token revocation, withdrawal, upload limits and cloud-tool boundaries. No private runtime files tracked; common credential-pattern scan found no matches. Fictional demo/test tokens are intentional. |
+| Focused scope | **34 files**, all under `agents/event-networking-matchmaker/`; no unrelated changes; Git whitespace check passed. |
+
+**Limits:** one upstream test-client deprecation warning; synthetic checks are not general accuracy or production-load proof. MiniLM inference, live Gemini and public hosting remain unverified. This is not a security certification or maintainer acceptance. Push and PR submission are still pending. [Detailed results](VERIFICATION.md) · [Rule-by-rule review](SUBMISSION_REVIEW.md)
+
 ## Security and privacy
 
 Read [PRIVACY.md](PRIVACY.md) before using real attendee data. Key properties: consenting profiles only; per-event authentication; hashed private tokens; source-grounded text rendering; no profile data in cloud planner calls; no profile-vector cache; in-app withdrawal suppression; organizer-only import/rotation/deletion; bounded uploads; private database permissions; cross-origin rejection; no-store responses; and fresh authorization/profile checks after slow matching.
