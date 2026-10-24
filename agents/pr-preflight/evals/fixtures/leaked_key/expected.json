@@ -1,0 +1,1 @@
+{"verdict": "FAIL", "failed_checks": ["SECRETS"], "must_not_contain": ["$FAKE_KEY"]}

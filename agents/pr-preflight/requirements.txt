@@ -1,0 +1,3 @@
+google-adk==2.13.0
+mcp==2.3.0
+python-dotenv==1.2.4
