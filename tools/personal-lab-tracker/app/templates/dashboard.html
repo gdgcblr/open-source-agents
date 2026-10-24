@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Personal lab tracker{% endblock %}
+{% block content %}
+<header class="page-head">
+  <p class="eyebrow">Dashboard</p>
+  <h1>{% if has_results %}Lab history{% else %}No reports yet{% endif %}</h1>
+  {% if not has_results %}
+  <p class="lede">Add a lab PDF, or load the fictional demo visits. Nothing is stored until you do.</p>
+  {% else %}
+  <p class="lede">Latest value for each test, placed on the reference interval printed with that result.</p>
+  {% endif %}
+</header>
+
+{% if not has_results %}
+<div class="dash-grid">
+  <section class="panel" aria-labelledby="add-heading">
+    <p class="eyebrow">Bring in a PDF</p>
+    <h2 id="add-heading">Add a report</h2>
+    {% include "upload_form.html" %}
+  </section>
+  <section class="panel" aria-labelledby="demo-heading">
+    <p class="eyebrow">No file yet</p>
+    <h2 id="demo-heading">Try the demo visits</h2>
+    <p>Three fictional lab PDFs. The names and contact lines on them are not stored as results.</p>
+    <form method="post" action="/demo">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button type="submit" class="secondary">Load demo record</button>
+    </form>
+  </section>
+</div>
+{% else %}
+
+<section class="panel" aria-labelledby="latest-heading">
+  <div class="panel-head">
+    <div>
+      <p class="eyebrow">Now</p>
+      <h2 id="latest-heading">Latest results</h2>
+    </div>
+    <p>
+      {% if outside_count %}
+      {{ outside_count }} latest value{{ "s" if outside_count != 1 else "" }} sit{{ "" if outside_count != 1 else "s" }} outside the printed interval.
+      {% else %}
+      Every latest value sits inside the interval that came with it, or the report did not include an interval.
+      {% endif %}
+    </p>
+  </div>
+  <div class="meter-grid">
+    {% for meter in meters %}
+    <article class="meter">
+      <div class="meter-top">
+        <h3>{{ meter.display_name }}</h3>
+        <span class="flag flag-{{ meter.flag }}">{{ meter.flag }}</span>
+      </div>
+      <p class="meter-value">{{ meter.value_text }} {% if meter.unit %}<span>{{ meter.unit }}</span>{% endif %}</p>
+      <div
+        class="track"
+        role="meter"
+        aria-valuetext="{{ meter.display_name }} {{ meter.value_text }} {{ meter.unit }}, {{ meter.flag }}{% if meter.ref_text %}, interval {{ meter.ref_text }}{% endif %}"
+        {% if meter.marker is not none %}aria-valuenow="{{ meter.value_text }}"{% endif %}
+      >
+        {% if meter.has_interval %}
+          {% if meter.within_start > 0 %}
+          <div class="zone low" style="--start: 0; --end: {{ meter.within_start }}"></div>
+          {% endif %}
+          <div class="zone ok" style="--start: {{ meter.within_start }}; --end: {{ meter.within_end }}"></div>
+          {% if meter.within_end < 100 %}
+          <div class="zone high" style="--start: {{ meter.within_end }}; --end: 100"></div>
+          {% endif %}
+        {% else %}
+          <div class="zone unknown" style="--start: 0; --end: 100"></div>
+        {% endif %}
+        {% if meter.marker is not none %}
+        <div class="marker marker-{{ meter.flag }}" style="--marker: {{ meter.marker }}"></div>
+        {% endif %}
+      </div>
+      <p class="meter-meta">
+        {% if meter.ref_text %}Interval {{ meter.ref_text }}{% else %}No interval was printed{% endif %}
+        · {{ meter.collected_on }}
+      </p>
+      {% if meter.delta %}
+      <p class="meter-delta"><span>{{ meter.delta }} {{ meter.unit }}</span><span>since {{ meter.previous_on }}</span></p>
+      {% elif meter.note %}
+      <p class="meter-delta">{{ meter.note }}</p>
+      {% else %}
+      <p class="meter-delta">First stored result</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="dash-grid">
+  <section class="panel" aria-labelledby="summary-heading">
+    <p class="eyebrow">From the stored numbers</p>
+    <h2 id="summary-heading">Summary</h2>
+    {% if summary %}
+    <p class="summary-body">{{ summary.body }}</p>
+    <p class="hint">Written with {{ summary.model_label }}.</p>
+    {% if summary.stale %}
+    <p class="hint warn">The stored results changed after this summary was written.</p>
+    {% endif %}
+    {% else %}
+    <p class="hint">No summary yet. Generating one asks the selected model to restate these results in a paragraph.</p>
+    {% endif %}
+    {% if prompt_error %}
+    <p class="error">{{ prompt_error }}</p>
+    {% endif %}
+    <form method="post" action="/summary">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button type="submit">Generate summary</button>
+    </form>
+    {% if summary_ready and summary_provider == "openai" %}
+    <p class="hint warn">This sends the fact sheet to OpenAI ({{ summary_model }}). The sheet has analyte, value, unit, interval, flag, and collection date. It does not include names, emails, phones, or record ids.{% if not key_saved %} Add an OpenAI API key in Settings before this can run.{% endif %}</p>
+    {% elif summary_ready %}
+    <p class="hint">This sends the fact sheet to the local model server ({{ summary_model }}). Names, emails, phones, and record ids are not on that sheet.</p>
+    {% else %}
+    <p class="hint"><a href="/settings">Choose a summary model</a> before generating. OpenAI and Local are both available there. The model receives the fact sheet only.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel" aria-labelledby="add-more-heading">
+    <p class="eyebrow">Bring in a PDF</p>
+    <h2 id="add-more-heading">Add a report</h2>
+    {% include "upload_form.html" %}
+    <form method="post" action="/demo" class="inline-form">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button type="submit" class="secondary">Load demo record</button>
+    </form>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="reports-heading">
+  <p class="eyebrow">On this machine</p>
+  <h2 id="reports-heading">Saved reports</h2>
+  <ul class="report-list">
+    {% for report in reports %}
+    <li>
+      <a href="/reports/{{ report.id }}">{{ report.panel_name }}</a>
+      <span>{{ report.collected_on }}</span>
+      <span>{{ report.result_count }} results</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<details class="panel more">
+  <summary>More about these numbers</summary>
+  <p class="hint">Every stored row, then the change between the last two numeric results when the units match. This is the same information a summary model receives, without the raw prompt.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Collected</th>
+          <th>Test</th>
+          <th>Result</th>
+          <th>Unit</th>
+          <th>Interval</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in history %}
+        <tr>
+          <td>{{ row.collected_on }}</td>
+          <td>{{ row.display_name }}</td>
+          <td>{{ row.value_text }}</td>
+          <td>{{ row.unit }}</td>
+          <td>{{ row.ref_text or "—" }}</td>
+          <td>{{ row.flag }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if changes %}
+  <h3>Changes</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Test</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in changes %}
+        <tr>
+          <td>{{ item.display_name }}</td>
+          <td>{{ item.previous_value }} {{ item.unit }} on {{ item.previous_on }}</td>
+          <td>{{ item.latest_value }} {{ item.unit }} on {{ item.latest_on }}</td>
+          <td>{% if item.delta %}{{ item.delta }} {{ item.unit }}{% else %}{{ item.note }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</details>
+{% endif %}
+{% endblock %}

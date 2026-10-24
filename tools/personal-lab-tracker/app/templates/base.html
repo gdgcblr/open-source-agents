@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}Personal lab tracker{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">Personal lab tracker</a>
+    {% if user %}
+    <div class="account">
+      <a href="/settings">Settings</a>
+      <span class="email">{{ user.email }}</span>
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button type="submit" class="text">Sign out</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+  <p class="disclaimer">This compares stored numbers with the reference interval printed on the report. It does not diagnose or recommend treatment.</p>
+  <main>
+    {% if flash %}<p class="flash" role="status">{{ flash }}</p>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Review rows · Personal lab tracker{% endblock %}
+{% block content %}
+<h1>Review before saving</h1>
+<p class="lede">Check the table. Flags are recalculated from the value and the reference interval when you save.</p>
+{% if pending.sent_provider == "openai" %}
+<p class="hint warn">This PDF’s text, including any names, emails, phones, and record ids on the page, was sent to OpenAI.</p>
+{% elif pending.sent_provider %}
+<p class="hint warn">This PDF’s text, including any names, emails, phones, and record ids on the page, was sent to the local model server.</p>
+{% elif pending.removed %}
+<p class="hint">Removed before this table was built: {{ pending.removed | join(", ") }}.</p>
+{% else %}
+<p class="hint">No identifier lines were found in this PDF.</p>
+{% endif %}
+<form method="post" action="/review" class="card">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div class="pair">
+    <div>
+      <label for="collected_on">Collection date</label>
+      <input id="collected_on" name="collected_on" required value="{{ pending.collected_on }}">
+    </div>
+    <div>
+      <label for="panel_name">Panel</label>
+      <input id="panel_name" name="panel_name" required value="{{ pending.panel_name }}">
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Test</th>
+          <th>Result</th>
+          <th>Unit</th>
+          <th>Reference interval</th>
+          <th>From the numbers</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in pending.rows %}
+        <tr>
+          <td><input name="display_name_{{ loop.index0 }}" value="{{ row.display_name }}" aria-label="Test name {{ loop.index }}"></td>
+          <td><input name="value_text_{{ loop.index0 }}" value="{{ row.value_text }}" aria-label="Result {{ loop.index }}"></td>
+          <td><input name="unit_{{ loop.index0 }}" value="{{ row.unit }}" aria-label="Unit {{ loop.index }}"></td>
+          <td><input name="ref_text_{{ loop.index0 }}" value="{{ row.ref_text }}" aria-label="Reference interval {{ loop.index }}"></td>
+          <td>{{ row.flag }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <button type="submit">Save on this machine</button>
+</form>
+{% endblock %}
