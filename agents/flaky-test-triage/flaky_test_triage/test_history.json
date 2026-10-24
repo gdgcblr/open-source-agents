@@ -1,0 +1,170 @@
+{
+  "LoginTest.testLoginWithValidUser": {
+    "runs": [
+      "pass",
+      "fail",
+      "pass",
+      "pass",
+      "fail",
+      "pass",
+      "pass",
+      "pass",
+      "fail",
+      "pass"
+    ]
+  },
+  "CheckoutTest.testPaymentSpinnerDisappears": {
+    "runs": [
+      "fail",
+      "pass",
+      "fail",
+      "pass",
+      "pass",
+      "fail",
+      "pass",
+      "fail",
+      "pass",
+      "pass"
+    ]
+  },
+  "PlaylistApiTest.testCreatePlaylistReturns201": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ]
+  },
+  "ProfileTest.testSaveProfileButtonClick": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "fail"
+    ]
+  },
+  "SubscriptionApiTest.testPlanPriceMatchesCatalog": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "fail",
+      "fail",
+      "fail",
+      "fail",
+      "fail"
+    ]
+  },
+  "tests/test_orders.py::test_order_total": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ]
+  },
+  "CartTest.testAddItemShowsToast": {
+    "runs": [
+      "pass",
+      "fail",
+      "pass",
+      "fail",
+      "pass",
+      "pass",
+      "fail",
+      "pass",
+      "fail",
+      "pass"
+    ]
+  },
+  "SearchTest.testResultsLoad": {
+    "runs": [
+      "fail",
+      "pass",
+      "pass",
+      "fail",
+      "pass",
+      "fail",
+      "pass",
+      "pass",
+      "fail",
+      "pass"
+    ]
+  },
+  "HomeTest.testBannerCarousel": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "fail"
+    ]
+  },
+  "UserApiTest.testGetProfile": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass"
+    ]
+  },
+  "SettingsTest.testToggleDarkMode": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "fail"
+    ]
+  },
+  "OrderApiTest.testTotalIncludesTax": {
+    "runs": [
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "pass",
+      "fail",
+      "fail",
+      "fail"
+    ]
+  }
+}

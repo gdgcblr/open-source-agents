@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`flaky-test-triage`](flaky-test-triage/README.md) | Classifies a failing test log as flaky, real bug, environment or test issue, with fix suggestions. | Google ADK, Gemini, Python | Sandeep Kumar (SandY) |
