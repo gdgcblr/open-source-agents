@@ -6,57 +6,83 @@ A local Mac assistant for credit card bills, subscription spending, daily briefs
 Calendar, and Contacts. Built with uv, ADK 2.x, Gemma through Ollama, EmbeddingGemma,
 and SQLite. App changes require approval. Contacts access is not yet working.
 
-## Setup
+## Run locally
 
-Requires macOS 14+, Xcode Command Line Tools, [uv](https://docs.astral.sh/uv/),
-and [Ollama](https://ollama.com/).
+Requires macOS 14+, [uv](https://docs.astral.sh/uv/), and [Ollama](https://ollama.com/).
+Open the Ollama app and keep it running. No cloud API key is needed.
+
+**1. Set up the project** (from the repository root):
 
 ```sh
 cd agents/migine-personal-agent
-cp .env.example .env
+cp -n .env.example .env
 uv sync --frozen
 ollama pull gemma4:e4b
-ollama pull embeddinggemma
-sh scripts/build-mac-helper.sh
 ```
 
-Set `MIGINE_MAC_HELPER` in `.env` to the executable path printed by the build.
-Keep Ollama running locally. Allow Calendar and Mail Automation access when requested.
-No cloud API key is needed.
-
-## Try the demo
+**2. Load the demo and start ADK Web:**
 
 ```sh
 MIGINE_DATA_DIR=./demo uv run migine demo --month 2026-10
-MIGINE_DATA_DIR=./demo uv run migine summary --month 2026-10
-```
-
-## ADK Web example
-
-After creating the demo data above, run from this project folder:
-
-```sh
 MIGINE_DATA_DIR=./demo uv run adk web examples/web --host 127.0.0.1 --port 8000 --max_llm_calls 8
 ```
 
-Open [localhost:8000](http://127.0.0.1:8000), select `migine_web`, and ask:
+**3. Open [ADK Web](http://127.0.0.1:8000)**, select `migine_web`, and ask:
 “Summarise my bills and subscription spending for October 2026.”
-This is a local development UI. Chat history is stored in ignored `.adk/` folders under
-`examples/web/`. App tools still connect to your Mac. Approve proposed changes with
-`MIGINE_DATA_DIR=./demo uv run migine apply REQUEST_ID` in the Mac terminal.
+
+Keep the terminal running; press **Ctrl+C** to stop. The financial demo uses synthetic
+records and needs no Mac app access. ADK Web is for local development only.
+
+For real email and Calendar access, follow [native setup and usage](USAGE.md#setup),
+including Xcode Command Line Tools and `MIGINE_MAC_HELPER`. Import and review email
+records, then start the same Web command with `MIGINE_DATA_DIR=./data`.
+App tools access your real Mac; approve changes from the terminal using the same data
+directory. Chat history is stored separately in ignored `.adk/` folders under `examples/web/`.
+EmbeddingGemma is optional for search; its setup is in [USAGE.md](USAGE.md).
 
 ## Components
 
 ```mermaid
-flowchart LR
-    CLI[CLI] --> Agent[ADK agent]
-    Agent --> Model[Local Ollama / Gemma]
-    Agent --> Reports[Daily brief and financial reports]
-    Reports --> DB[SQLite evidence and memory]
-    Agent --> Search[Keyword / EmbeddingGemma search]
-    Search --> DB
-    Agent --> Approval[Mac connector and user approval]
-    Approval --> Apps[Mail / Calendar / Contacts]
+flowchart TB
+    subgraph MAC["Your Mac — local processing"]
+        direction TB
+        Web["ADK Web<br/>localhost:8000"]:::ui
+        CLI["Terminal CLI"]:::ui
+        Agent["Migine<br/>ADK agent"]:::agent
+
+        subgraph LOCAL["Local models and storage"]
+            Gemma["Ollama · Gemma<br/>Reasoning and extraction"]:::model
+            Reports["Financial reports<br/>and search"]:::agent
+            DB[("SQLite<br/>Evidence · memory · vectors")]:::store
+            Embed["EmbeddingGemma<br/>Optional search"]:::model
+        end
+
+        subgraph NATIVE["Mac app access"]
+            Connector["Mac connector"]:::native
+            Apps["Mail · Calendar<br/>Contacts: permission issue"]:::native
+            Approval{"Approve exact<br/>app change?"}:::approval
+        end
+
+        Web --> Agent
+        CLI --> Agent
+        Agent <--> Gemma
+        Agent --> Reports
+        Reports <--> DB
+        CLI --> Embed
+        Embed <--> DB
+        Agent -- Read --> Connector
+        Agent -- Save proposals --> DB
+        CLI -- Apply request --> Approval
+        Approval -- Approved --> Connector
+        Connector --> Apps
+    end
+
+    classDef ui fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    classDef agent fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef model fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef store fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef native fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    classDef approval fill:#ffedd5,stroke:#ea580c,color:#7c2d12
 ```
 
 ## Tests and limits
