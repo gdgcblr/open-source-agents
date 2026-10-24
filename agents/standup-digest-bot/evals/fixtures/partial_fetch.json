@@ -1,0 +1,17 @@
+{
+  "username": "demo-user",
+  "date": "2026-10-26",
+  "partial": true,
+  "fetch_warnings": ["Could not fetch activity events: simulated timeout"],
+  "events": [
+    {
+      "event_id": "commit:f00dbad",
+      "kind": "commit",
+      "repo": "demo-user/payments-api",
+      "title": "Add retry with backoff to webhook dispatcher",
+      "url": "https://github.com/demo-user/payments-api/commit/f00dbad",
+      "timestamp": "2026-10-26T10:00:00Z",
+      "extra": { "commit_count": 1 }
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Standup Digest Bot</title>
+<style>
+  :root {
+    --bg: #0f1221; --panel: #171a2e; --panel2: #1e2240;
+    --text: #e8eaf6; --muted: #9aa0c7; --line: #2a2f52;
+    --accent: #6c8cff; --good: #2ecc71; --warn: #ffb020; --bad: #ff5d6c;
+    --chip: #262b4d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font: 15px/1.5 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #1b2045 0%, var(--bg) 60%);
+    color: var(--text); min-height: 100vh;
+  }
+  header {
+    padding: 22px 28px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 14px;
+  }
+  header .logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #a06bff);
+    display: grid; place-items: center; font-size: 20px;
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  main {
+    max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px;
+    display: grid; grid-template-columns: 360px 1fr; gap: 22px;
+  }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 14px; letter-spacing: .3px;
+    text-transform: uppercase; color: var(--muted); }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 5px; }
+  input, select, button {
+    width: 100%; padding: 10px 12px; border-radius: 9px;
+    border: 1px solid var(--line); background: var(--panel2); color: var(--text);
+    font-size: 14px;
+  }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .seg { display: flex; gap: 8px; margin-bottom: 4px; }
+  .seg button {
+    background: var(--panel2); cursor: pointer; border: 1px solid var(--line);
+  }
+  .seg button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .run {
+    margin-top: 18px; background: linear-gradient(135deg, var(--accent), #a06bff);
+    border: none; color: #fff; font-weight: 600; cursor: pointer; padding: 12px;
+  }
+  .run:disabled { opacity: .6; cursor: default; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .banner { border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 14px; }
+  .banner.ok { background: rgba(46,204,113,.12); border: 1px solid var(--good); }
+  .banner.escalate { background: rgba(255,176,32,.12); border: 1px solid var(--warn); }
+  .banner b { display: block; margin-bottom: 4px; }
+  .banner ul { margin: 6px 0 0; padding-left: 18px; }
+
+  .group { margin-bottom: 18px; }
+  .group h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .4px; }
+  .bullet {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 9px 12px; border-radius: 9px; margin-bottom: 7px;
+    background: var(--panel2); border: 1px solid var(--line);
+  }
+  .bullet.confirm { border-color: var(--warn); background: rgba(255,176,32,.08); }
+  .bullet .id {
+    font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--chip); color: #b9c2ff; padding: 1px 7px; border-radius: 6px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .bullet.confirm .id { background: rgba(255,176,32,.2); color: #ffd98a; }
+  .bullet .txt { flex: 1; }
+  .tag {
+    font-size: 11px; padding: 1px 7px; border-radius: 20px; flex-shrink: 0;
+    border: 1px solid var(--line); color: var(--muted);
+  }
+  .tag.grounded { color: var(--good); border-color: rgba(46,204,113,.5); }
+  .tag.needs { color: var(--warn); border-color: rgba(255,176,32,.5); }
+
+  .evidence { margin-top: 6px; }
+  .evidence summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .ev-item {
+    font: 12px/1.5 ui-monospace, Consolas, monospace; color: var(--muted);
+    padding: 6px 8px; border-bottom: 1px dashed var(--line);
+  }
+  .ev-item .k { color: #b9c2ff; }
+  .metrics { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .metric { background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 9px; padding: 8px 12px; font-size: 13px; }
+  .metric b { color: var(--text); }
+  .placeholder { color: var(--muted); text-align: center; padding: 40px 0; }
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff; border-radius: 50%; display: inline-block;
+    animation: spin .8s linear infinite; vertical-align: -3px; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .err { color: var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">&#9201;</div>
+  <div>
+    <h1>Standup Digest Bot</h1>
+    <p>Turns real GitHub activity into a standup update &mdash; and refuses to invent what it can't prove.</p>
+  </div>
+</header>
+
+<main>
+  <!-- Controls -->
+  <section class="card">
+    <h2>Input</h2>
+
+    <label>Activity source</label>
+    <div class="seg" id="seg">
+      <button data-src="fixture" class="active">Bundled real data</button>
+      <button data-src="github">Live GitHub</button>
+    </div>
+
+    <div id="fixtureBox">
+      <label>Fixture</label>
+      <select id="fixture"></select>
+    </div>
+
+    <div id="githubBox" style="display:none">
+      <label>GitHub username</label>
+      <input id="user" placeholder="e.g. torvalds  (or a full profile URL)" />
+      <label>Date (YYYY-MM-DD)</label>
+      <input id="date" placeholder="2026-10-04" />
+      <p class="hint">Public Events API covers ~the last 90 days. Set GITHUB_TOKEN to avoid rate limits.</p>
+    </div>
+
+    <label>LLM provider</label>
+    <select id="provider">
+      <option value="mock">mock (offline, deterministic)</option>
+      <option value="ollama">ollama (local)</option>
+      <option value="gemini">gemini</option>
+      <option value="openai">openai</option>
+    </select>
+
+    <label>Model (optional)</label>
+    <input id="model" placeholder="e.g. llama3.2:latest (leave blank for default)" />
+
+    <button class="run" id="run">Generate standup</button>
+    <p class="hint">Grounded bullets cite a real <code>[event_id]</code>. Unverifiable
+      claims become <span style="color:var(--warn)">[confirm]</span> and trigger escalation.</p>
+  </section>
+
+  <!-- Output -->
+  <section class="card">
+    <h2>Digest</h2>
+    <div id="out"><div class="placeholder">Pick a source and press <b>Generate standup</b>.</div></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let source = "fixture";
+
+// Source toggle
+$("seg").addEventListener("click", (e) => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  source = btn.dataset.src;
+  [...$("seg").children].forEach(b => b.classList.toggle("active", b === btn));
+  $("fixtureBox").style.display = source === "fixture" ? "" : "none";
+  $("githubBox").style.display = source === "github" ? "" : "none";
+});
+
+// Load fixtures
+fetch("/api/fixtures").then(r => r.json()).then(list => {
+  const sel = $("fixture");
+  sel.innerHTML = "";
+  list.forEach(f => {
+    const o = document.createElement("option");
+    o.value = f.id; o.textContent = f.label; sel.appendChild(o);
+  });
+}).catch(() => {});
+
+function esc(s){ return (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// Split a rendered markdown digest into sections + bullets.
+function parseDigest(text, validIds) {
+  const sections = { Yesterday: [], Today: [], Blockers: [] };
+  let cur = null;
+  text.split("\n").forEach(line => {
+    const h = line.match(/^\*\*(\w+):\*\*/);
+    if (h) { cur = h[1]; return; }
+    const b = line.match(/^- (.*)$/);
+    if (b && cur && sections[cur]) sections[cur].push(b[1]);
+  });
+  return sections;
+}
+
+function bulletHtml(raw, validIds) {
+  const m = raw.match(/^\s*\[([^\]]+)\]\s*(.*)$/);
+  const isConfirm = /^\s*\[confirm/i.test(raw);
+  if (m && !isConfirm) {
+    const id = m[1], rest = m[2];
+    const grounded = validIds.has(id);
+    return `<div class="bullet ${grounded ? "" : "confirm"}">
+      <span class="id">[${esc(id)}]</span>
+      <span class="txt">${esc(rest) || "<i>(no description)</i>"}</span>
+      <span class="tag ${grounded ? "grounded" : "needs"}">${grounded ? "grounded" : "unverified"}</span>
+    </div>`;
+  }
+  // plain / confirm bullet
+  return `<div class="bullet ${isConfirm ? "confirm" : ""}">
+    <span class="txt">${esc(raw)}</span>
+    ${isConfirm ? '<span class="tag needs">confirm</span>' : ''}
+  </div>`;
+}
+
+function render(data) {
+  const { activity, digest, provider } = data;
+  const validIds = new Set(activity.events.map(e => e.event_id));
+  const sections = parseDigest(digest.text, validIds);
+
+  let html = "";
+
+  // Banner
+  if (digest.escalate) {
+    html += `<div class="banner escalate"><b>&#9888; Escalation &mdash; review before posting</b>
+      <ul>${digest.escalation_reasons.map(r => `<li>${esc(r)}</li>`).join("")}</ul></div>`;
+  } else {
+    html += `<div class="banner ok"><b>&#10003; Grounded</b>
+      Every claim maps to a real event. Safe to post after a glance.</div>`;
+  }
+
+  // Metrics
+  const total = activity.events.length;
+  const refd = digest.referenced_event_ids.length;
+  const confirms = digest.needs_confirmation.length;
+  html += `<div class="metrics">
+    <div class="metric">provider <b>${esc(provider)}</b></div>
+    <div class="metric">events fetched <b>${total}</b></div>
+    <div class="metric">grounded refs <b>${refd}</b></div>
+    <div class="metric">needs confirm <b>${confirms}</b></div>
+    ${activity.partial ? '<div class="metric" style="border-color:var(--warn)">partial fetch</div>' : ''}
+  </div>`;
+
+  // Sections
+  ["Yesterday", "Today", "Blockers"].forEach(name => {
+    const items = sections[name] || [];
+    html += `<div class="group"><h3>${name}</h3>`;
+    html += items.length ? items.map(b => bulletHtml(b, validIds)).join("")
+                         : `<div class="bullet"><span class="txt" style="color:var(--muted)">(none)</span></div>`;
+    html += `</div>`;
+  });
+
+  // Evidence
+  html += `<details class="evidence"><summary>Show the ${total} real events the agent was allowed to use (evidence)</summary>`;
+  html += activity.events.map(e =>
+    `<div class="ev-item"><span class="k">[${esc(e.event_id)}]</span> ${esc(e.kind)} in ${esc(e.repo)}${e.state ? " ("+esc(e.state)+")" : ""}: ${esc(e.title)}</div>`
+  ).join("") || '<div class="ev-item">No events.</div>';
+  html += `</details>`;
+
+  $("out").innerHTML = html;
+}
+
+$("run").addEventListener("click", async () => {
+  const body = {
+    source,
+    fixture: $("fixture").value,
+    user: $("user").value,
+    date: $("date").value,
+    provider: $("provider").value,
+    model: $("model").value,
+  };
+  $("run").disabled = true;
+  $("out").innerHTML = `<div class="placeholder"><span class="spinner"></span>Fetching activity and generating&hellip; (local models can take a bit)</div>`;
+  try {
+    const r = await fetch("/api/generate", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "request failed");
+    render(data);
+  } catch (err) {
+    $("out").innerHTML = `<div class="placeholder err">&#10007; ${esc(err.message)}</div>`;
+  } finally {
+    $("run").disabled = false;
+  }
+});
+</script>
+</body>
+</html>

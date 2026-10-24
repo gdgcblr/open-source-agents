@@ -1,0 +1,28 @@
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local output / caches
+*.log
+output/
+.cache/
+
+# Ad-hoc activity snapshots written to the project root by scripts/capture_activity.py
+# (curated fixtures under evals/fixtures/ are intentionally tracked).
+/captured_*.json
