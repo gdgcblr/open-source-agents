@@ -91,7 +91,7 @@ ollama pull qwen3:4b-instruct
 export MODEL_PROVIDER=openai MODEL_NAME=qwen3:4b-instruct
 ```
 
-Grafana is at http://localhost:3000 (anonymous, read-only use), Prometheus at http://localhost:9090.
+Grafana is at http://localhost:3000 (opens on the "Triage lab: shop" dashboard: latency, errors, memory, traffic and live WARN/ERROR logs). Prometheus is at http://localhost:9090.
 
 ---
 
@@ -111,6 +111,16 @@ Grafana is at http://localhost:3000 (anonymous, read-only use), Prometheus at ht
 ---
 
 ## How to Run
+
+The quickest way to see it work is the one-command demo. It resets the lab, injects a fault without telling the agent, waits for the real alert, runs the investigation, and then prints the ground truth:
+
+```bash
+./demo.sh            # latency fault; also: pool | bad-deploy | leak
+```
+
+Keep Grafana open at http://localhost:3000 (the "Triage lab: shop" dashboard) to watch the incident happen.
+
+Step by step:
 
 ```bash
 # Break something, wait ~1 minute for the alert to fire
