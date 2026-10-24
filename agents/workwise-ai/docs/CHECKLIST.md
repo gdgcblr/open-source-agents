@@ -1,0 +1,21 @@
+# WorkWise AI — Implementation Checklist
+
+- [x] Architecture document
+- [x] Database model document
+- [ ] Backend scaffold (Spring Boot, Maven, Docker)
+- [ ] Flyway migrations + seed data
+- [ ] profile module
+- [ ] sources + ingestion module
+- [ ] relevance module
+- [ ] news/feed module
+- [ ] analysis module + mock AI provider
+- [ ] strategies module
+- [ ] financial calculator module
+- [ ] action plan module
+- [ ] outcomes module
+- [ ] backend tests
+- [ ] Angular frontend scaffold + routing
+- [ ] Frontend pages (onboarding, feed, detail, analysis, strategy compare, financial calc, action plan, outcome, profile)
+- [ ] Frontend tests
+- [ ] Run full build + test suite, fix errors
+- [ ] README, API docs, limitations doc

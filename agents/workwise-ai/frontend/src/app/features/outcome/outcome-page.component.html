@@ -1,0 +1,82 @@
+<div class="page">
+  <h1>Record actual outcome</h1>
+  <p class="muted">
+    This is self-reported, informational data. Variance vs. your BASE financial scenario is shown
+    for context only &mdash; it is not a causal claim.
+  </p>
+
+  <form class="card" (ngSubmit)="submit()" #form="ngForm">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="dateStarted">Date started</label>
+        <input id="dateStarted" name="dateStarted" type="date" [(ngModel)]="model.dateStarted" />
+      </div>
+      <div class="form-group">
+        <label for="dateCompleted">Date completed</label>
+        <input id="dateCompleted" name="dateCompleted" type="date" [(ngModel)]="model.dateCompleted" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="actualExpenses">Actual expenses</label>
+        <input id="actualExpenses" name="actualExpenses" type="number" min="0" [(ngModel)]="model.actualExpenses" />
+      </div>
+      <div class="form-group">
+        <label for="actualRevenue">Actual revenue</label>
+        <input id="actualRevenue" name="actualRevenue" type="number" min="0" [(ngModel)]="model.actualRevenue" />
+      </div>
+      <div class="form-group">
+        <label for="timeSpentHours">Time spent (hours)</label>
+        <input id="timeSpentHours" name="timeSpentHours" type="number" min="0" [(ngModel)]="model.timeSpentHours" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ordersReceived">Orders received</label>
+        <input id="ordersReceived" name="ordersReceived" type="number" min="0" [(ngModel)]="model.ordersReceived" />
+      </div>
+      <div class="form-group">
+        <label for="customersAcquired">Customers acquired</label>
+        <input id="customersAcquired" name="customersAcquired" type="number" min="0" [(ngModel)]="model.customersAcquired" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="userReportedOutcome">What happened?</label>
+      <textarea id="userReportedOutcome" name="userReportedOutcome" rows="3" [(ngModel)]="model.userReportedOutcome"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="lessonsLearned">Lessons learned</label>
+      <textarea id="lessonsLearned" name="lessonsLearned" rows="3" [(ngModel)]="model.lessonsLearned"></textarea>
+    </div>
+
+    @if (error()) {
+      <p class="error-text">{{ error() }}</p>
+    }
+
+    <button type="submit" class="btn" [disabled]="saving()">
+      {{ saving() ? 'Saving...' : 'Record outcome' }}
+    </button>
+  </form>
+
+  @if (history().length > 0) {
+    <div class="card">
+      <div class="card-title">Outcome history</div>
+      @for (entry of history(); track entry.id) {
+        <div class="outcome-entry">
+          <p class="muted">
+            {{ entry.dateStarted || 'Unknown start' }} &rarr; {{ entry.dateCompleted || 'In progress' }}
+            @if (entry.independentlyVerified) { <span class="badge verified">Independently verified</span> }
+          </p>
+          <p>Revenue: {{ entry.actualRevenue ?? 'n/a' }} (variance vs base: {{ entry.revenueVarianceVsBaseAssumption ?? 'n/a' }})</p>
+          <p>Expenses: {{ entry.actualExpenses ?? 'n/a' }} (variance vs base: {{ entry.expenseVarianceVsBaseAssumption ?? 'n/a' }})</p>
+          @if (entry.userReportedOutcome) { <p>{{ entry.userReportedOutcome }}</p> }
+          @if (entry.lessonsLearned) { <p class="muted"><strong>Lessons:</strong> {{ entry.lessonsLearned }}</p> }
+        </div>
+      }
+    </div>
+  }
+</div>

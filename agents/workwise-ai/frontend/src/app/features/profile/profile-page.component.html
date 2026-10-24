@@ -1,0 +1,117 @@
+<div class="page">
+  <h1>{{ existingProfileId ? 'Your profile' : 'Create your profile' }}</h1>
+  <p class="muted">
+    Tell WorkWise AI about your work so it can judge whether a development is actually relevant
+    to you &mdash; not just because it shares a keyword.
+  </p>
+
+  @if (loading()) {
+    <p class="muted">Loading profile...</p>
+  } @else {
+    <form class="card" (ngSubmit)="submit()" #form="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="occupation">Occupation *</label>
+          <input id="occupation" name="occupation" type="text" required [(ngModel)]="model.occupation" placeholder="e.g. Textile Trader" />
+        </div>
+        <div class="form-group">
+          <label for="industry">Industry *</label>
+          <input id="industry" name="industry" type="text" required [(ngModel)]="model.industry" placeholder="e.g. Textiles and Garments" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="country">Country *</label>
+          <input id="country" name="country" type="text" required [(ngModel)]="model.country" placeholder="e.g. India" />
+        </div>
+        <div class="form-group">
+          <label for="region">Region / State</label>
+          <input id="region" name="region" type="text" [(ngModel)]="model.region" placeholder="e.g. Gujarat" />
+        </div>
+        <div class="form-group">
+          <label for="city">City</label>
+          <input id="city" name="city" type="text" [(ngModel)]="model.city" placeholder="e.g. Surat" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="businessType">Business type *</label>
+          <select id="businessType" name="businessType" required [(ngModel)]="model.businessType">
+            @for (option of businessTypes; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="primaryObjective">Primary objective *</label>
+          <select id="primaryObjective" name="primaryObjective" required [(ngModel)]="model.primaryObjective">
+            @for (option of objectives; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="riskTolerance">Risk tolerance *</label>
+          <select id="riskTolerance" name="riskTolerance" required [(ngModel)]="model.riskTolerance">
+            @for (option of riskTolerances; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="secondaryObjectives">Secondary objectives (comma separated)</label>
+        <input id="secondaryObjectives" name="secondaryObjectives" type="text" [(ngModel)]="model.secondaryObjectivesText" placeholder="REDUCE_EXPENSES, FIND_CUSTOMERS" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="budgetAmount">Available budget</label>
+          <input id="budgetAmount" name="budgetAmount" type="number" min="0" [(ngModel)]="model.budgetAmount" placeholder="e.g. 150000" />
+        </div>
+        <div class="form-group">
+          <label for="preferredLanguage">Preferred language</label>
+          <input id="preferredLanguage" name="preferredLanguage" type="text" [(ngModel)]="model.preferredLanguage" placeholder="en" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="relevantKeywords">Relevant keywords (comma separated)</label>
+        <input id="relevantKeywords" name="relevantKeywords" type="text" [(ngModel)]="model.relevantKeywordsText" placeholder="cotton, fabric, supplier" />
+      </div>
+
+      <div class="form-group">
+        <label>Preferred development categories</label>
+        <ul class="tag-list">
+          @for (category of categories; track category.value) {
+            <li>
+              <label>
+                <input type="checkbox" [checked]="isCategorySelected(category.value)" (change)="toggleCategory(category.value)" />
+                {{ category.label }}
+              </label>
+            </li>
+          }
+        </ul>
+      </div>
+
+      @if (error()) {
+        <p class="error-text">{{ error() }}</p>
+      }
+      @if (saved()) {
+        <p class="muted" style="color: var(--color-success)">Profile saved.</p>
+      }
+
+      <div style="display:flex; gap: 0.75rem; align-items:center;">
+        <button type="submit" class="btn" [disabled]="saving() || form.invalid">
+          {{ saving() ? 'Saving...' : (existingProfileId ? 'Save changes' : 'Create profile') }}
+        </button>
+        @if (existingProfileId) {
+          <button type="button" class="btn secondary" (click)="goToFeed()">Go to feed</button>
+        }
+      </div>
+    </form>
+  }
+</div>

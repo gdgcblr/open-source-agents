@@ -1,0 +1,57 @@
+<div class="page">
+  <h1>Your feed</h1>
+
+  @if (loading()) {
+    <p class="muted">Loading your feed...</p>
+  } @else if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  } @else if (!profileStore.hasProfile()) {
+    <div class="card empty-state">
+      <p>You don't have a profile yet for this persona.</p>
+      <button class="btn" (click)="goToOnboarding()">Create your profile</button>
+    </div>
+  } @else {
+    <ng-template #itemsList let-items="items" let-emptyText="emptyText">
+      @if (items.length === 0) {
+        <p class="muted">{{ emptyText }}</p>
+      } @else {
+        @for (item of items; track item.developmentId) {
+          <div class="card feed-item" (click)="openDevelopment(item)">
+            <div class="feed-item-header">
+              <span [class]="evidenceBadgeClass(item.evidenceState)">{{ item.evidenceState.replace('_', ' ') }}</span>
+              <span class="badge">{{ item.category.replace('_', ' ') }}</span>
+              <span class="muted">score {{ item.relevanceScore | number: '1.0-0' }} &middot; {{ item.relevanceLabel }}</span>
+            </div>
+            <div class="card-title">{{ item.title }}</div>
+            <p>{{ item.summary }}</p>
+            <p class="muted"><strong>Why it matters:</strong> {{ item.whyItMatters }}</p>
+            <div class="feed-item-footer">
+              <span class="muted">{{ item.sourceName || 'Unknown source' }}</span>
+              <button class="btn secondary" (click)="markIrrelevant(item, $event)">Not relevant</button>
+            </div>
+          </div>
+        }
+      }
+    </ng-template>
+
+    <section>
+      <h2>Important for your work</h2>
+      <ng-container *ngTemplateOutlet="itemsList; context: { items: feed()?.importantForYourWork ?? [], emptyText: 'Nothing urgent right now.' }"></ng-container>
+    </section>
+
+    <section>
+      <h2>Potential opportunities</h2>
+      <ng-container *ngTemplateOutlet="itemsList; context: { items: feed()?.potentialOpportunities ?? [], emptyText: 'No new opportunities yet.' }"></ng-container>
+    </section>
+
+    <section>
+      <h2>Trends</h2>
+      <ng-container *ngTemplateOutlet="itemsList; context: { items: feed()?.trends ?? [], emptyText: 'No notable trends yet.' }"></ng-container>
+    </section>
+
+    <section>
+      <h2>Saved analyses</h2>
+      <ng-container *ngTemplateOutlet="itemsList; context: { items: feed()?.savedAnalyses ?? [], emptyText: 'You have not analyzed anything yet.' }"></ng-container>
+    </section>
+  }
+</div>

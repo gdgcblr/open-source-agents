@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: workwise-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-workwise}
+      POSTGRES_USER: ${DB_USER:-workwise}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-workwise}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - workwise_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-workwise}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: workwise-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-workwise}
+      DB_USER: ${DB_USER:-workwise}
+      DB_PASSWORD: ${DB_PASSWORD:-workwise}
+      WORKWISE_AI_PROVIDER: ${WORKWISE_AI_PROVIDER:-mock}
+      WORKWISE_LLM_API_URL: ${WORKWISE_LLM_API_URL:-}
+      WORKWISE_LLM_API_KEY: ${WORKWISE_LLM_API_KEY:-}
+      WORKWISE_LLM_MODEL: ${WORKWISE_LLM_MODEL:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: workwise-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  workwise_pg_data:

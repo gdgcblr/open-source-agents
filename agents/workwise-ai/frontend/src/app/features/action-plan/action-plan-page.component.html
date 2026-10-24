@@ -1,0 +1,82 @@
+<div class="page">
+  @if (loading()) {
+    <p class="muted">Loading...</p>
+  } @else if (isNew()) {
+    <h1>Create action plan</h1>
+    <form class="card" (ngSubmit)="createPlan()" #form="ngForm">
+      <div class="form-group">
+        <label for="title">Plan title *</label>
+        <input id="title" name="title" type="text" required [(ngModel)]="title" placeholder="e.g. Trial order of 50 units" />
+      </div>
+
+      @for (item of items; track $index) {
+        <div class="card item-card">
+          <div class="form-row">
+            <div class="form-group">
+              <label [for]="'action-' + $index">Action *</label>
+              <input [id]="'action-' + $index" [name]="'action-' + $index" type="text" required [(ngModel)]="item.action" placeholder="e.g. Contact supplier for a trial order" />
+            </div>
+            <div class="form-group">
+              <label [for]="'duration-' + $index">Estimated duration</label>
+              <input [id]="'duration-' + $index" [name]="'duration-' + $index" type="text" [(ngModel)]="item.estimatedDuration" placeholder="e.g. 3 days" />
+            </div>
+            <div class="form-group">
+              <label [for]="'cost-' + $index">Expected cost</label>
+              <input [id]="'cost-' + $index" [name]="'cost-' + $index" type="number" min="0" [(ngModel)]="item.expectedCost" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label [for]="'metric-' + $index">Success metric</label>
+              <input [id]="'metric-' + $index" [name]="'metric-' + $index" type="text" [(ngModel)]="item.successMetric" />
+            </div>
+            <div class="form-group">
+              <label [for]="'risk-' + $index">Main risk</label>
+              <input [id]="'risk-' + $index" [name]="'risk-' + $index" type="text" [(ngModel)]="item.mainRisk" />
+            </div>
+          </div>
+          @if (items.length > 1) {
+            <button type="button" class="btn secondary" (click)="removeItem($index)">Remove step</button>
+          }
+        </div>
+      }
+
+      <button type="button" class="btn secondary" (click)="addItem()">Add step</button>
+
+      @if (error()) {
+        <p class="error-text">{{ error() }}</p>
+      }
+
+      <div style="margin-top: 1rem;">
+        <button type="submit" class="btn" [disabled]="saving() || form.invalid">
+          {{ saving() ? 'Creating...' : 'Create action plan' }}
+        </button>
+      </div>
+    </form>
+  } @else {
+    @if (plan(); as p) {
+    <h1>{{ p.title }}</h1>
+    @if (error()) {
+      <p class="error-text">{{ error() }}</p>
+    }
+    @for (item of p.items; track item.id) {
+      <div class="card">
+        <div class="card-title">{{ item.sequenceNo }}. {{ item.action }}</div>
+        @if (item.estimatedDuration) { <p class="muted">Duration: {{ item.estimatedDuration }}</p> }
+        @if (item.expectedCost !== null) { <p class="muted">Expected cost: {{ item.expectedCost }}</p> }
+        @if (item.successMetric) { <p class="muted">Success metric: {{ item.successMetric }}</p> }
+        @if (item.mainRisk) { <p class="muted">Main risk: {{ item.mainRisk }}</p> }
+        <div class="form-group" style="max-width: 220px;">
+          <label [for]="'status-' + item.id">Status</label>
+          <select [id]="'status-' + item.id" [ngModel]="item.status" (ngModelChange)="updateStatus(item.id, $event)" name="status-{{item.id}}">
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status.replace('_', ' ') }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    }
+    <button class="btn" (click)="goToOutcome()">Record outcome</button>
+    }
+  }
+</div>

@@ -1,0 +1,26 @@
+.feed-item {
+  cursor: pointer;
+}
+
+.feed-item:hover {
+  border-color: var(--color-primary);
+}
+
+.feed-item-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.feed-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+section {
+  margin-bottom: 2rem;
+}

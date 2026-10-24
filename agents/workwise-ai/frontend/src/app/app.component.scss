@@ -1,0 +1,74 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  margin-right: auto;
+}
+
+.brand-mark {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.brand-tag {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.app-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.app-nav a {
+  color: #e0e7ff;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.3rem 0.1rem;
+  border-bottom: 2px solid transparent;
+}
+
+.app-nav a.active,
+.app-nav a:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.persona-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.persona-switcher select {
+  background: #fff;
+  color: var(--color-text);
+}
+
+.app-main {
+  flex: 1;
+}
+
+.app-footer {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}

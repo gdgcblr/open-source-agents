@@ -1,0 +1,15 @@
+package com.workwise.ai.news.domain;
+
+public enum DevelopmentCategory {
+    GOVERNMENT_POLICY,
+    INDUSTRY_CHANGES,
+    MARKET_PRICES,
+    BUSINESS_INVESTMENTS,
+    TECHNOLOGY,
+    SUPPLY_CHAINS,
+    WEATHER_AND_CLIMATE,
+    EMPLOYMENT,
+    CUSTOMER_DEMAND,
+    TRAINING_AND_SKILLS,
+    COMPETITOR_DEVELOPMENTS
+}

@@ -79,6 +79,13 @@ lerna-debug.log*
 .yarn/unplugged
 .next/
 out/
+.angular/
+
+# Java / Maven
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
 
 # General Build & Caches
 *.log

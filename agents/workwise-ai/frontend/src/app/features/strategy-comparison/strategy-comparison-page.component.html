@@ -1,0 +1,61 @@
+<div class="page">
+  <h1>Compare strategies</h1>
+  <p class="muted">
+    Strategies are compared qualitatively on investment, risk, reversibility and evidence quality.
+    They are never ranked by a single revenue number alone.
+  </p>
+
+  @if (loading()) {
+    <p class="muted">Loading comparison...</p>
+  } @else if (error()) {
+    <p class="error-text">{{ error() }}</p>
+  } @else {
+    <div class="card" style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Investment</th>
+            <th>Time commitment</th>
+            <th>Feasibility</th>
+            <th>Reversibility</th>
+            <th>Evidence quality</th>
+            <th>Confidence</th>
+            <th>Risks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.strategyId) {
+            <tr>
+              <td>
+                <strong>{{ item.name }}</strong>
+                @if (item.waitAndResearch) {
+                  <div><span class="badge">Wait &amp; research</span></div>
+                }
+              </td>
+              <td>{{ item.requiredInvestment ?? 'n/a' }}</td>
+              <td>{{ item.timeCommitment ?? 'n/a' }}</td>
+              <td>{{ item.feasibilityLabel }}</td>
+              <td>{{ item.reversibilityLabel }}</td>
+              <td>{{ item.evidenceQualityLabel }}</td>
+              <td>{{ item.confidenceLevel }}</td>
+              <td>
+                <ul>
+                  @for (risk of item.risks; track risk) {
+                    <li>{{ risk }}</li>
+                  }
+                </ul>
+              </td>
+              <td>
+                <button class="btn" [disabled]="selecting() === item.strategyId" (click)="select(item.strategyId)">
+                  {{ selecting() === item.strategyId ? 'Selecting...' : 'Select this strategy' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

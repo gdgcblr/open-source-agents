@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+workwise:
+  ai:
+    provider: mock
+  demo:
+    default-user-id: demo-textile-trader

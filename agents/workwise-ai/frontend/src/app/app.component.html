@@ -1,0 +1,31 @@
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark">WorkWise AI</span>
+    <span class="brand-tag">Work &amp; business opportunity intelligence</span>
+  </div>
+
+  <nav class="app-nav">
+    <a routerLink="/feed" routerLinkActive="active">Feed</a>
+    <a routerLink="/profile" routerLinkActive="active">Profile</a>
+  </nav>
+
+  <div class="persona-switcher">
+    <label for="persona-select">Demo persona</label>
+    <select id="persona-select" [value]="currentUserId()" (change)="onPersonaChange($any($event.target).value)">
+      @for (persona of personas; track persona.userId) {
+        <option [value]="persona.userId">{{ persona.label }}</option>
+      }
+    </select>
+  </div>
+</header>
+
+<main class="app-main">
+  <router-outlet />
+</main>
+
+<footer class="app-footer">
+  <p>
+    Prototype for demonstration purposes. Items marked <strong>DEMONSTRATION DATA</strong> are
+    fictional and do not represent real events, people, or companies.
+  </p>
+</footer>

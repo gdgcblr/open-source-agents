@@ -1,0 +1,52 @@
+<div class="page">
+  @if (loading()) {
+    <p class="muted">Loading...</p>
+  } @else if (error() && !development()) {
+    <p class="error-text">{{ error() }}</p>
+  } @else {
+    @if (development(); as dev) {
+    <div class="card">
+      <div class="feed-item-header">
+        <span [class]="evidenceBadgeClass(dev.evidenceState)">{{ dev.evidenceState.replace('_', ' ') }}</span>
+        <span class="badge">{{ dev.category.replace('_', ' ') }}</span>
+        @if (dev.demoData) {
+          <span class="badge demo">Demonstration data</span>
+        }
+      </div>
+      <h1>{{ dev.title }}</h1>
+      <p>{{ dev.summary }}</p>
+
+      <div class="form-row">
+        <div>
+          <p class="muted"><strong>Source:</strong> {{ dev.sourceName || 'Unknown' }}</p>
+          @if (dev.sourceUrl) {
+            <p class="muted"><strong>Link:</strong> <a [href]="dev.sourceUrl" target="_blank" rel="noopener">{{ dev.sourceUrl }}</a></p>
+          }
+        </div>
+        <div>
+          <p class="muted"><strong>Location:</strong> {{ dev.region ? dev.region + ', ' : '' }}{{ dev.country || 'Unspecified' }}</p>
+          <p class="muted"><strong>Published:</strong> {{ dev.publishedAt ? (dev.publishedAt | date: 'medium') : 'Unknown' }}</p>
+        </div>
+      </div>
+
+      <ul class="tag-list">
+        @for (tag of dev.industryTags; track tag) {
+          <li>{{ tag }}</li>
+        }
+      </ul>
+
+      @if (error()) {
+        <p class="error-text">{{ error() }}</p>
+      }
+
+      @if (profileStore.hasProfile()) {
+        <button class="btn" [disabled]="analyzing()" (click)="analyze()">
+          {{ analyzing() ? 'Analyzing...' : 'Analyze this for my work' }}
+        </button>
+      } @else {
+        <p class="muted">Create a profile first to analyze this development for your work.</p>
+      }
+    </div>
+    }
+  }
+</div>
