@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`browser-qa-mcp`](browser-qa-mcp/README.md) | Browser QA agent: runs schema-validated Playwright test plans, verifies outcomes with explicit assertions, and produces evidence-backed (console/network/screenshot/trace) JSON reports. Exposes `run_qa_test`, `inspect_page`, `get_run_report`, `get_failure_evidence`, and an optional AI test planner (`plan_qa_test`) over MCP. No API key required for deterministic execution. | MCP Server | [@adityadixit07](https://github.com/adityadixit07) |

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "name": "Signup flow",
+  "baseUrl": "http://127.0.0.1:4000",
+  "tests": [
+    {
+      "id": "signup-success",
+      "name": "Valid signup succeeds",
+      "steps": [
+        { "action": "navigate", "url": "/signup" },
+        { "action": "fill", "selector": "input[name='name']", "value": "Ada Lovelace" },
+        { "action": "fill", "selector": "input[name='email']", "value": "ada@example.com" },
+        { "action": "fill", "selector": "input[name='password']", "value": "secret123" },
+        { "action": "click", "selector": "button[type='submit']" },
+        { "action": "assert_visible", "selector": "#signup-success" },
+        { "action": "assert_text", "selector": "#signup-success", "expected": "Welcome, Ada Lovelace" }
+      ]
+    },
+    {
+      "id": "signup-empty-name",
+      "name": "Empty name is rejected",
+      "steps": [
+        { "action": "navigate", "url": "/signup" },
+        { "action": "fill", "selector": "input[name='email']", "value": "ada@example.com" },
+        { "action": "fill", "selector": "input[name='password']", "value": "secret123" },
+        { "action": "click", "selector": "button[type='submit']" },
+        { "action": "assert_visible", "selector": "[role='alert']" },
+        { "action": "assert_text", "selector": "[role='alert']", "expected": "Name is required" }
+      ]
+    },
+    {
+      "id": "signup-invalid-email",
+      "name": "Invalid email is rejected (demonstrates a real, detected application bug)",
+      "steps": [
+        { "action": "navigate", "url": "/signup" },
+        { "action": "fill", "selector": "input[name='name']", "value": "Ada Lovelace" },
+        { "action": "fill", "selector": "input[name='email']", "value": "invalid-email" },
+        { "action": "fill", "selector": "input[name='password']", "value": "secret123" },
+        { "action": "click", "selector": "button[type='submit']" },
+        { "action": "assert_visible", "selector": "[role='alert']" }
+      ]
+    },
+    {
+      "id": "signup-page-structure",
+      "name": "Signup page has the expected form structure and accessibility attributes",
+      "steps": [
+        { "action": "navigate", "url": "/signup" },
+        { "action": "assert_url", "expected": "/signup" },
+        { "action": "assert_element_count", "selector": "#signup-form input", "expected": 3 },
+        { "action": "assert_attribute", "selector": "#result", "attribute": "aria-live", "expected": "polite" }
+      ]
+    }
+  ]
+}
