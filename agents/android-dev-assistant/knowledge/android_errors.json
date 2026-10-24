@@ -1,0 +1,105 @@
+
+[
+  {
+    "id": "firebase-google-services-missing",
+    "category": "Firebase",
+    "error": "File google-services.json is missing",
+    "likely_cause": "The Firebase configuration file is missing from the Android app module.",
+    "keywords": [
+      "google-services.json",
+      "processDebugGoogleServices",
+      "configuration",
+      "firebase",
+      "plugin",
+      "google-services",
+      "app"
+    ],
+    "aliases": [
+      "google services configuration missing",
+      "google services plugin configuration error",
+      "missing firebase configuration file",
+      "processDebugGoogleServices task failed",
+      "google services plugin could not find configuration"
+    ],
+    "fix": [
+      "Open Firebase Console.",
+      "Select your Firebase project and register your Android application using its application ID.",
+      "Download google-services.json.",
+      "Place it inside the app/ directory of your Android project.",
+      "Verify that the Google Services Gradle plugin is configured.",
+      "Sync Gradle and rebuild the Android project."
+    ],
+    "verification": "Sync Gradle and rebuild the project. Confirm that the processDebugGoogleServices task completes successfully.",
+    "source": "https://firebase.google.com/docs/android/setup"
+  },
+  {
+    "id": "gradle-dependency-resolution",
+    "category": "Gradle",
+    "error": "Could not resolve dependencies",
+    "likely_cause": "A dependency may be unavailable, repositories may be missing, dependency coordinates may be incorrect, or network access may be blocked.",
+    "keywords": [
+      "gradle",
+      "dependency",
+      "resolve",
+      "repository",
+      "mavenCentral",
+      "google",
+      "artifact",
+      "version",
+      "network"
+    ],
+    "aliases": [
+      "could not resolve dependencies",
+      "failed to resolve dependency",
+      "gradle dependency resolution failed",
+      "artifact not found",
+      "could not find dependency",
+      "unable to download gradle dependency",
+      "dependency not found in repositories"
+    ],
+    "fix": [
+      "Check the dependency coordinates and version.",
+      "Verify repositories such as google() and mavenCentral() are configured.",
+      "Check network access and proxy settings.",
+      "Verify that the dependency is available in the configured repositories.",
+      "Sync Gradle again."
+    ],
+    "verification": "Run a Gradle sync and confirm that dependency resolution succeeds.",
+    "source": "https://docs.gradle.org/current/userguide/declaring_repositories.html"
+  },
+  {
+    "id": "compose-unresolved-reference",
+    "category": "Jetpack Compose",
+    "error": "Unresolved reference",
+    "likely_cause": "The referenced symbol may be missing, incorrectly imported, unavailable in the current module, or not included in dependencies.",
+    "keywords": [
+      "compose",
+      "unresolved",
+      "reference",
+      "import",
+      "dependency",
+      "symbol",
+      "kotlin",
+      "composable",
+      "function"
+    ],
+    "aliases": [
+      "unresolved reference in composable",
+      "cannot find symbol in compose",
+      "compose function not recognized",
+      "missing compose dependency",
+      "unresolved reference in kotlin compose",
+      "composable annotation unresolved",
+      "compose import not found"
+    ],
+    "fix": [
+      "Check the spelling and capitalization of the symbol.",
+      "Check whether the required import is present.",
+      "Verify that the required dependency is included.",
+      "Confirm that the dependency version supports the API.",
+      "Check whether the symbol belongs to a different module."
+    ],
+    "verification": "Rebuild the project and check whether the unresolved reference is gone.",
+    "source": "https://developer.android.com/develop/ui/compose"
+  }
+]
