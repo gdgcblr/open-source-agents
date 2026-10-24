@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [git-commit-agent](./git-commit-agent/) | Analyses staged git changes and generates a conventional commit message | Google ADK 2.0 / Gemini | pydivenkat |
