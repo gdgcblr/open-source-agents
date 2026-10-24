@@ -40,7 +40,10 @@ export class PatcherAgent {
     ];
 
     // Generate local deterministic patches for standard patterns
-    const localPatches = generateFixPatches(rawIssues);
+    const localPatches = generateFixPatches(rawIssues, {
+      files: context.files || [],
+      targetDir: context.targetDir || '.',
+    });
 
     if (config.isLiveApiAvailable() && rawIssues.length > 0) {
       try {
