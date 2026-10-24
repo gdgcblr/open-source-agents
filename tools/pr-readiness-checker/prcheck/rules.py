@@ -12,6 +12,7 @@ from pathlib import Path
 class SectionRule:
     title: str
     aliases: tuple[str, ...]
+    required: bool  # False = recommended (missing is a warning)
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class Rules:
     readme_file: str
     max_ai_chars: int
     sections: tuple[SectionRule, ...]
+    keep_template_lines: frozenset[str]
     manifests: frozenset[str]
     forbidden_names: frozenset[str]
     forbidden_globs: tuple[str, ...]
@@ -52,9 +54,11 @@ def load_rules(path: Path | None = None) -> Rules:
         readme_file=readme["file"],
         max_ai_chars=int(readme["max_ai_chars"]),
         sections=tuple(
-            SectionRule(title=s["title"], aliases=tuple(a.lower() for a in s["aliases"]))
+            SectionRule(title=s["title"], aliases=tuple(a.lower() for a in s["aliases"]),
+                        required=s.get("level", "required") == "required")
             for s in readme["sections"]
         ),
+        keep_template_lines=frozenset(" ".join(line.split()) for line in readme.get("keep_template_lines", [])),
         manifests=frozenset(data["dependencies"]["manifests"]),
         forbidden_names=frozenset(files["forbidden_names"]),
         forbidden_globs=tuple(files["forbidden_globs"]),

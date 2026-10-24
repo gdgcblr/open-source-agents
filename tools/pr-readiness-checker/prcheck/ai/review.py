@@ -1,7 +1,7 @@
 """README review with guardrails.
 
 Order of guardrails, each one able to stop the call:
-  1. Secret gate   - any secret finding (X1/X2) means nothing is sent.
+  1. Secret gate   - any X1/X2 warning or error means nothing is sent.
   2. Minimal data  - only README text is sent, truncated to rules.max_ai_chars.
   3. Redaction     - anything that still looks like a secret is replaced with [REDACTED].
   4. Injection     - README is wrapped as untrusted data; suspicious phrases are flagged.
@@ -20,7 +20,7 @@ from pydantic import ValidationError
 
 from .. import secret_patterns
 from ..context import ProjectContext
-from ..models import AIResult, AIUsage, ReadmeReview, Report
+from ..models import AIResult, AIUsage, ReadmeReview, Report, Severity
 from . import prompts
 from .providers import ProviderError, ReviewProvider
 
@@ -80,7 +80,9 @@ def parse_review(raw: str) -> ReadmeReview:
 
 
 def _has_secret_findings(report: Report) -> bool:
-    return any(r.id in SECRET_CHECK_IDS and r.findings for r in report.checks)
+    """Warnings count too (possible secrets); info-level notes such as documented example keys do not."""
+    return any(f.severity is not Severity.INFO
+               for r in report.checks if r.id in SECRET_CHECK_IDS for f in r.findings)
 
 
 def review_readme(ctx: ProjectContext, report: Report, provider: ReviewProvider) -> AIResult:

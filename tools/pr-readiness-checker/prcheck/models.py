@@ -97,6 +97,7 @@ class AIResult(BaseModel):
     review: ReadmeReview | None = None
     usage: AIUsage = Field(default_factory=AIUsage)
     flags: list[str] = Field(default_factory=list)  # e.g. suspected prompt injection
+    notes: list[str] = Field(default_factory=list)  # setup hints, e.g. an ignored .env value
     truncated: bool = False
     redactions: int = 0
 

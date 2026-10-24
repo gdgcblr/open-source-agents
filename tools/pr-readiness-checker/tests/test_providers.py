@@ -73,6 +73,29 @@ def test_client_errors_are_not_retried(provider, code, text):
     assert fake.calls == 1
 
 
+def test_eval_records_errors_and_stops_early():
+    _, cases = run_ai_eval.load_golden()
+    provider = StaticProvider([ProviderError("Gemini rate limit or quota reached; try again later.")] * 20)
+    result = run_ai_eval.evaluate(provider, cases, runs=3)
+    assert len(provider.calls) == run_ai_eval.MAX_CONSECUTIVE_ERRORS  # not all 12
+    assert "quota" in result["aborted"]
+    first = next(iter(result["cases"].values()))
+    assert any("quota" in e for e in first["errors"])
+    assert "not_run" in result["cases"]["injection"]["statuses"]
+    assert not run_ai_eval.passes(result)
+
+
+def test_ignored_dotenv_key_is_reported(tmp_path, monkeypatch):
+    from prcheck import cli
+
+    (tmp_path / ".env").write_text("GEMINI_API_KEY=dotenv-value\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GEMINI_API_KEY", "environment-value")
+    notes = cli._load_dotenv()
+    assert any("GEMINI_API_KEY" in n and "ignored" in n for n in notes)
+    assert not any("dotenv-value" in n or "environment-value" in n for n in notes)  # never echo keys
+
+
 def test_injection_case_with_no_valid_runs_fails_the_eval():
     _, cases = run_ai_eval.load_golden()
     adversarial = {k: v for k, v in cases.items() if v["adversarial"]}

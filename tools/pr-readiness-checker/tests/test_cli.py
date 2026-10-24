@@ -40,7 +40,7 @@ def test_missing_folder_is_a_usage_error(tmp_path):
 def test_ai_without_key_is_skipped_not_failed(tmp_path, monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
-    monkeypatch.setattr("prcheck.cli._load_dotenv", lambda: None)
+    monkeypatch.setattr("prcheck.cli._load_dotenv", lambda: [])
     project = fx.build_repo(tmp_path)
     result = runner.invoke(app, ["check", str(project), "--no-git", "--ai", "--json"])
     assert result.exit_code == EXIT_READY

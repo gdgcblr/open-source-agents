@@ -29,6 +29,9 @@ yarn-error.log*
 dist/
 build/
 
+# Eval output (pass --json to save it; keep results out of the PR)
+*eval*.json
+
 # Operating system and editor files
 .DS_Store
 Thumbs.db

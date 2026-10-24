@@ -46,8 +46,40 @@ _GENERIC = re.compile(
     """
 )
 _PLACEHOLDER_WORDS = ("your", "example", "placeholder", "changeme", "change_me", "xxxx", "dummy", "sample",
-                      "here", "replace", "insert", "redacted", "<", "${", "env", "getenv", "process")
+                      "here", "replace", "insert", "redacted", "<", "${", "env", "getenv", "process",
+                      "secret", "test", "fake", "mock")  # last four: PR #33
 GENERIC_ENTROPY_THRESHOLD = 3.5
+
+# Provider-format matches that are clearly not real secrets are reported as info, not errors.
+# Each rule was added after a false alarm on a real PR.
+_FAKE_WORDS = ("fake", "dummy", "placeholder", "example", "sample", "notreal", "not_real", "redacted")
+_PEM_BODY = re.compile(r"[A-Za-z0-9+/=]{40,}")
+FAKE_RUN_LENGTH = 6  # e.g. "abcdef", "123456", "aaaaaa"; random keys essentially never contain these
+
+
+def _has_run(value: str, length: int = FAKE_RUN_LENGTH) -> bool:
+    """True if value contains `length` consecutive ascending (abc, 123) or repeated (aaa) characters."""
+    up = same = 1
+    for a, b in zip(value, value[1:]):
+        up = up + 1 if ord(b) - ord(a) == 1 and a.isalnum() and b.isalnum() else 1
+        same = same + 1 if a == b and a.isalnum() else 1
+        if up >= length or same >= length:
+            return True
+    return False
+
+
+def _not_a_secret(pattern_id: str, value: str, rest_of_line: str, next_line: str) -> str | None:
+    """Why a provider-format match is clearly not a real secret, or None."""
+    if pattern_id == "aws_access_key" and value.endswith("EXAMPLE"):
+        return "published documentation example"  # AWS's own docs key (PR #17)
+    if pattern_id == "private_key":
+        if not (_PEM_BODY.search(rest_of_line) or _PEM_BODY.search(next_line)):
+            return "header only, no key material"  # guardrail tests (PRs #43, #48)
+        return None
+    lowered = value.lower()
+    if any(word in lowered for word in _FAKE_WORDS) or _has_run(value):
+        return "looks like a fake test value"  # e.g. sequential test tokens (PRs #33, #42, #43)
+    return None
 
 
 @dataclass(frozen=True)
@@ -59,6 +91,11 @@ class SecretMatch:
     start: int
     end: int
     value: str
+    not_secret_reason: str | None = None  # set when the match is clearly not a real secret
+
+    @property
+    def is_example(self) -> bool:
+        return self.not_secret_reason is not None
 
     @property
     def masked(self) -> str:
@@ -85,13 +122,20 @@ def _looks_like_placeholder(value: str) -> bool:
 def scan(text: str) -> list[SecretMatch]:
     matches: list[SecretMatch] = []
     # split("\n") rather than splitlines() so line numbers match redact().
-    for number, line in enumerate(text.split("\n"), start=1):
+    lines = text.split("\n")
+    for number, line in enumerate(lines, start=1):
         taken: list[tuple[int, int]] = []
+        next_line = lines[number] if number < len(lines) else ""
         for pattern in PATTERNS:
             for m in pattern.regex.finditer(line):
                 taken.append(m.span())
-                matches.append(SecretMatch(pattern.id, pattern.name, pattern.severity, number,
-                                           m.start(), m.end(), m.group(0)))
+                reason = _not_a_secret(pattern.id, m.group(0), line[m.end():], next_line)
+                matches.append(SecretMatch(
+                    pattern.id,
+                    f"{pattern.name} ({reason})" if reason else pattern.name,
+                    Severity.INFO if reason else pattern.severity,
+                    number, m.start(), m.end(), m.group(0), reason,
+                ))
         for m in _GENERIC.finditer(line):
             value = m.group(2)
             start, end = m.span(2)

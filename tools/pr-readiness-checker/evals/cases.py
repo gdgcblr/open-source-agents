@@ -69,6 +69,59 @@ CASES: list[Case] = [
     Case("slug-placeholder-in-code", "An install command still says <project-slug>.", {"D3": "warn"},
          files=lambda rng: {"README.md": fx.GOOD_README.replace(
              "python -m venv .venv\n", "cd tools/<project-slug>\npython -m venv .venv\n")}),
+    # Seen in real PRs on gdgcblr/open-source-agents (2026-10-24): false alarms that must stay fixed.
+    Case("pr-kept-template-scaffold", "Template step labels and the license sentence are meant to be kept "
+         "(PRs #2-#5, #8, #11-#13, #15, #16, #19).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README
+                            .replace("## Installation & Setup\n", "## Installation & Setup\n"
+                                     "Before running this project, ensure you have:\n"
+                                     "1. **Navigate to the project directory:**\n"
+                                     "2. **Set up the virtual environment / install dependencies:**\n"
+                                     "3. **Configure Environment Variables:**\n"
+                                     "Copy the example environment file and fill in your keys:\n")
+                            .replace("Contributed under the repository's MIT license.",
+                                     "*This project is contributed under the repository's open-source license.*")}),
+    Case("pr-template-question-left", "A template question left unanswered is still filler.", {"D3": "warn"},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace(
+             "## Security & Privacy Considerations\n",
+             "## Security & Privacy Considerations\n- **Secrets Handling**: How are credentials loaded and protected?\n")}),
+    Case("pr-slug-in-prose", "Describing the rule `agents/<project-slug>/` in prose is fine (PR #7).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace(
+             "## Known Limitations\n",
+             "## Known Limitations\nIt expects projects at `agents/<project-slug>/` or `tools/<project-slug>/`.\n")}),
+    Case("pr-quick-start-heading", "'Quick Start' is an installation section (PRs #1, #18).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## Installation & Setup", "## 🚀 Quick Start")}),
+    Case("pr-quickstart-guide-heading", "'Quickstart Guide' is an installation section (PR #18).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## Installation & Setup", "## Quickstart Guide")}),
+    Case("pr-safety-heading", "'Safety Guardrails' covers security (PR #18).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## Security & Privacy Considerations",
+                                                                "## Safety Guardrails")}),
+    Case("pr-roadmap-heading", "'Roadmap & Extensions' covers future improvements (PR #1).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## Future Improvements", "## 🗺️ Roadmap & Extensions")}),
+    Case("pr-problem-statement-heading", "'Problem Statement' covers the overview (PR #1).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## Overview", "## 📌 Problem Statement")}),
+    Case("pr-how-it-works-heading", "'How It Works' covers architecture (PR #10).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## Architecture & Data Flow", "## How It Works")}),
+    Case("pr-aws-docs-example-key", "AWS's published example key in test fixtures is a note, not an error "
+         "(PR #17).", {"X2": "info"},
+         files=lambda rng: {"tests/test_scan.py": 'SAMPLE = "AKIA" + "IOSFODNN7EXAMPLE"\n'
+                                                  'LINE = "aws_key = ' + "AKIA" + 'IOSFODNN7EXAMPLE"\n'}),
+    Case("pr-sequential-fake-token", "Obviously fake test tokens (abcdef.../123456...) are notes (PRs #33, #42, #43).",
+         {"X2": "info"},
+         files=lambda rng: {"tests/test_client.py": 'TOKEN = "' + "gh" + 'p_abcdefghijklmnopqrstuvwxyz0123456789"\n'
+                                                     'KEY = "' + "AI" + 'za' + "SyA1234567890abcdefghijklmnopqrstuv" + '"\n'}),
+    Case("pr-private-key-header-only", "A private-key header with no key body is a note (PRs #43, #48).",
+         {"X2": "info"},
+         files=lambda rng: {"tests/test_guard.py": 'HEADER = "' + "-----BEGIN " + "PRIVATE KEY-----" + '"\n'
+                                                   'assert detect(HEADER)\n'}),
+    Case("pr-placeholder-secret-value", "Values such as 'super-secret-key-123' are placeholders (PR #33).", {},
+         files=lambda rng: {"tests/config.test.ts": 'const API_KEY = "super-secret-api-key-123";\n'
+                                                    'const token = "test-token-for-ci-42";\n'}),
+    Case("pr-adk-session-folder", "ADK's local .adk/ session store must not be committed (PRs #36, #38).",
+         {"X4": "fail"},
+         files=lambda rng: {".adk/artifacts/apps/x/users/user/sessions/s1/report.json": "{}\n"}),
+    Case("pr-cli-heading", "A 'CLI' section explains how to run the tool (PR #6).", {},
+         files=lambda rng: {"README.md": fx.GOOD_README.replace("## How to Run", "## CLI")}),
     Case("empty-section", "A section heading with nothing under it.", {"D4": "warn"},
          files=lambda rng: {"README.md": fx.GOOD_README.replace(
              "## Future Improvements\n- Support speaker diarisation.\n", "## Future Improvements\n\n")}),

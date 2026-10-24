@@ -48,8 +48,12 @@ def leaked_secrets(ctx: ProjectContext):
         if not text:
             continue
         for match in secret_patterns.scan(text):
-            yield finding("X2", f"{match.name} found ({match.masked}). Revoke it and load it from an "
-                                f"environment variable.", file=rel, line=match.line, severity=match.severity)
+            if match.is_example:
+                message = (f"{match.name} found ({match.masked}). Probably not a real secret, but reviewers "
+                           "may ask; consider building fixture keys at runtime.")
+            else:
+                message = f"{match.name} found ({match.masked}). Revoke it and load it from an environment variable."
+            yield finding("X2", message, file=rel, line=match.line, severity=match.severity)
 
 
 @check("X3", group=GROUP, title="Environment variables have a .env.example", severity=Severity.WARN,

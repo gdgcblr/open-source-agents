@@ -178,8 +178,8 @@ fixes, token counts and latency. If X1/X2 find anything, the AI step is skipped 
 ## How to Test
 
 ```bash
-pytest                                   # 29 tests, offline, about 20 s
-python -m evals.run_checks_eval          # 41 labelled cases, precision/recall per check
+pytest                                   # 32 tests, offline, about 20 s
+python -m evals.run_checks_eval          # 56 labelled cases, precision/recall per check
 python -m evals.run_secrets_eval         # generated keys vs look-alike decoys
 python -m evals.run_ai_eval --provider static   # AI eval harness, offline
 python -m evals.run_ai_eval              # live Gemini eval (needs GEMINI_API_KEY)
@@ -189,15 +189,30 @@ Latest results (2026-10-24):
 
 | Suite | Result |
 | :--- | :--- |
-| Unit tests | 29 passed |
-| Rule-check eval | 41/41 cases correct; precision and recall 1.00 for all 17 checks |
-| Secret-scanner eval | 100% recall for every key type (200 per type, 3 seeds); 0 false positives on 1,600 decoy lines |
+| Unit tests | 32 passed |
+| Rule-check eval | 56/56 cases correct (15 of them reproduce false alarms seen on real PRs); precision and recall 1.00 for all 17 checks |
+| Secret-scanner eval | 100% recall for every key type (300 per type, 4 seeds); 0 false positives on 3,900 decoy lines per seed, including fake test tokens and documentation example keys |
+| Real PRs on gdgcblr/open-source-agents | All 56 project folders in 53 open PRs, no crashes, 0.3-1 s each; details below |
 | AI review eval (live) | Not complete: a single pass over 3 of the 4 READMEs agreed with the seed labels (MAE 0.20) and resisted the injection README; the 4th hit a temporary 503 (retries were added), and the 3-run consistency test was stopped by the free-tier quota (HTTP 429) |
 | `--ai` on this README (live) | Worked: `gemini-3.6-flash`, 3,246 input / 367 output tokens, about 10 s, 1 attempt. It scored 5/5 on every criterion, which may mean the model is lenient; the human-labelled eval is what will show that |
 
 Building this surfaced two real bugs, both now covered by eval cases: the secret eval caught Google keys
 ending in `-` or `_` being missed, and running prcheck on its own folder caught D3 flagging template
 text quoted inside a code block.
+
+### Validation on real pull requests (2026-10-24)
+prcheck was run, read-only, on every open PR in the upstream repository, and each verdict was checked by
+hand. The first pass exposed false alarms that each became an eval case before being fixed:
+template scaffolding lines reported as leftovers (16 of 20 folders), headings such as "Quick Start",
+"Safety Guardrails", "Roadmap" or "CLI" not recognised, AWS's published example key, obviously fake test
+tokens and private-key headers without key material reported as leaked secrets, and `<project-slug>` in
+prose. It also missed committed `.adk/` session folders, which is now X4.
+
+After the fixes, 37 of 56 folders are ready. The ones that are not have real problems found by hand
+review: a project outside `agents/`/`tools/` (S1), two projects in one PR (G1, 3 PRs), capitals or
+underscores in folder names (S2), no dependency manifest (M1), missing required README sections (D2), an
+empty example section (D4) and committed ADK session data (X4, 3 PRs). No missed secrets, credential
+files, virtual environments or caches were found in a separate scan of every PR.
 
 ---
 
@@ -208,7 +223,9 @@ text quoted inside a code block.
   clean machine (sandboxed install run is on the roadmap).
 - **The secret scanner is pattern-based.** It knows the providers listed above plus a generic
   `name = value` heuristic; keys from other providers in unusual formats can be missed. It is a safety
-  net, not a replacement for GitHub secret scanning.
+  net, not a replacement for GitHub secret scanning. Values that are clearly not real (AWS documentation
+  examples, sequential runs such as `abcdef`/`123456`, words like `fake` or `dummy`, private-key headers
+  with no key body) are reported as notes instead of errors; a reviewer should still glance at them.
 - **README section matching uses keywords** (e.g. a heading containing "usage" counts as "How to Run"),
   so creative headings may be reported as missing.
 - **AI scores are opinions.** The labels in `evals/readme_golden/labels.toml` are seed labels written

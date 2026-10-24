@@ -5,7 +5,7 @@ from __future__ import annotations
 from rich.console import Console
 from rich.markup import escape
 
-from .models import AIResult, Report, Status
+from .models import AIResult, Report, Severity, Status
 
 _STATUS_STYLE = {
     Status.FAIL: ("FAIL", "bold red"),
@@ -16,6 +16,7 @@ _STATUS_STYLE = {
     Status.CRASH: ("BUG ", "bold magenta"),
 }
 _ORDER = [Status.CRASH, Status.FAIL, Status.WARN, Status.INFO, Status.SKIP, Status.PASS]
+_SEVERITY_WORD = {Severity.ERROR: "error", Severity.WARN: "warning", Severity.INFO: "note"}
 
 
 def to_json(report: Report) -> str:
@@ -39,11 +40,14 @@ def render(report: Report, console: Console, *, verbose: bool = False) -> None:
             console.print(f"[{style}]{label}[/{style}] [bold]{result.id}[/bold] {escape(result.title)}")
             if result.skip_reason:
                 console.print(f"       [dim]{escape(result.skip_reason)}[/dim]")
+            worst = max((f.severity.rank for f in result.findings), default=0)
             for f in result.findings:
                 where = ""
                 if f.file:
                     where = f" [dim]({escape(f.file)}{f':{f.line}' if f.line else ''})[/dim]"
-                console.print(f"       - {escape(f.message)}{where}")
+                # When a check mixes severities, say which findings don't block.
+                tag = f"[dim]({_SEVERITY_WORD[f.severity]})[/dim] " if f.severity.rank < worst else ""
+                console.print(f"       - {tag}{escape(f.message)}{where}")
 
     if report.ai is not None:
         console.print()
@@ -75,6 +79,8 @@ def render_ai(ai: AIResult, console: Console) -> None:
         console.print(f"  [dim]{escape(ai.review.summary)}[/dim]")
     for flag in ai.flags:
         console.print(f"  [yellow]guardrail:[/yellow] {escape(flag)}")
+    for note in ai.notes:
+        console.print(f"  [yellow]setup:[/yellow] {escape(note)}")
     if ai.redactions:
         console.print(f"  [yellow]guardrail:[/yellow] {ai.redactions} secret-like value(s) redacted before sending.")
     if ai.truncated:

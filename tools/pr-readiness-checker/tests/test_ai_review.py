@@ -48,6 +48,14 @@ def test_secrets_block_the_call(project):
     assert provider.calls == []  # nothing left the machine
 
 
+def test_documented_example_key_does_not_block_the_call(project):
+    provider = StaticProvider([valid_response()])
+    report, result = review(project, provider, **{"tests/fixture.py": 'K = "' + "AKIA" + 'IOSFODNN7EXAMPLE"\n'})
+    x2 = next(r for r in report.checks if r.id == "X2")
+    assert x2.status.value == "info" and report.summary.ready
+    assert result.status == "ok" and len(provider.calls) == 1
+
+
 def test_redaction_backstop():
     # Today the secret gate stops any README with a detected secret before redaction runs.
     # Redaction is the second line of defence if the gate is ever relaxed (e.g. per-repo rules).

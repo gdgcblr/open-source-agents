@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -21,13 +22,28 @@ app = typer.Typer(add_completion=False, no_args_is_help=True,
                   help="Check an open-source-ai contribution before opening a pull request.")
 
 
-def _load_dotenv() -> None:
+_AI_ENV_VARS = ("GEMINI_API_KEY", "GOOGLE_API_KEY", "MODEL_NAME")
+
+
+def _load_dotenv() -> list[str]:
+    """Load .env files without overriding the real environment. Returns notes about values that were
+    ignored because the environment already sets something different (the key itself is never shown)."""
     try:
-        from dotenv import find_dotenv, load_dotenv
+        from dotenv import dotenv_values, find_dotenv, load_dotenv
     except ImportError:
-        return
-    load_dotenv(find_dotenv(usecwd=True), override=False)
-    load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
+        return []
+    notes = []
+    for path in (find_dotenv(usecwd=True), str(Path(__file__).resolve().parent.parent / ".env")):
+        if not path or not Path(path).is_file():
+            continue
+        for name, value in dotenv_values(path).items():
+            current = os.environ.get(name)
+            if name in _AI_ENV_VARS and value and current and current != value:
+                notes.append(f"{name} in {path} was ignored: the environment already sets a different value, "
+                             f"which takes precedence. To use the .env value, clear it first "
+                             f"(PowerShell: Remove-Item Env:{name}; bash: unset {name}).")
+        load_dotenv(path, override=False)
+    return list(dict.fromkeys(notes))
 
 
 @app.command()
@@ -54,13 +70,14 @@ def check(
         from .ai.providers import GeminiProvider, ProviderUnavailable
         from .models import AIResult
 
-        _load_dotenv()
+        env_notes = _load_dotenv()
         try:
             provider = GeminiProvider(model=model)
         except ProviderUnavailable as exc:
             result.ai = AIResult(status="skipped", provider="gemini", message=str(exc))
         else:
             result.ai = review_readme(ctx, result, provider)
+        result.ai.notes = env_notes + result.ai.notes
 
     if json_out:
         sys.stdout.write(report_view.to_json(result) + "\n")

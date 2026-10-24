@@ -63,6 +63,12 @@ def decoys(rng: random.Random, n: int) -> list[str]:
             f"risk-{''.join(rng.choice(string.ascii_lowercase) for _ in range(30))}-report",
             f"api_key = {rng.choice(PLACEHOLDERS)!r}",
             f"password_hint = 'use the {rng.choice(['blue', 'red'])} notebook'",
+            # Clearly-not-real values seen in PRs #17, #33, #42, #43, #48: info at most, never error/warn.
+            'AWS_ACCESS_KEY_ID = "' + "AKIA" + 'IOSFODNN7EXAMPLE"',
+            'TOKEN = "' + "gh" + "p_" + "abcdefghijklmnopqrstuvwxyz0123456789" + '"',
+            'SLACK = "' + "xo" + "xb-" + "123456789012-abcdefghijklmnop" + '"',
+            'HEADER = "' + "-----BEGIN " + "RSA PRIVATE KEY-----" + '"',
+            'const API_KEY = "super-secret-api-key-' + str(rng.randint(100, 999)) + '";',
         ]
     return items
 
@@ -96,7 +102,10 @@ def evaluate(per_type: int = 50, seed: int = 7) -> dict:
     error_fps, warn_fps = [], []
     for line in decoy_lines:
         for m in scan(line):
-            (error_fps if m.severity is Severity.ERROR else warn_fps).append(line[:60])
+            if m.severity is Severity.ERROR:
+                error_fps.append(line[:60])
+            elif m.severity is Severity.WARN:
+                warn_fps.append(line[:60])
 
     return {
         "providers": results,

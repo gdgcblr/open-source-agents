@@ -12,11 +12,12 @@ from ..registry import check, finding
 GROUP = "docs"
 
 _STOPWORDS = {"and", "the", "how", "to", "of", "for", "with", "your"}
-# Bracket placeholders only count outside code blocks (sample output may quote them);
-# <project-slug> counts everywhere, because a leftover `cd tools/<project-slug>` is a real mistake.
+# Bracket placeholders only count outside code blocks (sample output may quote them).
+# <project-slug> only counts inside code blocks: a leftover `cd tools/<project-slug>` command is a real
+# mistake, while prose that explains the folder rule (PR #7) is fine.
 _PLACEHOLDERS_PROSE = re.compile(r"\[Project Name\]|\[One-sentence summary|\[Language Runtime|\[Package manager"
                                  r"|\[Required API keys")
-_PLACEHOLDERS_ANYWHERE = re.compile(r"<project-slug>")
+_PLACEHOLDERS_CODE = re.compile(r"<project-slug>")
 _BARE_NA = re.compile(r"^(n/?a|none|tbd|todo|coming soon)\W*$", re.IGNORECASE)
 _MAX_EXAMPLES = 5
 
@@ -45,15 +46,13 @@ def readme_sections(ctx: ProjectContext):
     readme = ctx.require_readme()
     headings = [s.title for s in readme.sections]
 
-    missing_required = [
-        rule.title for rule in ctx.rules.sections
-        if not any(_matches_rule(h, rule.aliases) for h in headings)
-    ]
+    missing = [rule for rule in ctx.rules.sections if not any(_matches_rule(h, rule.aliases) for h in headings)]
+    missing_required = [rule.title for rule in missing if rule.required]
+    missing_recommended = [rule.title for rule in missing if not rule.required]
 
     # Template headings that no rule covers are still expected, but only warned about,
     # so new template sections are picked up without a code change.
     readme_tokens = set().union(*(_significant_tokens(h) for h in headings)) if headings else set()
-    missing_recommended = []
     for section in ctx.template.sections:
         if any(_matches_rule(section.title, rule.aliases) for rule in ctx.rules.sections):
             continue
@@ -73,7 +72,7 @@ def _template_prose(ctx: ProjectContext) -> set[str]:
     lines = set()
     for line, in_code in zip(ctx.template.lines, ctx.template.in_code):
         text = markdown.normalize_line(line)
-        if in_code or len(text) < 20 or text.startswith(("#", "|", "---")):
+        if in_code or len(text) < 20 or text.startswith(("#", "|", "---")) or text in ctx.rules.keep_template_lines:
             continue
         lines.add(text)
     return lines
@@ -87,7 +86,11 @@ def template_leftovers(ctx: ProjectContext):
     hits: list[tuple[int, str]] = []
     for number, (line, in_code) in enumerate(zip(readme.lines, readme.in_code), start=1):
         text = markdown.normalize_line(line)
-        if (not in_code and (text in prose or _PLACEHOLDERS_PROSE.search(line))) or _PLACEHOLDERS_ANYWHERE.search(line):
+        if in_code:
+            leftover = bool(_PLACEHOLDERS_CODE.search(line))
+        else:
+            leftover = text in prose or bool(_PLACEHOLDERS_PROSE.search(line))
+        if leftover:
             hits.append((number, text))
     if hits:
         shown = "; ".join(f'line {n}: "{t[:60]}"' for n, t in hits[:_MAX_EXAMPLES])
