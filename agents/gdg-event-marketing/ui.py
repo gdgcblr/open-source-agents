@@ -9,19 +9,12 @@ from tkinter import filedialog, messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 from typing import List, Optional
 
-import keyring
 import requests
 
 from dotenv import load_dotenv
 from google import genai
 from campaign import build_campaign_ics, build_event_campaign
 from creative import render_carousel_html
-from publishing import (
-    authorize_linkedin,
-    disconnect_linkedin,
-    get_linkedin_connection,
-    publish_linkedin_post,
-)
 
 from agent import (
     CHANNEL_PROMPTS,
@@ -93,17 +86,6 @@ def run_live_generation(
     return event, agent.generate_content(event, **options)
 
 
-def run_linkedin_connection(
-    client_id: str, client_secret: str, redirect_uri: str
-) -> str:
-    connection = authorize_linkedin(client_id, client_secret, redirect_uri)
-    return connection.name
-
-
-def run_linkedin_publish(draft: str, api_version: str) -> str:
-    return publish_linkedin_post(draft, api_version)
-
-
 class EventMarketingApp:
     def __init__(self, root: tk.Tk):
         self.root = root
@@ -139,13 +121,11 @@ class EventMarketingApp:
         self.campaign_event: Optional[dict] = None
         self.campaign_text: Optional[ScrolledText] = None
         self.linkedin_draft_event: Optional[dict] = None
-        self.linkedin_account = tk.StringVar(value="LinkedIn not connected")
         self.busy = False
         self.closed = False
         self._load_configuration()
         self._configure_theme()
         self._build_layout()
-        self._load_linkedin_connection()
         self._load_event(build_demo_event())
         self.root.after(100, self._process_results)
 
@@ -551,32 +531,17 @@ class EventMarketingApp:
             self.char_counts[channel] = count
             ttk.Label(footer, textvariable=count).pack(side=tk.LEFT)
             if channel == "linkedin":
-                ttk.Label(footer, textvariable=self.linkedin_account).pack(
-                    side=tk.LEFT, padx=(12, 4)
-                )
                 linkedin_controls = ttk.Frame(panel)
                 linkedin_controls.grid(
                     row=2, column=0, sticky="ew", pady=(4, 0)
                 )
-                self.linkedin_connect_button = ttk.Button(
+                self.share_linkedin_button = ttk.Button(
                     linkedin_controls,
-                    text="Connect LinkedIn",
-                    command=self._connect_linkedin,
-                )
-                self.linkedin_connect_button.pack(side=tk.RIGHT, padx=(6, 0))
-                self.publish_linkedin_button = ttk.Button(
-                    linkedin_controls,
-                    text="Publish to LinkedIn",
-                    command=self._publish_linkedin,
+                    text="Copy draft & open LinkedIn",
+                    command=self._share_linkedin_draft,
                     state=tk.DISABLED,
                 )
-                self.publish_linkedin_button.pack(side=tk.RIGHT, padx=(6, 0))
-                self.linkedin_disconnect_button = ttk.Button(
-                    linkedin_controls,
-                    text="Disconnect",
-                    command=self._disconnect_linkedin,
-                )
-                self.linkedin_disconnect_button.pack(side=tk.RIGHT, padx=(6, 0))
+                self.share_linkedin_button.pack(side=tk.RIGHT, padx=(6, 0))
             selected = ttk.Checkbutton(
                 footer,
                 text="Include in generation",
@@ -769,9 +734,6 @@ class EventMarketingApp:
         sensitive_values = []
         if function is run_live_generation and len(args) > 1 and args[1]:
             sensitive_values.append((args[1], "[redacted API key]"))
-        if function is run_linkedin_connection and len(args) > 1 and args[1]:
-            sensitive_values.append((args[1], "[redacted LinkedIn client secret]"))
-
         def redact(message: str) -> str:
             for value, replacement in sensitive_values:
                 message = message.replace(value, replacement)
@@ -786,59 +748,7 @@ class EventMarketingApp:
             error = redact(str(exc))
             self.results.put((action, "error", f"Unexpected {type(exc).__name__}: {error}"))
 
-    def _load_linkedin_connection(self) -> None:
-        try:
-            connection = get_linkedin_connection()
-        except (ValueError, keyring.errors.KeyringError) as exc:
-            self.linkedin_account.set("LinkedIn connection unavailable")
-            self.status.set(f"Could not read the local credential store: {exc}")
-            return
-        if connection:
-            self.linkedin_account.set(f"Connected as {connection.name}")
-
-    def _connect_linkedin(self) -> None:
-        if self.busy:
-            return
-        client_id = os.getenv("LINKEDIN_CLIENT_ID", "").strip()
-        client_secret = os.getenv("LINKEDIN_CLIENT_SECRET", "").strip()
-        redirect_uri = os.getenv("LINKEDIN_REDIRECT_URI", "").strip()
-        if not client_id or not client_secret or not redirect_uri:
-            messagebox.showerror(
-                "LinkedIn setup required",
-                "Set LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, and "
-                "LINKEDIN_REDIRECT_URI in your local .env file. See the README "
-                "for the one-time LinkedIn app and Render callback setup.",
-            )
-            return
-        self._set_busy(True, "Opening LinkedIn authorization in your browser…")
-        try:
-            self._start_worker(
-                "linkedin_connect",
-                run_linkedin_connection,
-                client_id,
-                client_secret,
-                redirect_uri,
-            )
-        except OSError as exc:
-            self._set_busy(False)
-            messagebox.showerror("Could not start LinkedIn authorization", str(exc))
-
-    def _disconnect_linkedin(self) -> None:
-        if self.busy:
-            return
-        try:
-            removed = disconnect_linkedin()
-        except keyring.errors.KeyringError as exc:
-            messagebox.showerror("Could not disconnect LinkedIn", str(exc))
-            return
-        self.linkedin_account.set("LinkedIn not connected")
-        self.status.set(
-            "Saved LinkedIn authorization removed from this device."
-            if removed
-            else "No saved LinkedIn authorization was found."
-        )
-
-    def _publish_linkedin(self) -> None:
+    def _share_linkedin_draft(self) -> None:
         if self.busy:
             return
         draft = self.output_widgets["linkedin"].get("1.0", "end-1c").strip()
@@ -851,27 +761,38 @@ class EventMarketingApp:
         if self.linkedin_draft_event != event:
             messagebox.showerror(
                 "Regenerate the draft",
-                "Event details changed after this draft was generated. Generate a fresh draft before publishing.",
+                "Event details changed after this draft was generated. Generate a fresh draft before sharing.",
             )
             return
         if event.get("chapter_id") == DEMO_CHAPTER_ID:
             messagebox.showerror(
-                "Demo content cannot be published",
-                "Switch to a live custom event or a real GDG event before publishing.",
+                "Demo content cannot be shared",
+                "Switch to a live custom event or a real GDG event before sharing.",
             )
             return
         try:
-            connection = get_linkedin_connection()
-        except (ValueError, keyring.errors.KeyringError) as exc:
-            messagebox.showerror("Could not read LinkedIn connection", str(exc))
+            self.root.clipboard_clear()
+            self.root.clipboard_append(draft)
+            self.root.update()
+        except tk.TclError as exc:
+            messagebox.showerror("Could not copy LinkedIn draft", str(exc))
             return
-        if connection is None:
-            self.linkedin_account.set("LinkedIn not connected")
-            self._connect_linkedin()
+        try:
+            opened = webbrowser.open("https://www.linkedin.com/feed/")
+        except (OSError, webbrowser.Error) as exc:
+            messagebox.showerror(
+                "Could not open LinkedIn",
+                f"The draft is copied, but LinkedIn could not be opened: {exc}",
+            )
             return
-        api_version = os.getenv("LINKEDIN_API_VERSION", "202610").strip()
-        self._set_busy(True, "Publishing the visible LinkedIn draft…")
-        self._start_worker("linkedin_publish", run_linkedin_publish, draft, api_version)
+        if opened:
+            self.status.set(
+                "Draft copied. Paste it into LinkedIn, review it there, and click Post."
+            )
+        else:
+            self.status.set(
+                "Draft copied. Open LinkedIn in your browser, paste it, review it, and click Post."
+            )
 
     def _process_results(self) -> None:
         if self.closed:
@@ -901,13 +822,6 @@ class EventMarketingApp:
                 self.events_box.current(0)
                 self._load_event(self.events[0])
                 self.status.set(f"Found {len(self.events)} upcoming event(s). Select one or edit the details.")
-        elif action == "linkedin_connect":
-            self.linkedin_account.set(f"Connected as {result}")
-            self.status.set(
-                "LinkedIn connected. Review the draft, then click Publish to LinkedIn."
-            )
-        elif action == "linkedin_publish":
-            self.status.set(f"LinkedIn post published. Post ID: {result}")
         else:
             event, assets = result
             self._merge_drafts(event, assets)
@@ -954,8 +868,8 @@ class EventMarketingApp:
         text = self.output_widgets[channel].get("1.0", "end-1c")
         words = len(text.split())
         self.char_counts[channel].set(f"{len(text)} characters · {words} words")
-        if channel == "linkedin" and hasattr(self, "publish_linkedin_button"):
-            self.publish_linkedin_button.configure(
+        if channel == "linkedin" and hasattr(self, "share_linkedin_button"):
+            self.share_linkedin_button.configure(
                 state=tk.NORMAL if text.strip() else tk.DISABLED
             )
 
@@ -1096,15 +1010,11 @@ class EventMarketingApp:
     def _set_busy(self, busy: bool, message: Optional[str] = None) -> None:
         self.busy = busy
         self.generate_button.configure(state=tk.DISABLED if busy else tk.NORMAL)
-        if hasattr(self, "publish_linkedin_button"):
+        if hasattr(self, "share_linkedin_button"):
             draft = self.output_widgets["linkedin"].get("1.0", "end-1c").strip()
-            self.publish_linkedin_button.configure(
+            self.share_linkedin_button.configure(
                 state=tk.DISABLED if busy or not draft else tk.NORMAL
             )
-        for button_name in ("linkedin_connect_button", "linkedin_disconnect_button"):
-            button = getattr(self, button_name, None)
-            if button is not None:
-                button.configure(state=tk.DISABLED if busy else tk.NORMAL)
         self.find_events_button.configure(
             state=tk.DISABLED
             if busy or self.mode.get() != "Live: GDG event"
@@ -1125,9 +1035,9 @@ class EventMarketingApp:
             "its details, choose channels and writing preferences, then generate.\n\n"
             "LIVE CUSTOM EVENT: Enter your own event details and generate drafts.\n\n"
             "Edit drafts directly in their tabs. Copy one draft or save all drafts "
-            "to a Markdown file. LinkedIn publishing is optional: connect your "
-            "account, review the visible draft, then click Publish to LinkedIn. "
-            "Demo content cannot be published.",
+            "to a Markdown file. To share on LinkedIn, use the LinkedIn tab's "
+            "copy-and-open button, then paste and post in LinkedIn. "
+            "Demo content cannot be shared.",
         )
 
     def _close(self) -> None:
