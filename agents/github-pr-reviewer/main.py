@@ -96,6 +96,11 @@ def parse_args():
         help="Path to export an interactive dark-mode HTML dashboard (e.g. dashboard.html)"
     )
     parser.add_argument(
+        "--badge",
+        type=str,
+        help="Path to export an SVG Health Score badge (e.g. pr_health.svg)"
+    )
+    parser.add_argument(
         "--auto-fix",
         action="store_true",
         help="Automatically generate a remediation.patch file for detected issues"
@@ -222,6 +227,19 @@ def main():
         with open(args.html, "w", encoding="utf-8") as f:
             f.write(html_code)
         print(f"🌐 Interactive dashboard exported to: {args.html}")
+
+    # SVG Health Score Badge export
+    if args.badge:
+        color = "#10b981" if report.verdict == "APPROVED" else ("#f59e0b" if report.verdict == "CHANGES_REQUESTED" else "#ef4444")
+        svg_badge = f'''<svg xmlns="http://www.w3.org/2000/svg" width="180" height="28" viewBox="0 0 180 28">
+  <rect rx="4" width="180" height="28" fill="#1e293b"/>
+  <rect rx="4" x="90" width="90" height="28" fill="{color}"/>
+  <text x="12" y="18" fill="#f8fafc" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="12" font-weight="700">PR HEALTH</text>
+  <text x="135" y="18" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="12" font-weight="800" text-anchor="middle">{report.health_score}/100</text>
+</svg>'''
+        with open(args.badge, "w", encoding="utf-8") as f:
+            f.write(svg_badge)
+        print(f"🛡️ Health Score SVG badge written to: {args.badge}")
 
     # Output to console
     if args.json:

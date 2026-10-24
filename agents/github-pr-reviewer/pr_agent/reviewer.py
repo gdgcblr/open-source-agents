@@ -8,7 +8,7 @@ from .models import ReviewReport, ReviewIssue, TriageResult, FileDiff, Specialis
 from .diff_parser import parse_unified_diff
 from .rules import calculate_triage
 from .prompts import REVIEW_SYSTEM_PROMPT, build_review_prompt
-from .specialists import SecurityAuditorAgent, PerformanceArchitectAgent, AutoTestGeneratorAgent, LeadArchitectAgent
+from .specialists import SecurityAuditorAgent, PerformanceArchitectAgent, AutoTestGeneratorAgent, LeadArchitectAgent, DependencyAuditorAgent
 from .patch_generator import AutoPatchGenerator
 
 
@@ -27,6 +27,7 @@ class PRReviewerAgent:
 
         # Initialize specialist council
         self.security_agent = SecurityAuditorAgent()
+        self.dependency_agent = DependencyAuditorAgent()
         self.performance_agent = PerformanceArchitectAgent()
         self.test_generator = AutoTestGeneratorAgent()
         self.lead_architect = LeadArchitectAgent()
@@ -49,14 +50,16 @@ class PRReviewerAgent:
 
         # 2. Run Specialist Agents in parallel / sequence
         sec_verdict = self.security_agent.evaluate(file_diffs)
+        dep_verdict = self.dependency_agent.evaluate(file_diffs)
         perf_verdict = self.performance_agent.evaluate(file_diffs)
         test_verdict, generated_tests = self.test_generator.evaluate(file_diffs)
 
-        specialist_verdicts: List[SpecialistVerdict] = [sec_verdict, perf_verdict, test_verdict]
+        specialist_verdicts: List[SpecialistVerdict] = [sec_verdict, dep_verdict, perf_verdict, test_verdict]
 
         # Consolidate issues
         combined_issues: List[ReviewIssue] = []
         combined_issues.extend(sec_verdict.findings)
+        combined_issues.extend(dep_verdict.findings)
         combined_issues.extend(perf_verdict.findings)
 
         # 3. Compute triage and volume metrics

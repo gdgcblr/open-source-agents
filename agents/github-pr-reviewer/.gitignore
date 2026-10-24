@@ -36,3 +36,9 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+
+# Generated runtime outputs
+remediation.patch
+generated_tests.py
+pr_dashboard.html
+*.svg

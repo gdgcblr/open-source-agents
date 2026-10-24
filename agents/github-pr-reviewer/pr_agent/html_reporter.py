@@ -1,9 +1,10 @@
+import html
 import json
 from .models import ReviewReport
 
 
 def generate_html_dashboard(report: ReviewReport) -> str:
-    """Generate a sleek, standalone dark-mode interactive HTML report dashboard."""
+    """Generate a sleek, secure, dark-mode interactive HTML report dashboard."""
     verdict_color = {
         "APPROVED": "#10b981",
         "CHANGES_REQUESTED": "#f59e0b",
@@ -12,28 +13,21 @@ def generate_html_dashboard(report: ReviewReport) -> str:
 
     # Circumference for 40px radius circle = 2 * pi * 40 ≈ 251.2
     circumference = 251.2
-    stroke_dashoffset = circumference - (circumference * report.health_score / 100)
+    stroke_dashoffset = circumference - (circumference * max(0, min(100, report.health_score)) / 100)
 
-    issues_json = json.dumps([
-        {
-            "file": i.file,
-            "line": i.line,
-            "severity": i.severity,
-            "category": i.category,
-            "cwe": i.cwe_id or "General",
-            "title": i.title,
-            "desc": i.description,
-            "fix": i.suggestion or "",
-        }
-        for i in report.issues
-    ])
+    # Sanitize top-level values
+    safe_title = html.escape(report.title)
+    safe_verdict = html.escape(report.verdict)
+    safe_pr_type = html.escape(report.triage.pr_type)
+    safe_size_tier = html.escape(report.triage.size_tier)
+    safe_risk_level = html.escape(report.triage.risk_level)
 
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PR Review Dashboard - {report.title}</title>
+    <title>PR Review Dashboard - {safe_title}</title>
     <style>
         :root {{
             --bg-primary: #0f172a;
@@ -173,18 +167,6 @@ def generate_html_dashboard(report: ReviewReport) -> str:
             overflow-x: auto;
             color: #38bdf8;
         }}
-        .btn {{
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }}
-        .btn:hover {{ opacity: 0.9; }}
     </style>
 </head>
 <body>
@@ -194,7 +176,7 @@ def generate_html_dashboard(report: ReviewReport) -> str:
                 <h1>🤖 PR Reviewer Council Dashboard</h1>
             </div>
             <div>
-                <span class="badge-verdict">{report.verdict}</span>
+                <span class="badge-verdict">{safe_verdict}</span>
             </div>
         </header>
 
@@ -216,22 +198,22 @@ def generate_html_dashboard(report: ReviewReport) -> str:
                 <div class="metrics-grid">
                     <div class="metric-box">
                         <div class="metric-label">Classification</div>
-                        <div class="metric-value">{report.triage.pr_type}</div>
+                        <div class="metric-value">{safe_pr_type}</div>
                     </div>
                     <div class="metric-box">
                         <div class="metric-label">Volume Sizing</div>
-                        <div class="metric-value">{report.triage.size_tier}</div>
+                        <div class="metric-value">{safe_size_tier}</div>
                     </div>
                     <div class="metric-box">
                         <div class="metric-label">Composite Risk</div>
-                        <div class="metric-value">{report.triage.risk_level}</div>
+                        <div class="metric-value">{safe_risk_level}</div>
                     </div>
                     <div class="metric-box">
                         <div class="metric-label">Additions / Deletions</div>
                         <div class="metric-value">+{report.triage.total_additions} / -{report.triage.total_deletions}</div>
                     </div>
                 </div>
-                <p style="margin-top: 14px; color: var(--text-muted); font-size: 14px;"><strong>Target:</strong> {report.title} &bull; <strong>Files:</strong> {report.triage.total_files}</p>
+                <p style="margin-top: 14px; color: var(--text-muted); font-size: 14px;"><strong>Target:</strong> {safe_title} &bull; <strong>Files:</strong> {report.triage.total_files}</p>
             </div>
         </div>
 
@@ -253,10 +235,10 @@ def generate_html_dashboard(report: ReviewReport) -> str:
         pill_class = "pill-passed" if s.status == "PASSED" else ("pill-warning" if s.status == "WARNING" else "pill-failed")
         html_content += f"""
                     <tr>
-                        <td><strong>{s.agent_name}</strong></td>
+                        <td><strong>{html.escape(s.agent_name)}</strong></td>
                         <td>{s.score}/100</td>
-                        <td><span class="status-pill {pill_class}">{s.status}</span></td>
-                        <td>{s.summary}</td>
+                        <td><span class="status-pill {pill_class}">{html.escape(s.status)}</span></td>
+                        <td>{html.escape(s.summary)}</td>
                     </tr>
         """
 
@@ -270,26 +252,34 @@ def generate_html_dashboard(report: ReviewReport) -> str:
     """
 
     for issue in report.issues:
+        safe_ititle = html.escape(issue.title)
+        safe_ifile = html.escape(issue.file)
+        safe_icwe = html.escape(issue.cwe_id or "General")
+        safe_idesc = html.escape(issue.description)
+        safe_isugg = html.escape(issue.suggestion) if issue.suggestion else ""
+        safe_isec = html.escape(issue.severity)
+
         html_content += f"""
-            <div class="issue-card {issue.severity}">
+            <div class="issue-card {safe_isec}">
                 <div class="issue-header">
-                    <div class="issue-title">{issue.title}</div>
-                    <span class="issue-badge badge-{issue.severity}">{issue.severity}</span>
+                    <div class="issue-title">{safe_ititle}</div>
+                    <span class="issue-badge badge-{safe_isec}">{safe_isec}</span>
                 </div>
                 <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 8px;">
-                    <strong>File:</strong> {issue.file}:{issue.line or ''} &bull; <strong>CWE:</strong> {issue.cwe_id or 'N/A'}
+                    <strong>File:</strong> {safe_ifile}:{issue.line or ''} &bull; <strong>CWE:</strong> {safe_icwe}
                 </div>
-                <p style="font-size: 14px; margin-bottom: 10px;">{issue.description}</p>
-                {"<div class='code-box'><strong>Suggested Fix:</strong><br/>" + issue.suggestion + "</div>" if issue.suggestion else ""}
+                <p style="font-size: 14px; margin-bottom: 10px;">{safe_idesc}</p>
+                {"<div class='code-box'><strong>Suggested Fix:</strong><br/>" + safe_isugg + "</div>" if safe_isugg else ""}
             </div>
         """
 
     if report.remediation_patch:
+        safe_patch = html.escape(report.remediation_patch)
         html_content += f"""
         <div class="card" style="margin-top: 30px;">
             <h3>🩹 Autonomous Remediation Patch</h3>
             <p style="color: var(--text-muted); margin-bottom: 10px; font-size: 14px;">Apply directly to your branch using <code>git apply remediation.patch</code></p>
-            <pre class="code-box" style="white-space: pre-wrap; color: #a5f3fc;">{report.remediation_patch}</pre>
+            <pre class="code-box" style="white-space: pre-wrap; color: #a5f3fc;">{safe_patch}</pre>
         </div>
         """
 

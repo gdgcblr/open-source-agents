@@ -102,7 +102,7 @@ class TestPRReviewerCouncil(unittest.TestCase):
 
         self.assertEqual(report.verdict, "BLOCKED")
         self.assertLess(report.health_score, 60)
-        self.assertEqual(len(report.specialist_reviews), 3)
+        self.assertEqual(len(report.specialist_reviews), 4)
         self.assertIsNotNone(report.remediation_patch)
 
     def test_end_to_end_council_verdict_approved(self):

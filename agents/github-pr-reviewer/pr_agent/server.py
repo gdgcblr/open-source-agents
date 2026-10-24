@@ -112,6 +112,13 @@ HTML_FORM_PAGE = """<!DOCTYPE html>
 class PRReviewHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        clean_path = os.path.normpath(parsed.path)
+        if ".." in parsed.path or clean_path.startswith("..") or "\0" in self.path:
+            self.send_response(400)
+            self.end_headers()
+            self.wfile.write(b"Invalid path.")
+            return
+
         if parsed.path in ("/", "/index.html"):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -120,6 +127,8 @@ class PRReviewHandler(http.server.BaseHTTPRequestHandler):
         elif parsed.path == "/api/sample":
             query = urllib.parse.parse_qs(parsed.query)
             sample_type = query.get("type", ["vulnerable"])[0]
+            if sample_type not in ("vulnerable", "clean"):
+                sample_type = "vulnerable"
             samples_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "samples")
             sample_file = "sample_pr_diff.patch" if sample_type == "vulnerable" else "sample_bug_fix.patch"
             diff_text, _ = load_diff_from_file(os.path.join(samples_dir, sample_file))
@@ -134,9 +143,28 @@ class PRReviewHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path == "/api/review":
-            length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(length).decode("utf-8")
-            data = json.loads(body)
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+            except ValueError:
+                self.send_response(400)
+                self.end_headers()
+                return
+
+            # Security limit: max 5MB upload size to prevent memory exhaustion DoS
+            if length > 5 * 1024 * 1024:
+                self.send_response(413)
+                self.end_headers()
+                self.wfile.write(b"Payload Too Large: Max size is 5MB.")
+                return
+
+            try:
+                body = self.rfile.read(length).decode("utf-8", errors="replace")
+                data = json.loads(body)
+            except Exception as e:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(f"Malformed JSON: {e}".encode("utf-8"))
+                return
 
             diff_text = data.get("diff", "")
             pr_url = data.get("pr", "")
