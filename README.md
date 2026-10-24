@@ -75,6 +75,12 @@ open-source-ai/
 
 ---
 
+## 🌟 Featured Projects
+
+- **[`agents/namma-traffic-agent/`](agents/namma-traffic-agent/)** — **Namma Travel**: Real-time multimodal Bengaluru transit copilot with live metro, BMTC buses, and cab fare saver. Includes mobile app package in [`namma-travel-app/`](namma-travel-app/) (Android & iPhone) and executive Word presentation (`.docx`).
+
+---
+
 ## Quick Start for Contributors
 
 Ready to contribute? Follow this straightforward fork-and-pull-request workflow:

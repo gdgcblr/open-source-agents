@@ -16,8 +16,6 @@ python -m http.server 8080 --directory www
 ```
 Open `http://localhost:8080` in your mobile browser or desktop responsive mode (390x844).
 
-## 📦 App Store Guides
-See [PLAYSTORE_INSTALL_GUIDE.md](./PLAYSTORE_INSTALL_GUIDE.md) for complete step-by-step instructions on:
-1. Installing instantly on Android and iPhone without an app store.
-2. Building and packaging `.aab` bundles for Google Play Store.
-3. Submitting to Google Play Console and Apple App Store Connect.
+## 📦 App Store Guides & Presentation
+- **App Store Publishing Walkthrough:** See [PLAYSTORE_INSTALL_GUIDE.md](./PLAYSTORE_INSTALL_GUIDE.md) for complete step-by-step instructions.
+- **Executive Word Presentation Deck:** [Namma_Travel_App_Presentation.docx](./Namma_Travel_App_Presentation.docx) (includes embedded multimodal fare vs time benchmark charts, delay curves, and architecture diagrams).

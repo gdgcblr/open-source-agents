@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`namma-traffic-agent`](./namma-traffic-agent/) | **Namma Travel**: Real-time Bengaluru traffic intelligence, multimodal transit optimization (Metro, BMTC Volvo AC/Ord, Cabs, Auto, Bike), mobile app for Android/iOS, and Google Play Store readiness. | Python 3.12, Google GenAI SDK (Gemini 2.5 Flash), FastAPI, Leaflet, Capacitor 6.0 | [@shaikjafar559](https://github.com/shaikjafar559) |

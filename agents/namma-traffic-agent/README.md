@@ -1,10 +1,11 @@
-# 🚦 Namma Bengaluru Traffic Copilot
+# 🚦 Namma Travel
 
-> Real-time Bengaluru traffic intelligence, multimodal transit optimization, and bottleneck bypass agent.
+> Intelligent Bengaluru multimodal transit optimizer, mobile travel app (Android & iPhone), and real-time bottleneck bypass agent.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Google GenAI SDK](https://img.shields.io/badge/Google%20GenAI-Gemini%202.5-orange.svg)](https://ai.google.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com/)
+[![Mobile App](https://img.shields.io/badge/Mobile-Android%20%7C%20iOS%20%7C%20PWA-green.svg)](../../namma-travel-app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Built for the **FORK. BUILD. MERGE.** initiative under **Road to DevFest 2026** by **GDG Cloud Bengaluru**.
@@ -21,14 +22,17 @@ Standard navigation apps often give raw point-to-point times without contextual 
 - *Is Central Silk Board or Tin Factory currently impassable?*
 - *Are key underpasses flooded after recent rains?*
 
-**Namma Traffic Copilot** is a domain-specialized AI agent designed to bridge this gap by combining LLM tool-calling reasoning (powered by Google Gemini 2.5 Flash) with local transit knowledge and deterministic fallbacks.
+**Namma Travel** is a domain-specialized AI agent designed to bridge this gap by combining LLM tool-calling reasoning (powered by Google Gemini 2.5 Flash) with local transit knowledge and deterministic fallbacks.
 
 ---
 
-## 📚 In-Depth Guides & Presentation
+## 📱 Mobile App & Executive Presentation
 
-- **[📖 Bengaluru Traffic AI Agent Guide (In-Depth)](BENGALURU_TRAFFIC_AI_AGENT_GUIDE.md):** Complete guide with advantages, real-world constraints, and Bengaluru traffic dynamics.
-- **[📊 Interactive DevFest Presentation Deck (HTML)](presentation.html):** 10-slide interactive slide deck for demos and presentations.
+- **[📱 Namma Travel Mobile App (`namma-travel-app/`)](../../namma-travel-app/):** Cross-platform mobile app package for Android (Google Play Store AAB) and iPhone (iOS Capacitor/Safari PWA).
+- **[📄 Executive Word Presentation (.docx)](Namma_Travel_App_Presentation.docx):** Complete presentation deck in Microsoft Word with embedded visual charts, fare benchmarks, and architecture diagrams.
+- **[🏪 Play Store Installation Guide](../../namma-travel-app/PLAYSTORE_INSTALL_GUIDE.md):** Step-by-step Google Play Store (Bubblewrap TWA) and Apple App Store publishing guide.
+- **[📖 Bengaluru Traffic AI Agent Guide (In-Depth)](BENGALURU_TRAFFIC_AI_AGENT_GUIDE.md):** Complete guide with advantages, real-world constraints, and Bengaluru transit dynamics.
+- **[📊 Interactive DevFest Presentation Deck (HTML)](presentation.html):** 10-slide interactive slide deck for live demos.
 - **[🎤 Presentation Speaker Notes (Markdown)](PRESENTATION.md):** Slide-by-slide script and talking points.
 
 ---
@@ -304,22 +308,34 @@ Powered by Google GenAI (Gemini 2.5 Flash) + Local Transit Intelligence
 
 ```
 agents/namma-traffic-agent/
-├── README.md              # Comprehensive documentation and guide
-├── requirements.txt       # Dependencies manifest
-├── .env.example           # Sanitized environment variable template
-├── .gitignore             # Git ignore rules
-├── main.py                # Rich CLI entrypoint & interactive REPL
-├── server.py              # FastAPI web server and REST API
+├── README.md                      # Comprehensive documentation and guide
+├── Namma_Travel_App_Presentation.docx # Executive Presentation Deck with visuals
+├── requirements.txt               # Dependencies manifest
+├── .env.example                   # Sanitized environment variable template
+├── .gitignore                     # Git ignore rules
+├── main.py                        # Rich CLI entrypoint & interactive REPL
+├── server.py                      # FastAPI web server, Auth & REST API
 ├── agent/
-│   ├── __init__.py        # Package exports
-│   ├── core.py            # NammaTrafficAgent implementation & Gemini tool calling
-│   ├── knowledge.py       # Bengaluru transit dataset (corridors, hubs, choke points)
-│   └── tools.py           # 5 specialized transit intelligence tools
+│   ├── __init__.py                # Package exports
+│   ├── core.py                    # NammaTrafficAgent implementation & Gemini tool calling
+│   ├── knowledge.py               # Bengaluru transit dataset (corridors, hubs, choke points)
+│   └── tools.py                   # 5 specialized transit intelligence tools
 ├── web/
-│   └── index.html         # Modern responsive web dashboard (dark mode)
+│   ├── index.html                 # Modern responsive web dashboard (dark mode, mobile bottom sheet)
+│   ├── manifest.json              # PWA Web App Manifest for mobile installation
+│   ├── sw.js                      # Service Worker providing offline transit caching
+│   ├── icon-192.svg               # Mobile app icon
+│   └── icon-512.svg               # High-resolution splash icon
+├── namma-travel-app/              # Standalone mobile app package for Android & iPhone
+│   ├── package.json               # Capacitor 6.0 & Bubblewrap dependencies
+│   ├── capacitor.config.json      # App ID (com.nammatraffic.travelapp) & theme
+│   ├── twa-manifest.json          # Google Trusted Web Activity config
+│   ├── PLAYSTORE_INSTALL_GUIDE.md # Step-by-step Play Store & App Store guide
+│   └── www/                       # Packaged web assets
 └── tests/
-    ├── test_agent.py      # Tests for agent execution and intent handling
-    └── test_tools.py      # Tests for all 5 specialized traffic tools
+    ├── test_agent.py              # Tests for agent execution and intent handling
+    ├── test_auth.py               # Tests for Gmail OAuth and Mobile OTP login
+    └── test_tools.py              # Tests for all transit tools
 ```
 
 ---
@@ -334,9 +350,10 @@ python -m pytest tests/
 
 Expected output:
 ```
-tests/test_agent.py ....                                                 [ 40%]
-tests/test_tools.py ......                                               [100%]
-============================= 10 passed in 0.20s ==============================
+tests/test_agent.py ....                                                 [ 26%]
+tests/test_auth.py ....                                                  [ 53%]
+tests/test_tools.py .......                                              [100%]
+======================== 15 passed in 0.50s ========================
 ```
 
 ---
