@@ -6,7 +6,19 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_alert, analyze_failure, compare_diagnoses, inspect_api_error, inspect_ci_annotations, inspect_project, inspect_test_reports, summarize_diagnosis, verify_alert_signature, verify_resolution
+from build_doctor_mcp.server import (
+    analyze_alert,
+    analyze_failure,
+    compare_diagnoses,
+    format_incident_email,
+    inspect_api_error,
+    inspect_ci_annotations,
+    inspect_project,
+    inspect_test_reports,
+    summarize_diagnosis,
+    verify_alert_signature,
+    verify_resolution,
+)
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -284,6 +296,16 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
             result = json.loads(inspect_test_reports(str(root)))
             # The reports inside the symlinked directory should be excluded
             self.assertEqual([], result["reports"])
+
+    def test_format_incident_email_creates_google_mcp_dispatch_envelope(self):
+        diag = analyze_failure("error: cannot find symbol")
+        result = json.loads(format_incident_email(diag, "sre-team@example.com"))
+        self.assertEqual("1.1", result["schema_version"])
+        self.assertEqual("sre-team@example.com", result["email"]["recipient"])
+        self.assertIn("COMPILATION", result["email"]["subject"].upper())
+        self.assertEqual("gmail.send_message", result["google_mcp_dispatch_envelope"]["tool"])
+        self.assertIn("PENDING", result["email"]["body"])
+        self.assertIn("Key Factual Evidence", result["email"]["body"])
 
 
 if __name__ == "__main__":
