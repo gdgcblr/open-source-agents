@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meetingmind-agent"
+version = "1.0.0"
+description = "Privacy-first Chrome extension and multi-agent backend powered by Gemma, ADK, A2A, and MCP to summarize meetings and manage action items."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.5.0",
+    "httpx>=0.26.0",
+    "python-dotenv>=1.0.0",
+    "google-auth>=2.27.0",
+    "google-api-python-client>=2.115.0",
+    "mcp>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
