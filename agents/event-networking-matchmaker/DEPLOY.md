@@ -14,7 +14,7 @@ GitHub Pages cannot run this Python API or SQLite database. Use a Render **Web S
    - `BUILDBUDDY_DB=/tmp/buildbuddy-demo.sqlite3`
    - `BUILDBUDDY_ADMIN_KEY`: generate a long random secret; do not publish it.
 6. Choose the free plan if available and deploy. Render supplies `PORT` and `RENDER_EXTERNAL_URL`; the launcher configures the allowed hostname and exact HTTPS origin from that URL.
-7. Open the service's assigned HTTPS URL. Choose Arun and search “I want to start contributing to open source”. Add **that verified URL** to your PR/README. Do not guess the assigned address.
+7. Open the service's assigned HTTPS URL. Choose Adarsh and search “I want to start contributing to open source”. Add **that verified URL** to your PR/README. Do not guess the assigned address.
 
 Alternative: New → Blueprint, select this branch, and set Blueprint Path to `agents/event-networking-matchmaker/render.yaml`. Review the free demo configuration before deploying. The file remains inside the project directory to respect contribution rules.
 
@@ -41,7 +41,7 @@ No email service is connected and no emails are sent automatically by this proje
 ## Smoke test after deployment
 
 - `/api/config` loads, sample login works, the open-source query returns relevant profiles.
-- Open a second tab, check Kiran in at Table B, and verify available-now matching as Arun.
+- Open a second tab, check Kiran in at Table B, and verify available-now matching as Adarsh.
 - For a private deployment, test one private invitation: it opens matches, clears the URL fragment, and does **not** mark venue presence.
 - Test an invalid token and a different event; access must be refused.
 

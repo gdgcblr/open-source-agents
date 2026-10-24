@@ -56,6 +56,7 @@ def test_sample_consent_and_data():
     people, skipped = read_xlsx(SAMPLE.read_bytes())
     assert len(people) == 18 and skipped == 2
     assert people[0]["id"] == "P001"
+    assert people[0]["name"] == "Adarsh"
     assert all("consent" not in p and "email" not in p for p in people)
 
 @pytest.mark.parametrize("cell,value,expected", [

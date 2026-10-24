@@ -24,7 +24,7 @@ python app.py --demo
 
 Windows PowerShell activation: `.venv\Scripts\Activate.ps1`.
 
-Open **http://127.0.0.1:8000**, select **Arun · P001**, and enter the open-source request above. **Kiran and Farah** should appear among the top three in local lexical mode. Their Git/documentation skills and contribution projects support those recommendations. The sample XLSX has 20 fictional responses, 18 with consent; no real attendee data is bundled.
+Open **http://127.0.0.1:8000**, select **Adarsh · P001**, and enter the open-source request above. **Kiran and Farah** should appear among the top three in local lexical mode. Their Git/documentation skills and contribution projects support those recommendations. The sample XLSX has 20 fictional responses, 18 with consent; no real attendee data is bundled.
 
 ### Enable local semantic AI
 
@@ -47,7 +47,7 @@ The semantic engine is [all-MiniLM-L6-v2](https://huggingface.co/sentence-transf
 | “I want to run AI offline” | A local-model connection such as Nila |
 | `Docker` | Kabir’s offered Docker skill |
 | A goal unrelated to the event, such as `quantum spectroscopy` | No sufficiently relevant match |
-| Check Priya in at Table B in another tab; search as Arun with available-now enabled | Priya’s recent, expiring check-in |
+| Check Priya in at Table B in another tab; search as Adarsh with available-now enabled | Priya’s recent, expiring check-in |
 | Mark a person as met | Exclude them for that viewer, without changing other attendees’ results |
 | Search only relevant offered skills | Exclude interest-only connections |
 | Inspect “See the profile evidence” and “How these matches were chosen” | Source fields and actual workflow/tool trace |
@@ -129,7 +129,7 @@ The first row contains headers. Use `Form Responses 1`, or put responses on the 
 
 ## Example input and output
 
-Input as Arun:
+Input as Adarsh:
 
 ```text
 I want to know how I can start contributing to open source

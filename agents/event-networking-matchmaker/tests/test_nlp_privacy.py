@@ -6,6 +6,15 @@ import pytest
 from agent import gemini_search,run_agent
 from nlp import LocalEncoder
 
+def test_renamed_demo_identity_and_matches(fixture):
+    client,_,_=fixture
+    demo=client.get('/api/demo').json()
+    assert next(p for p in demo if p['id']=='P001')['name']=='Adarsh'
+    me=client.get('/api/me',params={'event':'BuildBuddy Sample Event'},headers=auth()).json()
+    assert me['name']=='Adarsh'
+    result=matches(client,query='I want to start contributing to open source').json()
+    assert {'P011','P012'}.issubset({p['id'] for p in result['matches']})
+
 def test_original_open_source_regression(fixture):
     client,_,_=fixture
     data=matches(client,query="I want to know how I can start contributing to open source").json()

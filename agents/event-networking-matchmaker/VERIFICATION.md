@@ -8,7 +8,7 @@ Python 3.11–3.13, Windows/Linux, real mobile devices, HTTPS reverse-proxy host
 
 ## Automated tests
 
-`python -m pytest -q`: **36 passed** in 2.40 seconds in the clean environment. One upstream Starlette warning notes that its httpx TestClient integration is deprecated; tests still pass with the declared pinned dependencies.
+Final rerun after renaming P001 to Adarsh: `python -m pytest -q`: **38 passed** in 1.86 seconds in the clean environment. One upstream Starlette warning notes that its httpx TestClient integration is deprecated; tests still pass with the declared pinned dependencies. The XLSX identity, demo API, authenticated profile and original matching query have an explicit regression test.
 
 Coverage includes the original open-source query regression, profile evidence, interest-versus-skill labels, relevant-offers filtering, aliases/paraphrases, consent exclusions, malformed files, event isolation, token revocation, withdrawal suppression, check-in expiry, organizer deletion, bounded uploads, trusted hosts, 24 requests across independent synthetic sessions, 200-profile catalogs, semantic failure fallback, and mocked Gemini tool boundaries. A blank goal is explicitly tested to ensure stored profile needs are never sent to the cloud planner.
 
@@ -29,13 +29,13 @@ Coverage includes the original open-source query regression, profile evidence, i
 | I want to build a mobile app | P002, P003, P015 |
 | quantum spectroscopy | No matches |
 
-Ten sequential searches over a 200-profile synthetic catalog: median **10.02 ms**, maximum **10.79 ms** for the local workflow in the development environment. This excludes HTTP/browser overhead and is not a 200-concurrent-user load test. Timings vary by machine and installed engine.
+Ten sequential searches over a 200-profile synthetic catalog: median **9.86 ms**, maximum **10.12 ms** for the local workflow in the development environment. This excludes HTTP/browser overhead and is not a 200-concurrent-user load test. Timings vary by machine and installed engine.
 
 ## Browser walkthrough
 
-Verified sample login as Arun; the original full-sentence open-source query returned Kiran, Farah, and Priya. Kiran/Farah showed related offered skills; Priya showed shared-interest evidence and an explicit non-expertise caveat. The offered-skills-only filter returned Kiran and Farah. Profile evidence and the actual local workflow trace expanded successfully, and the browser reported no JavaScript errors during these checks.
+Verified sample login as Adarsh; the original full-sentence open-source query returned Kiran, Farah, and Priya. Kiran/Farah showed related offered skills; Priya showed shared-interest evidence and an explicit non-expertise caveat. The offered-skills-only filter returned Kiran and Farah. Profile evidence and the actual local workflow trace expanded successfully, and the browser reported no JavaScript errors during these checks.
 
-In a second browser tab, Kiran checked in at Table B. Arun's available-now query returned Kiran with Table B and an expiry time. The in-app organizer/attendee guide opened successfully. `sample/app-desktop.jpg` records actual synthetic results from this walkthrough.
+In a second browser tab, Kiran checked in at Table B. Adarsh's available-now query returned Kiran with Table B and an expiry time. The in-app organizer/attendee guide opened successfully. `sample/app-desktop.jpg` records actual synthetic results from this walkthrough.
 
 ## Explicitly unverified components
 
