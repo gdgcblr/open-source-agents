@@ -58,13 +58,13 @@ graph TD
 ## 🎥 Media & Video Demonstrations (Brag Skills)
 
 ### 🎥 Final Render Paths (Post-Render)
-- **Bharat Dues Video**: `brag-audit/brag.mp4` (also synced at `agents/gemini-audit-agent/brag/brag.mp4`)
-- **Arthaniti Video**: `brag-quant/brag.mp4` (also synced at `tools/gemma-quant-mcp/brag/brag.mp4`)
+- **Bharat Dues Video**: `agents/gemini-audit-agent/brag/brag.mp4`
+- **Arthaniti Video**: `tools/gemma-quant-mcp/brag/brag.mp4`
 
 ### 🛠️ Current Composition Paths (The Source)
 If you want to preview or edit the scenes before rendering:
-- **Bharat Dues Composition**: `brag-audit/composition/index.html`
-- **Arthaniti Composition**: `brag-quant/composition/index.html`
+- **Bharat Dues Composition**: `agents/gemini-audit-agent/brag/composition/index.html`
+- **Arthaniti Composition**: `tools/gemma-quant-mcp/brag/composition/index.html`
 
 ## 🚀 Quick Start
 

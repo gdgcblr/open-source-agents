@@ -229,8 +229,8 @@ python3 -m pytest agents/gemini-audit-agent/tests
 ## 🎥 Video Demonstration & Scene Composition (Brag Skill)
 
 ### 🎥 Final Render Paths (Post-Render)
-- **Bharat Dues Video**: `brag-audit/brag.mp4` (also synced at `agents/gemini-audit-agent/brag/brag.mp4`)
+- **Bharat Dues Video**: `agents/gemini-audit-agent/brag/brag.mp4`
 
 ### 🛠️ Current Composition Paths (The Source)
 If you want to preview or edit the scenes before rendering:
-- **Bharat Dues Composition**: `brag-audit/composition/index.html` (also at `agents/gemini-audit-agent/brag/composition/index.html`)
+- **Bharat Dues Composition**: `agents/gemini-audit-agent/brag/composition/index.html` (also at `agents/gemini-audit-agent/brag/composition/index.html`)
