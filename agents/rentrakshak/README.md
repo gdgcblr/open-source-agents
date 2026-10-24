@@ -1,3 +1,5 @@
+> **📍 This is the RentRakshak project README.** Everything for this agent lives under **`agents/rentrakshak/`** only. The monorepo root [`README.md`](../../README.md) is unchanged (shared catalog).
+
 <div align="center">
 
 <img src="./assets/readme-banner.svg" width="100%" alt="RentRakshak banner" />
@@ -24,8 +26,8 @@ On GitHub you still get typing text, animated SVG, Mermaid, and collapsible sect
 | Action | Link |
 |--------|------|
 | **Open interactive HTML in browser** | [**README.html**](README.html) (clone repo → double-click, or use preview below) |
-| **Preview in browser (no clone)** | [HTML Preview — interactive README](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gdgcblr/open-source-agents/main/agents/rentrakshak/README.html) |
-| **After merge / your fork** | Replace `gdgcblr` / branch in the preview URL if needed |
+| **Preview interactive HTML (this PR branch)** | [Open README.html in browser](https://htmlpreview.github.io/?https://raw.githubusercontent.com/rockygeekz/open-source-agents/feat/rentrakshak/agents/rentrakshak/README.html) |
+| **View this README on GitHub** | [agents/rentrakshak/README.md](https://github.com/rockygeekz/open-source-agents/blob/feat/rentrakshak/agents/rentrakshak/README.md) (banner, typing SVG, Mermaid, `<details>`) |
 
 ```bash
 # Local: same folder as this file
