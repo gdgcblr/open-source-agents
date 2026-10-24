@@ -1,0 +1,38 @@
+diff --git a/src/auth/service.py b/src/auth/service.py
+index 4b825dc..f83b19a 100644
+--- a/src/auth/service.py
++++ b/src/auth/service.py
+@@ -10,6 +10,24 @@ import jwt
+ import os
++import sqlite3
+ 
+-SECRET_KEY = os.environ.get("JWT_SECRET")
++# Hardcoded secret key for local development
++SECRET_KEY = "super-secret-production-jwt-key-do-not-share"
+ 
+ def authenticate_user(username, password):
+-    return verify_credentials(username, password)
++    # Query user database directly
++    conn = sqlite3.connect("users.db")
++    cursor = conn.cursor()
++    
++    # Potential SQL injection vulnerability
++    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
++    cursor.execute(query)
++    user = cursor.fetchone()
++    
++    if user:
++        print(f"DEBUG: Authenticated user {username}")
++        token = jwt.encode({"sub": user[0]}, SECRET_KEY, algorithm="HS256")
++        return {"token": token, "status": "success"}
++    return {"error": "Invalid credentials"}
+diff --git a/src/config.py b/src/config.py
+index 1029384..5647382 100644
+--- a/src/config.py
++++ b/src/config.py
+@@ -1,5 +1,6 @@
+ class AppConfig:
+     PORT = 8080
+     DEBUG = True
++    AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
++    MAX_WORKERS = 4

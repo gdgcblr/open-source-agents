@@ -1,0 +1,15 @@
+diff --git a/src/utils/parser.py b/src/utils/parser.py
+index a1b2c3d..e4f5a6b 100644
+--- a/src/utils/parser.py
++++ b/src/utils/parser.py
+@@ -14,7 +14,8 @@ def parse_user_payload(raw_data: str) -> dict:
+     if not raw_data:
+         return {}
+     try:
+-        return json.loads(raw_data)
++        cleaned = raw_data.strip()
++        return json.loads(cleaned)
+     except (json.JSONDecodeError, ValueError) as err:
+         logger.warning(f"Failed to parse payload: {err}")
+-        raise
++        return {}

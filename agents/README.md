@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`github-pr-reviewer`](github-pr-reviewer/) | Multi-agent PR review council: OWASP security audit, performance analysis, automated test synthesis, and self-healing git patch remediation. | Python, Google Gemini, Multi-Agent Council | [@Mourya-N](https://github.com/Mourya-N) |
