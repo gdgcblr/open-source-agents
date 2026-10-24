@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`agentguard`](agentguard/README.md) | Dependency-free static scanner that flags common reliability/security footguns in AI-agent projects (hardcoded keys, missing timeouts, eval/exec, unbounded loops, undocumented agent functions). | Python (stdlib only) | Iris3014 |
