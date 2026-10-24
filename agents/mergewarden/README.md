@@ -2,6 +2,29 @@
 
 > A Google ADK multi-agent that reviews every pull request against **the repository's own CONTRIBUTING.md**, with line-cited rules, quote-grounded Gemini findings and a triage board, so maintainers spend their time on code instead of checklists.
 
+
+**Two halves, one Google ADK system:**
+- 🛡️ **For maintainers**: MergeWarden reviews every PR against the repo's own rules and ranks the queue ready-first.
+- 🤝 **For first-timers**: the *Namma Commit* coach mentors students on WhatsApp, in any language, from "what is a fork?" to a merged PR.
+
+### At a glance (all numbers from real runs on 2026-10-24)
+| | |
+| :--- | :--- |
+| **Real upstream triage** | All 5 open PRs in `gdgcblr/open-source-agents` triaged in **44 s**. It caught a PR whose ticked checklist claims contradicted the evidence. |
+| **One review** | About **9 s** with Gemini (`gemini-3.5-flash-lite`), or deterministic-only with `--no-llm` |
+| **Accuracy** | **18/18** labelled eval cases with the correct verdict and exact checks, and **138 tests** pass |
+| **Dogfooding** | MergeWarden reviews its own PR: **✅ Ready, 100/100** |
+| **Safety model** | AI findings must quote the PR. The AI can never block, clear a rule, approve, post or merge. |
+
+### Try it in 60 seconds (no API key needed)
+```bash
+cd agents/mergewarden
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+python -m mergewarden review https://github.com/gdgcblr/open-source-agents/pull/5 --no-llm
+python -m mergewarden triage gdgcblr/open-source-agents --no-llm --out triage.html
+python -m mergewarden.coach serve        # newcomer coach simulator → http://127.0.0.1:8090
+```
+
 ---
 
 ## Overview
@@ -267,6 +290,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 - **The AI layer can be wrong or noisy.** Grounding stops invented quotes but not every bad judgement. Two reviewers can occasionally raise overlapping points. AI findings are labelled `AI review` for this reason.
 - **Rate limits.** GitHub's unauthenticated API allows 60 requests/hour. Triage of large repos needs `GITHUB_TOKEN`. Free Gemini tiers can return 429/503; the model chain falls back and finally runs deterministic-only.
 - **Coach scale.** It uses single-host SQLite and in-process sessions, which is fine for an event or a club, not for thousands of concurrent students. Real WhatsApp needs a Twilio account and a public URL (ngrok). Voice quality depends on Gemini's support for the language and on audio quality.
+- **Known detector gaps (red-teamed, being fixed).** A deliberate attacker who reads the source can still slip past the regex detectors. Examples: `.gitattributes export-ignore` hides files from the snapshot, keys can be split or base64-encoded, injection can be paraphrased or use homoglyphs, secrets can stay in earlier commits, and the `--run-setup` container has network access. Treat MergeWarden as a fast first pass for honest mistakes, not as a security boundary.
 - **Tested on macOS (Python 3.12).** Linux is expected to work. Windows is untested.
 
 ---
