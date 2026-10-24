@@ -1,0 +1,25 @@
+{
+  "name": "scenario-smith",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.13.0",
+    "npm": ">=11.8.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test"
+  },
+  "dependencies": {
+    "@google/adk": "^2.3.0",
+    "dotenv": "^16.4.7",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@google/adk-devtools": "^2.3.0",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
