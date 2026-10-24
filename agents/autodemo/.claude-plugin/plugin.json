@@ -1,0 +1,21 @@
+{
+  "name": "autodemo",
+  "version": "0.1.0",
+  "description": "Explores a running web app, writes the demo script itself, and renders a narrated, captioned MP4 walkthrough of it.",
+  "author": {
+    "name": "vijaykumargowdakk",
+    "url": "https://github.com/vijaykumargowdakk"
+  },
+  "homepage": "https://github.com/gdgcblr/open-source-agents/tree/main/agents/autodemo",
+  "license": "MIT",
+  "keywords": ["demo", "video", "screencast", "playwright", "ffmpeg", "narration", "tts"],
+  "skills": ["./skills/autodemo"],
+  "agents": ["./agents/demo-scripter.md"],
+  "commands": ["./commands/demo.md"],
+  "mcpServers": {
+    "autodemo": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/src/mcp/server.mjs"]
+    }
+  }
+}
