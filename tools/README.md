@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`git-diff-summarizer`](git-diff-summarizer/) | Summarize unstaged Git diffs and generate PR descriptions using Google Gemini | CLI / Developer Utility | @ankit-singh44 |
