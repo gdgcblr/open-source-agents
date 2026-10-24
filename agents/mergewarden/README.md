@@ -14,7 +14,7 @@
 | :--- | :--- |
 | **Real upstream triage** | All 5 open PRs in `gdgcblr/open-source-agents` triaged in **44 s**. It caught a PR whose ticked checklist claims contradicted the evidence. |
 | **One review** | About **9 s** with Gemini (`gemini-3.5-flash-lite`), or deterministic-only with `--no-llm` |
-| **Accuracy** | **25/25** labelled eval cases with the correct verdict and exact checks, and **181 tests** pass |
+| **Accuracy** | **25/25** labelled eval cases with the correct verdict and exact checks, and **187 tests** pass |
 | **Red-team** | **21/22** bypass attempts now caught (was 1/22); the last is a design note covered by its own test |
 | **Dogfooding** | MergeWarden reviews its own PR: **✅ Ready, 100/100** |
 | **Safety model** | AI findings must quote the PR. The AI can never block, clear a rule, approve, post or merge. |
@@ -61,7 +61,7 @@ Every claim below links to the file or command that proves it.
 | **Security & privacy** | No secrets committed, and leaked values are masked in output. PR code is never executed on the host. AI output is grounded, and the AI can't block or approve. The coach hashes phone numbers and refuses secrets. | [Security & Privacy](#security--privacy-considerations) · [`checks/secrets.py`](mergewarden/checks/secrets.py) · [`coach/guardrails.py`](mergewarden/coach/guardrails.py) |
 | **Focused scope** | Everything lives in `agents/mergewarden/`, with no root changes. It reviews its own PR as ✅ Ready, 100/100. | `python -m mergewarden review https://github.com/gdgcblr/open-source-agents/pull/5 --no-llm` |
 | **Usefulness to the ecosystem** | It solves this repo's own review bottleneck. It triaged the 5 real upstream PRs in 44 s, and the coach brings new contributors in. | [`copilot.py`](mergewarden/copilot.py) · [`coach/`](mergewarden/coach/) |
-| **Measured quality** | 25/25 labelled eval cases, 181 tests, and 21/22 red-team bypasses caught (was 1/22). | [`evals/RESULTS.md`](evals/RESULTS.md) · [`tests/`](tests/) |
+| **Measured quality** | 25/25 labelled eval cases, 187 tests, and 21/22 red-team bypasses caught (was 1/22). | [`evals/RESULTS.md`](evals/RESULTS.md) · [`tests/`](tests/) |
 | **Framework depth (Google ADK)** | Uses `SequentialAgent`, `ParallelAgent`, `LlmAgent` with Pydantic `output_schema`, custom deterministic `BaseAgent`s, a coordinator with tools and sub-agents, and model fallback chains. | [`agent.py`](mergewarden/agent.py) · [`coach/agent.py`](mergewarden/coach/agent.py) |
 
 ---
@@ -184,6 +184,7 @@ Every verdict comes from the deterministic `arbiter`. Gemini adds judgement and 
 | `GATEKEEPER_COACH_MODEL` / `GATEKEEPER_COACH_FALLBACK_MODEL` | No | `gemini-3.8-flash` / `gemini-3.5-flash-lite` | Coach model, and the fallback used on 429/5xx or timeout. |
 | `COACH_SALT` | Yes, for real users | *(empty)* | Long random secret for hashing phone numbers and signing draft links. Never change it after launch. |
 | `COACH_REPOS` | No | `gdgcblr/open-source-agents` | Allowlist of repos the coach recommends issues from and awards PR points for. |
+| `COACH_SIMULATOR_LANGUAGE` | No | `English` | The web simulator always replies in this language; `auto` = the student's own language. WhatsApp is always multilingual. |
 | `COACH_DATA_DIR` / `COACH_PORT` / `LOG_LEVEL` | No | `./.coach-data` / `8090` / `INFO` | Coach SQLite + draft sandbox location, server port, log level. |
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_WHATSAPP_FROM` | Only for WhatsApp | *(empty)* | Twilio credentials and sender (`whatsapp:+14155238886` for the Sandbox). The auth token also verifies every webhook signature. |
 | `PUBLIC_BASE_URL` | Only for WhatsApp | *(empty)* | Public HTTPS URL Twilio calls (e.g. ngrok). Must match exactly for signature checks. |
@@ -308,7 +309,7 @@ python evals/run_evals.py        # writes evals/RESULTS.md
 python -m mergewarden review . --no-llm
 ```
 
-Current results: **181 tests pass** (31 of them for the Newcomer Coach, 43 for red-team hardening). The eval suite scores **25/25 verdicts correct and 25/25 exact check-set matches** (deterministic layer). The external red-team script (`loopholes.py`) went from **1/22 to 21/22** bypass attempts caught. The cases cover:
+Current results: **187 tests pass** (37 of them for the Newcomer Coach, 43 for red-team hardening). The eval suite scores **25/25 verdicts correct and 25/25 exact check-set matches** (deterministic layer). The external red-team script (`loopholes.py`) went from **1/22 to 21/22** bypass attempts caught. The cases cover:
 - leaked keys and committed `.env` files
 - governance-file edits and multiple projects in one PR
 - untouched template text, broken setup and missing manifest
@@ -347,7 +348,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
   - Every Twilio webhook is HMAC-verified. Media is fetched only from Twilio hosts, with size caps.
   - Phone numbers are stored only as `sha256(phone + COACH_SALT)`, and phone numbers and emails are redacted before storage or model calls. Voice bytes are dropped after transcription. `delete my data` wipes a student completely.
   - Messages that contain secrets are refused and never stored or sent to the model.
-  - GitHub access is read-only. The coach reads only a student's *public* profile, and only after they agree. Reviews of PRs outside the event repo are presented as suggestions and never posted.
+  - GitHub access is read-only. The coach reads only a student's *public* profile, and only after they agree. A name and an optional LinkedIn link can be saved with the profile. The LinkedIn link is never opened, the public leaderboard shows only the GitHub handle or a pseudonym, and `delete my data` erases all of it. Reviews of PRs outside the event repo are presented as suggestions and never posted.
   - The coach never runs code, pushes or opens PRs. Drafts are written only inside a per-student sandbox, with traversal refused.
   - Points come only from deterministic tools, after GitHub verification, through an append-only ledger with a daily cap.
   - The server binds to `127.0.0.1` by default.

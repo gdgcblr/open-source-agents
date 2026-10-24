@@ -21,6 +21,7 @@ from .guardrails import hash_user
 
 log = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
+NO_CACHE = {"Cache-Control": "no-cache"}  # always serve the latest simulator after an update
 # Signs draft download links. Per process unless COACH_SALT is set, so old links expire on restart.
 _LINK_KEY = (config.SALT or secrets.token_hex(32)).encode()
 
@@ -60,11 +61,11 @@ def make_app(coach=None) -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def simulator():
-        return FileResponse(STATIC / "simulator.html")
+        return FileResponse(STATIC / "simulator.html", headers=NO_CACHE)
 
     @app.get("/leaderboard", response_class=HTMLResponse)
     async def leaderboard_page():
-        return FileResponse(STATIC / "leaderboard.html")
+        return FileResponse(STATIC / "leaderboard.html", headers=NO_CACHE)
 
     @app.get("/api/leaderboard")
     async def leaderboard():
@@ -81,10 +82,17 @@ def make_app(coach=None) -> FastAPI:
         if audio is not None:
             data = await audio.read(config.MAX_AUDIO_BYTES + 1)
             mime = (audio.content_type or "audio/webm").split(";")[0]
-        reply = await get_coach().handle_message(f"sim:{user_id}", text=text or None, audio=data, mime=mime)
+        reply = await get_coach().handle_message(f"sim:{user_id}", text=text or None, audio=data, mime=mime,
+                                                 force_language=config.SIMULATOR_FORCE_LANGUAGE)
         out = reply.to_dict()
         out["attachments"] = links(reply.attachments)
         return JSONResponse(out)
+
+    @app.post("/api/welcome")
+    async def welcome(user_id: str = Form(..., max_length=80)):
+        """Simulator: the onboarding questions for a brand-new student (null for returning ones)."""
+        reply = await get_coach().welcome(f"sim:{user_id}", force_language=config.SIMULATOR_FORCE_LANGUAGE)
+        return {"message": {**reply.to_dict(), "attachments": []} if reply else None}
 
     @app.get("/api/inbox")
     async def inbox(user_id: str):

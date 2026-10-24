@@ -77,10 +77,27 @@ def _record(tc: ToolContext, award) -> None:
 
 # --- onboarding -------------------------------------------------------------
 
+GITHUB_LINK = re.compile(r"(?:https?://)?(?:www\.)?github\.com/([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))(?:[/?#].*)?$", re.I)
+LINKEDIN_LINK = re.compile(r"^(?:https?://)?(?:[a-z]{2,3}\.)?linkedin\.com/in/([A-Za-z0-9_%-]{3,100})/?(?:[?#].*)?$", re.I)
 
-def save_profile(language: str, skills: str, time_per_week: str, github_handle: str = "",
+
+def _gh_link(value: str) -> str:
+    """'@asha-dev', 'asha-dev' or 'https://github.com/asha-dev' -> 'asha-dev' ('' if not a handle)."""
+    v = (value or "").strip().lstrip("@")
+    m = GITHUB_LINK.match(v)
+    v = m.group(1) if m else v
+    return v if re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", v) else ""
+
+
+def _li_link(value: str) -> str:
+    """Normalised https://www.linkedin.com/in/<id> or '' (the coach stores it, never opens it)."""
+    m = LINKEDIN_LINK.match((value or "").strip())
+    return f"https://www.linkedin.com/in/{m.group(1)}" if m else ""
+
+
+async def save_profile(language: str, skills: str, time_per_week: str, github_handle: str = "",
                  background: str = "", experience_level: str = "", interests: str = "", goals: str = "",
-                 tool_context: ToolContext = None) -> dict:
+                 linkedin_url: str = "", name: str = "", tool_context: ToolContext = None) -> dict:
     """Save what you learned about the student once you know enough to recommend work.
 
     Call it as soon as you know their language and skills; you can call it again later to add more.
@@ -94,23 +111,31 @@ def save_profile(language: str, skills: str, time_per_week: str, github_handle: 
       experience_level: "beginner", "intermediate" or "advanced" (combine what they said with analyze_github_profile).
       interests: comma-separated areas they care about, e.g. "AI, web, mobile, devtools". Optional.
       goals: e.g. "first PR", "portfolio", "GSoC", "internship". Optional.
+      linkedin_url: their LinkedIn profile link if they shared it. Stored only; never opened. Optional.
+      name: the first name they want to be called. Optional.
     """
-    gh = github_handle.strip().lstrip("@")
-    if gh and not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", gh):
-        gh = ""
+    gh = _gh_link(github_handle)
     if gh and store().handle_owner(gh) not in (None, _uh(tool_context)):
         gh = ""  # already claimed by another student
     profile = store().update_profile(_uh(tool_context), language=language, skills=skills,
                                      time_per_week=time_per_week, github=gh, background=background[:200],
                                      experience_level=experience_level.lower()[:20], interests=interests[:200],
-                                     goals=goals[:200])
+                                     goals=goals[:200], linkedin=_li_link(linkedin_url), name=name.strip()[:40])
+    github = None
+    if gh and not profile.get("github_summary"):  # a shared link means: understand me from my GitHub
+        github = await analyze_github_profile(gh, tool_context=tool_context)
+        profile = (store().get_user(_uh(tool_context)) or {}).get("profile", profile)
     tool_context.state["language"] = language
     tool_context.state["profile"] = profile
     tool_context.state["step"] = "scouting"
     badges = store().note_language(_uh(tool_context), language)
     tool_context.state["turn_badges"] = tool_context.state.get("turn_badges", []) + [BADGES[b] for b in badges]
-    return {"saved": True, "profile": profile,
-            "next": "Recommend 3 issues: call find_matching_work (and list_challenges for event points)."}
+    out = {"saved": True, "profile": profile,
+           "next": "Mention one specific thing from their GitHub (if any), then recommend 3 issues: call "
+                   "find_matching_work with their GitHub languages/topics (and list_challenges for event points)."}
+    if github:
+        out["github_profile"] = github
+    return out
 
 
 def set_language(language: str, tool_context: ToolContext = None) -> dict:
@@ -131,8 +156,8 @@ def register_github(github_handle: str, tool_context: ToolContext = None) -> dic
     Args:
       github_handle: GitHub username without @.
     """
-    gh = github_handle.strip().lstrip("@")
-    if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", gh):
+    gh = _gh_link(github_handle)
+    if not gh:
         return {"error": "That doesn't look like a GitHub username."}
     if store().handle_owner(gh) not in (None, _uh(tool_context)):
         return {"error": f"@{gh} is already registered by another student. Each GitHub account can join once."}
@@ -217,11 +242,11 @@ async def analyze_github_profile(github_handle: str, tool_context: ToolContext =
     recent projects, outside contributions and an estimated level. Only a summary is stored.
 
     Args:
-      github_handle: their GitHub username, without @.
+      github_handle: their GitHub username or profile link (github.com/name).
     """
-    gh = github_handle.strip().lstrip("@")
-    if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})", gh):
-        return {"error": "That doesn't look like a GitHub username."}
+    gh = _gh_link(github_handle)
+    if not gh:
+        return {"error": "That doesn't look like a GitHub username or profile link."}
     owner = store().handle_owner(gh)
     if owner not in (None, _uh(tool_context)):
         return {"error": f"@{gh} is already registered by another student."}

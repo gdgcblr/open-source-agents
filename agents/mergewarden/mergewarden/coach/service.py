@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 from typing import Awaitable, Callable, Optional
 
 from google.adk.agents import LlmAgent
+from google.adk.events import Event, EventActions
 from google.adk.models import BaseLlm, LlmRequest
 from google.adk.runners import Runner
 from google.adk.sessions import BaseSessionService, InMemorySessionService
@@ -148,6 +149,18 @@ FIXED.update({
 REVIEW_REASON = {"running": "review_running", "cooldown": "review_cooldown", "daily_limit": "review_limit"}
 CMD_REVIEW = re.compile(r"^\s*(review again|review|re-?review|check again|check my pr)\s*[.!?]?\s*$", re.I)
 
+WELCOME = (
+    "👋 Hi, I'm Namma Commit, your open-source buddy! I'll find open-source projects that fit you and guide "
+    "you, step by step, to your first pull request.\n\n"
+    "🔒 I only store a scrambled ID, never your phone number. I read only your *public* GitHub. Never send me "
+    "passwords, OTPs or keys. Send \"delete my data\" any time to erase everything.\n\n"
+    "To get started, tell me a bit about yourself (one message is fine):\n"
+    "1. Your name, and what you do (e.g. 3rd-year CSE student, frontend developer)\n"
+    "2. Your GitHub profile link (e.g. github.com/yourname)\n"
+    "3. Your LinkedIn profile link (optional)\n"
+    "4. Languages and tools you use (e.g. Python, React, Docker)\n"
+    "5. What you'd love to work on (AI, web, docs, devtools...) and how many hours a week you have"
+)
 HELP = ("I'm Namma Commit, your open-source buddy 🤝 Just chat with me by text or voice, in any language.\n"
         "Commands: *leaderboard* · *my points* · *review again* · *restart* · *delete my data*")
 CMD_DELETE = re.compile(r"^\s*(delete my data|delete me|forget me|erase my data)\s*[.!]?\s*$", re.I)
@@ -205,19 +218,50 @@ class Coach:
     # --- public -----------------------------------------------------------
 
     async def handle_message(self, user_id: str, text: str | None = None, audio: bytes | None = None,
-                             mime: str | None = None, notify: Notify | None = None) -> CoachReply:
-        """One inbound message. `notify` delivers replies that arrive later (gatekeeper reviews)."""
+                             mime: str | None = None, notify: Notify | None = None,
+                             force_language: str | None = None) -> CoachReply:
+        """One inbound message. `notify` delivers replies that arrive later (gatekeeper reviews).
+
+        `force_language` (e.g. "English") makes the coach always reply in that language.
+        """
         uh = hash_user(user_id)
         if notify:
             self._notify[uh] = notify
         async with self._locks.setdefault(uh, asyncio.Lock()):  # one turn at a time per student
-            return await self._handle(uh, (text or "").strip(), audio, mime)
+            return await self._handle(uh, (text or "").strip(), audio, mime, force_language)
+
+    async def welcome(self, user_id: str, force_language: str | None = None) -> CoachReply | None:
+        """Open the chat for a brand-new student with the onboarding questions (no model call).
+
+        Returns None for students who already started talking. Calling it again before they answer
+        re-shows the same welcome without adding it to the conversation twice.
+        """
+        uh = hash_user(user_id)
+        async with self._locks.setdefault(uh, asyncio.Lock()):
+            user = self.store.get_user(uh)
+            if user and (user["profile"].get("skills") or any(t["role"] == "student" for t in self.store.recent_turns(uh))):
+                return None
+            self.store.ensure_user(uh)
+            session = await self._session(uh)
+            lang = force_language or "English"
+            if session.state.get("welcome_sent"):
+                return CoachReply(WELCOME, lang)
+            # Recorded as the onboarding agent's turn, so the student's answer goes straight to it.
+            await self.sessions.append_event(session, Event(
+                author="onboarding_agent", invocation_id=f"welcome-{uh[:12]}",
+                content=types.Content(role="model", parts=[types.Part(text=WELCOME)]),
+                actions=EventActions(state_delta={"welcome_sent": True, "step": "onboarding",
+                                                  "force_language": force_language})))
+            self.store.add_turn(uh, "coach", WELCOME)
+            return CoachReply(WELCOME, lang)
 
     # --- pipeline ---------------------------------------------------------
 
-    async def _handle(self, uh: str, text: str, audio: bytes | None, mime: str | None) -> CoachReply:
+    async def _handle(self, uh: str, text: str, audio: bytes | None, mime: str | None,
+                      force_language: str | None = None) -> CoachReply:
         user = self.store.get_user(uh)
         lang = (user or {}).get("profile", {}).get("language") or detect_language(text) if text else "English"
+        lang = force_language or lang
         if not self.limiter.allow(uh):
             return CoachReply(_fixed("rate", lang), lang)
 
@@ -236,7 +280,7 @@ class Coach:
             return CoachReply("👋 Send me a text or a voice note to get started!", lang)
         text = text[: config.MAX_TEXT_CHARS]
         detected = detect_language(text)
-        if detected != "English" or not lang:
+        if (detected != "English" or not lang) and not force_language:
             lang = detected
 
         # Fixed commands: deterministic, no model involved.
@@ -293,6 +337,7 @@ class Coach:
         session = await self._session(uh)
         before = list(session.state.get("attachments", []))
         delta = {"detected_language": detected, "guardrail_note": " ".join(notes) or None, "event_note": None,
+                 "force_language": force_language,
                  "turn_points": 0, "turn_badges": [], "turns": session.state.get("turns", 0) + 1}
         msg = types.Content(role="user", parts=[types.Part(text=untrusted(text, "student"))])
         try:
@@ -302,7 +347,7 @@ class Coach:
             return CoachReply(_fixed("error", lang), lang, points_awarded=pr_points, badges=pr_badges, transcript=transcript)
 
         state = (await self.sessions.get_session(app_name=APP, user_id=uh, session_id=session.id)).state
-        lang = state.get("language") if detected == "English" and state.get("language") else detected
+        lang = force_language or (state.get("language") if detected == "English" and state.get("language") else detected)
         attachments = [a for a in state.get("attachments", []) if a not in before]
         self.store.add_turn(uh, "student", text)
         self.store.add_turn(uh, "coach", reply)
@@ -380,7 +425,7 @@ class Coach:
 
     async def _deliver_review(self, uh: str, result: dict) -> CoachReply:
         session = await self._session(uh)
-        lang = session.state.get("language") or "English"
+        lang = session.state.get("force_language") or session.state.get("language") or "English"
         delta = {"event_note": review_note(result), "guardrail_note": None, "turn_points": 0, "turn_badges": [],
                  "turns": session.state.get("turns", 0) + 1, "pr_url": result.get("url")}
         msg = types.Content(role="user", parts=[types.Part(text="[event: the gatekeeper review of my PR finished]")])
@@ -458,10 +503,12 @@ def default_coach() -> Coach:
 
 
 async def handle_message(user_id: str, text: str | None = None, audio: bytes | None = None,
-                         mime: str | None = None, notify: Notify | None = None) -> CoachReply:
+                         mime: str | None = None, notify: Notify | None = None,
+                         force_language: str | None = None) -> CoachReply:
     """Public API: one inbound message (text and/or voice) -> the coach's reply.
 
     `notify(reply)` is awaited later for replies the student didn't ask for in this turn
     (the gatekeeper review of their PR). Without it they wait in `default_coach().inbox`.
     """
-    return await default_coach().handle_message(user_id, text=text, audio=audio, mime=mime, notify=notify)
+    return await default_coach().handle_message(user_id, text=text, audio=audio, mime=mime, notify=notify,
+                                                force_language=force_language)

@@ -96,8 +96,13 @@ def _context(ctx: ReadonlyContext) -> str:
         "profile": s.get("profile") or {},
         "current_issue": s.get("current_issue"),
         "step": s.get("step", "new"),
+        "welcome_sent": bool(s.get("welcome_sent")),
     }
     out = "\nCONTEXT\n" + json.dumps(ctx_view, ensure_ascii=False)
+    if s.get("force_language"):
+        out += (f"\nLANGUAGE LOCK: reply ONLY in {s['force_language']}, even if the student writes in another "
+                "language (you may say once that this chat runs in " + s["force_language"] + " for now). "
+                "Do not call set_language.")
     if s.get("resume_notes"):
         out += "\nEARLIER CONVERSATION (redacted, before a restart):\n" + s["resume_notes"]
     if s.get("event_note"):
@@ -128,7 +133,13 @@ Do not announce the transfer; just transfer.
 
 ONBOARDING = """\
 You get to know new students so you can match them to the right open-source work.
-First contact: ONE short message in their language with
+If CONTEXT.welcome_sent is true, the welcome, privacy note and onboarding questions (name and role, GitHub
+link, LinkedIn link, tools, interests and time) are already in the conversation: do NOT greet or repeat them.
+Read the student's answers, react to something specific they said, and ask only for what is missing
+(one question at a time). A shared GitHub link counts as permission: call analyze_github_profile with it.
+You cannot open LinkedIn (it isn't allowed): save the link with save_profile(linkedin_url) and, if they
+haven't described their experience, ask for one line about it.
+Otherwise (first contact, nothing sent yet): ONE short message in their language with
 1) a one-line hello: you are Namma Commit, the open-source buddy ("your first PR, in your language"),
 2) a short privacy note: only a scrambled ID is stored (not their phone number); the last few messages
    are kept to continue the chat; voice notes become text and the audio is thrown away; messages are
@@ -136,6 +147,7 @@ First contact: ONE short message in their language with
    any time. Replying means they agree.
 3) ONE open question: what are they studying or working on, and what have they built or used so far?
 Then have a short, natural conversation (2-4 turns, one question at a time, react to what they say):
+- their GitHub profile link and, optionally, their LinkedIn profile link;
 - the technologies they use or want to learn (languages, frameworks), and how experienced they feel;
 - what they care about (AI, web, mobile, devtools, docs, design...) and their goal (first PR,
   portfolio, GSoC, internship), and roughly how much time they have per week;

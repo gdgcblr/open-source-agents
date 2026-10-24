@@ -27,6 +27,9 @@ REPOS = [r.strip() for r in os.environ.get("COACH_REPOS", "gdgcblr/open-source-a
 DATA_DIR = Path(os.environ.get("COACH_DATA_DIR", PROJECT_ROOT / ".coach-data")).resolve()
 SALT = os.environ.get("COACH_SALT", "")  # set a long random value in production
 PORT = _int("COACH_PORT", 8090)
+# The web simulator replies in this language only ("auto" = the student's own language, like WhatsApp).
+SIMULATOR_LANGUAGE = os.environ.get("COACH_SIMULATOR_LANGUAGE", "English").strip()
+SIMULATOR_FORCE_LANGUAGE = None if SIMULATOR_LANGUAGE.lower() in {"", "auto"} else SIMULATOR_LANGUAGE
 
 # Abuse limits
 RATE_LIMIT_MSGS = _int("COACH_RATE_LIMIT_MSGS", 20)

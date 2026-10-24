@@ -122,6 +122,14 @@ def test_profile_analysis(gh):
     assert sum("search/issues" in c for c in gh.calls) == 1  # one search per profile, not two
 
 
+def test_meta_topics_are_ignored():
+    for noise in ("hacktoberfest", "hacktoberfest-accepted", "hactoberfest2022", "github-config", "awesome-list",
+                  "first-contributions", "python", "javascript"):
+        assert not github_match.meaningful_topic(noise), noise
+    for real in ("fastapi", "react", "llm", "mcp", "python-library", "nextjs"):
+        assert github_match.meaningful_topic(real), real
+
+
 def test_find_work_ranks_and_filters(gh):
     res = github_match.find_work(["Python", "TypeScript"], ["fastapi"], "beginner", student="asha-dev")
     ids = [i["id"] for i in res["issues"]]

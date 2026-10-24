@@ -39,12 +39,19 @@ SEARCH_SPACING_S = 2.0
 BACKOFF_S = 120
 _state = {"backoff_until": 0.0, "last_search": 0.0}
 _search_lock = threading.Lock()
-META_TOPICS = re.compile(r"hac?ktoberfest|first-?contributions?|good-?first-?issues?|beginners?|awesome|config|"
-                         r"github|readme|portfolio|website|project|assignment|practice|tutorial|learning|college|"
-                         r"python|javascript|typescript|java|html|css|c|cpp|go|rust|ruby|php|kotlin|swift|dart")
 STOP = set("""a an the and or for to of in on with from by is are be this that it as at add adding fix fixes fixed
 support update use using when should can not into new issue bug feature docs doc make allow error
 example need want would like md py js ts""".split())
+# Topics that say nothing about what a student can work on.
+META_TOPICS = re.compile(r"(hac?k?toberfest|first-?contributions?|good-?first-?issues?|github|config|awesome|"
+                         r"beginners?|portfolio|assignment|practice|tutorial|learning|college)([-_]?[a-z0-9]+)*")
+LANGUAGE_TOPICS = re.compile(r"python|javascript|typescript|java|html|css|c|cpp|go|rust|ruby|php|kotlin|swift|dart|"
+                             r"readme|website|project")
+
+
+def meaningful_topic(topic: str) -> bool:
+    t = topic.lower()
+    return not (META_TOPICS.fullmatch(t) or LANGUAGE_TOPICS.fullmatch(t))
 
 
 class GitHubBusy(RuntimeError):
@@ -105,7 +112,7 @@ def analyze_profile(handle: str) -> dict:
     repos = _get(f"users/{handle}/repos?per_page=100&sort=pushed") or []
     own = [r for r in repos if not r.get("fork")]
     langs = Counter(r["language"] for r in own[:40] if r.get("language"))
-    topics = Counter(t for r in own[:40] for t in r.get("topics", []) if not META_TOPICS.fullmatch(t))
+    topics = Counter(t for r in own[:40] for t in r.get("topics", []) if meaningful_topic(t))
     prs = _search("issues", f"type:pr author:{handle} -user:{handle}", per_page=100)  # one search, not two
     opened = prs.get("total_count", 0)
     merged = sum(1 for it in prs.get("items", []) if (it.get("pull_request") or {}).get("merged_at"))

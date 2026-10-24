@@ -117,14 +117,12 @@
     <button id="newuser" type="button" title="Start as a new student">New student</button>
   </header>
   <div id="chat" aria-live="polite">
-    <div class="notice">🔒 This is a simulator of the WhatsApp chat. Type, or tap 🎤 to record a voice note (tap again to send). Any language.</div>
+    <div class="notice">🔒 This is a simulator of the WhatsApp chat. Type, or tap 🎤 to record a voice note (tap again to send).</div>
   </div>
   <div class="chips" id="chips">
-    <button type="button">നമസ്കാരം</button>
-    <button type="button">hi</button>
-    <button type="button">नमस्ते</button>
-    <button type="button">ನಮಸ್ಕಾರ</button>
-    <button type="button">வணக்கம்</button>
+    <button type="button">What is open source?</button>
+    <button type="button">Find me a project</button>
+    <button type="button">check my PRs</button>
     <button type="button">leaderboard</button>
     <button type="button">my points</button>
     <button type="button">review again</button>
@@ -147,10 +145,21 @@
   function newId() { return 'sim-' + Math.random().toString(36).slice(2, 10); }
   let uid = store('coach-uid') || newId(); store('coach-uid', uid);
 
+  // Brand-new students are greeted with the onboarding questions straight away (no "hi" needed).
+  async function welcome() {
+    try {
+      const fd = new FormData(); fd.append('user_id', uid);
+      const j = await (await fetch('/api/welcome', {method: 'POST', body: fd})).json();
+      if (j.message) showReply(j.message);
+    } catch (e) { /* the student can still type to start */ }
+  }
+
   document.getElementById('newuser').onclick = () => {
     uid = newId(); store('coach-uid', uid);
     chat.querySelectorAll('.row').forEach(r => r.remove());
+    document.getElementById('chips').hidden = false;
     showToast('👋 New student session');
+    welcome();
   };
 
   function esc(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -219,6 +228,7 @@
     } catch (e) { /* offline: try again next tick */ }
   }
   setInterval(poll, 4000);
+  welcome();
 
   form.onsubmit = e => { e.preventDefault(); const v = t.value.trim(); t.value = ''; t.style.height = ''; send({text: v}); };
   t.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });

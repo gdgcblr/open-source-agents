@@ -86,7 +86,10 @@ From `agents/mergewarden/` with the project venv and a Gemini key in `.env` (`GO
 .venv/bin/python -m mergewarden.coach serve       # http://localhost:8090
 ```
 
-- `http://localhost:8090/` is a WhatsApp look-alike simulator: chat bubbles, language tag on every reply,
+- `http://localhost:8090/` is a WhatsApp look-alike simulator. A new student is greeted straight away with the
+  onboarding questions (name and role, GitHub profile link, LinkedIn link, tools, interests and time), and
+  the simulator replies in English only for now (`COACH_SIMULATOR_LANGUAGE=auto` brings back the student's
+  own language, which WhatsApp always uses). It has chat bubbles, a language tag on every reply,
   a 🎤 button that records a voice note in the browser, points/badge toasts, and draft files as attachments.
   "New student" starts a fresh identity. No accounts needed.
 - When a review finishes, the simulator picks it up from `/api/inbox` (polled every 4 s) and shows a
@@ -142,6 +145,7 @@ webhook answers with an empty TwiML and the reply is sent through the Twilio Mes
 | `COACH_REPOS` | `gdgcblr/open-source-agents` | comma-separated allowlist of repos for issues and PR points |
 | `COACH_DATA_DIR` | `./.coach-data` (project folder) | sqlite files and draft sandbox; gets its own `.gitignore` |
 | `COACH_SALT` | empty | salt for hashing phone numbers; also signs draft links. **Set it in production.** |
+| `COACH_SIMULATOR_LANGUAGE` | `English` | the web simulator always replies in this language; `auto` = the student's own language |
 | `COACH_PORT` | `8090` | `serve` port |
 | `COACH_RATE_LIMIT_MSGS` / `COACH_RATE_LIMIT_WINDOW_S` | `20` / `600` | messages per user per window |
 | `COACH_MAX_AUDIO_BYTES` / `COACH_MAX_AUDIO_SECONDS` | `5242880` / `120` | voice note limits |
@@ -211,6 +215,11 @@ contents are wrapped in `<untrusted>` tags. Recommendations skip archived, forke
 repos, and assigned or crowded issues. GitHub's secondary rate limit punishes bursts, so the matcher uses
 about 4 searches per student journey, spaces them 2 s apart, caches for 30 minutes and backs off for
 GitHub's Retry-After (falling back to event challenges) instead of failing.
+
+**LinkedIn.** The coach asks for a LinkedIn link (optional) and stores the normalised `linkedin.com/in/…` URL
+the student chose to share, but never opens it: reading LinkedIn pages isn't allowed by LinkedIn's terms. For
+experience it asks the student for a one-line summary instead. A shared GitHub link is read once, automatically,
+for the public profile summary. `delete my data` erases both.
 
 **Copilot, not autopilot.** FIX_PLAN.md includes a GitHub Copilot (Agent mode) prompt, but the student runs
 it in their own editor, reviews every change, and is asked to explain the change back before opening the PR.
