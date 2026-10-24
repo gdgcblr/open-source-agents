@@ -349,3 +349,15 @@ def test_bare_pem_header_in_history_is_not_a_leak(upstream_repo, tmp_path):
     testkit.git(upstream_repo, "commit", "-qam", "drop fixture")
     sub, pol = source.load_local(str(upstream_repo), tmp_path / "w")
     assert "secrets.history" not in ids(secrets.check(sub, pol))
+
+
+def test_code_expressions_are_not_secrets():
+    # Attribute access and snake_case names are code, not credentials (false positive seen in our own history).
+    from mergewarden.checks.secrets import scan_line
+    assert scan_line("api_key = existing.openai_api_key") is None
+    assert scan_line("token = settings.github_access_token") is None
+    assert scan_line("API_KEY = get_api_key_from_env") is None
+    # ...but a real-looking value right next to it is still caught.
+    head, tail = "q8Zr2L", "your4mXn7Vb1Kt"  # built at runtime so this file never holds a secret-shaped literal
+    assert scan_line(f'SERVICE_TOKEN = "{head}{tail}"') is not None
+    assert scan_line(f"api_key = {head}{tail}Wb4") is not None

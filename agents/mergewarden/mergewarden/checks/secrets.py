@@ -43,6 +43,8 @@ PLACEHOLDER = re.compile(
 SECRET_FILES = re.compile(r"(^|/)(\.env(\.(?!example$)[\w.-]+)?|credentials\.json|service-account[\w.-]*\.json|id_rsa\w*|[\w.-]+\.(pem|key|p12|pfx))$")
 CREDENTIAL_JSON = re.compile(r'"type"\s*:\s*"service_account"|"private_key"\s*:\s*"')
 NOT_A_SECRET = re.compile(r"(?i)^(?:[a-z][\w+.-]*://|/|\./|\.\./|~/|os\.|process\.env|env\.)")  # URLs, paths, lookups
+# Code, not a credential: `existing.openai_api_key`, `settings.api_token`, `get_api_key_from_env`.
+CODE_EXPR = re.compile(r"^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+(?:\(\))?$|^[a-z]+(?:_[a-z]+)+$")
 CONCAT = re.compile(r"""(["'])\s*\+?\s*\1""")  # "abc" + "def"  and  "abc" "def"
 B64 = re.compile(r"[A-Za-z0-9+/]{24,}={0,2}")
 SCAN_LIMIT = 2_000_000  # bytes per file
@@ -92,7 +94,7 @@ def scan_line(line: str) -> Optional[tuple[str, str]]:
     for text, how in variants[:2]:  # generic rule on raw + joined text only (decoded noise is too high)
         m = GENERIC.search(text)
         if (m and not PLACEHOLDER.search(m.group(2)) and not NOT_A_SECRET.match(m.group(2))
-                and _entropy(m.group(2)) > 3.5):
+                and not CODE_EXPR.match(m.group(2)) and _entropy(m.group(2)) > 3.5):
             return f"possible secret in `{m.group(1)}`{how}", m.group(2)
     return None
 
