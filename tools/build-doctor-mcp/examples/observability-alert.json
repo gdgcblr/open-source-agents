@@ -1,0 +1,12 @@
+{
+  "event_type": "latency",
+  "service": "payments-api",
+  "environment": "production",
+  "metric": "p95_latency_ms",
+  "value": 1200,
+  "threshold": 500,
+  "unit": "ms",
+  "condition": "above",
+  "timestamp": "2026-10-24T12:00:00Z",
+  "correlation_id": "incident-or-trace-id"
+}

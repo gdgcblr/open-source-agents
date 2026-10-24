@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`build-doctor`](build-doctor/) | Evidence-based diagnosis for Java Maven build and test failures | Google ADK for Java, Maven | Community contribution |

@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`build-doctor-mcp`](build-doctor-mcp/) | Read-only, language-agnostic build and runtime diagnosis tools | MCP over stdio, Python | Community contribution |

@@ -1,0 +1,20 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# Java and Maven
+target/
+*.class
+*.log
+!examples/*.log
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+*.swp

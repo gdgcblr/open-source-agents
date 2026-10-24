@@ -1,0 +1,111 @@
+[
+  {
+    "id": "python-missing-module",
+    "log": "ModuleNotFoundError: No module named 'payments.client'",
+    "expected_failure_type": "dependency-resolution",
+    "required_signals": ["dependency-resolution-error"]
+  },
+  {
+    "id": "typescript-compile-error",
+    "log": "src/index.ts:12:7 error: Type error: string is not assignable to number",
+    "expected_failure_type": "compilation",
+    "required_signals": ["compiler-error", "source-location"]
+  },
+  {
+    "id": "maven-test-failure",
+    "log": "[ERROR] Tests run: 8, Failures: 1, Errors: 0, Skipped: 0",
+    "expected_failure_type": "test-failure",
+    "required_signals": ["test-summary"]
+  },
+  {
+    "id": "api-authentication-error",
+    "log": "HTTP 401 response from the payments API",
+    "expected_failure_type": "runtime-or-api",
+    "required_signals": ["http-status-or-transport"]
+  },
+  {
+    "id": "ambiguous-output",
+    "log": "module not found; Tests run: 2, Failures: 1",
+    "expected_failure_type": "dependency-resolution",
+    "expected_confidence": "low",
+    "required_signals": ["dependency-resolution-error", "test-summary"]
+  },
+  {
+    "id": "gradle-dependency-resolution",
+    "log": "Could not resolve all files for configuration ':runtimeClasspath'. Could not find package payments-sdk.",
+    "expected_failure_type": "dependency-resolution",
+    "required_signals": ["dependency-resolution-error"]
+  },
+  {
+    "id": "rust-type-error",
+    "log": "error[E0308]: mismatched types at src/lib.rs:44:9",
+    "expected_failure_type": "compilation",
+    "required_signals": ["compiler-error", "source-location"]
+  },
+  {
+    "id": "api-rate-limit",
+    "log": "HTTP 429 response from the search API; retry-after: 30",
+    "expected_failure_type": "runtime-or-api",
+    "required_signals": ["http-status-or-transport"]
+  },
+  {
+    "id": "runtime-timeout",
+    "log": "request timeout after 30s while calling inventory service",
+    "expected_failure_type": "runtime-or-api",
+    "required_signals": ["http-status-or-transport"]
+  },
+  {
+    "id": "github-actions-compile-error",
+    "log": "##[error]src/main.ts:18:5 - error TS2322: Type 'string' is not assignable to type 'number'",
+    "expected_failure_type": "compilation",
+    "required_signals": ["compiler-error", "source-location"]
+  },
+  {
+    "id": "pytest-assertion-failure",
+    "log": "FAILED tests/test_checkout.py::test_declines_expired_card - AssertionError: assert 200 == 401",
+    "expected_failure_type": "test-failure",
+    "required_signals": ["assertion-mismatch"]
+  },
+  {
+    "id": "missing-configuration",
+    "log": "ConfigurationError: environment variable PAYMENTS_URL not set",
+    "expected_failure_type": "configuration",
+    "required_signals": ["configuration-missing-or-invalid"]
+  },
+  {
+    "id": "permission-denied",
+    "log": "EACCES: permission denied, open '/workspace/output/report.json'",
+    "expected_failure_type": "permissions-or-access",
+    "required_signals": ["permission-denied"]
+  },
+  {
+    "id": "tls-network-failure",
+    "log": "SSL certificate verify failed while connecting to api.example.test",
+    "expected_failure_type": "network-or-tls",
+    "required_signals": ["network-resolution-or-tls"]
+  },
+  {
+    "id": "resource-exhaustion",
+    "log": "Container terminated: OOMKilled; memory limit exceeded",
+    "expected_failure_type": "resource-exhaustion",
+    "required_signals": ["resource-limit"]
+  },
+  {
+    "id": "schema-validation-failure",
+    "log": "ValidationError: schema validation failed for request payload",
+    "expected_failure_type": "data-or-schema",
+    "required_signals": ["data-validation-or-migration"]
+  },
+  {
+    "id": "ci-runner-failure",
+    "log": "CI job failed: runner lost while container exited with code 137",
+    "expected_failure_type": "container-or-ci",
+    "required_signals": ["container-or-runner-failure"]
+  },
+  {
+    "id": "concurrency-failure",
+    "log": "Deadlock detected while waiting for database lock",
+    "expected_failure_type": "concurrency-or-state",
+    "required_signals": ["deadlock-or-race"]
+  }
+]
