@@ -2,6 +2,7 @@ import argparse
 import json
 import sys
 import os
+import glob
 from dotenv import load_dotenv
 from google import genai
 
@@ -21,14 +22,19 @@ MODELS = {
 }
 
 PRICE_PER_MILLION = 1_000_000
+TOKEN_BREAKDOWN_THRESHOLD = 1000
 
 
-def count_tokens(prompt: str, model: str) -> int:
+def get_client() -> genai.Client:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print("Error: GEMINI_API_KEY not set. Copy .env.example to .env and add your key.")
         sys.exit(1)
-    client = genai.Client(api_key=api_key)
+    return genai.Client(api_key=api_key)
+
+
+def count_tokens(prompt: str, model: str) -> int:
+    client = get_client()
     if MODELS[model]["supports_count_tokens"]:
         result = client.models.count_tokens(model=model, contents=prompt)
         return result.total_tokens
@@ -51,7 +57,7 @@ def estimate_cost(input_tokens: int, output_tokens: int, model: str) -> dict:
 def build_result(prompt: str, model: str, output_tokens: int) -> dict:
     input_tokens = count_tokens(prompt, model)
     costs = estimate_cost(input_tokens, output_tokens, model)
-    return {
+    result = {
         "model": model,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
@@ -59,11 +65,29 @@ def build_result(prompt: str, model: str, output_tokens: int) -> dict:
         "output_cost": round(costs["output_cost"], 6),
         "total_cost": round(costs["total_cost"], 6),
     }
+    # Feature B: add breakdown if prompt is long
+    if input_tokens >= TOKEN_BREAKDOWN_THRESHOLD:
+        result["breakdown"] = {
+            "characters": len(prompt),
+            "words": len(prompt.split()),
+            "tokens": input_tokens,
+        }
+    return result
+
+
+def print_breakdown(result: dict):
+    if "breakdown" in result:
+        b = result["breakdown"]
+        print(f"  Prompt breakdown (large prompt detected):")
+        print(f"    Characters : {b['characters']:,}")
+        print(f"    Words      : {b['words']:,}")
+        print(f"    Tokens     : {b['tokens']:,}")
 
 
 def print_report(result: dict, budget: float | None = None):
     print(f"\nModel    : {result['model']}")
     print("-" * 50)
+    print_breakdown(result)
     print(f"Input tokens   : {result['input_tokens']:,}")
     print(f"Output tokens  : {result['output_tokens']:,} (estimated)")
     print(f"Input cost     : ${result['input_cost']:.6f}")
@@ -77,12 +101,71 @@ def print_report(result: dict, budget: float | None = None):
     print("-" * 50)
 
 
+def run_batch(folder: str, model: str, output_tokens: int, budget: float | None, as_json: bool):
+    """Feature A: process all .txt files in a folder and show total cost."""
+    pattern = os.path.join(folder, "*.txt")
+    files = sorted(glob.glob(pattern))
+
+    if not files:
+        print(f"Error: No .txt files found in '{folder}'.")
+        sys.exit(1)
+
+    print(f"\nBatch mode — processing {len(files)} file(s) from '{folder}'\n")
+
+    batch_results = []
+    total_input_tokens = 0
+    total_cost = 0.0
+
+    for filepath in files:
+        with open(filepath, "r") as f:
+            prompt = f.read()
+        if not prompt.strip():
+            print(f"  Skipping empty file: {os.path.basename(filepath)}")
+            continue
+        result = build_result(prompt, model, output_tokens)
+        result["file"] = os.path.basename(filepath)
+        batch_results.append(result)
+        total_input_tokens += result["input_tokens"]
+        total_cost += result["total_cost"]
+
+    if as_json:
+        summary = {
+            "model": model,
+            "files_processed": len(batch_results),
+            "total_input_tokens": total_input_tokens,
+            "total_estimated_cost": round(total_cost, 6),
+            "results": batch_results,
+        }
+        print(json.dumps(summary, indent=2))
+    else:
+        for result in batch_results:
+            print(f"File: {result['file']}")
+            print_report(result, budget)
+
+        print(f"\n{'=' * 50}")
+        print(f"BATCH SUMMARY")
+        print(f"{'=' * 50}")
+        print(f"Files processed  : {len(batch_results)}")
+        print(f"Total input tokens: {total_input_tokens:,}")
+        print(f"Total est. cost  : ${total_cost:.6f}")
+        if budget is not None:
+            if total_cost > budget:
+                print(f"WARNING: Total batch cost ${total_cost:.6f} exceeds budget of ${budget:.6f}")
+            else:
+                print(f"OK: Total batch cost is within budget of ${budget:.6f}")
+        print(f"{'=' * 50}\n")
+
+    if budget and total_cost > budget:
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Estimate token count and API cost for a prompt using Gemini models."
     )
     parser.add_argument("prompt", nargs="?", help="The prompt text to estimate")
     parser.add_argument("--file", "-f", help="Path to a file containing the prompt text")
+    parser.add_argument("--batch", help="Path to a folder of .txt files to estimate in bulk")
     parser.add_argument(
         "--model", "-m",
         default="gemini-3.8-flash",
@@ -93,7 +176,7 @@ def main():
         "--output-tokens", "-o",
         type=int,
         default=500,
-        help="Estimated number of output tokens (default: 500)",
+        help="Estimated number of output tokens per prompt (default: 500)",
     )
     parser.add_argument("--all-models", "-a", action="store_true", help="Show cost estimate across all supported models")
     parser.add_argument("--list-models", action="store_true", help="List all supported models and their pricing")
@@ -112,6 +195,11 @@ def main():
             print(f"{name:<30} ${price['input']:>8.3f} ${price['output']:>8.3f}  {native}")
         print()
         sys.exit(0)
+
+    # Feature A: batch mode
+    if args.batch:
+        run_batch(args.batch, args.model, args.output_tokens, args.budget, args.json)
+        return
 
     if args.file:
         try:
