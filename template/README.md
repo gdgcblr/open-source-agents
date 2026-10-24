@@ -17,6 +17,7 @@
 
 ---
 
+
 ## Technical Stack
 
 List the primary frameworks, languages, models, and external services used:

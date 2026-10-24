@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentsentinel"
+version = "2.0.0"
+description = "Autonomous AI-Agent Security, Prompt Guardrail & Self-Healing Patch Engine"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Open Source Community" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "google-genai>=2.4.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+agentsentinel = "main:main"
+pr-readiness-reviewer = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]

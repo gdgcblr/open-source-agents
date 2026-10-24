@@ -1,0 +1,5 @@
+# AgentSentinel Dependencies
+# Core scanner uses Python 3.10+ standard library (zero mandatory dependencies)
+# Optional dependencies for Gemini AI synthesis and environment configuration:
+google-genai==2.4.0
+python-dotenv==1.0.1
