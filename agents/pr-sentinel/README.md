@@ -2,7 +2,7 @@
 
 > **Autonomous Multi-Agent Pull Request Review, Security Triage, and Auto-Patch System powered by Google Gemini.**
 
-[![Tests: Passing](https://img.shields.io/badge/tests-14%2F14%20passing-brightgreen)](tests/)
+[![Tests: Passing](https://img.shields.io/badge/tests-18%2F18%20passing-brightgreen)](tests/)
 [![Runtime: Node.js 18+](https://img.shields.io/badge/node-%3E%3D18.0.0-blue)](package.json)
 [![LLM: Google Gemini 2.5](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash%2FPro-orange)](https://aistudio.google.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -35,11 +35,12 @@
 Reviewing open-source pull requests is repetitive, slow, and prone to human oversight. Critical risks regularly slip through:
 - **Credential & Secret Leaks**: Exposed API keys (Gemini, OpenAI, AWS, GitHub tokens) committed in code or git history.
 - **Uncontained Code Execution**: Unsafe `eval()`, unescaped shell commands (`exec`), or unhandled infinite loops.
+- **Silent Downstream Breakages**: Changing a public export or signature without realizing it breaks 5 untouched caller files in production.
 - **Repository Violations**: Non-conforming folder naming, missing manifests, unmaintained `.env.example`, or broken directory isolation.
 - **Missing Remediation**: Reviewers spend hours writing repetitive review comments instead of providing actionable code patches.
 
 ### Solution: PR Sentinel
-**PR Sentinel** is an autonomous multi-agent system designed for open-source maintainers, contributors, and hackathon teams. It automatically ingests pull requests, orchestrates four specialized AI agents to evaluate security, guidelines compliance, and code architecture, and synthesizes unified diff patches ready for merge.
+**PR Sentinel** is an autonomous multi-agent system designed for open-source maintainers, contributors, and hackathon teams. It automatically ingests pull requests, orchestrates five specialized AI agents to evaluate security, guidelines compliance, code architecture, and downstream blast radius, and synthesizes unified diff patches ready for merge.
 
 ---
 
@@ -49,7 +50,8 @@ Reviewing open-source pull requests is repetitive, slow, and prone to human over
   - 🛡️ **`SecuritySentinel`**: High-accuracy scanner for 25+ secret patterns, private keys, dynamic code execution (`eval`), and unescaped shell calls.
   - 📋 **`ComplianceAuditor`**: Verifies repository contribution guidelines (`CONTRIBUTING.md`), directory naming (lowercase kebab-case), manifest tracking, and directory isolation.
   - 🏗️ **`QualityCritic`**: Reviews code modularity, error resilience, asynchronous exception handling, and code smells.
-  - 🛠️ **`PatchSynthesizer`**: Synthesizes verified unified git diff patches to fix detected issues automatically.
+  - 💥 **`BlastRadiusPredictor`** *(Showstopper Feature)*: Computes reverse dependency call-graphs, simulates downstream runtime breakages in untouched files, and detects breaking contract changes.
+  - 🛠️ **`PatchSynthesizer`**: Synthesizes verified unified git diff patches and tailored `.env.example` templates to fix detected issues automatically.
 - **⚡ Dual Execution Engine**:
   - **Live Gemini 2.5 Flash / Pro**: Structured reasoning powered by Google's official `@google/genai` SDK with strict JSON schema outputs.
   - **Zero-Key Deterministic Simulation Mode (`--demo`)**: Full offline execution with authentic agent handoffs, metrics, and patches without requiring paid API keys.
