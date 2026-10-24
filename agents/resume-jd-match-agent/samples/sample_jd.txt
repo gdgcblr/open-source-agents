@@ -1,0 +1,36 @@
+Senior Product Manager - Payments Platform
+FinFlow (fictional company) | Bengaluru (Hybrid)
+
+About the role
+FinFlow helps mid-market businesses collect payments faster. We are hiring a Senior
+Product Manager to own our Payments Platform: the APIs and dashboards that thousands of
+merchants use to accept and reconcile payments. You will work closely with engineering,
+design, data and go-to-market teams.
+
+What you will do
+- Own the product strategy and roadmap for the Payments Platform.
+- Run product discovery with merchants and turn insights into clear PRDs and user stories.
+- Define KPIs and OKRs for the platform and report progress to leadership.
+- Design and analyse A/B tests to improve conversion across the checkout funnel.
+- Partner with engineering on API design for our developer-facing payment APIs.
+- Lead cross-functional collaboration with sales, support and marketing on feature launches.
+- Mentor two Associate Product Managers.
+
+Must-have qualifications
+- 5+ years of total experience, including 3+ years in product management.
+- Experience shipping B2B SaaS or payments products.
+- Strong data analysis skills: comfortable writing SQL and working in Mixpanel or Amplitude.
+- Hands-on experience with A/B testing and experimentation.
+- Experience defining KPIs and OKRs.
+- Excellent stakeholder management and communication skills.
+- Working knowledge of REST APIs and API products.
+
+Nice-to-have
+- Technical background (former engineer) or a Computer Science degree.
+- Experience with Stripe, Razorpay or similar payment gateways.
+- Familiarity with Looker or Tableau.
+- Exposure to Generative AI or LLM features in fintech products.
+- Experience with pricing and monetization strategy.
+
+What we offer
+Competitive salary, ESOPs, health insurance, and a hybrid work setup.

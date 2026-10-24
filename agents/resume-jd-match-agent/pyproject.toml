@@ -1,0 +1,30 @@
+[project]
+name = "resume-jd-match-agent"
+version = "0.2.0"
+description = "ATS-style resume reviewer built on Google ADK"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "google-adk>=2.13.0,<3",
+    "pypdf>=6.0.0,<7",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "BLE",  # flake8-blind-except
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+# scripts and tests intentionally set sys.path and environment before imports
+"scripts/*" = ["E402"]
+"tests/*" = ["E402"]

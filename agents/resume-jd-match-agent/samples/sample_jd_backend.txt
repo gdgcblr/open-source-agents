@@ -1,0 +1,36 @@
+Software Development Engineer II - Backend
+RouteWise Logistics (fictional company) | Bengaluru / Remote (India)
+
+About the role
+RouteWise powers delivery tracking for 2,000+ logistics companies. Our backend handles
+over 50 million shipment events a day. We are looking for a Backend SDE II to design and
+scale the services behind our tracking and notifications platform.
+
+What you will do
+- Design, build and operate microservices in Java (Spring Boot) and Python.
+- Design REST and gRPC APIs consumed by web, mobile and partner integrations.
+- Model data and write efficient queries in PostgreSQL; use Redis for caching.
+- Build event-driven pipelines with Kafka for real-time shipment updates.
+- Own service reliability: monitoring, alerting and on-call for your services.
+- Write unit and integration tests and take part in code reviews.
+- Contribute to system design discussions for new features.
+
+Must-have qualifications
+- 3+ years of backend development experience.
+- Strong programming skills in Java or Python.
+- Experience building REST APIs and microservices.
+- Strong SQL and relational database skills (PostgreSQL or MySQL).
+- Understanding of distributed systems, caching and message queues (Kafka or RabbitMQ).
+- Experience with unit testing and code review practices.
+- Experience deploying services on AWS or GCP.
+
+Nice-to-have
+- Golang experience.
+- Docker and Kubernetes in production.
+- gRPC and API design for external partners.
+- NoSQL databases such as MongoDB or DynamoDB.
+- Observability tooling such as Prometheus, Grafana or OpenTelemetry.
+- Experience in logistics, e-commerce or other high-volume event systems.
+
+What we offer
+Competitive salary, ESOPs, remote-friendly culture, and an annual learning budget.

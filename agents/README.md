@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`resume-jd-match-agent`](resume-jd-match-agent/) | Compares a resume (PDF or text) with a job description and returns an ATS-style match report with score, missing skills and bullet rewrites | Google ADK + Gemini | Abhinav Maharana |

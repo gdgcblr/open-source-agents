@@ -1,0 +1,37 @@
+Software Development Engineer II - Frontend
+PixelCart (fictional company) | Bengaluru (Hybrid)
+
+About the role
+PixelCart runs an e-commerce storefront used by 4 million shoppers a month. We are
+hiring a Frontend SDE II to build fast, accessible shopping experiences across our web
+app and design system. You will work with product managers, designers and backend
+engineers to ship features end to end.
+
+What you will do
+- Build and maintain customer-facing features in React and TypeScript.
+- Own parts of our shared component library and design system in close partnership with design (Figma).
+- Improve Core Web Vitals and overall page performance on our Next.js storefront.
+- Integrate with REST and GraphQL APIs owned by backend teams.
+- Write unit tests with Jest and React Testing Library, and end-to-end tests with Cypress.
+- Take part in code reviews and help maintain frontend coding standards.
+- Ship features behind feature flags and measure impact with A/B testing.
+
+Must-have qualifications
+- 3+ years of professional frontend development experience.
+- Strong JavaScript and TypeScript skills.
+- Deep experience with React (hooks, state management with Redux or similar).
+- Solid HTML and CSS, including responsive design.
+- Experience consuming REST APIs or GraphQL.
+- Experience with unit testing and test automation for frontend code.
+- Familiarity with Git and CI/CD workflows.
+
+Nice-to-have
+- Next.js and server-side rendering experience.
+- Web accessibility (WCAG) knowledge.
+- Performance optimization using Lighthouse or Core Web Vitals.
+- Experience with Webpack or Vite build tooling.
+- Experience building or maintaining a design system.
+- Exposure to Node.js on the backend.
+
+What we offer
+Competitive salary, ESOPs, learning budget, and a hybrid work setup.

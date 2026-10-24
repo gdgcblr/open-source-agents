@@ -1,0 +1,35 @@
+PRIYA RAMAN
+Bengaluru, India | priya.raman@example.com | linkedin.com/in/priya-raman-example
+(Fictional candidate for demo purposes)
+
+SUMMARY
+Product Manager with 5 years of experience, 3 in product management and 2 as a
+software engineer. Worked on B2B SaaS products for payments and invoicing teams.
+
+EXPERIENCE
+
+Product Manager - LedgerLoop (B2B SaaS invoicing platform)            2022 - Present
+- Responsible for the invoicing product roadmap.
+- Worked with engineering and design teams on new features.
+- Ran customer interviews with finance teams to understand pain points.
+- Launched automated payment reminders, which reduced overdue invoices by 18%.
+- Wrote PRDs and user stories in Jira for a team of 6 engineers.
+- Helped with pricing changes for the SMB plan.
+- Tracked product metrics in Mixpanel and shared weekly updates with stakeholders.
+
+Associate Product Manager - PayNest (payments startup)                2021 - 2022
+- Managed the backlog for the merchant onboarding squad using Scrum.
+- Did competitive analysis of 5 onboarding flows and presented findings to leadership.
+- Worked on improving the onboarding funnel.
+
+Software Engineer - CodeHarbor Technologies                           2019 - 2021
+- Built REST APIs in Python and Django for an internal billing service.
+- Wrote SQL queries for reporting dashboards.
+- Was part of the team that moved services to AWS.
+
+EDUCATION
+B.Tech, Computer Science - Fictional Institute of Technology, 2019
+
+SKILLS
+Product roadmap, PRDs, user stories, Jira, Confluence, Scrum, Mixpanel, SQL, Python,
+Django, REST APIs, AWS, Figma (basic), customer interviews, competitive analysis

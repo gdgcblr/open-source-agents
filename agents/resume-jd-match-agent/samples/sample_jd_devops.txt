@@ -1,0 +1,37 @@
+Software Development Engineer - DevOps / Platform
+CloudNimbus Health (fictional company) | Hyderabad (Hybrid)
+
+About the role
+CloudNimbus builds software for 300 hospitals. Our platform team keeps 120+ services
+running safely and keeps product teams shipping quickly. We are hiring a DevOps SDE to
+own our cloud infrastructure, CI/CD pipelines and developer platform.
+
+What you will do
+- Manage AWS infrastructure as code with Terraform.
+- Run and scale our Kubernetes clusters (EKS), including Helm charts and autoscaling.
+- Build and maintain CI/CD pipelines in GitHub Actions and Jenkins.
+- Containerize services with Docker and standardize base images.
+- Set up monitoring, logging and alerting with Prometheus, Grafana and the ELK stack.
+- Drive incident response, write blameless postmortems, and improve SLOs.
+- Automate operational tasks with Python and Bash scripting.
+- Work with security and compliance teams on access controls and audit requirements.
+
+Must-have qualifications
+- 3+ years in DevOps, SRE or platform engineering roles.
+- Hands-on production experience with AWS (EC2, VPC, IAM, RDS, EKS).
+- Strong experience with Terraform or similar infrastructure-as-code tools.
+- Production experience with Docker and Kubernetes.
+- Experience building CI/CD pipelines.
+- Strong Linux administration and Bash scripting skills.
+- Scripting or programming in Python or Golang.
+
+Nice-to-have
+- Kubernetes certification (CKA or CKAD).
+- Experience with Ansible or other configuration management tools.
+- GitOps tools such as Argo CD or Flux.
+- Experience with Azure or GCP.
+- Security and compliance experience (e.g. HIPAA, SOC 2).
+- Cost optimization of cloud infrastructure.
+
+What we offer
+Competitive salary, health insurance for family, certification sponsorship, and a hybrid work setup.
