@@ -1,0 +1,1 @@
+def generate(): return "# Report"

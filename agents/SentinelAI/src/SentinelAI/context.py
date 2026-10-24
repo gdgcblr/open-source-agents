@@ -1,0 +1,1 @@
+class ContextManager: pass

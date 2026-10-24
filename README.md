@@ -1,130 +1,183 @@
-# open-source-ai
+# Secure Agent Harness
 
-> **Build it. Document it. Open-source it.**
+The Secure Agent Harness is an AI agent framework that allows an LLM to perform tasks using tools while controlling what it can access, what it can remember, how much it can spend, and which actions it is allowed to execute.
 
-A community-driven collection of practical, documented, and open-source AI agents and developer tools, built with diverse frameworks and technologies.
+Think of it as a secure operating system for an AI agent. The LLM is the brain; the harness is the control layer around it.
 
----
+A self-contained, security-first Python agent starter for `agents/` in the `open-source-agents` repository.
 
-## Introduction
+It demonstrates an agent harness with bounded tool execution, input/output guardrails, scoped SQLite memory, context injection, cost/step limits, audit events, and an optional Jev-style typed decision interface.
 
-As AI systems evolve from single prompt-response interactions to multi-step reasoning, tool-using agents, and specialized developer utilities, the need for transparent, reproducible, and practical open-source implementations has never been greater.
+> **Security note:** This is a starter implementation, not a security certification. Prompt-injection detection is heuristic and cannot guarantee detection. Keep tools least-privileged, isolate runtime infrastructure, and require human approval for consequential actions.
 
-`open-source-ai` is a collaborative monorepo curated to showcase working, well-documented AI projects. The goal is to provide developers, researchers, and builders with a shared catalog of real-world patterns—ranging from autonomous task agents to Model Context Protocol (MCP) servers and evaluation harnesses.
 
-This repository is designed to be accessible, framework-agnostic, and easy to navigate whether you are looking for reference implementations or contributing your own creation.
+## Architecture Overview
 
----
+![Secure Agent Harness Architecture](../../pics/Screenshot%202026-10-24%20125448.png)
 
-## Acceptable Project Categories
+- **Harness loop:** bounded model/tool loop, explicit tool registry, validated arguments, no arbitrary shell or Python execution.
+- **Guardrails:** request size limits, secret redaction before audit, output length cap, policy checks, strict tool schemas.
+- **Memory:** SQLite facts scoped by `user_id`, with explicit write operations and retention limit.
+- **Context injection:** deterministic system policy + scoped memory + request-local context; external context is labelled untrusted.
+- **Jev-style decision seam:** typed `allow / review / block` decision contract and deterministic local implementation. This is an integration seam, **not an official Jev API client**.
+- **Cost controls:** maximum steps, request size, tool calls, output tokens, and estimated session budget.
+- **Security/observability:** structured audit events without storing full prompts or secrets.
+- **Tests:** unit tests for guardrails, tool authorization, and memory isolation.
 
-We welcome practical, working AI contributions across a variety of categories. These categories are illustrative rather than rigid constraints:
+## Architecture
 
-- **AI Agents**: Autonomous, semi-autonomous, or task-oriented agents, conversational assistants, and multi-agent coordination systems.
-- **Model Context Protocol (MCP) Servers & Integrations**: Servers providing structured context, tools, and prompts to models from databases, filesystems, developer tools, or web services.
-- **AI Developer Utilities**: Command-line interfaces, prompt helpers, token trackers, context formatters, and workflow automations.
-- **AI-Powered Workflows & Automation**: Specialized pipelines for code generation, documentation review, PR triage, research synthesis, or data transformation.
-- **Evaluation, Testing & Safety Utilities**: Tools and harnesses to measure model accuracy, benchmark latency and cost, detect hallucinations, or test tool calls.
-- **Other Practical AI Tooling**: Reusable libraries, adapters, and connectors that help developers build AI applications.
-
----
-
-## Technology Flexibility
-
-This repository is **completely framework-agnostic and language-neutral**. Contributors are encouraged to select the stack best suited to their problem domain.
-
-Accepted technologies and ecosystems include, but are not limited to:
-- **Google Agent Development Kit (ADK)**
-- **OpenAI Agents SDK**
-- **LangGraph & LangChain**
-- **CrewAI**
-- **Model Context Protocol (MCP)**
-- **Python or TypeScript / JavaScript AI runtimes**
-- **Go, Rust, or other systems languages**
-- **Local / open-weights model runtimes** (e.g., Ollama, vLLM, llama.cpp)
-- **Hosted model APIs** (e.g., Gemini, OpenAI, Anthropic, Mistral)
-
-No single cloud provider, framework, or model vendor is mandated.
-
----
-
-## Repository Structure
-
-The repository is organized into distinct directories to keep projects isolated, modular, and easy to maintain:
-
-```
-open-source-ai/
-├── README.md               # Repository overview, philosophy, and index
-├── CONTRIBUTING.md         # Detailed 12-step contributor guide and standards
-├── .gitignore              # Repository-wide ignores for secrets, virtual environments, and caches
-├── agents/                 # Directory for autonomous and task-oriented agents
-│   └── README.md           # Guidelines and index of agent projects
-├── tools/                  # Directory for developer tools, MCP servers, and utilities
-│   └── README.md           # Guidelines and index of tooling projects
-├── template/               # Starter files for new contributions
-│   ├── README.md           # Reusable project documentation template
-│   ├── .gitignore          # Recommended per-project .gitignore
-│   └── .env.example        # Sanitized environment variable template
-└── .github/
-    └── PULL_REQUEST_TEMPLATE.md  # Standard checklist for submitting pull requests
+```text
+User request
+   |
+   v
+Input guardrails -----> reject / redact sensitive audit fields
+   |
+   v
+Context builder <---- scoped SQLite memory
+   |
+   v
+LLM planner (proposes only)
+   |
+   v
+Decision gate (allow / review / block)
+   |
+   v
+Tool registry -> schema validation -> permission check -> execution
+   |                                             |
+   +---------------- result ---------------------+
+   |
+   v
+Output guardrails -> answer + audit metadata
 ```
 
-- **[`agents/`](agents/README.md)**: Contains end-to-end agents and multi-agent workflows. Each agent lives in its own dedicated subfolder (`agents/<project-slug>/`).
-- **[`tools/`](tools/README.md)**: Contains developer utilities, MCP servers, evaluation harnesses, and reusable components. Each tool lives in its own dedicated subfolder (`tools/<project-slug>/`).
-- **[`template/`](template/README.md)**: Provides a standardized documentation blueprint, environment template, and local `.gitignore` so contributors can document their work consistently.
+## Folder structure
 
----
+```text
+agents/secure-agent-harness/
+├── README.md
+├── .env.example
+├── .gitignore
+├── pyproject.toml
+├── src/
+│   └── secure_agent_harness/
+│       ├── __init__.py
+│       ├── agent.py          # bounded agent control loop
+│       ├── audit.py          # privacy-aware structured audit
+│       ├── config.py         # typed environment configuration
+│       ├── context.py        # trusted instructions + scoped context
+│       ├── cost.py           # usage estimates and budget enforcement
+│       ├── decision.py       # typed decision interface / Jev seam
+│       ├── guardrails.py     # request, policy, and response checks
+│       ├── memory.py         # isolated SQLite memory
+│       ├── models.py         # shared data contracts
+│       └── tools.py          # allowlisted, schema-validated tools
+└── tests/
+    ├── test_guardrails.py
+    ├── test_memory.py
+    └── test_tools.py
+```
 
-## Quick Start for Contributors
+## Requirements
 
-Ready to contribute? Follow this straightforward fork-and-pull-request workflow:
+- Python 3.11+
+- An OpenAI API key for live model calls
+- Internet access to reach the configured model API
 
-1. **Browse existing contributions**: Check [`agents/`](agents/README.md) and [`tools/`](tools/README.md) to explore existing work and choose a unique, descriptive project name.
-2. **Fork the repository**: Fork this repository to your personal GitHub account.
-3. **Clone your fork**:
-   ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
-   ```
-4. **Create a branch**:
-   ```bash
-   git checkout -b feat/<your-project-slug>
-   ```
-5. **Add your project**: Create a dedicated directory under `agents/<project-slug>/` or `tools/<project-slug>/`. Copy `template/README.md`, `template/.gitignore`, and `template/.env.example` into your folder.
-6. **Implement and document**: Write your code, declare dependencies in a manifest (`requirements.txt`, `package.json`, etc.), and document setup, usage, and examples in your project's `README.md`.
-7. **Test thoroughly**: Verify that installation and execution work on a clean environment and that no credentials or virtual environments are tracked.
-8. **Commit and push**:
-   ```bash
-   git add agents/<project-slug>/   # or tools/<project-slug>/
-   git commit -m "feat(agents): add <project-slug>"
-   git push -u origin feat/<your-project-slug>
-   ```
-9. **Open a Pull Request**: Submit your PR against the upstream `main` branch, completing the [Pull Request Checklist](.github/PULL_REQUEST_TEMPLATE.md).
+## Installation
 
-For step-by-step guidance and detailed Git commands, see [CONTRIBUTING.md](CONTRIBUTING.md).
+From the repository root:
 
----
+```bash
+cd agents/secure-agent-harness
+python -m venv .venv
+```
 
-## Contribution Standards
+Windows PowerShell:
 
-To maintain technical credibility and long-term utility, all contributions are reviewed against four core criteria:
+```powershell
+.\.venv\Scripts\Activate.ps1
+Copy-Item .env.example .env
+python -m pip install -e ".[dev]"
+```
 
-1. **Reproducibility**: Clear prerequisites, dependency specifications, and setup instructions that work out-of-the-box.
-2. **Documentation Quality**: Comprehensive documentation using the provided template, including realistic inputs/outputs and known limitations.
-3. **Security & Privacy**: Zero committed credentials, API keys, or private data. All configuration must use environment variables or sanitized configuration files.
-4. **Focused Scope**: Each contribution is isolated in its own directory and does not alter unrelated parts of the repository.
+macOS/Linux:
 
----
+```bash
+source .venv/bin/activate
+cp .env.example .env
+python -m pip install -e ".[dev]"
+```
 
-## Community Context
+Set `OPENAI_API_KEY` in `.env`. Never commit `.env`.
 
-This repository was established in collaboration with **GDG Cloud Bengaluru** as part of the **FORK. BUILD. MERGE.** initiative under **Road to DevFest 2026**.
+## Run
 
-While seeded during this community event, this repository is designed as an enduring, public open-source catalog. Contributions, maintenance, and community participation continue beyond the event.
+```bash
+secure-agent
+```
 
----
+Or:
 
-## License
+```bash
+python -m secure_agent_harness
+```
 
-This project is licensed under the [MIT License](LICENSE) &copy; 2026 GDG Cloud Bengaluru Community.
+The CLI accepts one request at a time. Example: `What is 19 * 23?` or `Remember that my preferred language is Python.` Memory is scoped to the configured local user ID.
+
+## Configuration
+
+See `.env.example`. Important controls:
+
+| Variable | Purpose |
+|---|---|
+| `OPENAI_API_KEY` | Provider secret |
+| `OPENAI_MODEL` | Model name supported by your account |
+| `MAX_STEPS` | Maximum model/tool loop iterations |
+| `MAX_TOOL_CALLS` | Maximum tools executed per request |
+| `MAX_INPUT_CHARS` | Request size cap |
+| `MAX_OUTPUT_TOKENS` | Model output token cap |
+| `MAX_ESTIMATED_COST_USD` | Conservative session budget estimate |
+| `MEMORY_DB_PATH` | SQLite file path |
+| `AGENT_USER_ID` | Local memory namespace |
+
+The cost estimate uses configurable per-million-token rates. Update those rates for the model/provider you actually use. Estimates are guardrails, not billing-grade accounting; provider usage data is authoritative.
+
+## Security design decisions
+
+1. **No arbitrary code execution.** The model can only call registered tools.
+2. **Validate at execution time.** Tool names, arguments, limits, and permissions are checked in Python, not entrusted to the model.
+3. **Least privilege.** The included tools are read-only calculator/time utilities plus an explicit memory write. Add integrations individually and scope their credentials.
+4. **Untrusted context stays untrusted.** Retrieved facts and user content are labelled as data, never promoted to system instructions.
+5. **Memory isolation.** Reads and writes require a user namespace. Do not use a shared default user ID in a multi-user service.
+6. **No secrets in logs.** Audit records contain event metadata, not complete prompts, responses, or tool arguments.
+7. **Bounded execution.** Step, tool-call, input, output, and estimated-cost budgets prevent runaway loops.
+8. **Human approval.** Consequential tools should declare `requires_approval=True` and be blocked unless a trusted approval mechanism supplies approval. Do not let the model approve its own actions.
+9. **Prompt injection is not solved by a classifier.** Keep data access and side effects restricted even if detection fails.
+10. **Production hardening.** Add authentication, per-user rate limits, secret management, encrypted storage, network egress policy, sandboxing, retention controls, and independent monitoring before exposing this as a service.
+
+## Jev integration
+
+`decision.py` defines a small typed contract (`Decision`, `DecisionGate`) and ships a deterministic local gate. This makes routing and safety decisions measurable and testable without coupling the project to a provider-specific SDK.
+
+To use Jev, implement a separate adapter against the **current official Jev/TypeSafe API documentation**, map its typed result into `Decision`, and retain the local policy checks as authoritative enforcement. Never use Jev confidence alone to authorize a sensitive action, and never give the decision layer tool permissions.
+
+## Tests
+
+```bash
+pytest
+```
+
+Tests do not require an API key.
+
+## Before opening a pull request
+
+- [ ] Read `../CONTRIBUTING.md`.
+- [ ] Run `pytest`.
+- [ ] Verify installation from a clean virtual environment.
+- [ ] Confirm `.env`, database files, logs, and virtual environments are ignored.
+- [ ] Add tests for every new tool and every permission boundary.
+- [ ] Document any external service, credentials, costs, and data retention.
+- 
+[ ] Do not claim the agent is injection-proof or production-secure without independent validation.
+
 
