@@ -1,0 +1,12 @@
+# git-commit-assistant dependencies
+# -----------------------------------------------------------------------------
+# The default 'mock' provider is STDLIB ONLY: no runtime packages are required
+# to install and run the tool on a clean clone.
+#
+# Optional: to use the 'openai' provider, install the OpenAI SDK separately:
+#     pip install openai==1.51.0
+# It is intentionally NOT pinned here so the default offline path stays
+# dependency-free.
+#
+# Development / testing only:
+pytest==8.3.3

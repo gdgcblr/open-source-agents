@@ -1,0 +1,12 @@
+diff --git a/commit_assistant/greet.py b/commit_assistant/greet.py
+new file mode 100644
+index 0000000..a1b2c3d
+--- /dev/null
++++ b/commit_assistant/greet.py
+@@ -0,0 +1,6 @@
++"""Tiny greeting helper."""
++
++
++def greet(name: str) -> str:
++    """Return a friendly greeting."""
++    return f"Hello, {name}!"

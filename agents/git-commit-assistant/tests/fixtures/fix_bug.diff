@@ -1,0 +1,9 @@
+diff --git a/src/bugfix/handler.py b/src/bugfix/handler.py
+index 1111111..2222222 100644
+--- a/src/bugfix/handler.py
++++ b/src/bugfix/handler.py
+@@ -4,7 +4,7 @@ def divide(a, b):
+-    return a / b
++    if b == 0:
++        return 0
++    return a / b

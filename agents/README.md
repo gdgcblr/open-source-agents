@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| `git-commit-assistant` | CLI agent that turns a staged git diff into a Conventional Commits message; offline mock heuristic by default, optional OpenAI mode. | `Python 3.10+ / stdlib + optional OpenAI` | `shraddhagavade` |
