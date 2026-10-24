@@ -1,0 +1,22 @@
+[project]
+name = "mcp-behavior-diff"
+version = "0.1.0"
+description = "Detect behavior changes in MCP servers that schema diffs cannot see."
+requires-python = ">=3.11"
+dependencies = ["mcp>=2,<3", "pyyaml>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+mcp-behavior-diff = "mcp_behavior_diff.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_behavior_diff"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

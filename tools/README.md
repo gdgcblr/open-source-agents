@@ -48,3 +48,8 @@ tools/<project-slug>/
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
 | *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+
+---
+
+## License
+This project is created as part of contribution in GDGCBLR by harshitvivek2709@gmail.com
