@@ -14,7 +14,9 @@ import tomllib
 from collections import Counter
 from pathlib import Path
 
+from .code_facts import find_settings, import_diagram, is_test_file, outline
 from .guardrails import ENV_TEMPLATES, SKIP_DIRS, check_project_root, is_config_like, redact, safe_path
+from .template import is_unfilled_template, load_template
 
 LANGUAGES = {
     ".py": "Python", ".js": "JavaScript", ".jsx": "JavaScript", ".mjs": "JavaScript",
@@ -44,9 +46,17 @@ LEAKED_TOKEN_RE = re.compile(r"<\|?(?:channel|turn)\|?>")
 MAX_FILE_CHARS = 8000
 MAX_LISTED_FILES = 300
 MAX_WALKED_FILES = 5000
+INSPECT_DEPTH = 8  # folder levels the inspection walks; Java and Kotlin code sits 6 or more deep
+MAX_SOURCE_CHARS = 100000  # per file, when code is read for outlines, settings and imports
+MAX_SCAN_CHARS = 20_000_000  # in total, so a huge repository cannot stall the inspection
 KEY_FILES_BUDGET_CHARS = 30000
-KEY_CONFIG_FILES = ("Dockerfile", "docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml", "Makefile")
+COMPOSE_FILES = ("docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml")
+KEY_CONFIG_FILES = ("Dockerfile", *COMPOSE_FILES, "Makefile")
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
+
+
+def output_dir() -> Path:
+    return Path(os.getenv("OUTPUT_DIR") or DEFAULT_OUTPUT_DIR)
 
 
 def _open_project() -> tuple[Path, dict | None]:
@@ -88,6 +98,47 @@ def _read_text(path: Path, limit: int) -> str:
     with path.open("rb") as f:
         text = f.read(limit * 4).decode("utf-8", errors="replace")[:limit]
     return redact(text, config_like=is_config_like(path))
+
+
+def _read_source(root: Path, rel_path: Path, limit: int = MAX_SOURCE_CHARS) -> str | None:
+    """Reads a text file through the guardrails, or returns None if it is refused or binary."""
+    target, refused = safe_path(root, rel_path)
+    if refused:
+        return None
+    with target.open("rb") as f:
+        if b"\x00" in f.read(1024):
+            return None
+    return _read_text(target, limit)
+
+
+def _code_texts(root: Path, paths: list[Path]) -> list[tuple[str, str]]:
+    """Reads the source and Compose files the code scans need, up to MAX_SCAN_CHARS in total."""
+    texts, total = [], 0
+    for rel_path in paths:
+        if rel_path.suffix not in LANGUAGES and rel_path.name not in COMPOSE_FILES:
+            continue
+        text = _read_source(root, rel_path)
+        if text is None:
+            continue
+        texts.append((rel_path.as_posix(), text))
+        total += len(text)
+        if total >= MAX_SCAN_CHARS:
+            break
+    return texts
+
+
+def _file_size(root: Path, rel_path: Path) -> int:
+    try:
+        return (root / rel_path).stat().st_size
+    except OSError:
+        return 0
+
+
+def _template_text() -> str:
+    try:
+        return load_template()
+    except ValueError:  # reported to the user by the agent, which loads the template too
+        return ""
 
 
 def list_project_files(max_depth: int = 4) -> dict:
@@ -216,10 +267,12 @@ def detect_project_stack() -> dict:
 
     Reads the manifest files in the project root, such as requirements.txt,
     pyproject.toml, package.json, Dockerfile, docker-compose.yml and .env.example.
-    Only variable names are taken from .env.example, never their values.
+    Only variable names are taken from .env.example, never their values. Then scans
+    the source code for the environment variables it reads and for its imports.
 
     Returns:
-        A dict with detected languages, likely entry points and the parsed manifests.
+        A dict with detected languages, likely entry points, the parsed manifests,
+        the settings read by the code and a Mermaid diagram of the imports.
     """
     root, error = _open_project()
     if error:
@@ -238,14 +291,19 @@ def detect_project_stack() -> dict:
         except Exception as exc:  # untrusted input: a malformed manifest must not stop the run
             manifests[name] = {"error": f"Could not parse: {type(exc).__name__}"}
 
+    readable = [rel_path for rel_path, ok in _walk_files(root, INSPECT_DEPTH) if ok]
     languages, entry_points = Counter(), []
-    for rel_path, readable in _walk_files(root, max_depth=4):
-        if not readable:
-            continue
+    for rel_path in readable:
         if rel_path.suffix in LANGUAGES:
             languages[LANGUAGES[rel_path.suffix]] += 1
         if rel_path.name in ENTRY_POINT_NAMES and len(rel_path.parts) <= 3:
             entry_points.append(rel_path.as_posix())
+    code = _code_texts(root, readable)
+    go_module = next(
+        (line.split()[1] for line in manifests.get("go.mod", {}).get("module_and_go_version", [])
+         if line.startswith("module ") and len(line.split()) > 1),
+        None,
+    )
 
     readme = next((p.name for p in sorted(root.glob("README*")) if safe_path(root, p.name)[0]), None)
     license_file = next((p for p in sorted(root.glob("LICEN[CS]E*")) if safe_path(root, p.name)[0]), None)
@@ -264,6 +322,8 @@ def detect_project_stack() -> dict:
             "excerpt": license_text[:120] or None,
         },
         "manifests": manifests,
+        "settings_read_by_code": find_settings(code),
+        "import_diagram": import_diagram(code, [p.as_posix() for p in readable], go_module),
     }
 
 
@@ -300,18 +360,19 @@ def read_file(path: str) -> dict:
 def read_key_files() -> dict:
     """Reads the files that best explain the project, picked automatically.
 
-    Picks an existing README, likely entry points, Docker and Makefile config,
-    then the remaining source files closest to the project root, until a size
-    budget is used up.
+    Picks an existing README, likely entry points, Docker and Makefile config, then
+    the remaining source files closest to the project root, until a size budget is
+    used up. When those source files do not all fit, they are sent as outlines
+    instead (declarations and their first doc line), so many more of them fit.
 
     Returns:
-        A dict mapping each chosen file path to its content.
+        A dict mapping each chosen file path to its content, and the source outlines.
     """
     root, error = _open_project()
     if error:
         return error
 
-    files = [p for p, readable in _walk_files(root, max_depth=4) if readable]
+    files = [p for p, readable in _walk_files(root, INSPECT_DEPTH) if readable]
     readmes = [p for p in files if len(p.parts) == 1 and p.name.upper().startswith("README")]
     entry_points = [p for p in files if p.name in ENTRY_POINT_NAMES and len(p.parts) <= 3]
     configs = [p for p in files if len(p.parts) == 1 and p.name in KEY_CONFIG_FILES]
@@ -320,23 +381,76 @@ def read_key_files() -> dict:
         key=lambda p: (len(p.parts), p.as_posix()),
     )
 
+    template, notes = _template_text(), {}
     chosen, contents, budget = [], {}, KEY_FILES_BUDGET_CHARS
-    for path in readmes + entry_points + configs + sources:
-        if path in chosen or budget <= 0:
-            continue
+
+    def add_full_text(path: Path) -> None:
+        nonlocal budget
         result = read_file(path.as_posix())
         if result["status"] != "success":
-            continue
+            return
         chosen.append(path)
+        if path in readmes and template and is_unfilled_template(result["content"], template):
+            notes["existing_readme_note"] = f"{path.as_posix()} is still the unfilled README template, so it was not read."
+            return
         contents[path.as_posix()] = result["content"][:budget]
         budget -= len(contents[path.as_posix()])
+
+    for path in readmes + entry_points + configs:
+        if path not in chosen and budget > 0:
+            add_full_text(path)
+
+    rest = [p for p in sources if p not in chosen]
+    outlines = []
+    if sum(_file_size(root, p) for p in rest) <= budget:
+        for path in rest:
+            add_full_text(path)
+    else:
+        for path in rest:
+            text = _read_source(root, path)
+            if text is None:
+                continue
+            summary = outline(path.as_posix(), text)
+            if len(summary) > budget:
+                break
+            outlines.append(summary)
+            chosen.append(path)
+            budget -= len(summary)
 
     skipped = [p.as_posix() for p in files if p not in chosen and p.suffix in LANGUAGES]
     return {
         "status": "success",
         "files": contents,
+        "source_outlines": "".join(outlines) or None,
         "other_source_files_not_read": skipped[:50],
+        "source_files_not_read_count": sum(p not in chosen for p in rest),
+        **notes,
     }
+
+
+def project_outlines() -> dict:
+    """Outlines every source file except tests, in path order, for big-project mode.
+
+    Returns:
+        A dict with (path, outline) pairs and how many files were left out by the size cap.
+    """
+    root, error = _open_project()
+    if error:
+        return error
+    paths = sorted(
+        (p for p, readable in _walk_files(root, INSPECT_DEPTH)
+         if readable and p.suffix in LANGUAGES and not is_test_file(p.as_posix())),
+        key=lambda p: p.as_posix(),
+    )
+    outlines, total = [], 0
+    for path in paths:
+        if total >= MAX_SCAN_CHARS:
+            break
+        text = _read_source(root, path)
+        if text is not None:
+            outlines.append((path.as_posix(), outline(path.as_posix(), text)))
+            total += len(text)
+    return {"status": "success", "outlines": outlines, "files_left_out": len(paths) - len(outlines)}
 
 
 def inspect_project() -> dict:
@@ -376,9 +490,9 @@ def save_readme_draft(markdown: str) -> dict:
     Called by the agent's after-model callback, not by the model: small local
     models write long documents more reliably as a reply than as a tool argument.
     """
-    output_dir = Path(os.getenv("OUTPUT_DIR") or DEFAULT_OUTPUT_DIR)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    target = output_dir / "README.draft.md"
+    folder = output_dir()
+    folder.mkdir(parents=True, exist_ok=True)
+    target = folder / "README.draft.md"
     if target.is_symlink():  # never write through a planted link
         target.unlink()
     target.write_text(redact(markdown, config_like=True), encoding="utf-8")

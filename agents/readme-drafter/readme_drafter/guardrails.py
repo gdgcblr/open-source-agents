@@ -43,7 +43,9 @@ _CODE_REDACTIONS = [
     # Passwords inside URLs: scheme://user:password@host
     (re.compile(r"([a-zA-Z][a-zA-Z0-9+.-]*://[^\s:/@]+:)[^\s@/]+(@)"), r"\1[REDACTED]\2"),
     # Quoted values of secret-looking keys: DB_PASSWORD = "...", "token": "..."
-    (re.compile(rf"(?i)([\w.-]*{_SECRET_KEY}[\w.-]*[\"']?\s*[:=]\s*)([\"'])(?!\$)([^\"'\n]{{4,}})\2"),
+    # (?<!...) starts matches at the start of a name only. The matches are the same, but without it
+    # the regex retries from every letter of every name, which took 7 s on a 10 MB codebase.
+    (re.compile(rf"(?i)(?<![\w.-])([\w.-]*{_SECRET_KEY}[\w.-]*[\"']?\s*[:=]\s*)([\"'])(?!\$)([^\"'\n]{{4,}})\2"),
      r"\1\2[REDACTED]\2"),
 ]
 # Unquoted values (POSTGRES_PASSWORD: value, API_KEY=value). Only applied to config-like
@@ -75,6 +77,11 @@ def is_secret_file(name: str) -> bool:
     if name in ENV_TEMPLATES:
         return False
     return any(fnmatch.fnmatch(name, pattern) for pattern in SECRET_FILE_PATTERNS)
+
+
+def is_secret_name(name: str) -> bool:
+    """True for setting names that usually hold a secret, such as DB_PASSWORD or OPENAI_API_KEY."""
+    return re.search(rf"(?i){_SECRET_KEY}", name) is not None
 
 
 def check_project_root(root: Path) -> str | None:

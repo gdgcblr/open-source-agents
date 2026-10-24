@@ -30,7 +30,7 @@ def _short(args: dict) -> str:
     )
 
 
-async def main(request: str) -> None:
+async def main(request: str) -> int:
     runner = InMemoryRunner(agent=root_agent, app_name=APP_NAME)
     session = await runner.session_service.create_session(app_name=APP_NAME, user_id="cli")
     message = types.Content(role="user", parts=[types.Part(text=request)])
@@ -39,9 +39,14 @@ async def main(request: str) -> None:
     async for event in runner.run_async(user_id="cli", session_id=session.id, new_message=message):
         for call in event.get_function_calls():
             print(f"-> {call.name}({_short(call.args)})", flush=True)
-        if event.is_final_response() and event.content and event.content.parts:
-            reply = "".join(part.text or "" for part in event.content.parts if not part.thought)
+        if not (event.is_final_response() and event.content and event.content.parts):
+            continue
+        text = "".join(part.text or "" for part in event.content.parts if not part.thought)
+        if event.author == root_agent.writer.name:
+            reply = text
             print("\n" + reply)
+        elif text.strip():  # big-project progress and part summaries: one line each
+            print(f"   {text.strip().splitlines()[0][:160]}", flush=True)
 
     if "Saved to" not in reply:
         print("\nNo README draft was produced. Small local models occasionally return an empty "
