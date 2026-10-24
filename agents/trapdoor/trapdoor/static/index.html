@@ -3,92 +3,593 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TrapDoor — AI Agent Adversarial Testing</title>
+<title>TrapDoor — AI Agent Security Testing</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #080b14;
+    --surface: #0d1117;
+    --card: #111827;
+    --border: #1f2937;
+    --border-bright: #374151;
+    --red: #ef4444;
+    --red-dim: #7f1d1d;
+    --green: #22c55e;
+    --green-dim: #14532d;
+    --orange: #f97316;
+    --blue: #3b82f6;
+    --purple: #a78bfa;
+    --yellow: #fbbf24;
+    --text: #f9fafb;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
 
-  header { background: #1a1d2e; border-bottom: 1px solid #2d3148; padding: 1.2rem 2rem; display: flex; align-items: center; gap: 1rem; }
-  header h1 { font-size: 1.4rem; font-weight: 700; color: #fff; }
-  header .tag { background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 1px; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
 
-  .container { max-width: 960px; margin: 0 auto; padding: 2rem; }
+  /* ── Header ── */
+  header {
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
 
-  .hero { text-align: center; padding: 2rem 0 1.5rem; }
-  .hero p { color: #94a3b8; margin-top: 0.5rem; font-size: 1rem; }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .logo-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.3);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .header-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 2rem 0 3rem;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(239,68,68,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #f9fafb 0%, #9ca3af 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 520px;
+    margin: 0 auto 2rem;
+  }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--card);
+    padding: 1rem 1.5rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+
+  .stat-value.red { color: var(--red); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.orange { color: var(--orange); }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* ── Section headers ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2rem 0 1rem;
+  }
+
+  .section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-count {
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1px 8px;
+    border-radius: 20px;
+  }
+
+  /* ── Scenario grid ── */
+  .scenarios {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .scenario-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scenario-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), transparent);
+  }
+
+  .scenario-card:hover { border-color: var(--border-bright); }
+
+  .attack-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--orange);
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.2);
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+
+  .scenario-tool {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--purple);
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+  }
+
+  .scenario-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── Run button ── */
+  .run-section { text-align: center; margin: 2rem 0; }
 
   .run-btn {
-    display: block; margin: 1.5rem auto; padding: 0.9rem 2.5rem;
-    background: #ef4444; color: #fff; border: none; border-radius: 8px;
-    font-size: 1rem; font-weight: 700; cursor: pointer; letter-spacing: 0.5px;
-    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 2.5rem;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(239,68,68,0.3);
+    font-family: 'Inter', sans-serif;
   }
-  .run-btn:hover { background: #dc2626; }
-  .run-btn:disabled { background: #4b5563; cursor: not-allowed; }
 
-  .status { text-align: center; color: #94a3b8; font-size: 0.9rem; min-height: 1.5rem; margin-bottom: 1rem; }
+  .run-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 32px rgba(239,68,68,0.4);
+  }
 
-  /* Scenarios */
-  .section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin: 1.5rem 0 0.75rem; }
+  .run-btn:disabled {
+    background: #374151;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
 
-  .scenarios { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .scenario-card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 8px; padding: 1rem; }
-  .scenario-card .attack-type { font-size: 0.7rem; font-weight: 700; color: #f97316; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
-  .scenario-card .tool-name { font-family: monospace; font-size: 0.9rem; color: #c084fc; margin-bottom: 0.4rem; }
-  .scenario-card .desc { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
+  .status {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 1.4rem;
+  }
 
-  /* Verdict */
-  .verdict-box { border-radius: 10px; padding: 1.5rem; text-align: center; margin: 1.5rem 0; display: none; }
-  .verdict-box.compromised { background: #2d1515; border: 2px solid #ef4444; }
-  .verdict-box.safe { background: #0f2d1a; border: 2px solid #22c55e; }
-  .verdict-box.inconclusive { background: #1e1b0f; border: 2px solid #f59e0b; }
-  .verdict-label { font-size: 2rem; font-weight: 800; }
-  .verdict-box.compromised .verdict-label { color: #ef4444; }
-  .verdict-box.safe .verdict-label { color: #22c55e; }
-  .verdict-box.inconclusive .verdict-label { color: #f59e0b; }
-  .verdict-meta { color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem; }
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
 
-  /* Trace table */
-  .trace-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .trace-table th { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid #2d3148; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
-  .trace-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #1e2235; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Verdict ── */
+  .verdict-box {
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin: 2rem 0;
+    display: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verdict-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background: radial-gradient(circle at center, currentColor, transparent 70%);
+  }
+
+  .verdict-box.compromised {
+    background: rgba(127,29,29,0.3);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: var(--red);
+  }
+
+  .verdict-box.safe {
+    background: rgba(20,83,45,0.3);
+    border: 1px solid rgba(34,197,94,0.4);
+    color: var(--green);
+  }
+
+  .verdict-box.inconclusive {
+    background: rgba(120,53,15,0.3);
+    border: 1px solid rgba(251,191,36,0.4);
+    color: var(--yellow);
+  }
+
+  .verdict-label {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+  }
+
+  .verdict-meta {
+    font-size: 0.82rem;
+    opacity: 0.7;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Trace table ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .trace-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .trace-table th {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    background: rgba(31,41,55,0.5);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .trace-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(31,41,55,0.5);
+    vertical-align: middle;
+  }
+
   .trace-table tr:last-child td { border-bottom: none; }
-  .badge-trap { background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
-  .badge-safe { background: #166534; color: #bbf7d0; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
-  .tool-mono { font-family: monospace; color: #c084fc; }
 
-  /* Findings */
-  .finding-card { background: #2d1515; border-left: 3px solid #ef4444; border-radius: 0 8px 8px 0; padding: 1rem 1.2rem; margin-bottom: 0.75rem; }
-  .finding-card .attack { font-weight: 700; color: #ef4444; font-size: 0.9rem; margin-bottom: 0.3rem; }
-  .finding-card .tool-ref { font-family: monospace; font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.6rem; }
-  .finding-card .mitigation { font-size: 0.82rem; color: #86efac; line-height: 1.5; }
-  .finding-card .mit-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #22c55e; letter-spacing: 0.5px; margin-bottom: 0.2rem; }
+  .trace-table tr.is-trap { background: rgba(239,68,68,0.04); }
 
-  .card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 8px; padding: 1rem 1.2rem; }
-  .evidence-item { font-size: 0.82rem; color: #94a3b8; padding: 0.3rem 0; border-bottom: 1px solid #1e2235; line-height: 1.5; }
+  .turn-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    width: 50px;
+  }
+
+  .tool-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--purple);
+    font-size: 0.88rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 5px;
+  }
+
+  .badge-trap {
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+
+  .badge-safe {
+    background: rgba(34,197,94,0.1);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,0.2);
+  }
+
+  /* ── Findings ── */
+  .finding-card {
+    border: 1px solid rgba(239,68,68,0.2);
+    border-left: 3px solid var(--red);
+    background: rgba(239,68,68,0.04);
+    border-radius: 0 10px 10px 0;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .finding-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fca5a5;
+  }
+
+  .finding-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+  }
+
+  .mitigation-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mitigation-text {
+    font-size: 0.82rem;
+    color: #86efac;
+    line-height: 1.6;
+  }
+
+  /* ── Evidence ── */
+  .evidence-list {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .evidence-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(31,41,55,0.5);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   .evidence-item:last-child { border-bottom: none; }
-  .evidence-item::before { content: '•'; color: #f97316; margin-right: 0.5rem; }
+
+  .evidence-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--orange);
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .evidence-dot.green { background: var(--green); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .scenarios { grid-template-columns: 1fr; }
+    .stats-bar { flex-direction: column; gap: 0; }
+    .hero h1 { font-size: 2rem; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🪤 TrapDoor</h1>
-  <span class="tag">ADVERSARIAL TESTING</span>
+  <div class="logo">
+    <div class="logo-icon">🪤</div>
+    <span class="logo-text">TrapDoor</span>
+    <span class="logo-badge">Adversarial Testing</span>
+  </div>
+  <span class="header-meta">AI Agent Security Framework</span>
 </header>
 
 <div class="container">
+
   <div class="hero">
-    <p>Tests whether your AI agent can resist <strong>prompt injection</strong> and <strong>tool poisoning</strong> attacks hidden inside MCP tool responses.</p>
+    <div class="hero-eyebrow">Prompt Injection · Tool Poisoning · MCP Security</div>
+    <h1>Test Before<br>You Trust</h1>
+    <p>Expose whether your AI agent blindly trusts malicious tool responses — before attackers do it for you.</p>
   </div>
 
-  <div class="section-title">Attack Scenarios Loaded</div>
+  <div class="stats-bar" id="statsBar">
+    <div class="stat">
+      <div class="stat-value" id="statScenarios">11</div>
+      <div class="stat-label">Attack Scenarios</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statCategories">6</div>
+      <div class="stat-label">Attack Categories</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value red" id="statTriggered">—</div>
+      <div class="stat-label">Traps Triggered</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statModel">gemini-3.5-flash</div>
+      <div class="stat-label">Agent Under Test</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">Attack Scenarios</span>
+    <div class="section-line"></div>
+    <span class="section-count" id="scenarioCount">loading...</span>
+  </div>
+
   <div class="scenarios" id="scenarios">
-    <div class="scenario-card"><div class="attack-type">Loading...</div></div>
+    <div class="scenario-card">
+      <div class="attack-badge">Loading</div>
+      <div class="scenario-tool">...</div>
+    </div>
   </div>
 
-  <button class="run-btn" id="runBtn" onclick="runEval()">▶ Run Agent Against Traps</button>
-  <div class="status" id="status"></div>
+  <div class="run-section">
+    <button class="run-btn" id="runBtn" onclick="runEval()">
+      <span>▶</span> Run Agent Against All Traps
+    </button>
+    <div class="status" id="status"></div>
+  </div>
 
   <div class="verdict-box" id="verdictBox">
     <div class="verdict-label" id="verdictLabel"></div>
@@ -96,32 +597,55 @@
   </div>
 
   <div id="results" style="display:none">
-    <div class="section-title">Tool Call Trace</div>
-    <div class="card" style="margin-bottom:1.5rem; overflow-x:auto">
+
+    <div class="section-header">
+      <span class="section-title">Tool Call Trace</span>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="table-wrap">
       <table class="trace-table">
-        <thead><tr><th>Turn</th><th>Tool</th><th>Type</th></tr></thead>
+        <thead>
+          <tr>
+            <th style="width:60px">Turn</th>
+            <th>Tool</th>
+            <th style="width:100px">Type</th>
+          </tr>
+        </thead>
         <tbody id="traceBody"></tbody>
       </table>
     </div>
 
-    <div class="section-title" id="findingsTitle"></div>
+    <div class="section-header" id="findingsHeader" style="display:none">
+      <span class="section-title">Findings & Mitigations</span>
+      <div class="section-line"></div>
+      <span class="section-count" id="findingsCount"></span>
+    </div>
     <div id="findingsContainer"></div>
 
-    <div class="section-title">Evidence</div>
-    <div class="card" id="evidenceContainer"></div>
+    <div class="section-header">
+      <span class="section-title">Evidence</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="evidence-list" id="evidenceContainer"></div>
+
   </div>
+
 </div>
 
 <script>
 async function loadScenarios() {
   const res = await fetch('/scenarios');
   const data = await res.json();
+  document.getElementById('scenarioCount').textContent = data.length + ' loaded';
+  document.getElementById('statScenarios').textContent = data.length;
+
   const el = document.getElementById('scenarios');
   el.innerHTML = data.map(s => `
     <div class="scenario-card">
-      <div class="attack-type">${s.attack_type}</div>
-      <div class="tool-name">${s.tool_name}()</div>
-      <div class="desc">${s.description}</div>
+      <div class="attack-badge">${s.attack_type}</div>
+      <div class="scenario-tool">${s.tool_name}()</div>
+      <div class="scenario-desc">${s.description}</div>
     </div>
   `).join('');
 }
@@ -133,62 +657,82 @@ async function runEval() {
   const results = document.getElementById('results');
 
   btn.disabled = true;
-  btn.textContent = '⏳ Running agent...';
-  status.textContent = 'Connecting Gemini agent to trap server. This takes ~60–90 seconds...';
+  btn.innerHTML = '<span class="spinner"></span> Running agent...';
+  status.textContent = '⏳ Connecting Gemini agent to trap server — please wait ~30–60s';
   verdictBox.style.display = 'none';
   results.style.display = 'none';
+  document.getElementById('statTriggered').textContent = '—';
+  document.getElementById('statTriggered').className = 'stat-value';
 
   try {
     const res = await fetch('/run', { method: 'POST' });
     const data = await res.json();
 
     if (data.error) {
-      status.textContent = '❌ Error: ' + data.error;
+      status.textContent = '❌ ' + data.error;
       btn.disabled = false;
-      btn.textContent = '▶ Run Agent Against Traps';
+      btn.innerHTML = '<span>▶</span> Run Agent Against All Traps';
       return;
     }
 
+    // Stats
+    const trapped = data.trap_tools_invoked.length;
+    document.getElementById('statTriggered').textContent = trapped + '/' + data.total_tool_calls;
+    document.getElementById('statTriggered').className = 'stat-value ' + (trapped > 0 ? 'red' : 'green');
+
     // Verdict
-    const vBox = verdictBox;
-    vBox.className = 'verdict-box ' + data.verdict.toLowerCase();
-    vBox.style.display = 'block';
-    const emoji = data.verdict === 'COMPROMISED' ? '❌' : data.verdict === 'SAFE' ? '✅' : '⚠️';
-    document.getElementById('verdictLabel').textContent = emoji + '  ' + data.verdict;
+    verdictBox.className = 'verdict-box ' + data.verdict.toLowerCase();
+    verdictBox.style.display = 'block';
+    const icons = { COMPROMISED: '❌', SAFE: '✅', INCONCLUSIVE: '⚠️' };
+    document.getElementById('verdictLabel').textContent = icons[data.verdict] + '  ' + data.verdict;
     document.getElementById('verdictMeta').textContent =
-      `${data.turns} turn(s) · ${data.total_tool_calls} tool calls · ${data.trap_tools_invoked.length} trap(s) triggered`;
+      `${data.turns} turn(s) · ${data.total_tool_calls} tool calls · ${trapped} trap(s) triggered · ${data.suspicious_patterns?.length || 0} suspicious patterns`;
 
     // Trace
-    const tbody = document.getElementById('traceBody');
-    tbody.innerHTML = data.tool_call_trace.map(tc => `
-      <tr>
-        <td>${tc.turn}</td>
-        <td class="tool-mono">${tc.name}()</td>
-        <td><span class="${tc.is_trap ? 'badge-trap' : 'badge-safe'}">${tc.is_trap ? 'TRAP' : 'safe'}</span></td>
+    document.getElementById('traceBody').innerHTML = data.tool_call_trace.map(tc => `
+      <tr class="${tc.is_trap ? 'is-trap' : ''}">
+        <td class="turn-num">${tc.turn}</td>
+        <td class="tool-name">${tc.name}()</td>
+        <td>
+          <span class="badge ${tc.is_trap ? 'badge-trap' : 'badge-safe'}">
+            ${tc.is_trap ? '⚡ TRAP' : '✓ safe'}
+          </span>
+        </td>
       </tr>
     `).join('');
 
     // Findings
-    const findingsTitle = document.getElementById('findingsTitle');
-    const findingsContainer = document.getElementById('findingsContainer');
+    const fh = document.getElementById('findingsHeader');
+    const fc = document.getElementById('findingsContainer');
     if (data.findings.length > 0) {
-      findingsTitle.textContent = `Findings & Mitigations (${data.findings.length})`;
-      findingsContainer.innerHTML = data.findings.map(f => `
+      fh.style.display = 'flex';
+      document.getElementById('findingsCount').textContent = data.findings.length + ' found';
+      fc.innerHTML = data.findings.map(f => `
         <div class="finding-card">
-          <div class="attack">● ${f.attack_type}</div>
-          <div class="tool-ref">via <code>${f.tool}</code> at turn ${f.turn}</div>
-          <div class="mit-label">💡 Mitigation</div>
-          <div class="mitigation">${f.mitigation}</div>
+          <div class="finding-header">
+            <span style="color:var(--red);font-size:1rem">●</span>
+            <span class="finding-title">${f.attack_type}</span>
+          </div>
+          <div class="finding-meta">via <code>${f.tool}</code> at turn ${f.turn}</div>
+          <div class="mitigation-label">💡 Mitigation</div>
+          <div class="mitigation-text">${f.mitigation}</div>
         </div>
       `).join('');
     } else {
-      findingsTitle.textContent = '';
-      findingsContainer.innerHTML = '';
+      fh.style.display = 'none';
+      fc.innerHTML = '';
     }
 
     // Evidence
-    const evContainer = document.getElementById('evidenceContainer');
-    evContainer.innerHTML = data.evidence.map(e => `<div class="evidence-item">${e}</div>`).join('');
+    document.getElementById('evidenceContainer').innerHTML = data.evidence.map(e => {
+      const isGood = e.includes('No trap') || e.includes('resisted');
+      return `
+        <div class="evidence-item">
+          <div class="evidence-dot ${isGood ? 'green' : ''}"></div>
+          <span>${e}</span>
+        </div>
+      `;
+    }).join('');
 
     results.style.display = 'block';
     status.textContent = '';
@@ -197,7 +741,7 @@ async function runEval() {
   }
 
   btn.disabled = false;
-  btn.textContent = '▶ Run Again';
+  btn.innerHTML = '<span>▶</span> Run Again';
 }
 
 loadScenarios();

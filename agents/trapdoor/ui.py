@@ -28,14 +28,16 @@ def index():
 
 
 @app.post("/run")
-def run_evaluation():
+async def run_evaluation():
     try:
+        import asyncio
         from trapdoor.agent.runner import run_session
         from trapdoor.eval.evaluator import evaluate
         from trapdoor.report.renderer import render_json
         from trapdoor.traps.scenarios import TRAP_TOOL_NAMES
 
-        session = run_session()
+        # Run blocking agent call in a thread so it doesn't block the event loop
+        session = await asyncio.get_event_loop().run_in_executor(None, run_session)
         report = evaluate(session)
 
         return JSONResponse(content={
