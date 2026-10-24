@@ -1,0 +1,17 @@
+
+[
+    {
+        "name": "product_content_scoring",
+        "status": "success"
+    },
+    {
+        "name": "daily_pricing_pipeline",
+        "status": "failed",
+        "error_message": "Executor lost due to out of memory"
+    },
+    {
+        "name": "customer_data_pipeline",
+        "status": "failed",
+        "error_message": "Database connection timeout"
+    }
+]
