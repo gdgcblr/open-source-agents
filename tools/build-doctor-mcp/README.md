@@ -232,7 +232,7 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 - Structured JUnit/Surefire/pytest-style report evidence.
 - Before/after verification without command execution.
 - Cross-platform MCP client presets.
-- Eleven public evaluation cases covering multiple ecosystems and CI formats.
+- Eighteen public evaluation cases covering multiple ecosystems, CI formats, and operational failure categories.
 
 ## License
 
