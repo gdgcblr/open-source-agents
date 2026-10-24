@@ -1,0 +1,29 @@
+diff --git a/repos/checkout-client/client.py b/repos/checkout-client/client.py
+index 81c20ef..b349a12 100644
+--- a/repos/checkout-client/client.py
++++ b/repos/checkout-client/client.py
+@@ -1,7 +1,9 @@
+ def get_customer_id(payload: dict) -> str:
++    """Extract customer identifier from orders-api response payload."""
+     return payload["customer_id"]
+ 
+ def build_checkout_session(payload: dict) -> dict:
+     cid = get_customer_id(payload)
+-    return {"session_customer": cid, "ready": payload.get("status") == "active"}
++    return {
++        "session_customer": cid,
++        "ready": payload.get("status") == "active",
++        "client_version": "2.4.1",
++    }
+diff --git a/repos/checkout-client/tests/test_consumer_unit.py b/repos/checkout-client/tests/test_consumer_unit.py
+index 192d0aa..64f10bc 100644
+--- a/repos/checkout-client/tests/test_consumer_unit.py
++++ b/repos/checkout-client/tests/test_consumer_unit.py
+@@ -3,6 +3,7 @@ from client import build_checkout_session, get_customer_id
+ def test_consumer_with_mocked_provider_payload():
+     # NOTE: Stale mock still reflects old orders-api response contract
+     stale_mock_payload = {"customer_id": "cus_123", "status": "active"}
+     assert get_customer_id(stale_mock_payload) == "cus_123"
+     session = build_checkout_session(stale_mock_payload)
+     assert session["session_customer"] == "cus_123"
++    assert session["client_version"] == "2.4.1"

@@ -1,0 +1,21 @@
+diff --git a/repos/orders-api/provider.py b/repos/orders-api/provider.py
+index 4a19b2c..9f82e11 100644
+--- a/repos/orders-api/provider.py
++++ b/repos/orders-api/provider.py
+@@ -8,7 +8,7 @@ def get_customer_response(customer_id: str = "cus_123") -> dict:
+     """Return customer status payload for downstream checkout services."""
+     return {
+-        "customer_id": customer_id,
++        "customerId": customer_id,
+         "status": "active",
+     }
+diff --git a/repos/orders-api/tests/test_provider_unit.py b/repos/orders-api/tests/test_provider_unit.py
+index 310c84a..722f9d0 100644
+--- a/repos/orders-api/tests/test_provider_unit.py
++++ b/repos/orders-api/tests/test_provider_unit.py
+@@ -4,5 +4,5 @@ from provider import get_customer_response
+ def test_provider_returns_active_customer():
+     payload = get_customer_response("cus_123")
+-    assert payload["customer_id"] == "cus_123"
++    assert payload["customerId"] == "cus_123"
+     assert payload["status"] == "active"

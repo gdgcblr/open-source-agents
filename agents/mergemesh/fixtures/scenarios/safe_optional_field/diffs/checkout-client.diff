@@ -1,0 +1,13 @@
+diff --git a/repos/checkout-client/client.py b/repos/checkout-client/client.py
+index 81c20ef..211bc09 100644
+--- a/repos/checkout-client/client.py
++++ b/repos/checkout-client/client.py
+@@ -1,6 +1,7 @@
+ def get_customer_id(payload: dict) -> str:
+     return payload["customer_id"]
+ 
+ def build_checkout_session(payload: dict) -> dict:
+     cid = get_customer_id(payload)
++    label = payload.get("display_name", "Guest")
+-    return {"session_customer": cid, "ready": payload.get("status") == "active"}
++    return {"session_customer": cid, "ready": payload.get("status") == "active", "display_name": label}

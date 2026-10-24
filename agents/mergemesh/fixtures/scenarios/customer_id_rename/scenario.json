@@ -1,0 +1,36 @@
+{
+  "id": "customer_id_rename",
+  "title": "Scenario A — Breaking Field Rename (customer_id → customerId)",
+  "description": "orders-api renames response field 'customer_id' to 'customerId' (PR #142 passes isolated provider tests). checkout-client still reads payload['customer_id'] (PR #89 passes isolated unit tests against a stale mock). When combined, checkout-client crashes with KeyError: 'customer_id'.",
+  "provider_repo": "orders-api",
+  "consumer_repo": "checkout-client",
+  "interface_type": "rest_json",
+  "breaking": true,
+  "provider_before": "contracts/provider_before.json",
+  "provider_after": "contracts/provider_after.json",
+  "provider_source": "repos/orders-api/provider.py",
+  "consumer_source": "repos/checkout-client/client.py",
+  "post_fix_consumer_source": "repos/checkout-client/client_fixed.py",
+  "provider_test": "repos/orders-api/tests/test_provider_unit.py",
+  "consumer_test": "repos/checkout-client/tests/test_consumer_unit.py",
+  "integration_test": "repos/checkout-client/tests/test_combined_contract.py",
+  "post_fix_test": "repos/checkout-client/tests/test_post_fix_contract.py",
+  "required_fields": ["customer_id", "status"],
+  "diffs": [
+    {
+      "repo": "orders-api",
+      "path": "diffs/orders-api.diff",
+      "summary": "PR #142: Standardize JSON response keys to camelCase (`customer_id` -> `customerId`)"
+    },
+    {
+      "repo": "checkout-client",
+      "path": "diffs/checkout-client.diff",
+      "summary": "PR #89: Add checkout telemetry header while reading `payload[\"customer_id\"]` tested against stale mock"
+    }
+  ],
+  "expected_finding_id": "missing_customer_id",
+  "suggested_fix": "Update checkout-client (`repos/checkout-client/client.py`) to read `payload.get(\"customerId\") or payload[\"customer_id\"]`, or retain `customer_id` alongside `customerId` in `orders-api` during the deprecation window.",
+  "pr_a_title": "PR #142 (orders-api): Migrate customer payload key to camelCase `customerId`",
+  "pr_b_title": "PR #89 (checkout-client): Add checkout session metadata (uses mocked `customer_id`)",
+  "consumer_mock_note": "Isolated consumer unit test (`test_consumer_unit.py`) uses a hardcoded stale mock `{\"customer_id\": \"cus_123\", \"status\": \"active\"}` that hides the breaking provider change."
+}

@@ -1,0 +1,10 @@
+diff --git a/repos/orders-api/provider.py b/repos/orders-api/provider.py
+index 4a19b2c..8bc1102 100644
+--- a/repos/orders-api/provider.py
++++ b/repos/orders-api/provider.py
+@@ -8,4 +8,5 @@ def get_customer_response(customer_id: str = "cus_123") -> dict:
+     return {
+         "customer_id": customer_id,
+         "status": "active",
++        "display_name": "Aditi Sharma",
+     }

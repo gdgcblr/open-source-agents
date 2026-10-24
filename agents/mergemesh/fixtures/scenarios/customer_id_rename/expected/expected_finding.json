@@ -1,0 +1,9 @@
+{
+  "finding_id": "missing_customer_id",
+  "kind": "FIELD_REMOVED_BUT_CONSUMED",
+  "severity": "HIGH",
+  "provider_repo": "orders-api",
+  "consumer_repo": "checkout-client",
+  "field": "customer_id",
+  "replacement_candidate": "customerId"
+}

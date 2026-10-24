@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`mergemesh/`](mergemesh/) | Local-first cross-repository change-set compatibility analyzer that correlates candidate PRs, executes allow-listed `pytest` contract checks, and explains failures via Google ADK + local Ollama Gemma. | Python, Google ADK, Ollama (Gemma), Streamlit, FastAPI, Pytest | [@ShubhamKumar1703](https://github.com/ShubhamKumar1703) |

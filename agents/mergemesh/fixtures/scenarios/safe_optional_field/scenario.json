@@ -1,0 +1,34 @@
+{
+  "id": "safe_optional_field",
+  "title": "Scenario B — Compatible Optional Field Addition (display_name)",
+  "description": "orders-api adds a backward-compatible field 'display_name' while retaining 'customer_id' and 'status'. checkout-client continues to read 'customer_id' safely. Both isolated tests and the combined cross-repository integration test pass.",
+  "provider_repo": "orders-api",
+  "consumer_repo": "checkout-client",
+  "interface_type": "rest_json",
+  "breaking": false,
+  "provider_before": "contracts/provider_before.json",
+  "provider_after": "contracts/provider_after.json",
+  "provider_source": "repos/orders-api/provider.py",
+  "consumer_source": "repos/checkout-client/client.py",
+  "provider_test": "repos/orders-api/tests/test_provider_unit.py",
+  "consumer_test": "repos/checkout-client/tests/test_consumer_unit.py",
+  "integration_test": "repos/checkout-client/tests/test_combined_contract.py",
+  "required_fields": ["customer_id", "status"],
+  "diffs": [
+    {
+      "repo": "orders-api",
+      "path": "diffs/orders-api.diff",
+      "summary": "PR #148: Add optional 'display_name' field while preserving 'customer_id'"
+    },
+    {
+      "repo": "checkout-client",
+      "path": "diffs/checkout-client.diff",
+      "summary": "PR #92: Add checkout session metadata while reading 'customer_id'"
+    }
+  ],
+  "expected_finding_id": null,
+  "suggested_fix": "No remediation required. The added field 'display_name' is backward-compatible with checkout-client.",
+  "pr_a_title": "PR #148 (orders-api): Add optional `display_name` to customer response",
+  "pr_b_title": "PR #92 (checkout-client): Read `customer_id` and `status` for checkout session",
+  "consumer_mock_note": "Both isolated mocks and the live provider contract retain `customer_id` and `status`."
+}
