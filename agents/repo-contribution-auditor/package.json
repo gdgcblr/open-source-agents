@@ -1,0 +1,31 @@
+{
+  "name": "repo-contribution-auditor",
+  "version": "1.0.0",
+  "description": "CLI that audits a project folder against gdgcblr/open-source-agents contribution criteria",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "audit": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "node --import tsx/esm --test tests/*.test.ts",
+    "lint": "tsc --noEmit",
+    "audit:self": "npx --yes tsx src/cli.ts .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": ["audit", "contribution", "open-source", "gdgcblr", "cli", "security"],
+  "license": "MIT"
+}

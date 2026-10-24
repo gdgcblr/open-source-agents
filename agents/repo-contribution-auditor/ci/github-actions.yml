@@ -1,0 +1,63 @@
+# CI Workflow Template for repo-contribution-auditor
+#
+# This file is a template. To enable automated CI on your fork:
+# 1. Copy this file to: .github/workflows/repo-contribution-auditor.yml
+#    at the ROOT of your fork (not inside agents/).
+# 2. Push your feature branch — GitHub Actions will run automatically.
+#
+# The workflow runs tests on Ubuntu and Windows for cross-platform verification.
+# No API keys are required; the tool runs in deterministic mode.
+
+name: repo-contribution-auditor CI
+
+on:
+  push:
+    paths:
+      - 'agents/repo-contribution-auditor/**'
+  pull_request:
+    paths:
+      - 'agents/repo-contribution-auditor/**'
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+      fail-fast: false
+
+    defaults:
+      run:
+        working-directory: agents/repo-contribution-auditor
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: agents/repo-contribution-auditor/package-lock.json
+
+      - name: Install dependencies (clean)
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Security audit
+        run: npm audit
+
+      - name: Self-audit (CLI smoke test)
+        run: npx tsx src/cli.ts . --format json
+        # This checks that the project itself passes its own contribution criteria.
+        # Exit code 0 = PASS (no HIGH findings); exit code 1 = FAIL.

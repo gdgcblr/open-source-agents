@@ -1,0 +1,36 @@
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# Node.js / TypeScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# Python (N/A — project is TypeScript only)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Test coverage
+coverage/
+.nyc_output/

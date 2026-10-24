@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [repo-contribution-auditor](./repo-contribution-auditor/) | CLI that audits a project folder against the repository's contribution criteria; emits JSON + Markdown findings with deterministic secret scanning, README/manifest/scope checks, and optional Gemini AI explanations | TypeScript / Node.js 20+ / Vanilla script | gdgcblr |
