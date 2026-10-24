@@ -1,0 +1,32 @@
+diff --git a/app/db.py b/app/db.py
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/app/db.py
+@@ -0,0 +1,14 @@
++import sqlite3
++
++API_KEY = "a8f3k2m9q7z1p5w4n6"
++
++
++def get_user(conn, name, cache=[]):
++    # TODO: add caching
++    cur = conn.cursor()
++    cur.execute(f"SELECT * FROM users WHERE name = '{name}'")
++    return cur.fetchone()
++
++
++def run(expr):
++    return eval(expr)
+diff --git a/app/util.py b/app/util.py
+index 2222222..3333333 100644
+--- a/app/util.py
++++ b/app/util.py
+@@ -10,3 +10,8 @@ def parse(value):
+     return int(value)
++
++def safe_parse(value):
++    try:
++        return int(value)
++    except:
++        print("bad value", value)
