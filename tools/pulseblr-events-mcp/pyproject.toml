@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pulseblr-events-mcp"
+version = "0.1.0"
+description = "Public Bengaluru event discovery, community recommendations and schedule planning over MCP."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Naga Sai Rahul Vudumula"}]
+dependencies = ["mcp==2.3.0", "tzdata==2026.5", "anyio==4.15.1", "httpx2==2.16.0"]
+
+[project.scripts]
+pulseblr-events-mcp = "pulseblr_events_mcp.__main__:main"
+pulseblr-events-gemini = "pulseblr_events_mcp.gemini_client:main"
+
+[project.optional-dependencies]
+gemini = ["google-genai==2.33.0", "httpx==0.28.1"]
+
+[project.urls]
+Repository = "https://github.com/gdgcblr/open-source-agents"
+"Live data service" = "https://pulseblr-u9f1.vercel.app/mcp"
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "build==1.6.1",
+    "ruff==0.17.2",
+    "hatchling==1.32.4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pulseblr_events_mcp"]
+
+[tool.hatch.build.targets.sdist]
+include = ["pulseblr_events_mcp/", "tests/", "scripts/", "docs/", "README.md", "LICENSE", "pyproject.toml", "requirements.lock", "requirements-dev.lock", "requirements-gemini.lock", "uv.lock", ".env.example", ".gitignore"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

@@ -1,0 +1,714 @@
+{
+  "started_at_utc": "2026-10-24T08:46:06.064481+00:00",
+  "source": "live",
+  "data_notice": "Anonymous public live listings; retrieval is not independent verification.",
+  "public_endpoint": "https://pulseblr-u9f1.vercel.app/api/mcp",
+  "sample_clock": null,
+  "client": "Official mcp.ClientSession over stdio; no direct tool-function calls.",
+  "python_version": "3.12.13",
+  "gemini": "Not invoked by this harness. MCP results do not establish model generation.",
+  "limits": {
+    "search_limit": 10,
+    "explicit_id_batch_limit": 5,
+    "max_selected_events": 2,
+    "physical_transfer_minutes": 60,
+    "online_to_online_minutes": 5,
+    "duration_policy": "strict",
+    "retries": 0
+  },
+  "scenarios": [
+    {
+      "scenario": "01_protocol_and_read_only_surface",
+      "status": "passed",
+      "evidence": {
+        "protocol_version": "2025-11-25",
+        "tools": [
+          "get_event",
+          "list_topics",
+          "plan_schedule",
+          "recommend_communities",
+          "search_events"
+        ]
+      },
+      "elapsed_seconds": 2.52
+    },
+    {
+      "scenario": "02_discover_supported_topics_and_areas",
+      "status": "passed",
+      "evidence": {
+        "supported_topics": [
+          "AI/ML",
+          "Data/Analytics",
+          "Cloud/DevOps",
+          "Web/Mobile",
+          "Cybersecurity",
+          "Open Source",
+          "Hardware/Robotics",
+          "Blockchain/Web3",
+          "Gaming/XR",
+          "Hackathon",
+          "Conference",
+          "Meetup",
+          "Workshop",
+          "Career/Hiring",
+          "Startup/Founders",
+          "Product/Design"
+        ],
+        "supported_areas": [
+          "Koramangala",
+          "Indiranagar",
+          "Whitefield",
+          "HSR Layout",
+          "Electronic City",
+          "MG Road",
+          "Marathahalli",
+          "Jayanagar",
+          "BTM Layout",
+          "Bannerghatta Road",
+          "Sarjapur Road",
+          "Outer Ring Road",
+          "Hebbal",
+          "Yelahanka",
+          "JP Nagar",
+          "Domlur",
+          "Rajajinagar",
+          "Basavanagudi",
+          "Banashankari",
+          "Kalyan Nagar",
+          "Rajarajeshwari Nagar",
+          "Peenya",
+          "Bommanahalli",
+          "Kanakapura Road",
+          "Devanahalli",
+          "Ulsoor",
+          "Bengaluru Central",
+          "Other"
+        ],
+        "observed_topics": [
+          {
+            "category": "AI/ML",
+            "events": 24,
+            "shareOfUpcoming": 0.6,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/ai-ml"
+          },
+          {
+            "category": "Workshop",
+            "events": 11,
+            "shareOfUpcoming": 0.28,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/workshop"
+          },
+          {
+            "category": "Data/Analytics",
+            "events": 10,
+            "shareOfUpcoming": 0.25,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/data-analytics"
+          },
+          {
+            "category": "Meetup",
+            "events": 10,
+            "shareOfUpcoming": 0.25,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/meetup"
+          },
+          {
+            "category": "Open Source",
+            "events": 8,
+            "shareOfUpcoming": 0.2,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/open-source"
+          },
+          {
+            "category": "Web/Mobile",
+            "events": 8,
+            "shareOfUpcoming": 0.2,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/web-mobile"
+          },
+          {
+            "category": "Cloud/DevOps",
+            "events": 7,
+            "shareOfUpcoming": 0.18,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/cloud-devops"
+          },
+          {
+            "category": "Career/Hiring",
+            "events": 5,
+            "shareOfUpcoming": 0.13,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/career-hiring"
+          },
+          {
+            "category": "Business/Finance",
+            "events": 4,
+            "shareOfUpcoming": 0.1,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Business%2FFinance"
+          },
+          {
+            "category": "Hardware/Robotics",
+            "events": 4,
+            "shareOfUpcoming": 0.1,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/hardware-robotics"
+          },
+          {
+            "category": "Cybersecurity",
+            "events": 3,
+            "shareOfUpcoming": 0.08,
+            "url": "https://pulseblr-u9f1.vercel.app/topics/cybersecurity"
+          },
+          {
+            "category": "Hackathon",
+            "events": 2,
+            "shareOfUpcoming": 0.05,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Hackathon"
+          },
+          {
+            "category": "Product/Design",
+            "events": 2,
+            "shareOfUpcoming": 0.05,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Product%2FDesign"
+          },
+          {
+            "category": "Science/Research",
+            "events": 2,
+            "shareOfUpcoming": 0.05,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Science%2FResearch"
+          },
+          {
+            "category": "Startup/Founders",
+            "events": 2,
+            "shareOfUpcoming": 0.05,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Startup%2FFounders"
+          },
+          {
+            "category": "Blockchain/Web3",
+            "events": 1,
+            "shareOfUpcoming": 0.03,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Blockchain%2FWeb3"
+          },
+          {
+            "category": "Conference",
+            "events": 1,
+            "shareOfUpcoming": 0.03,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Conference"
+          },
+          {
+            "category": "Health/Fitness",
+            "events": 1,
+            "shareOfUpcoming": 0.03,
+            "url": "https://pulseblr-u9f1.vercel.app/?category=Health%2FFitness"
+          }
+        ],
+        "total_events": 40,
+        "window": "weekend",
+        "counts_truncated": false,
+        "fetched_at": "2026-10-24T08:46:09.969763Z"
+      },
+      "elapsed_seconds": 1.61
+    },
+    {
+      "scenario": "03_weekend_ai_free_in_person_koramangala",
+      "status": "passed",
+      "evidence": {
+        "arguments": {
+          "topics": [
+            "AI/ML"
+          ],
+          "areas": [
+            "Koramangala"
+          ],
+          "when": "weekend",
+          "format": "offline",
+          "free_only": true,
+          "limit": 10
+        },
+        "fetched_at": "2026-10-24T08:46:10.921759Z",
+        "returned": 3,
+        "filters": {
+          "category": [
+            "AI/ML"
+          ],
+          "area": [
+            "Koramangala"
+          ],
+          "dateFrom": "2026-10-24T14:16:10.225762+05:30",
+          "dateTo": "2026-10-26T00:00:00+05:30",
+          "format": "offline",
+          "free": true,
+          "sort": "soonest",
+          "limit": 10
+        },
+        "total_matching": 3,
+        "candidate_pool_truncated": false,
+        "events": [
+          {
+            "id": "6ad9c17112a908293f6517aa",
+            "title": "Monthly Meetup - October 2026: Stop Designing Screens. Start Designing Systems.",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c17112a908293f6517aa",
+            "startsAt": "2026-10-24T09:30:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "Bengaluru WordPress",
+            "categories": [
+              "AI/ML",
+              "Web/Mobile",
+              "Product/Design"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad9c1b912a908293f6517b7",
+            "title": "AI Safety Mixer: Embodied AI | SAFL",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c1b912a908293f6517b7",
+            "startsAt": "2026-10-24T12:30:00+00:00",
+            "endsAt": "2026-10-24T15:00:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "Secure AI Futures Lab | SAFL",
+            "categories": [
+              "AI/ML",
+              "Hardware/Robotics",
+              "Meetup"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad9c1ba12a908293f6517b8",
+            "title": "SAFL AI Futures Dialogue #2 | Dr. Roshni Lulla",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c1ba12a908293f6517b8",
+            "startsAt": "2026-10-24T13:30:00+00:00",
+            "endsAt": "2026-10-24T14:30:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "Secure AI Futures Lab | SAFL",
+            "categories": [
+              "AI/ML",
+              "Hardware/Robotics",
+              "Startup/Founders"
+            ],
+            "isFree": true
+          }
+        ],
+        "zero_is_valid": true
+      },
+      "elapsed_seconds": 0.7
+    },
+    {
+      "scenario": "04_broader_week_candidates",
+      "status": "passed",
+      "evidence": {
+        "arguments": {
+          "when": "week",
+          "limit": 10
+        },
+        "fetched_at": "2026-10-24T08:46:11.537004Z",
+        "returned": 10,
+        "filters": {
+          "dateFrom": "2026-10-24T14:16:10.926157+05:30",
+          "dateTo": "2026-10-31T14:16:10.926157+05:30",
+          "sort": "soonest",
+          "limit": 10
+        },
+        "total_matching": 66,
+        "candidate_pool_truncated": true,
+        "events": [
+          {
+            "id": "6a8409383db639d477d6b4c2",
+            "title": "India Chapter - Core Group Meeting Online",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6a8409383db639d477d6b4c2",
+            "startsAt": "2026-10-24T09:30:00+00:00",
+            "endsAt": "2026-10-24T11:30:00+00:00",
+            "format": "online",
+            "area": "Other",
+            "organizer": "iasa india software architecture meetup",
+            "categories": [
+              "Cloud/DevOps",
+              "Meetup"
+            ],
+            "isFree": false
+          },
+          {
+            "id": "6ad5cf36dbec857d6821d2b6",
+            "title": "UX for AI SDLC Masterclass",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad5cf36dbec857d6821d2b6",
+            "startsAt": "2026-10-24T09:30:00+00:00",
+            "format": "online",
+            "organizer": "UX for AI \u2013 Bengaluru",
+            "categories": [
+              "AI/ML",
+              "Data/Analytics",
+              "Web/Mobile"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad9c17112a908293f6517aa",
+            "title": "Monthly Meetup - October 2026: Stop Designing Screens. Start Designing Systems.",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c17112a908293f6517aa",
+            "startsAt": "2026-10-24T09:30:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "Bengaluru WordPress",
+            "categories": [
+              "AI/ML",
+              "Web/Mobile",
+              "Product/Design"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6abf738a08262f7372e95385",
+            "title": "BitGo x Giottus: Crypto Custody in Action",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6abf738a08262f7372e95385",
+            "startsAt": "2026-10-24T10:00:00+00:00",
+            "endsAt": "2026-10-24T14:00:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "BitGo",
+            "categories": [
+              "Blockchain/Web3",
+              "Business/Finance",
+              "Health/Fitness"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ac7618cd9ed474e5609246a",
+            "title": "CyberSwaraj: They Warned Us",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ac7618cd9ed474e5609246a",
+            "startsAt": "2026-10-24T11:30:00+00:00",
+            "endsAt": "2026-10-24T15:30:00+00:00",
+            "format": "offline",
+            "area": "HSR Layout",
+            "organizer": "Bitshala Bitspace Events and Meetups",
+            "categories": [
+              "Data/Analytics",
+              "Open Source",
+              "Science/Research"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad474744ea53b9f16bc1561",
+            "title": "WhatsApp Application Software Architecture",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad474744ea53b9f16bc1561",
+            "startsAt": "2026-10-24T11:30:00+00:00",
+            "format": "online",
+            "organizer": "Software Architecture and System Design or Core Design",
+            "categories": [
+              "AI/ML",
+              "Cloud/DevOps",
+              "Web/Mobile"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad9c1b912a908293f6517b7",
+            "title": "AI Safety Mixer: Embodied AI | SAFL",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c1b912a908293f6517b7",
+            "startsAt": "2026-10-24T12:30:00+00:00",
+            "endsAt": "2026-10-24T15:00:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "Secure AI Futures Lab | SAFL",
+            "categories": [
+              "AI/ML",
+              "Hardware/Robotics",
+              "Meetup"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad31ffd0d5abd9fa3a73da9",
+            "title": "Watch AI Fix a Real Bug",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad31ffd0d5abd9fa3a73da9",
+            "startsAt": "2026-10-24T13:30:00+00:00",
+            "format": "online",
+            "organizer": "CoderRange - AI ,  Big data , Data Science !.",
+            "categories": [
+              "AI/ML",
+              "Open Source",
+              "Business/Finance"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6ad9c1ba12a908293f6517b8",
+            "title": "SAFL AI Futures Dialogue #2 | Dr. Roshni Lulla",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c1ba12a908293f6517b8",
+            "startsAt": "2026-10-24T13:30:00+00:00",
+            "endsAt": "2026-10-24T14:30:00+00:00",
+            "format": "offline",
+            "area": "Koramangala",
+            "organizer": "Secure AI Futures Lab | SAFL",
+            "categories": [
+              "AI/ML",
+              "Hardware/Robotics",
+              "Startup/Founders"
+            ],
+            "isFree": true
+          },
+          {
+            "id": "6a8af2adfb16b340c901ffec",
+            "title": "AI Scrum Master Product Owner Mentorship and LIVE Project Masterclass",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6a8af2adfb16b340c901ffec",
+            "startsAt": "2026-10-24T14:00:00+00:00",
+            "endsAt": "2026-10-24T15:30:00+00:00",
+            "format": "online",
+            "organizer": "bangalore agile scrum meetup group",
+            "categories": [
+              "AI/ML",
+              "Cloud/DevOps",
+              "Data/Analytics"
+            ],
+            "isFree": true
+          }
+        ],
+        "zero_is_valid": true,
+        "explicit_candidate_ids": [
+          "6a8409383db639d477d6b4c2",
+          "6ad5cf36dbec857d6821d2b6",
+          "6ad9c17112a908293f6517aa",
+          "6abf738a08262f7372e95385",
+          "6ac7618cd9ed474e5609246a"
+        ],
+        "reason": "Broader week candidates; an empty narrow search is legitimate."
+      },
+      "elapsed_seconds": 0.61
+    },
+    {
+      "scenario": "05_get_first_public_event_details",
+      "status": "passed",
+      "evidence": {
+        "event": {
+          "id": "6a8409383db639d477d6b4c2",
+          "title": "India Chapter - Core Group Meeting Online",
+          "url": "https://pulseblr-u9f1.vercel.app/events/6a8409383db639d477d6b4c2",
+          "startsAt": "2026-10-24T09:30:00+00:00",
+          "endsAt": "2026-10-24T11:30:00+00:00",
+          "format": "online",
+          "area": "Other",
+          "organizer": "iasa india software architecture meetup",
+          "categories": [
+            "Cloud/DevOps",
+            "Meetup"
+          ],
+          "isFree": false
+        },
+        "fetched_at": "2026-10-24T08:46:12.143218+00:00"
+      },
+      "elapsed_seconds": 0.61
+    },
+    {
+      "scenario": "06_organiser_recommendations_from_explicit_ids",
+      "status": "passed",
+      "evidence": {
+        "arguments": {
+          "event_ids": [
+            "6a8409383db639d477d6b4c2",
+            "6ad5cf36dbec857d6821d2b6",
+            "6ad9c17112a908293f6517aa",
+            "6abf738a08262f7372e95385",
+            "6ac7618cd9ed474e5609246a"
+          ],
+          "interests": [
+            "AI",
+            "Open Source"
+          ],
+          "limit": 3
+        },
+        "communities": [
+          {
+            "organizer": "Bengaluru WordPress",
+            "observed_event_count": 1,
+            "matched_interests": [
+              "AI",
+              "Open Source"
+            ],
+            "score": 96.0,
+            "representative_events": [
+              {
+                "id": "6ad9c17112a908293f6517aa",
+                "title": "Monthly Meetup - October 2026: Stop Designing Screens. Start Designing Systems.",
+                "url": "https://pulseblr-u9f1.vercel.app/events/6ad9c17112a908293f6517aa",
+                "startsAt": "2026-10-24T09:30:00+00:00"
+              }
+            ],
+            "reason": "Observed organising 1 event(s) in this candidate set. Matches: AI, Open Source."
+          },
+          {
+            "organizer": "Bitshala Bitspace Events and Meetups",
+            "observed_event_count": 1,
+            "matched_interests": [
+              "Open Source"
+            ],
+            "score": 94.0,
+            "representative_events": [
+              {
+                "id": "6ac7618cd9ed474e5609246a",
+                "title": "CyberSwaraj: They Warned Us",
+                "url": "https://pulseblr-u9f1.vercel.app/events/6ac7618cd9ed474e5609246a",
+                "startsAt": "2026-10-24T11:30:00+00:00"
+              }
+            ],
+            "reason": "Observed organising 1 event(s) in this candidate set. Matches: Open Source."
+          },
+          {
+            "organizer": "BitGo",
+            "observed_event_count": 1,
+            "matched_interests": [],
+            "score": 69.0,
+            "representative_events": [
+              {
+                "id": "6abf738a08262f7372e95385",
+                "title": "BitGo x Giottus: Crypto Custody in Action",
+                "url": "https://pulseblr-u9f1.vercel.app/events/6abf738a08262f7372e95385",
+                "startsAt": "2026-10-24T10:00:00+00:00"
+              }
+            ],
+            "reason": "Observed organising 1 event(s) in this candidate set."
+          }
+        ],
+        "scope": "Organisers observed in the selected events, not a membership directory.",
+        "missing_event_ids": [],
+        "warnings": [
+          "Listing freshness and registration availability are not independently verified.",
+          "Free means listed free by PulseBLR; the upstream service may default unknown cost to free.",
+          "Organiser evidence is not a verified membership or contact directory; scores are ranking signals, not probabilities."
+        ]
+      },
+      "elapsed_seconds": 1.64
+    },
+    {
+      "scenario": "07_strict_schedule_identity_duration_and_buffers",
+      "status": "passed",
+      "evidence": {
+        "arguments": {
+          "event_ids": [
+            "6a8409383db639d477d6b4c2",
+            "6ad5cf36dbec857d6821d2b6",
+            "6ad9c17112a908293f6517aa",
+            "6abf738a08262f7372e95385",
+            "6ac7618cd9ed474e5609246a"
+          ],
+          "interests": [
+            "AI",
+            "Open Source"
+          ],
+          "max_events": 2,
+          "transfer_buffer_minutes": 60,
+          "duration_policy": "strict"
+        },
+        "selected": [
+          {
+            "id": "6ac7618cd9ed474e5609246a",
+            "title": "CyberSwaraj: They Warned Us",
+            "url": "https://pulseblr-u9f1.vercel.app/events/6ac7618cd9ed474e5609246a",
+            "startsAt": "2026-10-24T11:30:00+00:00",
+            "endsAt": "2026-10-24T15:30:00+00:00",
+            "format": "offline",
+            "area": "HSR Layout",
+            "organizer": "Bitshala Bitspace Events and Meetups",
+            "categories": [
+              "Data/Analytics",
+              "Open Source",
+              "Science/Research"
+            ],
+            "isFree": true
+          }
+        ],
+        "needs_duration": [
+          {
+            "id": "6ad5cf36dbec857d6821d2b6",
+            "reason": "missing_end"
+          },
+          {
+            "id": "6ad9c17112a908293f6517aa",
+            "reason": "missing_end"
+          }
+        ],
+        "search_snapshot_unknown_end_ids": [
+          "6ad5cf36dbec857d6821d2b6",
+          "6ad9c17112a908293f6517aa"
+        ],
+        "missing_event_ids": [],
+        "not_selected": [
+          {
+            "id": "6ad5cf36dbec857d6821d2b6",
+            "reason": "needs_duration"
+          },
+          {
+            "id": "6ad9c17112a908293f6517aa",
+            "reason": "needs_duration"
+          },
+          {
+            "id": "6a8409383db639d477d6b4c2",
+            "reason": "schedule_conflict"
+          },
+          {
+            "id": "6abf738a08262f7372e95385",
+            "reason": "schedule_conflict"
+          }
+        ],
+        "pair_checks": [],
+        "sample_online_pair_check": null,
+        "pair_check_notice": "No pair selected; no live pair feasibility claim.",
+        "assumptions": [
+          "Any transition involving physical or hybrid attendance allows 60 minutes; online-to-online allows 5 minutes.",
+          "Transfer buffers are scheduling allowances, not traffic estimates, route guarantees or first-event commute checks.",
+          "Best total ranking score within the supplied candidate set; scores add 20 per matching category interest or 5 per title/description interest to the upstream connection signal (0-100). Scores are not probabilities.",
+          "Equal scores prefer more events, then the earliest chronological start and lexical event ID.",
+          "Registration, admission, availability and listed-free claims require checking the event links."
+        ],
+        "warnings": [
+          "Listing freshness and registration availability are not independently verified.",
+          "Free means listed free by PulseBLR; the upstream service may default unknown cost to free.",
+          "Excluded 2 event(s) without valid end times under strict duration policy."
+        ]
+      },
+      "elapsed_seconds": 2.06
+    },
+    {
+      "scenario": "08_no_match_is_an_empty_result",
+      "status": "passed",
+      "evidence": {
+        "arguments": {
+          "query": "zzzzpulseblrreviewnomatch7d9c4e21",
+          "when": "week",
+          "limit": 10
+        },
+        "returned": 0,
+        "fetched_at": "2026-10-24T08:46:16.796408Z"
+      },
+      "elapsed_seconds": 0.95
+    },
+    {
+      "scenario": "09_invalid_event_cap_rejected",
+      "status": "passed",
+      "evidence": {
+        "arguments": {
+          "max_events": 99
+        },
+        "is_error": true
+      },
+      "elapsed_seconds": 0.0
+    },
+    {
+      "scenario": "10_personal_tool_name_rejected_locally",
+      "status": "passed",
+      "evidence": {
+        "tool": "my_people",
+        "is_error": true,
+        "scope": "Unknown-name request to this local server only; no personal backend read."
+      },
+      "elapsed_seconds": 0.0
+    }
+  ],
+  "finished_at_utc": "2026-10-24T08:46:18.046531+00:00",
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0
+  },
+  "warnings": [
+    "No Gemini or other model API was called; no private environment file was loaded.",
+    "Live events can change between calls. Free status, registration and freshness are unverified.",
+    "Pair-buffer assertions only exercise pairs actually selected; sample mode supplies known durations.",
+    "One run bounds upstream reads to 16 public operations plus MCP handshakes, with no retries; do not loop rapidly against the 120/minute service."
+  ]
+}
