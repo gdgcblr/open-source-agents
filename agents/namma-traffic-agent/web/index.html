@@ -752,6 +752,65 @@
       color: #64748b;
     }
 
+    /* Segmented Tab Selectors for Bus (Ordinary/AC) and Ride-Hail (Cab/Auto/Bike) */
+    .segmented-selector {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+      margin: 10px 0;
+    }
+    .segment-tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #475569;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .segment-tab:hover {
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.7);
+    }
+    .segment-tab.active {
+      background: #ffffff;
+      color: var(--primary);
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.2);
+    }
+    .segment-tab.active-blue {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35) !important;
+    }
+    .segment-tab.active-red {
+      background: #ea4335 !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 4px rgba(234, 67, 53, 0.35) !important;
+    }
+    .fare-sub-badge {
+      font-size: 0.72rem;
+      background: rgba(0, 0, 0, 0.08);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .segment-tab.active-blue .fare-sub-badge,
+    .segment-tab.active-red .fare-sub-badge {
+      background: rgba(255, 255, 255, 0.28);
+      color: #ffffff;
+    }
+
     /* Loading Indicator */
     .loading-bar {
       height: 3px;
@@ -1667,7 +1726,110 @@
       map.fitBounds(bounds, { padding: [80, 80] });
     }
 
+    let currentCommuteResult = null;
+    let currentBusResult = null;
+    let selectedBusType = 'ac';
+    let selectedRideHailMode = 'cab';
+
+    function selectBusType(type) {
+      selectedBusType = type;
+      const isAc = (type === 'ac');
+      document.getElementById('tabBusOrd')?.classList.toggle('active-blue', !isAc);
+      document.getElementById('tabBusAc')?.classList.toggle('active-blue', isAc);
+
+      const b = currentBusResult?.primary_bus;
+      const ordFare = currentBusResult?.fare_ordinary_inr || 25;
+      const acFare = currentBusResult?.fare_ac_vajra_inr || 45;
+      const curFare = isAc ? acFare : ordFare;
+
+      const fareEl = document.getElementById('busDisplayFare');
+      if (fareEl) fareEl.textContent = `₹${curFare}`;
+
+      const servEl = document.getElementById('busDisplayService');
+      if (servEl) servEl.textContent = isAc ? (b?.service_type || 'AC Vajra Volvo (Air-Conditioned)') : 'Ordinary Suvarna Red/Green Service';
+
+      const t = currentCommuteResult?.raw_tool_data?.find(x => x.cost_estimates);
+      const cabFare = t?.cost_estimates?.cab_uber_ola_inr || 750;
+      const savingsEl = document.getElementById('busDisplaySavings');
+      if (savingsEl) savingsEl.textContent = `💰 Saves ₹${Math.max(0, cabFare - curFare)} vs surge cab!`;
+
+      const busBadge = document.getElementById('busSpeedBadge');
+      if (busBadge) {
+        const routeNo = b?.route_no || '500-D';
+        busBadge.innerHTML = isAc ? `BMTC ${routeNo} Vajra` : `BMTC ${routeNo} Ordinary`;
+      }
+    }
+
+    function selectRideHail(mode) {
+      selectedRideHailMode = mode;
+      document.getElementById('tabRoadCab')?.classList.toggle('active-red', mode === 'cab');
+      document.getElementById('tabRoadAuto')?.classList.toggle('active-red', mode === 'auto');
+      document.getElementById('tabRoadBike')?.classList.toggle('active-red', mode === 'bike');
+
+      const t = currentCommuteResult?.raw_tool_data?.find(x => x.cost_estimates);
+      const dist = t?.distance_km || 18;
+      const surge = t?.cost_estimates?.surge_multiplier || '1.6x';
+      const cabFare = t?.cost_estimates?.cab_uber_ola_inr || 750;
+      const autoFare = t?.cost_estimates?.namma_auto_inr || Math.round(30 + Math.max(0, dist - 2) * 15 * 1.15);
+      const bikeFare = t?.cost_estimates?.bike_taxi_rapido_inr || Math.round(20 + Math.max(0, dist - 1.5) * 8.5 * 1.1);
+
+      const cabTime = t?.current_travel_time_mins || 115;
+      const autoTime = t?.auto_travel_time_mins || Math.round(cabTime * 0.88);
+      const bikeTime = t?.bike_travel_time_mins || Math.round(cabTime * 0.65);
+
+      const iconEl = document.getElementById('roadHeaderIcon');
+      const titleEl = document.getElementById('roadHeaderTitle');
+      const tagEl = document.getElementById('roadHeaderTag');
+      const durEl = document.getElementById('roadDisplayDuration');
+      const fareEl = document.getElementById('roadDisplayFare');
+      const detEl = document.getElementById('roadDisplayDetails');
+      const roadBadge = document.getElementById('cabSpeedBadge');
+
+      if (mode === 'cab') {
+        if (iconEl) iconEl.textContent = '🚖';
+        if (titleEl) titleEl.textContent = 'Road Cab (Ola / Uber)';
+        if (tagEl) { tagEl.textContent = '🔴 Severe Crawl'; tagEl.style.background = '#fce8e6'; tagEl.style.color = '#c5221f'; }
+        if (durEl) durEl.textContent = `${cabTime} mins`;
+        if (fareEl) fareEl.textContent = `₹${cabFare}`;
+        if (detEl) detEl.innerHTML = `
+          • <b>Vehicle Type:</b> Ola / Uber Cab (Sedan / Hatchback)<br>
+          • <b>Road Distance:</b> ${dist} km &bull; <b>Congestion:</b> Heavy Crawl (Speed: 9 km/h)<br>
+          • <b>Surge Multiplier:</b> ${surge} active.<br>
+          <span style="color: #d93025;">⚠️ Vulnerable to Silk Board / ORR traffic gridlocks</span>
+        `;
+        if (roadBadge) roadBadge.innerHTML = '🚖 Cab • 9 km/h (Crawl)';
+      } else if (mode === 'auto') {
+        if (iconEl) iconEl.textContent = '🛺';
+        if (titleEl) titleEl.textContent = 'Auto (Namma Yatri / Ola)';
+        if (tagEl) { tagEl.textContent = '🟡 Nimbler Flow'; tagEl.style.background = '#fef9c3'; tagEl.style.color = '#854d0e'; }
+        if (durEl) durEl.textContent = `${autoTime} mins`;
+        if (fareEl) fareEl.textContent = `₹${autoFare}`;
+        if (detEl) detEl.innerHTML = `
+          • <b>Tariff:</b> Official Bengaluru Meter (₹30 first 2km + ₹15/km)<br>
+          • <b>Agility:</b> Slightly faster (~12%) than cars by cutting through service lanes<br>
+          • <b>Platforms:</b> Namma Yatri (Direct-to-driver), Ola Auto, Uber Auto.<br>
+          <span style="color: #b45309;">💡 Budget alternative for short to mid-distance trips</span>
+        `;
+        if (roadBadge) roadBadge.innerHTML = '🛺 Auto • 15 km/h';
+      } else if (mode === 'bike') {
+        if (iconEl) iconEl.textContent = '🏍️';
+        if (titleEl) titleEl.textContent = 'Bike Taxi (Rapido / Uber Moto)';
+        if (tagEl) { tagEl.textContent = '⚡ Fastest Road'; tagEl.style.background = '#dcfce7'; tagEl.style.color = '#15803d'; }
+        if (durEl) durEl.textContent = `${bikeTime} mins`;
+        if (fareEl) fareEl.textContent = `₹${bikeFare}`;
+        if (detEl) detEl.innerHTML = `
+          • <b>Tariff:</b> Rapido / Uber Moto (₹20 base + ₹8.5/km)<br>
+          • <b>Agility:</b> Weaves through gridlock; cuts 35% travel time vs cars!<br>
+          • <b>Best for:</b> Solo commuters beating tech corridor bottlenecks.<br>
+          <span style="color: #166534; font-weight: 700;">⚡ Saves ₹${cabFare - bikeFare} and ${cabTime - bikeTime} mins vs car cab!</span>
+        `;
+        if (roadBadge) roadBadge.innerHTML = '🏍️ Bike Taxi • 28 km/h';
+      }
+    }
+
     function renderSidebarResults(data, busData, origin, destination) {
+      currentCommuteResult = data;
+      currentBusResult = busData;
       const content = document.getElementById('sidebarContent');
       let html = '';
 
@@ -1683,8 +1845,12 @@
         });
       }
 
+      const distKm = trafficData?.distance_km || 18;
       const roadTime = trafficData ? trafficData.current_travel_time_mins : 120;
-      const roadFare = trafficData ? trafficData.cost_estimates.cab_uber_ola_inr : 800;
+      const cabFare = trafficData ? trafficData.cost_estimates.cab_uber_ola_inr : 800;
+      const autoFare = trafficData?.cost_estimates?.namma_auto_inr || Math.round(30 + Math.max(0, distKm - 2) * 15 * 1.15);
+      const bikeFare = trafficData?.cost_estimates?.bike_taxi_rapido_inr || Math.round(20 + Math.max(0, distKm - 1.5) * 8.5 * 1.1);
+
       const metroTime = metroData ? metroData.breakdown.total_multimodal_time_mins : 75;
       const metroFare = metroData ? (metroData.metro_qr_smartcard_fare_inr || 57) : 57;
 
@@ -1693,7 +1859,7 @@
       const busTime = busData?.estimated_travel_time_mins || 65;
 
       const timeSaved = Math.max(0, roadTime - metroTime);
-      const moneySaved = Math.max(0, roadFare - metroFare);
+      const moneySaved = Math.max(0, cabFare - metroFare);
 
       // Metro stations list HTML
       let metroStationsHtml = '';
@@ -1737,11 +1903,11 @@
           <div class="saver-metric-row">
             <div>
               <div class="saver-big-val">₹${moneySaved}</div>
-              <div class="saver-sub">Saved with Metro</div>
+              <div class="saver-sub">Saved vs Surge Cab</div>
             </div>
             <div style="margin-left: 20px;">
               <div class="saver-big-val">${timeSaved}m</div>
-              <div class="saver-sub">Faster door-to-door</div>
+              <div class="saver-sub">Faster with Metro</div>
             </div>
           </div>
         </div>
@@ -1780,28 +1946,44 @@
         </div>
       `;
 
-      // 3. Route Option: BMTC Bus Details (BUDGET FRIENDLY)
+      // 3. Route Option: BMTC Bus Details (BUDGET FRIENDLY with Ordinary / AC Tab Selector)
       if (busData && busData.status === 'success') {
         const b = busData.primary_bus;
-        const busMoneySaved = Math.max(0, roadFare - busFareAc);
+        const curBusFare = (selectedBusType === 'ac') ? busFareAc : busFareOrd;
+        const busMoneySaved = Math.max(0, cabFare - curBusFare);
         html += `
           <div class="route-card" style="border-left: 4px solid #0284c7;">
             <div class="route-card-header">
               <div class="route-mode-badge" style="color: #0284c7;">
                 <span>🚌 BMTC Bus: Route ${b.route_no}</span>
               </div>
-              <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">High Frequency</span>
+              <span id="busActiveBadge" style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+                ${selectedBusType === 'ac' ? 'AC Vajra' : 'Ordinary'}
+              </span>
             </div>
+
+            <!-- Selectable Bus Type Tabs (Ordinary vs AC Vajra) -->
+            <div class="segmented-selector">
+              <div class="segment-tab ${selectedBusType === 'ordinary' ? 'active-blue' : ''}" id="tabBusOrd" onclick="selectBusType('ordinary')">
+                <span>🟢 Ordinary Bus</span>
+                <span class="fare-sub-badge">₹${busFareOrd}</span>
+              </div>
+              <div class="segment-tab ${selectedBusType === 'ac' ? 'active-blue' : ''}" id="tabBusAc" onclick="selectBusType('ac')">
+                <span>🔵 AC Vajra Volvo</span>
+                <span class="fare-sub-badge">₹${busFareAc}</span>
+              </div>
+            </div>
+
             <div class="route-duration-row">
               <span class="route-duration">${busTime} mins</span>
-              <span class="route-fare" style="color: #0284c7;">₹${busFareOrd} (Ord) / ₹${busFareAc} (AC)</span>
+              <span class="route-fare" id="busDisplayFare" style="color: #0284c7;">₹${curBusFare}</span>
             </div>
             <div class="route-details">
               • <b>Boarding Stop:</b> ${busData.boarding_bus_stop}<br>
               • <b>Deboarding Stop:</b> ${busData.deboarding_bus_stop}<br>
-              • <b>Service:</b> ${b.service_type} (${busData.frequency})<br>
+              • <b>Service:</b> <span id="busDisplayService">${selectedBusType === 'ac' ? (b.service_type || 'AC Vajra Volvo (Air-Conditioned)') : 'Ordinary Suvarna Red/Green Service'}</span> (${busData.frequency})<br>
               • <b>Alternative Routes:</b> ${busData.available_bus_numbers.join(', ')}<br>
-              <span style="color: #0284c7; font-weight: 700;">💰 Saves ₹${busMoneySaved} vs cab!</span>
+              <span id="busDisplaySavings" style="color: #0284c7; font-weight: 700;">💰 Saves ₹${busMoneySaved} vs cab!</span>
 
               <!-- Collapsible BMTC Bus Stops Accordion -->
               <details style="margin-top: 10px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 6px 10px; cursor: pointer;">
@@ -1828,22 +2010,39 @@
         `;
       }
 
-      // 4. Route Option: Road Cab (GRIDLOCKED)
+      // 4. Route Option: Road Ride-Hail with Cab, Auto, & Bike Selector Tabs
       html += `
-        <div class="route-card" onclick="highlightRoute('road')">
+        <div class="route-card" onclick="highlightRoute('road')" style="border-left: 4px solid #ea4335;">
           <div class="route-card-header">
             <div class="route-mode-badge" style="color: #c5221f;">
-              <span>🚖 Road Cab (Ola / Uber)</span>
+              <span id="roadHeaderIcon">🚖</span> <span id="roadHeaderTitle">Road Transit Options</span>
             </div>
-            <span class="tag-gridlock">🔴 Severe Crawl</span>
+            <span class="tag-gridlock" id="roadHeaderTag">🔴 Severe Crawl</span>
           </div>
+
+          <!-- Selectable Ride-Hail Tabs (Cab vs Auto vs Bike) -->
+          <div class="segmented-selector">
+            <div class="segment-tab ${selectedRideHailMode === 'cab' ? 'active-red' : ''}" id="tabRoadCab" onclick="selectRideHail('cab')">
+              <span>🚖 Cab</span>
+              <span class="fare-sub-badge">₹${cabFare}</span>
+            </div>
+            <div class="segment-tab ${selectedRideHailMode === 'auto' ? 'active-red' : ''}" id="tabRoadAuto" onclick="selectRideHail('auto')">
+              <span>🛺 Auto</span>
+              <span class="fare-sub-badge">₹${autoFare}</span>
+            </div>
+            <div class="segment-tab ${selectedRideHailMode === 'bike' ? 'active-red' : ''}" id="tabRoadBike" onclick="selectRideHail('bike')">
+              <span>🏍️ Bike</span>
+              <span class="fare-sub-badge">₹${bikeFare}</span>
+            </div>
+          </div>
+
           <div class="route-duration-row">
-            <span class="route-duration">${roadTime} mins</span>
-            <span class="route-fare">₹${roadFare}</span>
+            <span class="route-duration" id="roadDisplayDuration">${roadTime} mins</span>
+            <span class="route-fare" id="roadDisplayFare" style="color: #ea4335;">₹${cabFare}</span>
           </div>
-          <div class="route-details">
-            • <b>Road Distance:</b> ${trafficData?.distance_km || 18} km<br>
-            • <b>Congestion:</b> ${trafficData?.congestion_category || 'Heavy Gridlock'}<br>
+          <div class="route-details" id="roadDisplayDetails">
+            • <b>Vehicle Type:</b> Ola / Uber Cab (Sedan / Hatchback)<br>
+            • <b>Road Distance:</b> ${distKm} km &bull; <b>Congestion:</b> Heavy Crawl (Speed: 9 km/h)<br>
             • <b>Surge Multiplier:</b> ${trafficData?.cost_estimates?.surge_multiplier || '1.6x'} active.<br>
             <span style="color: #d93025;">⚠️ Vulnerable to ORR/Silk Board bottlenecks</span>
           </div>

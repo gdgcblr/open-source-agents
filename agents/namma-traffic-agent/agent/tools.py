@@ -179,8 +179,9 @@ def get_route_traffic(
     elif multiplier >= 1.4:
         surge = 1.25
 
-    est_auto_fare = int((30 + (distance_km - 2) * 15) * (1.1 if multiplier > 1.5 else 1.0)) if distance_km > 2 else 30
+    est_auto_fare = int((30 + max(0.0, distance_km - 2) * 15) * (1.15 if multiplier > 1.5 else 1.0)) if distance_km > 2 else 30
     est_cab_fare = int((100 + distance_km * 22) * surge)
+    est_bike_fare = int((20 + max(0.0, distance_km - 1.5) * 8.5) * (1.1 if surge > 1.2 else 1.0))
 
     return {
         "status": "success",
@@ -191,11 +192,14 @@ def get_route_traffic(
         "congestion_category": congestion_category,
         "off_peak_time_mins": base_minutes,
         "current_travel_time_mins": current_minutes,
+        "auto_travel_time_mins": int(current_minutes * 0.88),
+        "bike_travel_time_mins": int(current_minutes * 0.65),
         "delay_minutes": max(0, current_minutes - base_minutes),
         "chokepoints_on_route": active_chokepoints,
         "cost_estimates": {
-            "namma_auto_inr": max(30, est_auto_fare),
             "cab_uber_ola_inr": est_cab_fare,
+            "namma_auto_inr": max(30, est_auto_fare),
+            "bike_taxi_rapido_inr": max(20, est_bike_fare),
             "surge_active": surge > 1.0,
             "surge_multiplier": f"{surge:.1f}x"
         }
