@@ -1,0 +1,3 @@
+customer_id,first_name,last_name,gender,date_of_birth,age,email,phone_number,city,state,country,postal_code,occupation,annual_income,marital_status,education_level,employment_status,customer_since,customer_segment,kyc_status,risk_rating,is_politically_exposed,preferred_channel,email_verified,phone_verified,num_complaints_last_year
+CUST_00001,Krishna,Sharma,M,1985-05-26,41,customer00001@example.com,+91-0000000001,Gurugram,Haryana,IN,741262,,355047.0,Married,Diploma,,2024-11-26,PREMIUM,VERIFIED,MEDIUM,0,Phone Banking,Y,Y,1
+CUST_00002,Anika,Fernandes,M,2008-08-31,18,customer00002@example.com,+91-0000000002,Gurugram,Haryana,IN,182933,,101869.0,,,EMPLOYED,2020-06-15,RETAIL,VERIFIED,LOW,0,Phone Banking,Y,Y,1

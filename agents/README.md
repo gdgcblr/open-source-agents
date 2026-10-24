@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`aml-alert-investigator`](aml-alert-investigator/README.md) | Flags money-laundering patterns (structuring, layering, sanctions, spikes) in bank data and drafts guarded STR narratives for analyst review. | Google ADK (TypeScript), Gemini Flash-Lite / Flash | [@abhisekmishra1709](https://github.com/abhisekmishra1709) |

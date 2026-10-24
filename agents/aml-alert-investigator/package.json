@@ -1,0 +1,31 @@
+{
+  "name": "aml-alert-investigator",
+  "version": "0.1.0",
+  "description": "AML transaction-monitoring engine (ported from the Sentinel AML hackathon project) with a Google ADK agent that triages alerts and drafts SAR narratives.",
+  "type": "module",
+  "main": "src/agent.ts",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "detect": "tsx src/cli.ts",
+    "investigate": "tsx src/cli.ts --investigate",
+    "chat": "adk run src/agent.ts",
+    "web": "adk web src/agent.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/adk": "^2.3.0",
+    "@google/genai": "^1.52.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@google/adk-devtools": "^2.3.0",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

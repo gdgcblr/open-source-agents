@@ -1,0 +1,3 @@
+account_id,customer_id,account_type,account_status,currency,open_date,close_date,branch_code,branch_city,current_balance,avg_monthly_balance_6m,credit_limit,credit_utilization_pct,overdraft_enabled,card_type,is_joint_account,num_linked_devices,mobile_banking_enrolled,last_login_date,avg_monthly_txn_count,account_tier
+ACC_000001,CUST_00001,NRE,ACTIVE,INR,2016-08-26,,BR122,Gurugram,33507.22,22831.7,0.0,0.0,Y,GOLD,0,2,Y,2026-07-20,15,SILVER
+ACC_000002,CUST_00001,SAVINGS,ACTIVE,INR,2019-03-31,,BR119,Gurugram,25171.02,32699.45,0.0,0.0,N,CLASSIC,0,1,Y,2026-06-15,18,SILVER
