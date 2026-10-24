@@ -13,7 +13,8 @@ from .knowledge import (
     MONSOON_WATERLOGGING_ZONES,
     METRO_LINES,
     BMTC_BUS_ROUTES,
-    BENGALURU_WEATHER_CURRENT
+    BENGALURU_WEATHER_CURRENT,
+    METRO_STATION_COORDS
 )
 
 
@@ -276,6 +277,34 @@ def get_metro_alternative(origin: str, destination: str) -> Dict[str, Any]:
     if orig_first_mile_km > 10 or dest_last_mile_km > 10:
         recommendation = "🚗 Road preferred (metro connectivity distant at one or both ends)"
 
+    # Intermediate Metro Stations
+    all_stations = METRO_LINES.get(orig_line, {}).get("stations", [])
+    intermediate_stations = []
+    if orig_metro_station in all_stations and dest_metro_station in all_stations:
+        idx1 = all_stations.index(orig_metro_station)
+        idx2 = all_stations.index(dest_metro_station)
+        start_idx, end_idx = min(idx1, idx2), max(idx1, idx2)
+        slice_names = all_stations[start_idx:end_idx+1]
+        if idx1 > idx2:
+            slice_names.reverse()
+        for s in slice_names:
+            coords = METRO_STATION_COORDS.get(s)
+            intermediate_stations.append({
+                "name": s,
+                "lat": coords[0] if coords else None,
+                "lng": coords[1] if coords else None
+            })
+    else:
+        # Cross-line or transfer stations
+        for s_name in [orig_metro_station, "Nadaprabhu Kempegowda Majestic (Interchange)" if interchange_needed else None, dest_metro_station]:
+            if s_name:
+                coords = METRO_STATION_COORDS.get(s_name.split(" (")[0])
+                intermediate_stations.append({
+                    "name": s_name,
+                    "lat": coords[0] if coords else None,
+                    "lng": coords[1] if coords else None
+                })
+
     return {
         "status": "success",
         "route": f"{orig_data['display_name']} ➡️ {dest_data['display_name']}",
@@ -284,6 +313,8 @@ def get_metro_alternative(origin: str, destination: str) -> Dict[str, Any]:
         "interchange_required": "Majestic (Nadaprabhu Kempegowda)" if interchange_needed else "None (Direct Line)",
         "line_color": "#9333ea" if orig_line == "Purple" else ("#16a34a" if orig_line == "Green" else "#ca8a04"),
         "train_frequency": "Every 4 to 5 minutes (Peak Hours)",
+        "station_count": len(intermediate_stations),
+        "intermediate_stations": intermediate_stations,
         "metro_token_fare_inr": metro_fare,
         "metro_qr_smartcard_fare_inr": qr_smartcard_fare,
         "total_transit_cost_inr": total_metro_cost,
@@ -332,7 +363,13 @@ def get_bmtc_bus_details(origin: str, destination: str) -> Dict[str, Any]:
             "frequency_minutes": 8,
             "fare_ordinary_inr": 25,
             "fare_ac_vajra_inr": 45,
-            "highlights": "Transfer via nearest TTMC or Outer Ring Road interchange."
+            "highlights": "Transfer via nearest TTMC or Outer Ring Road interchange.",
+            "stops": [
+                orig_data.get("bus_stop", f"{orig_data['display_name']} Bus Bay"),
+                "Outer Ring Road Connector",
+                "Marathahalli Multiplex",
+                dest_data.get("bus_stop", f"{dest_data['display_name']} Bus Bay")
+            ]
         }]
         
     primary_bus = matching_routes[0]
@@ -346,6 +383,8 @@ def get_bmtc_bus_details(origin: str, destination: str) -> Dict[str, Any]:
         "available_bus_numbers": [b["route_no"] for b in matching_routes],
         "boarding_bus_stop": orig_data.get("bus_stop", f"{orig_data['display_name']} Bus Bay"),
         "deboarding_bus_stop": dest_data.get("bus_stop", f"{dest_data['display_name']} Bus Bay"),
+        "stop_count": len(primary_bus.get("stops", [])),
+        "intermediate_stops": primary_bus.get("stops", []),
         "fare_ordinary_inr": primary_bus["fare_ordinary_inr"],
         "fare_ac_vajra_inr": primary_bus["fare_ac_vajra_inr"],
         "frequency": f"Every {primary_bus['frequency_minutes']} minutes",

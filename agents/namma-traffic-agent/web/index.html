@@ -479,6 +479,63 @@
       animation: pulse-blue 1.5s infinite;
     }
 
+    /* Small station & stop dots on map */
+    .station-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #9333ea;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .bus-stop-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0284c7;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    /* Timeline stops styling */
+    .timeline-stops-list {
+      margin-top: 8px;
+      padding-left: 14px;
+      border-left: 2px dashed #9333ea;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-bus-list {
+      margin-top: 8px;
+      padding-left: 14px;
+      border-left: 2px dashed #0284c7;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-item {
+      position: relative;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+
+    .timeline-item::before {
+      content: '•';
+      position: absolute;
+      left: -19px;
+      top: -2px;
+      font-size: 1.2rem;
+      color: #9333ea;
+    }
+
+    .timeline-bus-list .timeline-item::before {
+      color: #0284c7;
+    }
+
     @keyframes pulse-blue {
       0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
       70% { box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
@@ -878,7 +935,7 @@
         }
 
         renderSidebarResults(data, busData, origin, destination);
-        drawRouteOnMap(origin, destination, busData);
+        drawRouteOnMap(origin, destination, busData, data);
       } catch (err) {
         content.innerHTML = `<div style="color:red; padding:12px;">Failed to fetch route data: ${err.message}</div>`;
       } finally {
@@ -886,7 +943,7 @@
       }
     }
 
-    function drawRouteOnMap(origName, destName, busData) {
+    function drawRouteOnMap(origName, destName, busData, data) {
       routeLayerGroup.clearLayers();
       const c1 = getCoords(origName);
       const c2 = getCoords(destName);
@@ -908,11 +965,41 @@
         .addTo(routeLayerGroup)
         .bindTooltip(`🚌 BMTC Bus Route (${busData?.primary_bus?.route_no || '500-D'})`, { sticky: true });
 
+      // Plot Intermediate Bus Stops on Map
+      if (busData && busData.intermediate_stops) {
+        const stops = busData.intermediate_stops;
+        const step = Math.max(1, Math.floor(stops.length / 5));
+        for (let i = 0; i < stops.length; i += step) {
+          const ratio = (i + 1) / (stops.length + 1);
+          const stopLat = c1[0] + (c2[0] - c1[0]) * ratio + 0.004;
+          const stopLng = c1[1] + (c2[1] - c1[1]) * ratio + 0.006;
+          const icon = L.divIcon({ className: 'bus-stop-dot', iconSize: [8, 8] });
+          L.marker([stopLat, stopLng], { icon: icon }).addTo(routeLayerGroup)
+            .bindPopup(`<b>🚌 Bus Stop: ${stops[i]}</b><br><small>Route: ${busData.primary_bus?.route_no || '500-D'}</small>`);
+        }
+      }
+
       // 3. Multimodal Metro Path (Purple / Green)
       const metroPath = [c1, [(c1[0] + c2[0])/2, (c1[1] + c2[1])/2], c2];
       L.polyline(metroPath, { color: '#9333ea', weight: 5, dashArray: '8, 6', opacity: 0.95 })
         .addTo(routeLayerGroup)
         .bindTooltip("🚇 Namma Metro Alternate Track", { sticky: true });
+
+      // Plot Intermediate Metro Stations on Map
+      let metroData = null;
+      if (data && data.raw_tool_data) {
+        data.raw_tool_data.forEach(item => { if (item.origin_boarding_station) metroData = item; });
+      }
+
+      if (metroData && metroData.intermediate_stations) {
+        metroData.intermediate_stations.forEach(st => {
+          if (st.lat && st.lng) {
+            const icon = L.divIcon({ className: 'station-dot', iconSize: [9, 9] });
+            L.marker([st.lat, st.lng], { icon: icon }).addTo(routeLayerGroup)
+              .bindPopup(`<b>🚇 Metro Station: ${st.name}</b><br><small>Frequency: ${metroData.train_frequency}</small>`);
+          }
+        });
+      }
 
       // Fit map to show both points
       const bounds = L.latLngBounds([c1, c2]);
@@ -946,6 +1033,22 @@
 
       const timeSaved = Math.max(0, roadTime - metroTime);
       const moneySaved = Math.max(0, roadFare - metroFare);
+
+      // Metro stations list HTML
+      let metroStationsHtml = '';
+      if (metroData && metroData.intermediate_stations) {
+        metroStationsHtml = metroData.intermediate_stations.map(s => `
+          <div class="timeline-item">${s.name}</div>
+        `).join('');
+      }
+
+      // Bus stops list HTML
+      let busStopsHtml = '';
+      if (busData && busData.intermediate_stops) {
+        busStopsHtml = busData.intermediate_stops.map(s => `
+          <div class="timeline-item">${s}</div>
+        `).join('');
+      }
 
       // 1. Money & Time Saver Big Banner
       html += `
@@ -986,6 +1089,16 @@
             • <b>Fare Breakdown:</b> QR/Smartcard: <b>₹${metroData?.metro_qr_smartcard_fare_inr || 57}</b> | Token: ₹${metroData?.metro_token_fare_inr || 60}<br>
             • <b>Headway:</b> ${metroData?.train_frequency || 'Every 4-5 mins'}<br>
             <span style="color: #137333; font-weight: 700;">💰 Saves ₹${moneySaved} vs surge cab!</span>
+
+            <!-- Collapsible Metro Stations Accordion -->
+            <details style="margin-top: 10px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 6px 10px; cursor: pointer;">
+              <summary style="font-weight: 700; color: #7e22ce; outline: none;">
+                📍 View All ${metroData?.station_count || 'Route'} Metro Stations ▾
+              </summary>
+              <div class="timeline-stops-list">
+                ${metroStationsHtml || '<div class="timeline-item">Direct Metro Route</div>'}
+              </div>
+            </details>
           </div>
         </div>
       `;
@@ -1012,6 +1125,16 @@
               • <b>Service:</b> ${b.service_type} (${busData.frequency})<br>
               • <b>Alternative Routes:</b> ${busData.available_bus_numbers.join(', ')}<br>
               <span style="color: #0284c7; font-weight: 700;">💰 Saves ₹${busMoneySaved} vs cab!</span>
+
+              <!-- Collapsible BMTC Bus Stops Accordion -->
+              <details style="margin-top: 10px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 6px 10px; cursor: pointer;">
+                <summary style="font-weight: 700; color: #0284c7; outline: none;">
+                  📍 View All ${busData.stop_count || 'Corridor'} Bus Stops ▾
+                </summary>
+                <div class="timeline-bus-list">
+                  ${busStopsHtml || '<div class="timeline-item">Bus Corridor Stops</div>'}
+                </div>
+              </details>
             </div>
           </div>
         `;

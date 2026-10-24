@@ -135,7 +135,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
     }
 }
 
-# BMTC Bus Network & Schedules
+# BMTC Bus Network & Schedules with Intermediate Stops
 BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
     {
         "route_no": "500-D",
@@ -146,7 +146,15 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 5,
         "fare_ordinary_inr": 25,
         "fare_ac_vajra_inr": 45,
-        "highlights": "Dedicated ORR bus lane; runs every 5 mins during peak hours."
+        "highlights": "Dedicated ORR bus lane; runs every 5 mins during peak hours.",
+        "stops": [
+            "Central Silk Board", "HSR Layout BDA Complex", "HSR Sector 2", "Agara Junction",
+            "Iblur Gate", "Bellandur Gate", "Ecospace Tech Park", "Devarabisanahalli",
+            "Kadubeesanahalli", "Marathahalli Bridge", "Karthik Nagar", "Doddanekundi",
+            "Mahadevapura", "Tin Factory / KR Puram", "Kasturi Nagar", "Ramamurthy Nagar",
+            "Babusapalya", "Kalyan Nagar", "Hennur Cross", "Nagavara Junction",
+            "Manyata Tech Park Gate 1", "Hebbal Flyover"
+        ]
     },
     {
         "route_no": "500-CA",
@@ -157,7 +165,13 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 7,
         "fare_ordinary_inr": 30,
         "fare_ac_vajra_inr": 50,
-        "highlights": "Direct tech connection from South Bangalore to ITPL."
+        "highlights": "Direct tech connection from South Bangalore to ITPL.",
+        "stops": [
+            "Banashankari TTMC", "Sangam Circle", "Jayadeva Hospital", "BTM Layout Water Tank",
+            "Central Silk Board", "HSR Layout Sector 2", "Agara Junction", "Bellandur Gate",
+            "Ecospace", "Devarabisanahalli", "Kadubeesanahalli", "Marathahalli Multiplex",
+            "Kundalahalli Gate", "CMRIT College", "Graphite India", "ITPL Main Gate", "Hope Farm Whitefield"
+        ]
     },
     {
         "route_no": "KIA-9",
@@ -168,7 +182,13 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 15,
         "fare_ordinary_inr": 120,
         "fare_ac_vajra_inr": 260,
-        "highlights": "Luggage assistance, free Wi-Fi, air-conditioned airport express."
+        "highlights": "Luggage assistance, free Wi-Fi, air-conditioned airport express.",
+        "stops": [
+            "Kempegowda Bus Station (Majestic)", "Anand Rao Circle", "Cauvery Theater",
+            "Mekhri Circle", "Hebbal Flyover", "Kodigehalli Gate", "Jakkur Cross",
+            "Allalasandra / Yelahanka Bypass", "Kogilu Cross", "Bagalur Cross", "Chikkajala",
+            "Trumpet Interchange", "Terminal 1 (BLR Airport)", "Terminal 2 (BLR Airport)"
+        ]
     },
     {
         "route_no": "KIA-8",
@@ -179,7 +199,12 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 25,
         "fare_ordinary_inr": 150,
         "fare_ac_vajra_inr": 310,
-        "highlights": "Direct airport connector from South tech campuses."
+        "highlights": "Direct airport connector from South tech campuses.",
+        "stops": [
+            "Electronic City Toll Gate", "Hosa Road", "Kudlu Gate", "Bommanahalli",
+            "Central Silk Board", "Agara Junction", "Bellandur", "Marathahalli Bridge",
+            "Tin Factory", "Kalyan Nagar", "Hebbal Flyover", "Yelahanka", "Trumpet Interchange", "Airport Terminals"
+        ]
     },
     {
         "route_no": "335-E",
@@ -190,7 +215,12 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 10,
         "fare_ordinary_inr": 25,
         "fare_ac_vajra_inr": 45,
-        "highlights": "Connects CBD to Indiranagar and Whitefield via Old Airport Road."
+        "highlights": "Connects CBD to Indiranagar and Whitefield via Old Airport Road.",
+        "stops": [
+            "Kempegowda Bus Station", "Corporation", "Richmond Circle", "Mayo Hall / MG Road",
+            "Trinity Circle", "Domlur Flyover", "Manipal Hospital", "HAL Main Gate",
+            "Marathahalli Bridge", "Kundalahalli Gate", "Varthur Kodi", "Whitefield Post Office", "Kadugodi Bus Stand"
+        ]
     },
     {
         "route_no": "356-C",
@@ -201,7 +231,12 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 8,
         "fare_ordinary_inr": 25,
         "fare_ac_vajra_inr": 40,
-        "highlights": "Takes Electronic City elevated tollway to skip Silk Board crawl."
+        "highlights": "Takes Electronic City elevated tollway to skip Silk Board crawl.",
+        "stops": [
+            "Kempegowda Bus Station", "Town Hall", "Lalbagh Main Gate", "Dairy Circle",
+            "St. John's Hospital", "Koramangala Water Tank", "Central Silk Board", "Roopena Agrahara",
+            "Bommanahalli", "Kudlu Gate", "Hosa Road", "Electronic City Toll Gate", "Wipro Gate 1"
+        ]
     },
     {
         "route_no": "G-4",
@@ -212,9 +247,73 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
         "frequency_minutes": 10,
         "fare_ordinary_inr": 20,
         "fare_ac_vajra_inr": 35,
-        "highlights": "Big10 arterial bus service with high frequency."
+        "highlights": "Big10 arterial bus service with high frequency.",
+        "stops": [
+            "Brigade Road Junction", "Hosur Road", "Adugodi Police Quarters", "Forum Mall / Dairy Circle",
+            "Jayadeva Hospital", "Vega City Mall", "Gopalan Mall", "Meenakshi Temple", "Gottigere", "Bannerghatta National Park"
+        ]
     }
 ]
+
+# Accurate Coordinates for Key Metro Stations & Bus Stops for Map Visualizations
+METRO_STATION_COORDS: Dict[str, tuple] = {
+    # Purple Line
+    "Whitefield (Kadugodi)": (12.9960, 77.7600),
+    "Channasandra": (12.9920, 77.7560),
+    "Kadugodi Tree Park": (12.9890, 77.7530),
+    "Hopefarm Channasandra": (12.9860, 77.7500),
+    "Hoodi": (12.9910, 77.7170),
+    "Garudachar Palya": (12.9940, 77.7020),
+    "Singayyanapalya": (12.9960, 77.6890),
+    "KR Puram": (12.9972, 77.6756),
+    "Benniganahalli": (12.9940, 77.6620),
+    "Baiyappanahalli": (12.9910, 77.6520),
+    "Swami Vivekananda Road": (12.9860, 77.6440),
+    "Indiranagar": (12.9780, 77.6380),
+    "Halasuru": (12.9760, 77.6270),
+    "Trinity": (12.9730, 77.6170),
+    "MG Road": (12.9756, 77.6066),
+    "Cubbon Park": (12.9810, 77.5970),
+    "Dr. BR Ambedkar Vidhana Soudha": (12.9790, 77.5920),
+    "Sir M Visvesvaraya Central College": (12.9770, 77.5840),
+    "Nadaprabhu Kempegowda Majestic": (12.9774, 77.5708),
+    "City Railway Station": (12.9770, 77.5670),
+    "Magadi Road": (12.9750, 77.5550),
+    "Hosahalli": (12.9740, 77.5450),
+    "Vijayanagar": (12.9690, 77.5370),
+    "Attiguppe": (12.9620, 77.5330),
+    "Deepanjali Nagar": (12.9520, 77.5300),
+    "Mysuru Road": (12.9480, 77.5180),
+    "Kengeri": (12.9090, 77.4780),
+    "Challaghatta": (12.9080, 77.4850),
+    # Green Line
+    "Madavara": (13.0640, 77.4850),
+    "Nagasandra": (13.0480, 77.4990),
+    "Dasarahalli": (13.0430, 77.5120),
+    "Jalahalli": (13.0390, 77.5200),
+    "Peenya": (13.0330, 77.5250),
+    "Goraguntepalya": (13.0280, 77.5410),
+    "Yeshwantpur": (13.0230, 77.5500),
+    "Sandal Soap Factory": (13.0150, 77.5530),
+    "Rajajinagar": (12.9980, 77.5550),
+    "Chickpete": (12.9700, 77.5740),
+    "Krishna Rajendra Market": (12.9630, 77.5750),
+    "National College": (12.9510, 77.5730),
+    "Lalbagh": (12.9460, 77.5800),
+    "South End Circle": (12.9370, 77.5800),
+    "Jayanagar": (12.9300, 77.5800),
+    "Rashtreeya Vidyalaya Road": (12.9210, 77.5800),
+    "Banashankari": (12.9150, 77.5730),
+    "JP Nagar": (12.9063, 77.5857),
+    "Silk Institute": (12.8620, 77.5250),
+    # Yellow Line
+    "Jayadeva Hospital": (12.9180, 77.5980),
+    "BTM Layout": (12.9160, 77.6100),
+    "Central Silk Board": (12.9172, 77.6228),
+    "Bommanahalli": (12.9030, 77.6260),
+    "Electronic City": (12.8452, 77.6602),
+    "Bommasandra": (12.8160, 77.6920)
+}
 
 # Real-time Bengaluru Weather Status
 BENGALURU_WEATHER_CURRENT = {
