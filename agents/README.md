@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`workshop-troubleshooter`](workshop-troubleshooter/) | TShoot: Autonomous multi-agent technical troubleshooter for Google Meet & Teams workshops with screenshot inspector, web search specialist, and deep diagnostics. | Google ADK, FastAPI, Python | [@ManushGR12](https://github.com/ManushGR12) |

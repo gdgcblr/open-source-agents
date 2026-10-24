@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TShoot | Autonomous Technical Troubleshooter</title>
+  <meta name="description" content="TShoot: Autonomous multi-agent technical troubleshooter for live Google Meet and Teams workshops. Upload screenshots, auto-fetch internet solutions, and deep-diagnose errors.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <div class="app-layout">
+    <!-- Top Navigation -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">TShoot <span class="badge-pill">Autonomous Multi-Agent</span></div>
+          <div class="brand-sub">Autonomous Technical Troubleshooter for Workshops & Meetings</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="security-badge" id="agentStatusBadge">
+          <span class="pulse-dot"></span> Multi-Agent Engine Active
+        </div>
+        <div class="security-badge" id="securityAuditBadge">
+          <span class="pulse-dot-cyan"></span> Security Hardened (OWASP A+)
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid Content -->
+    <main class="main-content">
+      <!-- Left Column: Diagnostic & Quick Assist -->
+      <section class="panel diagnostic-panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <div class="panel-icon pulse-glow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <h2>Diagnose & Resolve Roadblock</h2>
+              <p class="panel-desc">Paste your error, pick a roadblock, or select "Others" to auto-fetch internet solutions.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Roadblock Pills -->
+        <div class="quick-pills-label">Quick Roadblock Templates:</div>
+        <div class="pills-grid" id="quickPillsContainer">
+          <button class="pill-btn" data-symptom="google_login_403">
+            <span class="pill-dot red"></span> Google 403 Access Denied
+          </button>
+          <button class="pill-btn" data-symptom="port_8000_conflict">
+            <span class="pill-dot yellow"></span> Port 8000 in Use (10048)
+          </button>
+          <button class="pill-btn" data-symptom="oauth_mismatch">
+            <span class="pill-dot blue"></span> OAuth redirect_uri_mismatch
+          </button>
+          <button class="pill-btn" data-symptom="invalid_api_key">
+            <span class="pill-dot purple"></span> Invalid Gemini API Key (400)
+          </button>
+          <button class="pill-btn" data-symptom="python_mapping">
+            <span class="pill-dot green"></span> Others: Mapping from collections
+          </button>
+          <button class="pill-btn" data-symptom="docker_daemon">
+            <span class="pill-dot cyan"></span> Others: Docker Daemon Down
+          </button>
+        </div>
+
+        <!-- Diagnostic Form -->
+        <form id="diagnoseForm" class="form-container">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="serviceSelect">Service / Component</label>
+              <select id="serviceSelect" class="form-control">
+                <option value="Google Account & Cloud">Google Account & Cloud (IAM / OAuth)</option>
+                <option value="Google ADK Web Server">Google ADK Web Server</option>
+                <option value="Gemini API & Credentials">Gemini API & Credentials</option>
+                <option value="Python / Pip Environment">Python / Pip Environment</option>
+                <option value="Network & Corporate Proxy">Network & Corporate Proxy</option>
+                <option value="Others" selected>Others (Fetch Solution from Internet)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="clientEnvSelect">Attendee Environment</label>
+              <select id="clientEnvSelect" class="form-control">
+                <option value="Windows (PowerShell)">Windows (PowerShell)</option>
+                <option value="macOS (zsh / bash)">macOS (zsh / bash)</option>
+                <option value="Linux / WSL">Linux / WSL</option>
+                <option value="Browser Only">Chrome / Edge Browser</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="errorMessageInput">
+              Error Message, Terminal Output, or Symptom
+              <span class="label-hint">(API keys & sensitive tokens are automatically scrubbed)</span>
+            </label>
+            <textarea id="errorMessageInput" class="form-control text-mono" rows="4" placeholder="e.g. ImportError: cannot import name Mapping from collections, or 403 Forbidden, or paste your terminal output..." required></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btnDiagnose">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              Run TShoot Diagnosis
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnCheckNetwork">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <line x1="12" y1="20" x2="12.01" y2="20"/>
+              </svg>
+              Ping Workshop Endpoints
+            </button>
+          </div>
+        </form>
+
+        <!-- Live Diagnosis Output Card -->
+        <div id="diagnosisCard" class="result-card hidden">
+          <div class="card-status-bar" id="cardStatusBar">
+            <span id="diagnosisTitle" class="card-title">Analysis Complete</span>
+            <span id="urgencyTag" class="tag-badge">Self-Resolvable</span>
+          </div>
+
+          <div class="card-body">
+            <div class="diagnosis-section">
+              <div class="section-label">Root Cause:</div>
+              <p id="rootCauseText" class="cause-text"></p>
+            </div>
+
+            <div class="diagnosis-section">
+              <div class="section-label">Step-by-Step Remediation:</div>
+              <ol id="remediationStepsList" class="steps-list"></ol>
+            </div>
+
+            <!-- Web Search Sources List (When triggered) -->
+            <div id="sourcesBox" class="sources-box hidden">
+              <div class="section-label">Internet Knowledge Sources:</div>
+              <div id="sourcesList" class="sources-list"></div>
+            </div>
+
+            <div id="codeSnippetBox" class="code-box">
+              <div class="code-header">
+                <span>Remediation Terminal Snippet</span>
+                <button class="btn-copy" id="btnCopySnippet">Copy Commands</button>
+              </div>
+              <pre><code id="snippetContent" class="text-mono"></code></pre>
+            </div>
+
+            <!-- Interactive Solved / Feedback Loop -->
+            <div id="solutionFeedbackSection" class="feedback-card">
+              <div class="feedback-title">Did this solution resolve your issue?</div>
+              <div class="feedback-actions">
+                <button type="button" class="btn btn-success" id="btnSolutionSolved">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                  Yes, Solved!
+                </button>
+                <button type="button" class="btn btn-danger" id="btnSolutionNotSolved">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  No, Still Stuck
+                </button>
+              </div>
+              <div id="solvedConfirmation" class="solved-success-msg hidden">
+                🎉 Great! TShoot has logged this issue as resolved. Keep going with your workshop!
+              </div>
+            </div>
+
+            <!-- Deep Investigation Consent Card -->
+            <div id="deepInvestigationConsent" class="deep-investigate-card hidden">
+              <div class="deep-header">
+                <span class="deep-icon">⚠️</span>
+                <div>
+                  <h4>Autonomous Deep Investigation Required</h4>
+                  <p class="deep-desc">
+                    Standard steps didn't resolve this blocker. TShoot can dispatch the <strong>Deep Investigator Specialist</strong> to analyze environment variables, purge corrupted wheel caches, and generate clean-slate isolation scripts.
+                  </p>
+                </div>
+              </div>
+              <button type="button" class="btn btn-warning w-full" id="btnGrantDeepPermission">
+                Grant Permission & Run Deep Diagnostics
+              </button>
+            </div>
+
+            <!-- Deep Investigation Results Display -->
+            <div id="deepInvestigationResults" class="deep-results-card hidden">
+              <div class="deep-results-header">
+                <span class="badge-deep">Deep Diagnostics Active</span>
+                <span id="deepInvId" class="text-mono inv-pill">INV-XXXXXX</span>
+              </div>
+              <p id="deepAnalysisText" class="deep-analysis-text"></p>
+              <div id="deepLayersContainer" class="deep-layers-list"></div>
+              <div class="code-box">
+                <div class="code-header">
+                  <span>Pristine Environment Recovery Script</span>
+                  <button class="btn-copy" id="btnCopyDeepScript">Copy Script</button>
+                </div>
+                <pre><code id="deepScriptContent" class="text-mono"></code></pre>
+              </div>
+              <div class="feedback-actions mt-3">
+                <button type="button" class="btn btn-success" id="btnDeepSolved">Issue Solved Now!</button>
+                <button type="button" class="btn btn-outline" id="btnOpenEscalateModal2">Escalate to Instructor</button>
+              </div>
+            </div>
+
+            <div class="card-footer-actions">
+              <button type="button" class="btn btn-outline" id="btnOpenEscalateModal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Escalate Ticket to Live Meeting Chat
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connectivity Test Results -->
+        <div id="connectivityCard" class="result-card hidden">
+          <div class="card-status-bar">
+            <span class="card-title">Network & Socket Reachability Test</span>
+            <span id="connectivitySummaryBadge" class="tag-badge tag-green">Checks Complete</span>
+          </div>
+          <div class="connectivity-grid" id="connectivityRows"></div>
+        </div>
+      </section>
+
+      <!-- Right Column: Visual Screenshot Upload & Multi-Agent Activity -->
+      <aside class="panel upload-panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <div class="panel-icon cyan-glow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Screenshot Visual Inspector</h3>
+              <p class="panel-desc">Upload or paste where you are stuck. TShoot will extract the error and solve it.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drag & Drop Upload Zone -->
+        <div class="drop-zone" id="screenshotDropZone">
+          <input type="file" id="screenshotFileInput" accept="image/png, image/jpeg, image/webp" class="file-input-hidden">
+          <div class="drop-zone-content" id="dropZonePrompt">
+            <div class="upload-icon-circle">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="drop-text-primary">Drag & drop error screenshot here</div>
+            <div class="drop-text-sub">or <span class="browse-link">browse file</span> / paste screenshot (Ctrl+V)</div>
+            <div class="drop-types">Supports PNG, JPG, WEBP (Max 10MB)</div>
+          </div>
+
+          <!-- Selected Image Preview Container -->
+          <div id="imagePreviewContainer" class="image-preview-container hidden">
+            <img id="imagePreview" src="" alt="Screenshot preview" class="preview-img">
+            <div class="preview-meta">
+              <span id="previewFileName" class="preview-filename">screenshot.png</span>
+              <span id="previewFileSize" class="preview-filesize">0 KB</span>
+              <button type="button" class="btn-remove-preview" id="btnRemovePreview" title="Remove screenshot">&times;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Optional Screenshot Notes Input -->
+        <div class="form-group mt-2">
+          <label for="screenshotNotesInput">Additional Context / Symptom (Optional)</label>
+          <input type="text" id="screenshotNotesInput" class="form-control" placeholder="e.g. Stuck on Step 4 of the workshop exercise...">
+        </div>
+
+        <button type="button" class="btn btn-cyan w-full" id="btnAnalyzeScreenshot" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Analyze Screenshot & Fetch Solution
+        </button>
+
+        <!-- Screenshot Analysis Result Banner -->
+        <div id="screenshotResultCard" class="screenshot-result-badge hidden">
+          <div class="ss-result-header">
+            <span class="dot-live"></span> <span id="ssStatusText">Screenshot Analyzed</span>
+          </div>
+          <div class="ss-result-body">
+            <div><strong>Detected Component:</strong> <span id="ssDetectedService" class="text-cyan">Others</span></div>
+            <div><strong>Extracted Error:</strong> <span id="ssExtractedText" class="text-mono">...</span></div>
+          </div>
+        </div>
+
+        <!-- Live TShoot Agent Execution Stream -->
+        <div class="terminal-widget mt-3">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">TShoot Multi-Agent Stream</span>
+          </div>
+          <div class="terminal-body" id="agentStreamLogs">
+            <div class="log-line info">[INIT] TShoot Multi-Agent Coordinator initialized.</div>
+            <div class="log-line info">[AGENTS] Auth, Network, Web Search, Deep Investigator registered.</div>
+            <div class="log-line success">[READY] Ready to troubleshoot errors & analyze screenshots.</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Escalation Modal -->
+  <div id="escalateModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Escalate Ticket to Live Meeting Chat</h3>
+        <button class="btn-close" id="btnCloseEscalateModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-note">This creates an escalation ticket and generates a formatted message you can immediately paste into Google Meet or Teams chat for the instructor or TA.</p>
+        <form id="escalateForm">
+          <div class="form-group">
+            <label>Your Name / Handle</label>
+            <input type="text" id="escalateName" class="form-control" placeholder="e.g. Alex (Attendee #14)" required>
+          </div>
+          <div class="form-group">
+            <label>Issue Category</label>
+            <input type="text" id="escalateCategory" class="form-control" value="Google Cloud IAM / OAuth" required>
+          </div>
+          <div class="form-group">
+            <label>What's blocking you?</label>
+            <input type="text" id="escalateSummary" class="form-control" placeholder="e.g. 403 Forbidden accessing Vertex AI model in workshop project" required>
+          </div>
+          <div class="form-group">
+            <label>What steps have you already tried?</label>
+            <textarea id="escalateSteps" class="form-control" rows="2" placeholder="e.g. Tried re-authenticating with gcloud, cleared cookies, switched to incognito"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Urgency</label>
+            <select id="escalateUrgency" class="form-control">
+              <option value="medium">Medium - Blocked on current exercise</option>
+              <option value="high">High - Cannot run any agent code</option>
+              <option value="critical">Critical - Account / quota lockout</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-full" id="btnSubmitEscalation">Generate Chat Escalation</button>
+        </form>
+
+        <!-- Formatted Chat Output -->
+        <div id="escalatedResultBox" class="escalate-result-box hidden">
+          <div class="result-label">Copy & Paste into Google Meet / Teams Chat:</div>
+          <div class="chat-snippet" id="chatSnippetDisplay"></div>
+          <button class="btn btn-primary w-full mt-2" id="btnCopyChatSnippet">Copy Message</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

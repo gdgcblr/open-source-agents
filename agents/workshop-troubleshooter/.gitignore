@@ -1,0 +1,27 @@
+# Environment and secret files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+*.db
+*.sqlite3
+
+# Python bytecode & environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Google ADK local runtime storage
+.adk/
+agents_log/
