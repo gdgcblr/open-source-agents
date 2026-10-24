@@ -1,0 +1,21 @@
+# Google Gemini AI Models
+google-genai>=0.1.1
+google-generativeai>=0.8.0
+
+# Free Web Search & Web Extraction (Zero API keys needed)
+duckduckgo-search>=7.0.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+
+# Typed State & Contracts
+pydantic>=2.0.0
+
+# Terminal UI & Environment
+rich>=13.7.0
+python-dotenv>=1.0.0
+
+# Model Context Protocol (MCP)
+mcp>=1.0.0
+
+# Automated Testing
+pytest>=8.0.0

@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`multi-agent-editorial-team`](multi-agent-editorial-team/) | Hierarchical 4-agent collaborative team (Planner, Researcher, Writer, Reviewer) with reflection loop & MCP server | Python / Gemini 2.5 Flash / FastMCP / Pydantic | [@PavanSRocky](https://github.com/PavaS279) |
