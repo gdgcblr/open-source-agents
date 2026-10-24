@@ -1,0 +1,33 @@
+[
+  {
+    "id": "python-missing-module",
+    "log": "ModuleNotFoundError: No module named 'payments.client'",
+    "expected_failure_type": "dependency-resolution",
+    "required_signals": ["dependency-resolution-error"]
+  },
+  {
+    "id": "typescript-compile-error",
+    "log": "src/index.ts:12:7 error: Type error: string is not assignable to number",
+    "expected_failure_type": "compilation",
+    "required_signals": ["compiler-error", "source-location"]
+  },
+  {
+    "id": "maven-test-failure",
+    "log": "[ERROR] Tests run: 8, Failures: 1, Errors: 0, Skipped: 0",
+    "expected_failure_type": "test-failure",
+    "required_signals": ["test-summary"]
+  },
+  {
+    "id": "api-authentication-error",
+    "log": "HTTP 401 response from the payments API",
+    "expected_failure_type": "runtime-or-api",
+    "required_signals": ["http-status-or-transport"]
+  },
+  {
+    "id": "ambiguous-output",
+    "log": "module not found; Tests run: 2, Failures: 1",
+    "expected_failure_type": "dependency-resolution",
+    "expected_confidence": "low",
+    "required_signals": ["dependency-resolution-error", "test-summary"]
+  }
+]

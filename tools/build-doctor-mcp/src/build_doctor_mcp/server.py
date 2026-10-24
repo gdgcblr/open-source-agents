@@ -48,7 +48,7 @@ _RULES: tuple[dict[str, Any], ...] = (
     {
         "failure_type": "dependency-resolution",
         "signal_id": "dependency-resolution-error",
-        "pattern": re.compile(r"could not resolve dependencies|module not found|no matching distribution|failed to fetch|package .* not found", re.I),
+        "pattern": re.compile(r"could not resolve dependencies|module not found|modulenotfounderror|no module named|no matching distribution|failed to fetch|package .* not found", re.I),
         "weight": 4,
         "cause": "A dependency name, version, lockfile, registry, or access issue may be blocking resolution.",
         "remediation": "Inspect dependency names, versions, lockfiles, and configured registries.",
