@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420" viewBox="0 0 700 420" role="img" aria-label="Original stylized travel illustration">
+    <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#cfcec0"/><stop offset="1" stop-color="#a8b49f"/></linearGradient><filter id="grain"><feTurbulence baseFrequency=".65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer></filter></defs>
+    <rect width="700" height="420" fill="url(#sky)"/><circle cx="535" cy="100" r="43" fill="#f5e4ba" opacity=".8"/>
+    <path d="M0 200Q150 90 310 200T700 170V420H0Z" fill="#536f61" opacity=".15"/><path d="m0 285 180-200 130 140L440 60l260 250v110H0Z" fill="#91a392"/>
+        <path d="m135 135 45-50 50 88-50-18-25 22Z" fill="#e3e0cc"/><path d="m385 118 55-58 73 90-54-16-19 22-22-20Z" fill="#e3e0cc"/>
+        <path d="M0 290Q190 160 350 300T700 260V420H0Z" fill="#6e8c72"/>
+        <path d="M0 340Q210 235 400 340T700 320V420H0Z" fill="#466e5b"/>
+        <g stroke="#a9bb8a" stroke-width="3" fill="none" opacity=".55"><path d="M0 350q190-100 400 10M0 370q190-100 430 10M0 395q190-100 460 8"/></g>
+        <path d="M530 420 560 200l25 220Z" fill="#314e44"/><path d="m500 285 60-105 60 105ZM510 325l50-95 55 95Z" fill="#45624d"/><rect width="700" height="420" filter="url(#grain)" opacity=".55"/></svg>

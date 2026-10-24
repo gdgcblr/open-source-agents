@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+.runtime/
+*.egg-info/
+.pytest_cache/
+evals/results.local.json

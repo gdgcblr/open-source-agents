@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="420" viewBox="0 0 700 420" role="img" aria-label="Original stylized travel illustration">
+    <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#dbc0a4"/><stop offset="1" stop-color="#d1a082"/></linearGradient><filter id="grain"><feTurbulence baseFrequency=".65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".07"/></feComponentTransfer></filter></defs>
+    <rect width="700" height="420" fill="url(#sky)"/><circle cx="535" cy="100" r="43" fill="#f5e4ba" opacity=".8"/>
+    <path d="M0 200Q150 90 310 200T700 170V420H0Z" fill="#5d7565" opacity=".15"/><path d="M0 245Q90 130 180 220T400 180T700 205V420H0Z" fill="#6f8070"/>
+        <path d="M0 295Q150 220 300 290T700 240V420H0Z" fill="#4d665b"/>
+        <g fill="#514e40" stroke="#514e40"><path d="M365 140h130v180H365Z"/><path d="m340 160 90-47 90 47-20-2H360Z"/><path d="m350 197 80-38 80 38Z"/><path d="m350 237 80-35 80 35Z"/><path d="M425 85h10v35h-10Z"/></g>
+        <g fill="#e0c091"><path d="M380 168h100v14H380ZM380 207h100v17H380ZM380 248h100v20H380Z"/></g>
+        <path d="M450 420Q260 330 335 275" stroke="#b7a184" stroke-width="47" fill="none"/>
+        <path d="M110 420 147 180" stroke="#544b40" stroke-width="14"/><path d="M143 240 65 185M145 216l76-60" stroke="#544b40" stroke-width="7"/>
+        <g fill="#d29f9b"><ellipse cx="85" cy="171" rx="75" ry="39"/><ellipse cx="186" cy="148" rx="78" ry="44"/><ellipse cx="138" cy="121" rx="80" ry="38"/></g><rect width="700" height="420" filter="url(#grain)" opacity=".55"/></svg>

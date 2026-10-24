@@ -1,0 +1,126 @@
+{
+  "request": {
+    "country": "JP",
+    "start_date": "2026-11-10",
+    "end_date": "2026-11-14",
+    "travelers": 2,
+    "budget": "100000",
+    "currency": "INR",
+    "interests": "Culture, local food, quiet walks",
+    "pace": "relaxed"
+  },
+  "result": {
+    "itinerary": {
+      "title": "A little slower in Kyoto",
+      "country": "JP",
+      "currency": "INR",
+      "travelers": 2,
+      "days": [
+        {
+          "date": "2026-11-10",
+          "activities": [
+            {
+              "place_id": "kyoto",
+              "title": "Find your bearings",
+              "note": "An unhurried day around Kyoto. Leave room for meals, rest, and your own discoveries. This is a scripted example, not a preference-aware recommendation.",
+              "estimate": "4000.00",
+              "source_ids": [
+                "curated-kyoto"
+              ]
+            }
+          ]
+        },
+        {
+          "date": "2026-11-11",
+          "activities": [
+            {
+              "place_id": "kyoto",
+              "title": "Follow your curiosity",
+              "note": "An unhurried day around Kyoto. Leave room for meals, rest, and your own discoveries. This is a scripted example, not a preference-aware recommendation.",
+              "estimate": "4000.00",
+              "source_ids": [
+                "curated-kyoto"
+              ]
+            }
+          ]
+        },
+        {
+          "date": "2026-11-12",
+          "activities": [
+            {
+              "place_id": "kyoto",
+              "title": "Take the scenic route",
+              "note": "An unhurried day around Kyoto. Leave room for meals, rest, and your own discoveries. This is a scripted example, not a preference-aware recommendation.",
+              "estimate": "4000.00",
+              "source_ids": [
+                "curated-kyoto"
+              ]
+            }
+          ]
+        },
+        {
+          "date": "2026-11-13",
+          "activities": [
+            {
+              "place_id": "kyoto",
+              "title": "Find your bearings",
+              "note": "An unhurried day around Kyoto. Leave room for meals, rest, and your own discoveries. This is a scripted example, not a preference-aware recommendation.",
+              "estimate": "4000.00",
+              "source_ids": [
+                "curated-kyoto"
+              ]
+            }
+          ]
+        },
+        {
+          "date": "2026-11-14",
+          "activities": [
+            {
+              "place_id": "kyoto",
+              "title": "Follow your curiosity",
+              "note": "An unhurried day around Kyoto. Leave room for meals, rest, and your own discoveries. This is a scripted example, not a preference-aware recommendation.",
+              "estimate": "4000.00",
+              "source_ids": [
+                "curated-kyoto"
+              ]
+            }
+          ]
+        }
+      ],
+      "warnings": [
+        "SCRIPTED DEMO: no model ran. Interests and special constraints have not been evaluated.",
+        "Amounts are illustrative budget allocations for the entire party, not researched prices. Lodging and transport are not priced.",
+        "Curated places and seasonal notes are unverified; consult official sources before traveling."
+      ]
+    },
+    "sources": [
+      {
+        "id": "curated-kyoto",
+        "url": "https://www.japan.travel/en/",
+        "title": "Kyoto",
+        "status": "unverified curated reference"
+      },
+      {
+        "id": "curated-tokyo",
+        "url": "https://www.japan.travel/en/",
+        "title": "Tokyo",
+        "status": "unverified curated reference"
+      },
+      {
+        "id": "curated-fuji",
+        "url": "https://www.japan.travel/en/",
+        "title": "Mount Fuji",
+        "status": "unverified curated reference"
+      }
+    ],
+    "provider": "demo",
+    "model": "scripted-demo",
+    "usage": null,
+    "estimated_total": "20000.00",
+    "evaluation": {
+      "structural_checks": "passed",
+      "factual_correctness": "not evaluated",
+      "completeness": "dates and schema passed; preferences require review"
+    }
+  }
+}
