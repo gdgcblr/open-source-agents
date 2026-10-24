@@ -1,3 +1,6 @@
+# DevGuard audit logs and local history
+.devguard/
+
 # Local environment and secret files
 .env
 .env.*

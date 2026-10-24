@@ -3,6 +3,13 @@
 import pytest
 import yaml
 from pathlib import Path
+from click.testing import CliRunner
+
+
+@pytest.fixture
+def runner() -> CliRunner:
+    """Returns a Click CliRunner instance for CLI testing."""
+    return CliRunner()
 
 
 @pytest.fixture

@@ -2,11 +2,17 @@
 
 import pytest
 from unittest.mock import MagicMock
+from click.testing import CliRunner
+
 from devguard.commit_message import (
     generate_commit_message,
+    generate_commit_message_result,
     generate_fallback_message,
+    generate_fallback_messages,
+    detect_binary_files,
     MAX_DIFF_CHARS,
 )
+from devguard.cli import main
 
 
 class DummyAIProvider:
@@ -50,7 +56,6 @@ def test_ai_provider_failure_falls_back():
     """When AI provider fails, deterministic fallback should succeed."""
     failing_provider = DummyAIProvider(should_fail=True)
     diff = "diff --git a/README.md b/README.md\n+docs update"
-    # Fallback without mock staged stats produces chore or docs
     msg = generate_commit_message(diff, provider=failing_provider, fallback_on_error=True)
     assert msg.startswith(("docs:", "chore:", "test:"))
 
@@ -60,7 +65,65 @@ def test_diff_truncation_for_large_diff():
     mock_provider = DummyAIProvider("refactor: massive overhaul")
     huge_diff = "a" * (MAX_DIFF_CHARS + 500)
     generate_commit_message(huge_diff, provider=mock_provider)
-    assert "[diff truncated for length]" in mock_provider.last_prompt
+    assert "[staged diff truncated for length]" in mock_provider.last_prompt
+
+
+def test_secret_redaction_in_ai_prompt():
+    """Secrets present in staged diffs must be redacted before reaching the AI model."""
+    mock_provider = DummyAIProvider("chore: add configuration")
+    diff = (
+        "diff --git a/config.py b/config.py\n"
+        "+OPENAI_KEY = 'sk-1234567890123456789012345678901234567890'\n"
+        "+DB_URL = 'postgres://admin:secret123@localhost:5432/db'\n"
+    )
+    generate_commit_message(diff, provider=mock_provider)
+    # The prompt received by the provider MUST NOT contain the raw secrets
+    assert "sk-1234567890" not in mock_provider.last_prompt
+    assert "secret123" not in mock_provider.last_prompt
+    assert "[REDACTED_OPENAI_KEY]" in mock_provider.last_prompt
+    assert "[REDACTED_DB_PASSWORD]" in mock_provider.last_prompt
+
+
+def test_detect_binary_files():
+    """Detect binary files in git diff output."""
+    diff = (
+        "diff --git a/logo.png b/logo.png\n"
+        "Binary files a/logo.png and b/logo.png differ\n"
+        "diff --git a/test.py b/test.py\n"
+        "+print('hello')\n"
+    )
+    detected = detect_binary_files(diff)
+    assert "logo.png" in detected
+
+
+def test_scope_in_fallback_and_ai():
+    """Scope parameter is incorporated into message formatting."""
+    # Fallback with scope
+    msg = generate_fallback_messages(["README.md"], scope="docs", count=1)[0]
+    assert msg.startswith("docs(docs):")
+
+    # AI with scope
+    mock_provider = DummyAIProvider("feat(auth): login with oauth2")
+    diff = "+auth logic"
+    res = generate_commit_message_result(diff, provider=mock_provider, scope="auth")
+    assert "scope 'auth'" in mock_provider.last_prompt or "(auth)" in mock_provider.last_prompt
+    assert res.candidates[0] == "feat(auth): login with oauth2"
+
+
+def test_multiple_candidates_generation():
+    """Multiple candidates are returned when requested."""
+    # Deterministic fallback with 3 candidates
+    candidates = generate_fallback_messages(["file1.py", "file2.py"], count=3)
+    assert len(candidates) == 3
+    assert all(c.startswith(("chore:", "feat:", "refactor:")) for c in candidates)
+
+    # AI provider with 2 candidates
+    mock_provider = DummyAIProvider("feat: candidate one\nrefactor: candidate two")
+    diff = "+code"
+    res = generate_commit_message_result(diff, provider=mock_provider, candidates_count=2)
+    assert len(res.candidates) == 2
+    assert res.candidates[0] == "feat: candidate one"
+    assert res.candidates[1] == "refactor: candidate two"
 
 
 def test_fallback_docs_heuristic():
@@ -88,10 +151,9 @@ def test_fallback_single_file():
     """Fallback mentions single filename."""
     files = ["src/devguard/policy.py"]
     msg = generate_fallback_message(files)
-    assert msg == "chore: update policy.py"
+    assert msg == "chore(policy): update policy.py"
 
 
 def test_fallback_empty_files():
     """Fallback handles empty staged file list."""
     assert generate_fallback_message([]) == "chore: no changes staged"
-
