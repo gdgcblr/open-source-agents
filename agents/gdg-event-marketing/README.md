@@ -32,8 +32,11 @@ review and edit.
   printing; the cards reuse draft/event facts instead of inventing new claims.
 - Builds an event-aware campaign timeline (announcement, topic spotlight,
   one-day reminder, and post-event follow-up) and exports review reminders as
-  an `.ics` calendar file. It does not publish or schedule posts with social
-  networks.
+  an `.ics` calendar file.
+- Can publish the reviewed LinkedIn draft to the connected member's public
+  profile through LinkedIn OAuth. Every post requires a full-content preview
+  and a separate explicit confirmation; nothing is queued or published
+  automatically.
 - Adds a Google Developer Groups bracket-mark header with a clear notice that
   this is an independent community project, not an official Google product.
 - Uses a Google-inspired light theme with familiar blue, red, yellow, and green
@@ -41,7 +44,7 @@ review and edit.
 - Keeps network work off the UI thread and presents actionable validation/errors.
 - Includes offline demo mode with fictional event data; no credentials or network
   are needed to explore the interface.
-- Never publishes content; files are created only after an explicit export action.
+- X and newsletter content remain drafts. Mailchimp delivery is not implemented.
 
 ### UI Preview
 
@@ -74,7 +77,7 @@ event facts into a complete campaign package.
 | Product area | This project |
 | :--- | :--- |
 | Platform-specific drafting and AI copy refinement | LinkedIn, X, and newsletter drafts with Gemini, editable by organizers. |
-| Publishing calendar and planning | Event-relative campaign plan plus local `.ics` reminders for manual review. No social-account publishing or queue integration. |
+| Publishing calendar and planning | Event-relative campaign plan plus local `.ics` reminders; reviewed LinkedIn posts can be published immediately after a separate confirmation. No queue or automatic scheduling. |
 | Content organization and repurposing | Event draft editing, channel variants, and a four-card downloadable visual carousel. |
 | Team collaboration and approvals | Human review is supported in the app; there are no accounts, shared workspace, or multi-user approval system. |
 | Community inbox and replies | Not included; this app does not connect to social accounts or access comments. |
@@ -109,8 +112,8 @@ change; consult Buffer's current pages for the latest details.
 - **Agent framework / core library:** Python script with Google Gen AI SDK
 - **Model:** `gemini-3.8-flash` by default; override with `GEMINI_MODEL`
 - **Desktop UI:** Tkinter (included with most standard Python distributions)
-- **External APIs:** Public GDG Community event API and Gemini API
-- **Other dependencies:** Requests and python-dotenv
+- **External APIs:** Public GDG Community event API, Gemini API, and optional LinkedIn OAuth/Posts API
+- **Other dependencies:** Requests, python-dotenv, and keyring for local OS credential storage
 
 ---
 
@@ -120,7 +123,9 @@ Live mode reads local configuration, requests published events for the selected
 chapter, filters out past events, and sends the upcoming event details to Gemini
 for selected channel drafts. The UI runs requests away from the main window
 thread and supports editing, copying, and explicit export. Event campaign plans
-and calendar reminders are generated locally. The app does not publish content.
+and calendar reminders are generated locally. A separate LinkedIn OAuth flow
+can publish one reviewed member-profile post at a time after an explicit
+confirmation.
 
 ```text
 Local chapter ID ──> GDG Community event API ──> nearest upcoming event
@@ -129,6 +134,7 @@ Local Gemini key ─────────────────────
                                                                     │
                                            UI drafts / visual carousel
 Event time + facts ──> local campaign timeline ──> optional .ics reminders
+Reviewed LinkedIn draft ──> OAuth member authorization ──> preview + confirm ──> public post
 ```
 
 Offline demo mode bypasses both APIs and displays clearly labeled fictional
@@ -142,6 +148,9 @@ sample content.
 - A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
   for live generation only.
 - Internet access to gdg.community.dev and the Gemini API for live generation.
+- A LinkedIn developer app with access to **Share on LinkedIn** and **Sign In
+  with LinkedIn using OpenID Connect** to connect and publish. LinkedIn controls
+  product access and account eligibility.
 
 ---
 
@@ -202,6 +211,10 @@ cp .env.example .env
 | `GEMINI_API_KEY` | Live mode | None | Your private Gemini API key. |
 | `GDG_CHAPTER_ID` | Live mode | None | Chapter ID from the GDG Community page. |
 | `GEMINI_MODEL` | No | `gemini-3.8-flash` | Gemini model available to your account. |
+| `LINKEDIN_CLIENT_ID` | LinkedIn publishing | None | Client ID from your LinkedIn developer app. |
+| `LINKEDIN_CLIENT_SECRET` | LinkedIn publishing | None | Client secret from your LinkedIn developer app; keep it only in local `.env`. |
+| `LINKEDIN_REDIRECT_URI` | LinkedIn publishing | None | The HTTPS callback URL of your deployed Render service, ending in `/callback`. |
+| `LINKEDIN_API_VERSION` | No | `202610` | LinkedIn REST API version in `YYYYMM` format; update it when LinkedIn retires a version. |
 
 Find the chapter ID on your chapter page at
 [gdg.community.dev](https://gdg.community.dev/). If it is not displayed, view
@@ -213,6 +226,48 @@ it to the CLI with `--chapter-id`.
 settings, API keys, or other credentials to source files or pull requests.
 Values typed into the UI are only held in memory for that run; the UI never
 saves them. The UI masks the API-key field while typing.
+
+### Connect LinkedIn (optional)
+
+LinkedIn's current authorization-code flow requires a registered HTTPS redirect
+URL. For desktop testing, this project includes a tiny Render callback service.
+It receives LinkedIn's short-lived authorization response and redirects the
+browser to the local app; it does not receive the client secret or exchange or
+store access tokens.
+
+1. In your [Render dashboard](https://dashboard.render.com/), create a **Web
+   Service** from this repository. Set **Root Directory** to
+   `agents/gdg-event-marketing`, **Build Command** to
+   `python -m py_compile linkedin_oauth_callback.py`, and **Start Command** to
+   `python linkedin_oauth_callback.py`. Use the free plan for testing. Wait for
+   the service to deploy and copy its HTTPS URL, for example
+   `https://your-service.onrender.com`.
+2. In the [LinkedIn Developer Portal](https://www.linkedin.com/developers/),
+   create an app (or choose your own) and enable **Share on LinkedIn** and
+   **Sign In with LinkedIn using OpenID Connect**. Under **Auth**, register the
+   exact redirect URL `https://your-service.onrender.com/callback`. LinkedIn
+   must grant the app `openid`, `profile`, and `w_member_social`; product access
+   is controlled by LinkedIn.
+3. In the local `.env`, set `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, and
+   `LINKEDIN_REDIRECT_URI` to your app values and the exact Render callback URL.
+   Never put the client secret in Render, source control, or chat.
+4. Restart the desktop app. Click **Connect LinkedIn** or **Publish LinkedIn
+   draft…** while disconnected. A browser opens LinkedIn's login/consent page.
+   Approve it; the browser returns to the app automatically. No token copy/paste
+   is needed. If publishing was the action that started login, the app then
+   previews the exact post and asks for **Publish publicly** confirmation.
+
+The desktop app exchanges the one-time authorization code directly with
+LinkedIn, verifies the member profile, and stores the access token in the
+operating system credential store. The Render callback suppresses application
+request logs and does not persist callback data. Tokens expire; if LinkedIn
+rejects a post, reconnect. **Disconnect** removes the saved local token. To
+revoke the app's grant, also remove it in LinkedIn's authorized-services
+settings. See LinkedIn's official
+[authorization-code flow](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow),
+[OpenID Connect guide](https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2),
+and [Posts API](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api)
+for current requirements.
 
 ---
 
@@ -240,8 +295,15 @@ channels, set a tone, audience, and call to action, then click **Generate
 drafts**. Edit drafts in-place, regenerate a selected channel, copy it, or save
 all drafts as Markdown/text. Click **Create visual carousel** after generating
 a LinkedIn draft to save and open a four-card local preview. Navigate the cards,
-download each as a PNG, or print the full carousel to PDF. Review generated
-copy and visuals before using them; the app never posts content.
+download each as a PNG, or print the full carousel to PDF.
+
+To publish, use a non-demo event, connect LinkedIn, and click **Publish LinkedIn
+draft…**. The app blocks fictional demo content and drafts whose event details
+have changed since generation. Review the complete post in the preview window,
+then choose **Publish publicly** to submit it immediately to your personal
+LinkedIn profile. This is not a scheduled post and cannot be undone by the app.
+The app does not publish to LinkedIn organization pages. X and newsletter
+drafts remain export-only; Mailchimp delivery is not yet integrated.
 
 Open **Campaign timeline** and click **Build event timeline** to create
 announcement, topic spotlight, one-day reminder, and post-event follow-up copy.
@@ -318,7 +380,7 @@ python -m unittest discover -s tests
 Check syntax:
 
 ```powershell
-python -m py_compile agent.py ui.py prompts.py tests\test_agent.py
+python -m py_compile agent.py ui.py prompts.py publishing.py tests\test_agent.py tests\test_publishing.py
 ```
 
 Run `python ui.py --demo` to manually verify the desktop interface, tabs, and
@@ -333,8 +395,10 @@ copy button without using network access or credentials.
 - Event details depend on the public GDG Community API response.
 - Drafts may need editing for local voice, timing, accessibility, and platform
   conventions; generated copy is not automatically fact-checked.
-- This project creates drafts only; it does not connect to LinkedIn, X, or email
-  services to publish or send content.
+- Only LinkedIn member-profile text posts can currently be published. X,
+  newsletter, and Mailchimp distribution remain draft-only.
+- LinkedIn app product access, OAuth setup, and API-version availability are
+  controlled by LinkedIn and must be configured by each user.
 - Tkinter must be present in the Python distribution to launch the desktop UI.
 
 ---
@@ -342,12 +406,18 @@ copy button without using network access or credentials.
 ## Security & Privacy Considerations
 
 - **Secrets handling:** The local `.env` is ignored by Git. The example file
-  contains placeholders only. UI-entered API keys are masked and are not saved.
+  contains placeholders only. UI-entered Gemini keys are masked and are not
+  saved. LinkedIn OAuth tokens are stored in the operating system credential
+  store and can be removed with **Disconnect**.
 - **Data privacy:** In live mode, public event details are sent to Gemini to
-  generate drafts. Do not include private attendee information in event data.
+  generate drafts. During LinkedIn authorization, the Render callback receives
+  a short-lived authorization code and forwards it to the local app; only the
+  local app exchanges it for an access token. Do not include private attendee information in event data.
   Offline demo mode makes no network requests.
-- **Safety:** The agent does not execute model-generated code, access LinkedIn
-  credentials, or publish content. A human should review all drafts.
+- **Safety:** Publishing requires a connected member account, a non-demo event,
+  an unchanged event snapshot, a full-content preview, and a separate
+  confirmation. Posts are public and submitted immediately. The app does not
+  execute model-generated code or store LinkedIn credentials in the repository.
 
 ---
 
@@ -355,7 +425,10 @@ copy button without using network access or credentials.
 
 - [ ] Add localization and chapter-specific brand voice profiles.
 - [ ] Add more social channels and configurable platform limits.
-- [ ] Add optional integrations for publishing and performance analytics.
+- [ ] Add a Mailchimp integration that targets an existing consent-based
+  audience and requires a recipient-count preview plus separate send approval.
+- [ ] Add publishing integrations for other social channels and performance
+  analytics.
 
 ---
 
