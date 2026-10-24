@@ -1,130 +1,88 @@
-# open-source-ai
+# 🌐 OmniLedger AI
+### The High-Precision Financial Invariant Suite
 
-> **Build it. Document it. Open-source it.**
-
-A community-driven collection of practical, documented, and open-source AI agents and developer tools, built with diverse frameworks and technologies.
-
----
-
-## Introduction
-
-As AI systems evolve from single prompt-response interactions to multi-step reasoning, tool-using agents, and specialized developer utilities, the need for transparent, reproducible, and practical open-source implementations has never been greater.
-
-`open-source-ai` is a collaborative monorepo curated to showcase working, well-documented AI projects. The goal is to provide developers, researchers, and builders with a shared catalog of real-world patterns—ranging from autonomous task agents to Model Context Protocol (MCP) servers and evaluation harnesses.
-
-This repository is designed to be accessible, framework-agnostic, and easy to navigate whether you are looking for reference implementations or contributing your own creation.
+**OmniLedger AI** is a production-grade suite of autonomous AI agents designed to eliminate "financial drift" and hallucinations in complex accounting and quantitative equity research. By combining **Google ADK Hub-and-Spoke Architecture** with deterministic mathematical invariants, OmniLedger ensures that every penny is accounted for and every price target is grounded in certified quant matrices.
 
 ---
 
-## Acceptable Project Categories
+## 🏛️ The OmniLedger Ecosystem
 
-We welcome practical, working AI contributions across a variety of categories. These categories are illustrative rather than rigid constraints:
+The suite is divided into two specialized domains, both sharing the same commitment to **Zero-Drift Precision**:
 
-- **AI Agents**: Autonomous, semi-autonomous, or task-oriented agents, conversational assistants, and multi-agent coordination systems.
-- **Model Context Protocol (MCP) Servers & Integrations**: Servers providing structured context, tools, and prompts to models from databases, filesystems, developer tools, or web services.
-- **AI Developer Utilities**: Command-line interfaces, prompt helpers, token trackers, context formatters, and workflow automations.
-- **AI-Powered Workflows & Automation**: Specialized pipelines for code generation, documentation review, PR triage, research synthesis, or data transformation.
-- **Evaluation, Testing & Safety Utilities**: Tools and harnesses to measure model accuracy, benchmark latency and cost, detect hallucinations, or test tool calls.
-- **Other Practical AI Tooling**: Reusable libraries, adapters, and connectors that help developers build AI applications.
+### 1. ⚖️ OmniLedger Audit (Consumer Finance)
+*Formerly Bharat Dues*
+An autonomous agent for shared group bill splitting and multimodal auditing.
+- **Core Invariant**: $\sum \text{NetBalances} \equiv 0.00$
+- **Capabilities**: Multimodal Receipt OCR (Gemini 2.5 Flash), Smart-Split Penny Allocation, Double-Entry Invariant Verification, and 1-tap NPCI UPI settlements.
+- **Path**: `agents/gemini-audit-agent/`
 
----
-
-## Technology Flexibility
-
-This repository is **completely framework-agnostic and language-neutral**. Contributors are encouraged to select the stack best suited to their problem domain.
-
-Accepted technologies and ecosystems include, but are not limited to:
-- **Google Agent Development Kit (ADK)**
-- **OpenAI Agents SDK**
-- **LangGraph & LangChain**
-- **CrewAI**
-- **Model Context Protocol (MCP)**
-- **Python or TypeScript / JavaScript AI runtimes**
-- **Go, Rust, or other systems languages**
-- **Local / open-weights model runtimes** (e.g., Ollama, vLLM, llama.cpp)
-- **Hosted model APIs** (e.g., Gemini, OpenAI, Anthropic, Mistral)
-
-No single cloud provider, framework, or model vendor is mandated.
+### 2. 📈 OmniLedger Quant (Institutional Finance)
+*Formerly Arthaniti*
+A quantitative equity research hub for NSE/BSE analysis and risk guardrails.
+- **Core Invariant**: SEBI Prudential Concentration Caps ($\le 25\%$).
+- **Capabilities**: Certified Camarilla & Classic Pivot Engine, Real-time Market Feeds, Gemma-2 Institutional Thesis Synthesis, and MCP Server integration for IDEs.
+- **Path**: `tools/gemma-quant-mcp/`
 
 ---
 
-## Repository Structure
+## 🧬 Technical Architecture: The Hub-and-Spoke Pattern
 
-The repository is organized into distinct directories to keep projects isolated, modular, and easy to maintain:
+OmniLedger utilizes the **Google Agent Development Kit (ADK)** to decouple orchestration from execution.
 
-```
-open-source-ai/
-├── README.md               # Repository overview, philosophy, and index
-├── CONTRIBUTING.md         # Detailed 12-step contributor guide and standards
-├── .gitignore              # Repository-wide ignores for secrets, virtual environments, and caches
-├── agents/                 # Directory for autonomous and task-oriented agents
-│   └── README.md           # Guidelines and index of agent projects
-├── tools/                  # Directory for developer tools, MCP servers, and utilities
-│   └── README.md           # Guidelines and index of tooling projects
-├── template/               # Starter files for new contributions
-│   ├── README.md           # Reusable project documentation template
-│   ├── .gitignore          # Recommended per-project .gitignore
-│   └── .env.example        # Sanitized environment variable template
-└── .github/
-    └── PULL_REQUEST_TEMPLATE.md  # Standard checklist for submitting pull requests
+```mermaid
+graph TD
+    User((User)) --> Hub[OmniLedger Master Hub]
+    Hub --> S1[Spoke: Ledger/Quant Engine]
+    Hub --> S2[Spoke: Multimodal OCR/Market Feed]
+    Hub --> S3[Spoke: Smart Split/Risk Guardrails]
+    Hub --> S4[Spoke: Settlement/Thesis Synthesis]
+    S1 & S2 & S3 & S4 --> Invariant{Invariant Guardrail}
+    Invariant -->|Verified| Output[Deterministic Result]
+    Invariant -->|Breach| Error[Integrity Alarm]
 ```
 
-- **[`agents/`](agents/README.md)**: Contains end-to-end agents and multi-agent workflows. Each agent lives in its own dedicated subfolder (`agents/<project-slug>/`).
-- **[`tools/`](tools/README.md)**: Contains developer utilities, MCP servers, evaluation harnesses, and reusable components. Each tool lives in its own dedicated subfolder (`tools/<project-slug>/`).
-- **[`template/`](template/README.md)**: Provides a standardized documentation blueprint, environment template, and local `.gitignore` so contributors can document their work consistently.
+---
+
+## 🛠️ Production-Grade Features
+
+- **$\sum \Delta \equiv 0.00$ Enforcement**: No floating-point drift. Every transaction is balanced to the nearest penny.
+- **PrivacyGuard PII Masking**: Built-in scrubbing of emails, phone numbers, and UPI IDs before data reaches the LLM.
+- **Zero-Key Resilience**: Operates in "Deterministic Fast-Path" mode using heuristic parsers when API keys are absent.
+- **Enterprise Versioning**: All endpoints follow `/api/v1/` for stable downstream integration.
+- **Local Persistence**: SQLite-backed ledger and portfolio history for stateful auditing.
 
 ---
 
-## Quick Start for Contributors
+---
 
-Ready to contribute? Follow this straightforward fork-and-pull-request workflow:
+## 🎥 Media & Video Demonstrations (Brag Skills)
 
-1. **Browse existing contributions**: Check [`agents/`](agents/README.md) and [`tools/`](tools/README.md) to explore existing work and choose a unique, descriptive project name.
-2. **Fork the repository**: Fork this repository to your personal GitHub account.
-3. **Clone your fork**:
-   ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
-   ```
-4. **Create a branch**:
-   ```bash
-   git checkout -b feat/<your-project-slug>
-   ```
-5. **Add your project**: Create a dedicated directory under `agents/<project-slug>/` or `tools/<project-slug>/`. Copy `template/README.md`, `template/.gitignore`, and `template/.env.example` into your folder.
-6. **Implement and document**: Write your code, declare dependencies in a manifest (`requirements.txt`, `package.json`, etc.), and document setup, usage, and examples in your project's `README.md`.
-7. **Test thoroughly**: Verify that installation and execution work on a clean environment and that no credentials or virtual environments are tracked.
-8. **Commit and push**:
-   ```bash
-   git add agents/<project-slug>/   # or tools/<project-slug>/
-   git commit -m "feat(agents): add <project-slug>"
-   git push -u origin feat/<your-project-slug>
-   ```
-9. **Open a Pull Request**: Submit your PR against the upstream `main` branch, completing the [Pull Request Checklist](.github/PULL_REQUEST_TEMPLATE.md).
+### 🎥 Final Render Paths (Post-Render)
+- **Bharat Dues Video**: `agents/gemini-audit-agent/brag/brag.mp4`
+- **Arthaniti Video**: `tools/gemma-quant-mcp/brag/brag.mp4`
 
-For step-by-step guidance and detailed Git commands, see [CONTRIBUTING.md](CONTRIBUTING.md).
+### 🛠️ Current Composition Paths (The Source)
+If you want to preview or edit the scenes before rendering:
+- **Bharat Dues Composition**: `agents/gemini-audit-agent/brag/composition/index.html`
+- **Arthaniti Composition**: `tools/gemma-quant-mcp/brag/composition/index.html`
+
+## 🚀 Quick Start
+
+### Launch Audit Agent
+```bash
+cd agents/gemini-audit-agent
+docker compose up --build
+# Access at http://localhost:8000
+```
+
+### Launch Quant Tool
+```bash
+cd tools/gemma-quant-mcp
+docker compose up --build
+# Access at http://localhost:8002
+```
 
 ---
 
-## Contribution Standards
-
-To maintain technical credibility and long-term utility, all contributions are reviewed against four core criteria:
-
-1. **Reproducibility**: Clear prerequisites, dependency specifications, and setup instructions that work out-of-the-box.
-2. **Documentation Quality**: Comprehensive documentation using the provided template, including realistic inputs/outputs and known limitations.
-3. **Security & Privacy**: Zero committed credentials, API keys, or private data. All configuration must use environment variables or sanitized configuration files.
-4. **Focused Scope**: Each contribution is isolated in its own directory and does not alter unrelated parts of the repository.
-
----
-
-## Community Context
-
-This repository was established in collaboration with **GDG Cloud Bengaluru** as part of the **FORK. BUILD. MERGE.** initiative under **Road to DevFest 2026**.
-
-While seeded during this community event, this repository is designed as an enduring, public open-source catalog. Contributions, maintenance, and community participation continue beyond the event.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE) &copy; 2026 GDG Cloud Bengaluru Community.
-
+## 📜 License
+MIT License © 2026 GDG Cloud Bengaluru Community.

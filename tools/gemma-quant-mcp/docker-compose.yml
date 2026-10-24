@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  gemma-quant-mcp:
+    build: .
+    container_name: gemma-quant-mcp
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - PORT=8002
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3

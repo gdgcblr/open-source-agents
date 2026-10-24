@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [gemma-quant-mcp](gemma-quant-mcp/) | Certified Camarilla & Classic pivot engine, financial invariant guardrails, and Gemma AI research synthesis | Model Context Protocol (MCP) Servers & Integrations | [@shikharagrawal17](https://github.com/shikharagrawal17) |
