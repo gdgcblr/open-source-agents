@@ -522,12 +522,21 @@ function renderDashboardHtml(report) {
             </div>
             <p style="font-size: 0.78rem; color: var(--text-muted);" id="qaDesc">Evaluates architecture & error resilience</p>
           </div>
+
+          <div class="agent-pill">
+            <div class="agent-header">
+              <span class="agent-name">💥 BlastPredictor</span>
+              <span class="agent-score" id="blastScore">--%</span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted);" id="blastDesc">Simulates downstream caller breakages</p>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="tabs">
       <button class="tab active" onclick="switchTab('tab-findings')">🔍 All Findings</button>
+      <button class="tab" onclick="switchTab('tab-blast')">💥 Blast Radius Radar (<span id="blastCallersCount">0</span>)</button>
       <button class="tab" onclick="switchTab('tab-patches')">🛠️ Auto-Patches (<span id="patchCount">0</span>)</button>
       <button class="tab" onclick="switchTab('tab-timeline')">⏱️ Agent Timeline</button>
       <button class="tab" onclick="switchTab('tab-markdown')">📝 GitHub PR Review Markdown</button>
@@ -535,6 +544,10 @@ function renderDashboardHtml(report) {
 
     <div id="tab-findings" class="tab-content active">
       <div id="findingsList">Loading findings...</div>
+    </div>
+
+    <div id="tab-blast" class="tab-content">
+      <div id="blastDetails">Loading blast radius simulation...</div>
     </div>
 
     <div id="tab-patches" class="tab-content">
@@ -584,6 +597,63 @@ function renderDashboardHtml(report) {
       document.getElementById('secScore').innerText = (data.agents.security?.score || 0) + '/100';
       document.getElementById('compScore').innerText = (data.agents.compliance?.score || 0) + '/100';
       document.getElementById('qaScore').innerText = (data.agents.quality?.score || 0) + '/100';
+
+      // Blast Predictor score
+      const blastData = data.agents.blast || {};
+      const blastScoreEl = document.getElementById('blastScore');
+      if (blastScoreEl) blastScoreEl.innerText = (blastData.blastScore || 0) + '%';
+      const blastCallersCountEl = document.getElementById('blastCallersCount');
+      if (blastCallersCountEl) blastCallersCountEl.innerText = (blastData.downstreamCallers?.length || 0);
+
+      // Render Blast Radius Tab
+      const blastContainer = document.getElementById('blastDetails');
+      if (blastContainer) {
+        const impacts = blastData.downstreamImpacts || [];
+        const callers = blastData.downstreamCallers || [];
+        let blastHtml = `
+          <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text);">Downstream Semantic Ripple Forecast</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">${escapeHtml(blastData.summary || '')}</p>
+              </div>
+              <div style="text-align: right;">
+                <span style="display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; background: ${blastData.metrics?.badgeColor ? blastData.metrics.badgeColor + '22' : 'rgba(56,189,248,0.2)'}; color: ${blastData.metrics?.badgeColor || '#38bdf8'}; border: 1px solid ${blastData.metrics?.badgeColor || '#38bdf8'};">
+                  ${blastData.containmentVerdict || 'ISOLATED'}
+                </span>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Contract: ${blastData.contractIntegrity || 'STABLE'}</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
+              <div><span style="font-size: 0.75rem; color: var(--text-muted);">Impacted Untouched Callers</span><div style="font-size: 1.4rem; font-weight: 700;">${callers.length}</div></div>
+              <div><span style="font-size: 0.75rem; color: var(--text-muted);">Modified Interface Symbols</span><div style="font-size: 1.4rem; font-weight: 700;">${blastData.metrics?.modifiedSymbolsCount || 0}</div></div>
+              <div><span style="font-size: 0.75rem; color: var(--text-muted);">Untested Caller Risk</span><div style="font-size: 1.4rem; font-weight: 700; color: ${blastData.metrics?.untestedDownstreamCallers ? 'var(--warning)' : 'var(--success)'};">${blastData.metrics?.untestedDownstreamCallers ? 'YES (UNTESTED)' : 'COVERED'}</div></div>
+            </div>
+          </div>
+        `;
+
+        if (impacts.length === 0) {
+          blastHtml += `
+            <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 12px; padding: 1.5rem; text-align: center;">
+              <div style="font-weight: 700; color: var(--success); font-size: 1.1rem;">Hermetically Isolated Change</div>
+              <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">This PR does not alter public contracts relied upon by other repository modules. Zero downstream breakages predicted.</div>
+            </div>
+          `;
+        } else {
+          blastHtml += `<h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Downstream Consumers Requiring Contract Verification</h4>`;
+          blastHtml += impacts.map(imp => `
+            <div class="finding-card ${imp.severity === 'CRITICAL' ? 'critical' : imp.severity === 'HIGH' ? 'high' : 'medium'}">
+              <div class="finding-title">
+                <span style="font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);">${imp.severity}</span>
+                ${escapeHtml(imp.impactedFile)} (Symbol: ${escapeHtml(imp.brokenSymbol)})
+              </div>
+              <div class="finding-desc">${escapeHtml(imp.predictedFailure)}</div>
+              <div class="finding-rec">🛡️ <strong>Safety Requirement:</strong> ${escapeHtml(imp.preventionFix)}</div>
+            </div>
+          `).join('');
+        }
+        blastContainer.innerHTML = blastHtml;
+      }
 
       // Patches count
       const patches = data.agents.patcher?.patches || [];

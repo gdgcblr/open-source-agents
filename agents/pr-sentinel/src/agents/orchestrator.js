@@ -8,6 +8,7 @@ import { SecurityAgent } from './security.js';
 import { QualityAgent } from './quality.js';
 import { ComplianceAgent } from './compliance.js';
 import { PatcherAgent } from './patcher.js';
+import { BlastAgent } from './blast.js';
 
 export class Orchestrator {
   constructor(options = {}) {
@@ -16,6 +17,7 @@ export class Orchestrator {
     this.qualityAgent = new QualityAgent();
     this.complianceAgent = new ComplianceAgent();
     this.patcherAgent = new PatcherAgent();
+    this.blastAgent = new BlastAgent();
     this.events = [];
     this.onProgress = options.onProgress || (() => {});
   }
@@ -108,20 +110,31 @@ export class Orchestrator {
     });
     const patcherDuration = Date.now() - patcherStart;
 
-    // Phase 5: Synthesis & PR Verdict Calculation
+    // Phase 5: Blast Radius Predictor
+    this.logStep('PHASE_5', 'BlastRadiusPredictor', 'Simulating downstream call-graph blast radius & regression breakages');
+    const blastStart = Date.now();
+    const allProjectFiles = readDirectoryFiles(targetDir);
+    const blastResults = await this.blastAgent.forecast({
+      ...context,
+      allProjectFiles,
+    });
+    const blastDuration = Date.now() - blastStart;
+
+    // Phase 6: Synthesis & PR Verdict Calculation
     this.logStep('SYNTHESIS', 'Orchestrator', 'Synthesizing executive PR readiness score and markdown review');
 
     const totalDuration = Date.now() - startTime;
     const compositeScore = Math.round(
-      (securityResults.score * 0.45) +
-      (complianceResults.score * 0.35) +
-      (qualityResults.score * 0.20)
+      (securityResults.score * 0.40) +
+      (complianceResults.score * 0.30) +
+      (qualityResults.score * 0.20) +
+      (Math.max(0, 100 - (blastResults.blastScore || 0)) * 0.10)
     );
 
     let verdict = 'APPROVED';
-    if (securityResults.status === 'FAIL' || complianceResults.status === 'FAIL') {
+    if (securityResults.status === 'FAIL' || complianceResults.status === 'FAIL' || blastResults.status === 'CRITICAL') {
       verdict = 'REQUEST_CHANGES';
-    } else if (securityResults.status === 'WARN' || complianceResults.status === 'WARN') {
+    } else if (securityResults.status === 'WARN' || complianceResults.status === 'WARN' || blastResults.status === 'WARN') {
       verdict = 'NEEDS_REVIEW';
     }
 
@@ -152,6 +165,10 @@ export class Orchestrator {
           ...patcherResults,
           durationMs: patcherDuration,
         },
+        blast: {
+          ...blastResults,
+          durationMs: blastDuration,
+        },
       },
       events: this.events,
       markdownReview: this.generateMarkdownReview({
@@ -162,6 +179,7 @@ export class Orchestrator {
         qualityResults,
         complianceResults,
         patcherResults,
+        blastResults,
       }),
     };
 
@@ -180,13 +198,14 @@ export class Orchestrator {
     qualityResults,
     complianceResults,
     patcherResults,
+    blastResults = {},
   }) {
     const verdictEmoji = verdict === 'APPROVED' ? '✅' : (verdict === 'NEEDS_REVIEW' ? '⚠️' : '❌');
 
     const lines = [
       `# ${verdictEmoji} PR Sentinel Automated Review Report`,
       '',
-      `> **Verdict:** \`${verdict}\` | **Readiness Score:** \`${compositeScore}/100\` | **Branch:** \`${gitInfo.branch}\``,
+      `> **Verdict:** \`${verdict}\` | **Readiness Score:** \`${compositeScore}/100\` | **Branch:** \`${gitInfo?.branch || 'unknown'}\``,
       '',
       '---',
       '',
@@ -197,12 +216,29 @@ export class Orchestrator {
       `| **SecuritySentinel** | \`${securityResults.status}\` | ${securityResults.score}/100 | Secrets, dangerous code & API safety |`,
       `| **ComplianceAuditor** | \`${complianceResults.status}\` | ${complianceResults.score}/100 | CONTRIBUTING.md checklist & isolation |`,
       `| **QualityCritic** | \`${qualityResults.status}\` | ${qualityResults.score}/100 | Architecture, resilience & modularity |`,
+      `| **BlastRadiusPredictor** | \`${blastResults.status || 'PASS'}\` | Blast: ${blastResults.blastScore || 0}% | Downstream regressions & caller impact |`,
       '',
       '---',
       '',
-      '### 🔍 Key Findings & Recommendations',
+      '### 💥 Blast Radius & Downstream Impact Radar',
+      '',
+      `> **Containment Verdict:** \`${blastResults.containmentVerdict || 'ISOLATED'}\` | **Contract Integrity:** \`${blastResults.contractIntegrity || 'STABLE'}\``,
+      '',
+      blastResults.summary || 'No external downstream callers affected.',
       '',
     ];
+
+    if (blastResults.downstreamImpacts && blastResults.downstreamImpacts.length > 0) {
+      lines.push('**Downstream Untouched Callers at Risk:**');
+      for (const impact of blastResults.downstreamImpacts) {
+        lines.push(`- ⚠️ **\`${impact.impactedFile}\`** (depends on \`${impact.brokenSymbol}\`)`);
+        lines.push(`  - *Predicted Failure:* ${impact.predictedFailure}`);
+        lines.push(`  - *Fix:* ${impact.preventionFix}`);
+      }
+      lines.push('');
+    }
+
+    lines.push('---', '', '### 🔍 Key Findings & Recommendations', '');
 
     const allFindings = [
       ...(securityResults.findings || []),
