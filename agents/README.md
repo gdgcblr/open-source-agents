@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [securevantara](securevantara/) | Autonomous security review & remediation agent built with Google ADK, deterministic AST checks, and multi-provider LLM auditing | Google ADK / Python / Ollama / Gemini | @darshan |

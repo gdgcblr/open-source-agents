@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!securevantara/
+!securevantara/*.py
+!tests/
+!tests/*.py
