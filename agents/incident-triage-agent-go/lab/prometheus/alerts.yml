@@ -1,0 +1,33 @@
+# Short "for" windows so incidents fire within a minute during a demo.
+groups:
+  - name: shop
+    rules:
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99, sum by (service, le) (rate(http_request_duration_seconds_bucket[1m]))) > 0.5
+        for: 30s
+        labels: {severity: page}
+        annotations:
+          summary: "p99 latency of {{ $labels.service }} is {{ $value | humanizeDuration }}"
+
+      - alert: HighErrorRate
+        expr: |
+          sum by (service) (rate(http_requests_total{code=~"5.."}[1m]))
+            / sum by (service) (rate(http_requests_total[1m])) > 0.05
+        for: 30s
+        labels: {severity: page}
+        annotations:
+          summary: "{{ $labels.service }} 5xx ratio is {{ $value | humanizePercentage }}"
+
+      - alert: ServiceRestarting
+        expr: changes(process_start_time_seconds[5m]) > 0
+        labels: {severity: page}
+        annotations:
+          summary: "{{ $labels.service }} restarted {{ $value }} time(s) in 5m"
+
+      - alert: HighMemory
+        expr: process_resident_memory_bytes > 80e6
+        for: 15s
+        labels: {severity: warn}
+        annotations:
+          summary: "{{ $labels.service }} RSS is {{ $value | humanize1024 }}B"

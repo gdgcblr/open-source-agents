@@ -1,0 +1,53 @@
+# Incident lab: a two-service shop with metrics in Prometheus and logs in Loki.
+# Inject faults with ./chaos.sh; every scenario has a known root cause.
+name: triage-lab
+
+services:
+  checkout:
+    build: ./shop
+    environment:
+      SERVICE: checkout
+      DOWNSTREAM_URL: http://payments:8080
+      LOAD_RPS: "20"
+      LOKI_URL: http://loki:3100
+    ports: ["8080:8080"]
+    mem_limit: 128m          # lets the leak scenario end in a real OOM kill
+    restart: unless-stopped
+    depends_on: [payments, loki]
+
+  payments:
+    build: ./shop
+    environment:
+      SERVICE: payments
+      NOISE_PER_SEC: "5"     # always-on red herring: ~300 ERROR logs/min
+      LOKI_URL: http://loki:3100
+    ports: ["8081:8080"]
+    restart: unless-stopped
+    depends_on: [loki]
+
+  prometheus:
+    image: prom/prometheus:v3.13.4
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=2d
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+    ports: ["9090:9090"]
+
+  loki:
+    image: grafana/loki:3.7.9
+    command: -config.file=/etc/loki/local-config.yaml
+    ports: ["3100:3100"]
+
+  grafana:
+    image: grafana/grafana:12.4.12
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/shop.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3000:3000"]
+    depends_on: [prometheus, loki]
