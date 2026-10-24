@@ -7,13 +7,16 @@ root_agent (chat with the owner)
 Each agent connects to the ledger MCP server with its own tool allow-list.
 """
 
+import asyncio
 import os
+import re
 import sys
 import uuid
 from pathlib import Path
 
 from google.adk.agents import LlmAgent
 from google.adk.models import BaseLlm, Gemini
+from google.adk.models.llm_response import LlmResponse
 from google.adk.tools.mcp_tool import McpToolset, StdioConnectionParams
 from google.genai import types
 from mcp import StdioServerParameters
@@ -81,16 +84,73 @@ def _static(text: str):
     return lambda _ctx: text
 
 
-# Free-tier Gemini allows only a few requests per minute. Back off and retry on 429/5xx
-# instead of failing the run halfway (the ledger is consistent either way).
-RETRY = types.HttpRetryOptions(attempts=6, initial_delay=10, max_delay=65, exp_base=2, jitter=2,
-                               http_status_codes=[429, 500, 502, 503, 504])
+# Server errors are retried by the client. Rate limits (429) are handled by QuotaAwareGemini,
+# which can tell a per-minute limit (wait and retry) from a per-day one (stop and say so).
+RETRY = types.HttpRetryOptions(attempts=4, initial_delay=5, max_delay=30, exp_base=2, jitter=2,
+                               http_status_codes=[500, 502, 503, 504])
+MAX_RATE_LIMIT_WAITS = 5
+
+DAILY_QUOTA_MESSAGE = (
+    "⚠ Gemini's daily free-tier quota for this API key is used up{reset}. Nothing was changed "
+    "in the ledger by this step. For a demo without quota, run `python cli.py chase --replay`; "
+    "otherwise use a key with more quota (set GOOGLE_API_KEY in .env).")
+
+
+def _error_chain_text(error: BaseException) -> str:
+    parts, seen, e = [], set(), error
+    while e is not None and id(e) not in seen:
+        seen.add(id(e))
+        parts.append(str(e))
+        e = e.__cause__ or e.__context__
+    return "\n".join(parts)
+
+
+def classify_rate_limit(error: BaseException) -> tuple[str | None, float | None]:
+    """('daily' | 'minute' | None, suggested wait in seconds)."""
+    text = _error_chain_text(error)
+    if "RESOURCE_EXHAUSTED" not in text and "429" not in text:
+        return None, None
+    if "PerDay" in text or "per day" in text.lower():
+        return "daily", None
+    m = re.search(r"retry in ([\d.]+)s", text) or re.search(r"retryDelay'?: '(\d+)s", text)
+    return "minute", float(m[1]) if m else 20.0
+
+
+def _reset_hint(error: BaseException) -> str:
+    m = re.search(r"retry in (\d+h\d+m)", _error_chain_text(error))
+    return f" (it resets in about {m[1].replace('h', 'h ')})" if m else ""
+
+
+class QuotaAwareGemini(Gemini):
+    """Gemini that waits out per-minute rate limits and fails fast, with a clear message
+    shown to the user, when the daily quota is exhausted (instead of retrying for minutes)."""
+
+    async def generate_content_async(self, llm_request, stream: bool = False):
+        for attempt in range(MAX_RATE_LIMIT_WAITS + 1):
+            yielded = False
+            try:
+                async for response in super().generate_content_async(llm_request, stream):
+                    yielded = True
+                    yield response
+                return
+            except Exception as e:
+                kind, wait = classify_rate_limit(e)
+                if kind == "daily" and not yielded:
+                    yield LlmResponse(
+                        content=types.Content(role="model", parts=[types.Part.from_text(
+                            text=DAILY_QUOTA_MESSAGE.format(reset=_reset_hint(e)))]),
+                        error_code="DAILY_QUOTA_EXHAUSTED")
+                    return
+                if kind == "minute" and not yielded and attempt < MAX_RATE_LIMIT_WAITS:
+                    await asyncio.sleep(min(wait + 1, 65))
+                    continue
+                raise
 
 
 def _model(model: str | BaseLlm | None) -> BaseLlm:
     if isinstance(model, BaseLlm):
         return model
-    return Gemini(model=model or os.getenv("MODEL_NAME") or DEFAULT_MODEL, retry_options=RETRY)
+    return QuotaAwareGemini(model=model or os.getenv("MODEL_NAME") or DEFAULT_MODEL, retry_options=RETRY)
 
 
 def build_matcher(model: str | BaseLlm | None = None, mode: str | None = "single_turn") -> LlmAgent:

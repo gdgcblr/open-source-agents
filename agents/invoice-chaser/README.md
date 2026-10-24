@@ -280,7 +280,7 @@ After this run the drafter prompt was updated (`2026-10-24.3`) so `{payment_deta
 
 ## How to Test
 
-**Offline (no API key):** 198 tests in about 5 seconds:
+**Offline (no API key):** 202 tests in about 5 seconds:
 ```bash
 python -m pytest -q
 ```
@@ -308,7 +308,7 @@ Reports are written to `evals/results/<timestamp>.md` (git-ignored). Scores come
 ## Known Limitations
 
 - **Live quality measured on one run only.** One live chase run on the sample data (above) was fully correct; the 20-case matcher eval and the drafter judge have not been run to completion because of free-tier quota. Offline tests verify the wiring and the deterministic guarantees, not the quality of the model's judgement.
-- **Cost and quota.** A chase run on the sample data takes about 10 model requests (`cli.py chase` prints the token count at the end). Free-tier keys allow about 5 requests per minute; the agent backs off and retries on 429s, which can make a run take a minute or two. The daily free-tier limit (about 20 per model) allows roughly one live run per day.
+- **Cost and quota.** A chase run on the sample data takes about 10 model requests (`cli.py chase` prints the token count at the end). Free-tier keys allow about 5 requests per minute; the agent waits out per-minute 429s, which can make a run take a minute or two. When the *daily* quota is used up it stops immediately and says so in the chat (in `adk web` too), pointing to `chase --replay`. The daily free-tier limit (about 20 per model) allows roughly one live run per day.
 - Drafts only. Nothing is ever sent; you send approved drafts yourself.
 - No live bank or inbox integration; statements are imported as CSV. Reply handling (promises to pay, disputes) is designed in the docs but not built.
 - TDS is recognised only before any partial payment, and only at configured rates.
