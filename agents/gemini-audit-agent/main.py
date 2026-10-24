@@ -1,10 +1,11 @@
+from __future__ import annotations
+from core.brag_tool import generate_bharat_dues_brag_sheet
 """Gemini Audit Agent CLI & Terminal Showcase.
 
 Run:
   python main.py demo
   python main.py audit --text "Dinner of 3000 paid by Alice split with Bob. Bob paid Alice 1400 pending."
 """
-from __future__ import annotations
 import sys
 import click
 from rich.console import Console
@@ -165,6 +166,35 @@ def demo():
     console.print("[bold green]✓ Verified:[/bold green] Alice balance is exactly +₹1,500.00 to receive.")
     console.print("[bold green]✓ Verified:[/bold green] Pending ₹1,400 is properly isolated and flagged in anomalies.")
     console.print("[bold green]✓ Verified:[/bold green] Double-entry conservation law is satisfied: Net sum is ₹0.00.\n")
+
+@cli.command()
+def brag():
+    """Displays the certified DevFest Engineering Brag Sheet for Bharat Dues."""
+    sheet = generate_bharat_dues_brag_sheet()
+    p_name = sheet["project"]
+    tag = sheet["tagline"]
+    hub = sheet["hub_urn"]
+    app = sheet["production_app"]
+    lines = [p_name, tag, f"Hub: {hub}", f"App: {app}"]
+    console.print(
+        Panel.fit(
+            "\n".join(lines),
+            title="[bold magenta]Engineering Brag Sheet[/bold magenta]",
+            border_style="magenta",
+        )
+    )
+    for ach in sheet["achievements"]:
+        title = ach["title"]
+        badge = ach["badge"]
+        desc = ach["description"]
+        met = ach["metric"]
+        console.print(f"\n[bold green]* {title}[/bold green] [dim]({badge})[/dim]")
+        console.print(f"  {desc}")
+        console.print(f"  [bold cyan]Impact Metric:[/bold cyan] {met}")
+    console.print("\n[bold yellow]Verified Benchmarks:[/bold yellow]")
+    for k, v in sheet["benchmarks"].items():
+        console.print(f"  * {k}: [bold white]{v}[/bold white]")
+    console.print("")
 
 
 if __name__ == "__main__":

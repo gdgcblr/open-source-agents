@@ -16,6 +16,7 @@ from core.invariant_guardrails import audit_invariants
 from core.screener_engine import screen_stocks
 from core.gemma_advisor import generate_gemma_thesis
 from mcp_server import run_stdio
+from core.brag_tool import generate_arthaniti_brag_sheet
 
 console = Console()
 
@@ -118,6 +119,36 @@ def start_mcp():
     """Run the Model Context Protocol (MCP) server over standard input/output."""
     run_stdio()
 
+
+
+@cli.command("brag")
+def run_brag():
+    """Displays the certified DevFest Engineering Brag Sheet for Arthaniti Quant Hub."""
+    sheet = generate_arthaniti_brag_sheet()
+    p_name = sheet["project"]
+    tag = sheet["tagline"]
+    hub = sheet["hub_urn"]
+    proto = sheet["protocol"]
+    lines = [p_name, tag, f"Hub: {hub}", f"Protocol: {proto}"]
+    console.print(
+        Panel.fit(
+            "\n".join(lines),
+            title="[bold magenta]Engineering Brag Sheet[/bold magenta]",
+            border_style="magenta",
+        )
+    )
+    for ach in sheet["achievements"]:
+        title = ach["title"]
+        badge = ach["badge"]
+        desc = ach["description"]
+        met = ach["metric"]
+        console.print(f"\n[bold green]* {title}[/bold green] [dim]({badge})[/dim]")
+        console.print(f"  {desc}")
+        console.print(f"  [bold cyan]Impact Metric:[/bold cyan] {met}")
+    console.print("\n[bold yellow]Verified Benchmarks:[/bold yellow]")
+    for k, v in sheet["benchmarks"].items():
+        console.print(f"  * {k}: [bold white]{v}[/bold white]")
+    console.print("")
 
 if __name__ == "__main__":
     cli()

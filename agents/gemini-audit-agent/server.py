@@ -1,3 +1,4 @@
+from core.brag_tool import generate_bharat_dues_brag_sheet
 """
 FastAPI Server & Financial Audit Dashboard for Bharat Dues.
 Exposes REST endpoints for ledger invariant checks, multimodal receipt OCR, smart splitting, and conversational chat.
@@ -56,6 +57,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
+@app.get("/api/brag")
+def get_brag_sheet():
+    return generate_bharat_dues_brag_sheet()
 
 @app.get("/healthz")
 def health_check():

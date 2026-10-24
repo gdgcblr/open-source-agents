@@ -1,10 +1,11 @@
+from __future__ import annotations
+from core.brag_tool import generate_arthaniti_brag_sheet
 """
 FastAPI Server for Arthaniti Quant Engine & Realtime Feeds.
 Dedicated to Arthaniti: Certified Camarilla & Classic Pivot Engine,
 Realtime NSE/BSE Market Feeds with Gemma LLM Resolver, and Portfolio Risk Guardrails.
 """
 
-from __future__ import annotations
 from typing import List, Optional
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse
@@ -31,6 +32,11 @@ app = FastAPI(
     version="2.1.0",
 )
 
+
+
+@app.get("/api/brag")
+def get_brag_sheet():
+    return generate_arthaniti_brag_sheet()
 
 @app.get("/healthz")
 def health_check():
