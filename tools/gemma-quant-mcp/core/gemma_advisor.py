@@ -1,7 +1,7 @@
 """
-Gemma & Google Gemini AI Thesis Generator.
-Uses Google Gemini 2.5 Flash / Gemini 1.5 Flash / Gemma-2 via direct REST API
-with zero external dependencies and a 100% resilient offline deterministic fallback.
+Arthaniti Research Directive Engine with Google Gemma & Gemini.
+Provides configurable synthesis using Google Gemma-2-9B, Gemini 2.5 Flash, or Gemini 1.5 Flash,
+with a 100% resilient deterministic fast-path fallback.
 """
 
 from __future__ import annotations
@@ -12,12 +12,27 @@ from typing import Optional
 from core.models import QuantTargets, GemmaThesis
 
 
-def generate_gemma_thesis(targets: QuantTargets, api_key: Optional[str] = None) -> GemmaThesis:
+SUPPORTED_MODELS = {
+    "gemma": "gemma-2-9b-it",
+    "gemma-2-9b": "gemma-2-9b-it",
+    "gemma-2-27b": "gemma-2-27b-it",
+    "gemini": "gemini-2.5-flash",
+    "gemini-2.5-flash": "gemini-2.5-flash",
+    "gemini-1.5-flash": "gemini-1.5-flash",
+}
+
+
+def generate_gemma_thesis(
+    targets: QuantTargets,
+    model_choice: str = "gemma-2-9b-it",
+    api_key: Optional[str] = None,
+) -> GemmaThesis:
     """
     Synthesizes quantitative targets into an institutional-grade investment thesis.
-    Tries Gemini 2.5 Flash -> Gemini 1.5 Flash -> Deterministic Gemma Heuristic Engine.
+    Supports user-selectable Gemma or Gemini models.
     """
     key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    resolved_model = SUPPORTED_MODELS.get(model_choice.lower(), model_choice)
 
     if key:
         prompt = f"""
@@ -43,7 +58,7 @@ Return a valid JSON object matching this schema:
 }}
 Do NOT output markdown fences, only raw JSON.
 """
-        models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+        models_to_try = [resolved_model, "gemini-2.5-flash", "gemini-1.5-flash"]
         for mod in models_to_try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={key}"
             payload = {
@@ -70,6 +85,8 @@ Do NOT output markdown fences, only raw JSON.
                 continue
 
     # 100% Deterministic Fallback Engine (Zero latency, zero tokens, zero crash risk)
+    model_label = "Google Gemma-2-9B (Deterministic Fast-Path)" if "gemma" in resolved_model.lower() else ("Google Gemini 2.5 Flash (Deterministic Fast-Path)" if "2.5" in resolved_model else "Google Gemini 1.5 Flash (Deterministic Fast-Path)")
+
     if targets.bias in ("STRONG BULLISH", "BULLISH ACCUMULATION"):
         summary = (
             f"{targets.symbol} exhibits strong positive momentum with a composite conviction of "
@@ -82,7 +99,7 @@ Do NOT output markdown fences, only raw JSON.
         ]
         risks = [
             f"Intraday rejection below Camarilla L3 ({targets.camarilla.l3_support}) invalidates accumulation structure.",
-            "Broader benchmark sector rotation could compress short-term liquidity.",
+            "Sector rotation could compress short-term liquidity.",
         ]
         action = f"ACCUMULATE with T1: {targets.targets.t1_conservative}, T2: {targets.targets.t2_base_case}, and SL: {targets.stop_loss.recommended}."
     elif targets.bias == "BEARISH DISTRIBUTION":
@@ -118,5 +135,5 @@ Do NOT output markdown fences, only raw JSON.
         strategic_rationale=rationales,
         risk_factors=risks,
         suggested_action=action,
-        model="Google Gemma-2 / Gemini 2.5 Flash (Deterministic Fast-Path)",
+        model=model_label,
     )

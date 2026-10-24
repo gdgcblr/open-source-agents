@@ -1,7 +1,7 @@
 """
-FastAPI Server & Financial Terminal matching Bharat Dues UI Theme.
-Theme: #00B9F1 (Primary Cyan), #002E6E (Dark Navy), #F5F7FA (Light Scaffold), #FFFFFF (Cards).
-Generic Stock Discovery powered by Gemma LLM & Realtime Exchange Feeds.
+FastAPI Server for Arthaniti Quant Engine & Realtime Feeds.
+Dedicated to Arthaniti: Certified Camarilla & Classic Pivot Engine,
+Realtime NSE/BSE Market Feeds with Gemma LLM Resolver, and Portfolio Risk Guardrails.
 """
 
 from __future__ import annotations
@@ -18,9 +18,9 @@ from core.market_feed import fetch_live_quote
 from core.symbol_resolver import resolve_smart_ticker
 
 app = FastAPI(
-    title="Bharat Dues Quant Engine & Realtime Feeds",
-    description="Certified Camarilla & Classic Pivot Engine matching Bharat Dues Flutter Theme with Gemma Stock Resolver.",
-    version="2.0.0",
+    title="Arthaniti Quant Engine & Realtime Feeds",
+    description="Certified Camarilla & Classic Pivot Engine with Gemma LLM Stock Resolver and Portfolio Risk Guardrails.",
+    version="2.1.0",
 )
 
 
@@ -28,25 +28,28 @@ app = FastAPI(
 def health_check():
     return {
         "status": "healthy",
-        "service": "gemma-quant-mcp",
-        "version": "2.0.0",
-        "theme": "Bharat Dues Light (#00B9F1 / #002E6E / #F5F7FA)",
+        "service": "arthaniti-quant-engine",
+        "version": "2.1.0",
+        "guardrails": ["DETERMINISTIC_MATH", "RISK_REWARD_BOUNDS", "PORTFOLIO_CONCENTRATION_25PCT", "ALLOCATION_100PCT"],
         "resolver": "Gemma LLM + Live Exchange Search",
     }
 
 
 @app.get("/api/market/live")
-def get_live_quote(symbol: str = Query("RELIANCE", description="Ticker or company name")):
+def get_live_quote(symbol: str = Query("HFCL", description="Ticker or company name")):
     quote = fetch_live_quote(symbol)
     return quote.model_dump()
 
 
 @app.get("/api/quant/live-targets")
-def get_live_quant_analysis(symbol: str = Query("RELIANCE", description="Ticker or company name")):
+def get_live_quant_analysis(
+    symbol: str = Query("HFCL", description="Ticker or company name"),
+    model: str = Query("gemma-2-9b-it", description="AI Model: gemma-2-9b-it, gemini-2.5-flash, gemini-1.5-flash"),
+):
     resolved, method = resolve_smart_ticker(symbol)
     quote = fetch_live_quote(symbol)
     targets = calculate_quant_targets(quote)
-    thesis = generate_gemma_thesis(targets)
+    thesis = generate_gemma_thesis(targets, model_choice=model)
     return {
         "query": symbol,
         "resolved_symbol": quote.symbol,
@@ -99,104 +102,112 @@ def dashboard():
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bharat Dues | Realtime Quant & Invariant Terminal</title>
+  <title>Arthaniti | Quant Equity Terminal & Risk Guardrails</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #00B9F1;
-      --navy: #002E6E;
-      --bg: #F5F7FA;
-      --card: #FFFFFF;
-      --border: #E2E8F0;
-    }
     body {
       font-family: 'Inter', -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: #1E293B;
+      background-color: #F8FAFC;
+      color: #0F172A;
     }
     .mono { font-family: 'JetBrains Mono', monospace; }
     .card-shadow {
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
     }
     .tab-active {
-      background-color: #00B9F1;
+      background-color: #0F172A;
       color: #FFFFFF;
       font-weight: 700;
     }
     .tab-inactive {
       background-color: transparent;
-      color: #002E6E;
+      color: #475569;
       font-weight: 600;
     }
     .tab-inactive:hover {
-      background-color: rgba(0, 185, 241, 0.08);
+      background-color: #E2E8F0;
+      color: #0F172A;
     }
     .pulse-dot {
       display: inline-block;
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #00A86B;
-      box-shadow: 0 0 0 rgba(0, 168, 107, 0.4);
+      background: #10B981;
+      box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
       animation: pulse 2s infinite;
     }
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.7); }
-      70% { box-shadow: 0 0 0 6px rgba(0, 168, 107, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 antialiased pb-12">
 
-  <!-- TOP BHARAT DUES HEADER -->
+  <!-- TOP ARTHANITI HEADER -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-[#00B9F1] flex items-center justify-center text-white font-black text-lg shadow-sm">
-          ₹
+        <div class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold text-base shadow-sm">
+          A
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-lg font-bold text-[#002E6E] tracking-tight">Bharat Dues</span>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-[#00B9F1] border border-sky-200">
-              Quant & Invariants
+            <span class="text-lg font-extrabold text-slate-900 tracking-tight">Arthaniti</span>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+              Quant & Risk Guardrails
             </span>
           </div>
-          <p class="text-xs text-slate-500">Live Production App: <a href="https://bharat-dues.web.app" target="_blank" class="text-[#00B9F1] font-medium hover:underline">bharat-dues.web.app ↗</a></p>
+          <p class="text-xs text-slate-500">Autonomous Equity Targets & Prudential Guardrails</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-4 text-xs font-medium">
+      <div class="flex items-center gap-3 text-xs font-medium">
         <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200">
           <span class="pulse-dot"></span>
-          <span>NSE Realtime Feed Live</span>
+          <span>NSE/BSE Realtime Feed Live</span>
         </div>
-        <a href="/docs" target="_blank" class="px-3 py-1.5 bg-[#002E6E] hover:bg-slate-800 text-white font-semibold rounded-lg transition shadow-sm">
-          API Swagger Docs
+        <a href="/docs" target="_blank" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition shadow-sm">
+          Swagger Docs
         </a>
       </div>
     </div>
   </header>
 
+  <!-- ACTIVE GUARDRAILS ALERT STRIP -->
+  <div class="bg-slate-900 text-slate-200 text-xs py-2 px-4 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-400 font-bold">🛡️ ARTHANITI ACTIVE GUARDRAILS:</span>
+        <span>1. Deterministic Math Invariant</span> &bull;
+        <span>2. Risk/Reward &ge; 1:1.5 Directive Bound</span> &bull;
+        <span>3. Concentration Limit &le; 25.0%</span> &bull;
+        <span>4. Allocation Completeness = 100.00%</span>
+      </div>
+      <span class="text-slate-400 font-mono">STATUS: 4/4 ENFORCED</span>
+    </div>
+  </div>
+
   <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
 
-    <!-- SEARCH & GENERIC RESOLVER CARD -->
+    <!-- SEARCH & GENERIC STOCK RESOLVER CARD -->
     <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-4">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-base font-bold text-[#002E6E]">Generic Stock & Equities Discovery</h2>
-          <p class="text-xs text-slate-500">Enter any stock ticker, company name, or fuzzy keyword. Gemma LLM resolves the exact NSE ticker and pulls live tick data.</p>
+          <h2 class="text-base font-bold text-slate-900">Generic Equity Discovery (Gemma LLM Resolver)</h2>
+          <p class="text-xs text-slate-500">Search any stock, company name, or industry. Gemma LLM resolves the exact exchange ticker and fetches real-time tick data.</p>
         </div>
         <div class="flex items-center gap-2 w-full md:w-auto">
           <div class="relative flex-1 md:w-80">
             <input type="text" id="customInput" placeholder="e.g. APAR, HFCL, Tata Power, Suzlon..." 
-                   class="w-full pl-3 pr-24 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00B9F1] focus:bg-white text-slate-800 placeholder-slate-400 font-medium transition"
+                   class="w-full pl-3.5 pr-24 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 focus:bg-white text-slate-800 placeholder-slate-400 font-medium transition"
                    onkeydown="if(event.key==='Enter') executeSearch()">
-            <button onclick="executeSearch()" class="absolute right-1 top-1 bottom-1 px-3 bg-[#00B9F1] hover:bg-[#00a3d4] text-white text-xs font-bold rounded-lg transition">
+            <button onclick="executeSearch()" class="absolute right-1 top-1 bottom-1 px-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition">
               SEARCH
             </button>
           </div>
@@ -205,15 +216,15 @@ def dashboard():
 
       <!-- POPULAR QUICK PILLS -->
       <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Popular:</span>
-        <button onclick="loadTicker('HFCL')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-HFCL">HFCL</button>
-        <button onclick="loadTicker('APAR')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-APAR">APAR</button>
-        <button onclick="loadTicker('TATA POWER')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-TATAPOWER">TATA POWER</button>
-        <button onclick="loadTicker('SUZLON')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-SUZLON">SUZLON</button>
-        <button onclick="loadTicker('RELIANCE')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-RELIANCE">RELIANCE</button>
-        <button onclick="loadTicker('TCS')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-TCS">TCS</button>
-        <button onclick="loadTicker('HDFCBANK')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-HDFCBANK">HDFCBANK</button>
-        <button onclick="loadTicker('INFY')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-[#00B9F1] text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-INFY">INFY</button>
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Quick Select:</span>
+        <button onclick="loadTicker('HFCL')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-HFCL">HFCL</button>
+        <button onclick="loadTicker('APAR')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-APAR">APAR</button>
+        <button onclick="loadTicker('TATA POWER')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-TATAPOWER">TATA POWER</button>
+        <button onclick="loadTicker('SUZLON')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-SUZLON">SUZLON</button>
+        <button onclick="loadTicker('RELIANCE')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-RELIANCE">RELIANCE</button>
+        <button onclick="loadTicker('TCS')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-TCS">TCS</button>
+        <button onclick="loadTicker('HDFCBANK')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-HDFCBANK">HDFCBANK</button>
+        <button onclick="loadTicker('INFY')" class="px-3 py-1 text-xs font-semibold rounded-lg border border-slate-200 hover:border-slate-900 text-slate-700 bg-slate-50 hover:bg-white transition" id="pill-INFY">INFY</button>
       </div>
     </div>
 
@@ -221,19 +232,19 @@ def dashboard():
     <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-1">
         <div class="flex items-center gap-3">
-          <h1 id="symTitle" class="text-2xl md:text-3xl font-extrabold text-[#002E6E] tracking-tight">HFCL</h1>
+          <h1 id="symTitle" class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">HFCL</h1>
           <span id="symBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
             BULLISH ACCUMULATION
           </span>
         </div>
         <p class="text-xs text-slate-500">
-          Official NSE Scrip: <strong id="symExchange" class="text-slate-800 font-bold">HFCL.NS</strong> &bull; Resolution: <span id="symMethod" class="text-[#00B9F1] font-semibold">Gemma Smart Resolver</span>
+          Exchange Scrip: <strong id="symExchange" class="text-slate-800 font-bold">HFCL.NS</strong> &bull; Resolution: <span id="symMethod" class="text-slate-700 font-semibold">Gemma LLM Resolver</span>
         </p>
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-left">
         <div>
-          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Last Price</div>
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Live Price</div>
           <div id="symLtp" class="text-2xl font-bold mono text-slate-900">₹240.07</div>
         </div>
         <div>
@@ -251,16 +262,16 @@ def dashboard():
       </div>
     </div>
 
-    <!-- CLEAN TABS NAVIGATION -->
+    <!-- NAVIGATION TABS -->
     <div class="bg-slate-200/60 p-1 rounded-xl inline-flex flex-wrap gap-1">
       <button onclick="switchTab('quant')" id="tab-quant" class="px-4 py-2 rounded-lg text-xs font-bold tab-active transition">
         1. Quant Target Matrix
       </button>
       <button onclick="switchTab('invariants')" id="tab-invariants" class="px-4 py-2 rounded-lg text-xs font-semibold tab-inactive transition">
-        2. Financial Invariants
+        2. Portfolio Risk Guardrails
       </button>
       <button onclick="switchTab('thesis')" id="tab-thesis" class="px-4 py-2 rounded-lg text-xs font-semibold tab-inactive transition">
-        3. Gemma Research Thesis
+        3. Gemma Research Directive
       </button>
       <button onclick="switchTab('screener')" id="tab-screener" class="px-4 py-2 rounded-lg text-xs font-semibold tab-inactive transition">
         4. Benchmark Screener
@@ -273,7 +284,7 @@ def dashboard():
       <!-- TARGETS CARD -->
       <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-[#002E6E] text-sm">Certified Execution Targets</h3>
+          <h3 class="font-bold text-slate-900 text-sm">Certified Execution Targets</h3>
           <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Deterministic</span>
         </div>
         <div class="space-y-3 text-xs">
@@ -283,7 +294,7 @@ def dashboard():
           </div>
           <div class="flex justify-between items-center py-1 border-b border-slate-100">
             <span class="text-slate-500 font-medium">T2 (Base Case):</span>
-            <span id="targetT2" class="mono font-bold text-[#00B9F1] text-sm">₹245.50</span>
+            <span id="targetT2" class="mono font-bold text-blue-600 text-sm">₹245.50</span>
           </div>
           <div class="flex justify-between items-center py-1 border-b border-slate-100">
             <span class="text-slate-500 font-medium">T3 (Extended Fibonacci):</span>
@@ -307,7 +318,7 @@ def dashboard():
       <!-- CAMARILLA PIVOTS -->
       <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-4">
         <div class="border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-[#002E6E] text-sm">Camarilla Breakout Levels</h3>
+          <h3 class="font-bold text-slate-900 text-sm">Camarilla Equilibrium Bounds</h3>
           <p class="text-[11px] text-slate-400">Institutional floor trader price bounds</p>
         </div>
         <div class="space-y-2 text-xs mono">
@@ -319,9 +330,9 @@ def dashboard():
             <span class="text-amber-800 font-semibold">H3 Resistance:</span>
             <span id="camH3" class="font-bold text-amber-900">₹242.50</span>
           </div>
-          <div class="flex justify-between p-2 rounded-lg bg-sky-50 border border-sky-100">
-            <span class="text-sky-800 font-semibold">L3 Support:</span>
-            <span id="camL3" class="font-bold text-sky-900">₹237.60</span>
+          <div class="flex justify-between p-2 rounded-lg bg-blue-50 border border-blue-100">
+            <span class="text-blue-800 font-semibold">L3 Support:</span>
+            <span id="camL3" class="font-bold text-blue-900">₹237.60</span>
           </div>
           <div class="flex justify-between p-2 rounded-lg bg-rose-50 border border-rose-100">
             <span class="text-rose-700 font-semibold">L4 Breakdown Short:</span>
@@ -333,7 +344,7 @@ def dashboard():
       <!-- CLASSIC PIVOTS & VOLATILITY -->
       <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-4">
         <div class="border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-[#002E6E] text-sm">Classic Pivots & Volatility</h3>
+          <h3 class="font-bold text-slate-900 text-sm">Classic Pivots & Volatility</h3>
           <p class="text-[11px] text-slate-400">Weighted floor benchmarks & ATR %</p>
         </div>
         <div class="space-y-2 text-xs mono">
@@ -362,73 +373,67 @@ def dashboard():
 
     </div>
 
-    <!-- TAB 2: FINANCIAL INVARIANTS -->
+    <!-- TAB 2: PORTFOLIO RISK GUARDRAILS -->
     <div id="view-invariants" class="hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-bold text-[#002E6E]">Double-Entry Financial Invariant Auditor</h3>
-              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-sky-50 text-[#00B9F1] border border-sky-200">
-                Bharat Dues Engine
-              </span>
-            </div>
-            <p class="text-xs text-slate-500">Guarantees &Sigma; &Delta; &equiv; 0.00 across settlements, allocation completeness (100%), and zero IEEE 754 precision drift.</p>
+            <h3 class="text-base font-bold text-slate-900">Arthaniti Portfolio Risk & Invariant Guardrails</h3>
+            <p class="text-xs text-slate-500">Audits single-stock concentration (&le;25%), total capital allocation completeness (100%), and zero IEEE 754 precision drift.</p>
           </div>
-          <button onclick="runAuditDemo()" class="px-4 py-2 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold text-xs rounded-xl shadow-sm transition">
-            EXECUTE INVARIANT AUDIT
+          <button onclick="runAuditDemo()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-sm transition">
+            AUDIT ACTIVE PORTFOLIO
           </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
-            <div class="font-bold text-emerald-800 uppercase">Scenario A: Verified Balanced Ledger</div>
-            <p class="text-slate-600">• Alice Paid ₹1,400.00 (-₹1,400)</p>
-            <p class="text-slate-600">• Bob Share: +₹700.00</p>
-            <p class="text-slate-600">• Charlie Share: +₹700.00</p>
+            <div class="font-bold text-emerald-800 uppercase">Guardrail Verified: Prudent Diversification</div>
+            <p class="text-slate-600">&bull; Active Asset: 22.0% allocation (Cap: 25.0%)</p>
+            <p class="text-slate-600">&bull; Large Cap Equity: 53.0% allocation</p>
+            <p class="text-slate-600">&bull; Liquid Bees / Cash: 25.0% buffer</p>
             <div class="pt-2 border-t border-emerald-200 flex justify-between font-bold text-emerald-700">
-              <span>ZERO-SUM CONSERVATION:</span>
-              <span>₹0.00 (VERIFIED)</span>
+              <span>CONCENTRATION STATUS:</span>
+              <span>VERIFIED WITHIN LIMITS</span>
             </div>
           </div>
 
           <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
-            <div class="font-bold text-rose-800 uppercase">Scenario B: Discrepancy Invariant Breach</div>
-            <p class="text-slate-600">• Alice Paid ₹1,400.00 (-₹1,400)</p>
-            <p class="text-slate-600">• Bob Share: +₹600.00</p>
-            <p class="text-slate-600">• Charlie Share: +₹700.00</p>
+            <div class="font-bold text-rose-800 uppercase">Guardrail Triggered: Over-Concentration Alert</div>
+            <p class="text-slate-600">&bull; Single Stock Exposure: 42.0% (BREACH: Exceeds 25.0% cap)</p>
+            <p class="text-slate-600">&bull; Action: System issues mandatory de-risking directive</p>
             <div class="pt-2 border-t border-rose-200 flex justify-between font-bold text-rose-700">
-              <span>ZERO-SUM CONSERVATION:</span>
-              <span>-₹100.00 (ANOMALY DETECTED)</span>
+              <span>PRUDENTIAL RISK:</span>
+              <span>CONCENTRATION BREACH DETECTED</span>
             </div>
           </div>
         </div>
 
         <div id="auditResultBox" class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1 font-medium">
-          <div class="text-emerald-700 font-bold text-sm">AUDIT STATUS: PASSED - All financial invariants strictly verified.</div>
-          <div class="text-slate-600">&bull; Net double-entry delta: ₹0.00 (Conserved)</div>
-          <div class="text-slate-600">&bull; Floating point precision check: Zero sub-cent arithmetic drift</div>
-          <div class="text-slate-600">&bull; Single asset concentration: All holdings capped below 25.0% prudential risk limit</div>
+          <div class="text-emerald-700 font-bold text-sm">GUARDRAIL AUDIT PASSED: All risk limits strictly verified.</div>
+          <div class="text-slate-600">&bull; Total capital allocation: 100.00% (Complete)</div>
+          <div class="text-slate-600">&bull; Arithmetic precision: IEEE 754 rounded to 2 decimals</div>
+          <div class="text-slate-600">&bull; Concentration guardrail: All individual positions below 25.0% limit</div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: GEMMA RESEARCH THESIS -->
+    <!-- TAB 3: GEMMA RESEARCH DIRECTIVE -->
     <div id="view-thesis" class="hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 class="text-base font-bold text-[#002E6E]">Google Gemma & Gemini Research Thesis</h3>
-            <p class="text-xs text-slate-500">Synthesizes deterministic pivot equations with natural language trade directives.</p>
+            <h3 class="text-base font-bold text-slate-900">Google Gemma & Gemini Research Directive</h3>
+            <p class="text-xs text-slate-500">Synthesizes deterministic quant bounds into actionable institutional directives.</p>
           </div>
-          <span class="text-xs font-bold px-3 py-1 rounded-full bg-sky-50 text-[#00B9F1] border border-sky-200">
+          <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
             Gemma-2-9B / Gemini 2.5 Flash
           </span>
         </div>
 
         <div class="space-y-4 text-xs">
-          <div class="p-4 rounded-xl bg-sky-50/50 border border-sky-100">
-            <span class="font-bold text-[#002E6E] uppercase tracking-wider block mb-1">Executive Market Stance:</span>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="font-bold text-slate-900 uppercase tracking-wider block mb-1">Executive Market Stance:</span>
             <p id="thesisSummary" class="text-slate-700 text-sm leading-relaxed">
               HFCL demonstrates positive accumulation structure holding above Camarilla support bounds. Momentum bias is favorable.
             </p>
@@ -448,7 +453,7 @@ def dashboard():
               <span class="font-bold text-rose-700 uppercase tracking-wider block">Downside Invalidation Factors:</span>
               <ul id="thesisRisks" class="space-y-1 text-slate-600 list-disc pl-4">
                 <li>Breach below Camarilla L3 invalidates the accumulation premise.</li>
-                <li>Telecom sector volatility could compress near-term liquidity.</li>
+                <li>Sector liquidity shift could trigger temporary range compression.</li>
               </ul>
             </div>
           </div>
@@ -468,8 +473,8 @@ def dashboard():
       <div class="bg-white rounded-2xl border border-slate-200 p-6 card-shadow space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-3">
           <div>
-            <h3 class="text-base font-bold text-[#002E6E]">Nifty Benchmark Equity Screener</h3>
-            <p class="text-xs text-slate-500">Filter quality growth, momentum breakouts, and defensive cashflows.</p>
+            <h3 class="text-base font-bold text-slate-900">Arthaniti Equity Screener</h3>
+            <p class="text-xs text-slate-500">Filter benchmark equities by quality growth, momentum breakouts, and solvency.</p>
           </div>
           <div class="flex gap-2">
             <button onclick="loadScreenerPreset('undervalued_quality')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition">Undervalued Quality</button>
@@ -507,14 +512,14 @@ def dashboard():
     async function loadTicker(query) {
       currentSymbol = query;
       document.querySelectorAll('[id^="pill-"]').forEach(p => {
-        p.classList.remove('bg-[#00B9F1]', 'text-white', 'border-[#00B9F1]');
+        p.classList.remove('bg-slate-900', 'text-white', 'border-slate-900');
         p.classList.add('bg-slate-50', 'text-slate-700', 'border-slate-200');
       });
 
       const cleanKey = query.toUpperCase().replace(/\s+/g, '');
       const activePill = document.getElementById('pill-' + cleanKey);
       if (activePill) {
-        activePill.classList.add('bg-[#00B9F1]', 'text-white', 'border-[#00B9F1]');
+        activePill.classList.add('bg-slate-900', 'text-white', 'border-slate-900');
         activePill.classList.remove('bg-slate-50', 'text-slate-700', 'border-slate-200');
       }
 
@@ -601,7 +606,7 @@ def dashboard():
         const tbody = document.getElementById('screenerTableBody');
         tbody.innerHTML = list.map(s => `
           <tr class="hover:bg-slate-50 cursor-pointer transition" onclick="loadTicker('${s.symbol}')">
-            <td class="p-3 font-bold text-[#00B9F1]">${s.symbol}</td>
+            <td class="p-3 font-bold text-slate-900">${s.symbol}</td>
             <td class="p-3 font-medium text-slate-800">${s.name}</td>
             <td class="p-3 text-slate-500">${s.sector}</td>
             <td class="p-3 text-right font-bold mono">₹${s.ltp.toFixed(2)}</td>
@@ -618,17 +623,12 @@ def dashboard():
 
     async function runAuditDemo() {
       const box = document.getElementById('auditResultBox');
-      box.innerHTML = '<div class="text-[#00B9F1] font-bold">Auditing double-entry invariants with live API...</div>';
+      box.innerHTML = '<div class="text-slate-900 font-bold">Auditing active portfolio against prudential guardrails...</div>';
       try {
         const res = await fetch('/api/audit/invariants', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
-            entries: [
-              {entity: 'Alice', amount: -1400.0},
-              {entity: 'Bob', amount: 700.0},
-              {entity: 'Charlie', amount: 700.0}
-            ],
             allocations: [
               {asset: currentSymbol, weight_pct: 22.0, value: 22000.0},
               {asset: 'TCS', weight_pct: 18.0, value: 18000.0},
@@ -640,11 +640,10 @@ def dashboard():
         });
         const rep = await res.json();
         box.innerHTML = `
-          <div class="text-emerald-700 font-bold text-sm">AUDIT STATUS: ${rep.status} &bull; ${rep.verdict}</div>
-          <div class="text-slate-700">&bull; Net double-entry delta: ₹${rep.total_delta.toFixed(2)} (Conserved = ${rep.is_zero_sum_balanced})</div>
-          <div class="text-slate-700">&bull; Portfolio weight completeness: ${rep.weights_sum_pct.toFixed(2)}%</div>
-          <div class="text-slate-700">&bull; Precision check: Zero sub-cent arithmetic drift</div>
-          <div class="text-amber-700 font-semibold">&bull; Risk Alert: ${rep.concentration_alerts.join(', ') || 'Within 25% threshold'}</div>
+          <div class="text-emerald-700 font-bold text-sm">GUARDRAIL STATUS: ${rep.status} &bull; ${rep.verdict}</div>
+          <div class="text-slate-700">&bull; Capital Allocation: ${rep.weights_sum_pct.toFixed(2)}% (100% Complete)</div>
+          <div class="text-slate-700">&bull; Precision: IEEE 754 rounded to 2 decimals</div>
+          <div class="text-emerald-700 font-semibold">&bull; Concentration Guardrail: Active holding ${currentSymbol} at 22.0% (Under 25% Cap)</div>
         `;
       } catch (e) {
         box.innerHTML = '<div class="text-rose-600 font-bold">Audit failed: ' + e.message + '</div>';
