@@ -1,0 +1,21 @@
+# Environment files — NEVER commit these
+.env
+*.env
+
+# Python virtual environment
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# PDF test files
+*.pdf
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+Thumbs.db
