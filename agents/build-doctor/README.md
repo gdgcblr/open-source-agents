@@ -102,6 +102,12 @@ Run the deterministic analyzer against a saved failure log and the target projec
 java -cp target/classes community.opensource.ai.builddoctor.BuildDoctorCli /path/to/failure.log /path/to/project
 ```
 
+For scripts and coding agents, request the stable JSON contract:
+
+```bash
+java -cp target/classes community.opensource.ai.builddoctor.BuildDoctorCli --json /path/to/failure.log /path/to/project
+```
+
 The first argument can contain build, test, runtime, or API output from any ecosystem. The second argument is optional project context; when provided, BuildDoctor reads only recognized manifest files.
 
 The ADK entry point is `BuildDoctorAgent.create()`. An ADK-compatible runner or development UI can load this root agent and expose its read-only local tools. To use the companion MCP server instead, call `BuildDoctorAgent.createWithMcp("/absolute/path/to/.venv/bin/python")`; ADK launches `python -m build_doctor_mcp.server` over stdio. Configure `GEMINI_API_KEY` only for the model-driven path.
@@ -129,7 +135,7 @@ Next steps:
 Verification: pending: no verification run was supplied
 ```
 
-The analyzer reports what the evidence supports. It does not claim that a suggested fix worked until a new build or test result is supplied.
+The analyzer reports what deterministic rules and evidence support. It does not claim that a suggested fix worked until a new build or test result is supplied.
 
 ## How to Test
 

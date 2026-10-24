@@ -39,6 +39,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `inspect_project`: read bounded content from recognized project manifests without executing code.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
+- Deterministic signal IDs and scores make classification inspectable and reproducible for the same input.
 - Standard MCP stdio transport for desktop and editor clients.
 - Redaction, input limits, optional workspace allowlisting, and no automatic remediation.
 
@@ -171,12 +172,16 @@ The response is JSON with this shape:
 
 ```json
 {
+  "schema_version": "1.1",
   "failure_type": "runtime-or-api",
   "confidence": "moderate",
   "evidence": ["HTTP 401 response from the payments API"],
+  "scoring": {"matched_signals": ["http-status-or-transport"], "scores": {"runtime-or-api": 4}},
   "verification_status": "pending"
 }
 ```
+
+Classification is deterministic: matching rules emit stable signal IDs and weights, categories are ranked by total score, and confidence is capped when evidence is weak or categories tie. The model may explain the returned result, but it is not allowed to invent evidence or promote a pending verification to success.
 
 ## How to Test
 
