@@ -65,6 +65,16 @@ Add the built server to the MCP client's configuration, using absolute paths:
 }
 ```
 
+## How to Run
+
+The MCP client starts the server with the command in its configuration. To launch it directly from the project directory:
+
+```bash
+npm start
+```
+
+The server uses MCP over stdio and waits for a client to communicate over stdin and stdout.
+
 ## Configuration
 
 | Variable | Required | Default | Description |
@@ -102,7 +112,7 @@ Convoy completed `node-v24.22.1.pkg` at `~/Downloads/node-v24.22.1.pkg`. `verify
 
 Node.js also publishes a [detached signature](https://nodejs.org/dist/v24.22.1/SHASUMS256.txt.sig) for its checksum file.
 
-## How to test
+## How to Test
 
 Run the automated suite with the framed mock host; it does not require Convoy or macOS:
 
@@ -132,6 +142,13 @@ npm run ping
 - `verify_download` requires a Convoy build whose `getDownloads` response includes each task's destination path. The corresponding change is present in the Convoy source checkout, but it must be built and installed before verification works with the installed app.
 - Convoy may wait for user input on duplicate downloads. If a queued URL does not appear, the response reports that it may be waiting on a duplicate conflict dialog.
 - A real `agy` run completed and verified the Node.js installer against a locally rebuilt Convoy 1.1.0 with `getDownloads` path support. The full Ubuntu Server demo still needs rehearsal.
+
+## Future Improvements
+
+- Add video-focused workflows, such as playlist-aware queueing and richer video metadata.
+- Batch queue lecture materials—videos, slides, notes—and related resource collections.
+- Verify signed checksum manifests directly instead of relying on a checksum supplied by the assistant.
+- Add an integration test against a dedicated Convoy test build on macOS.
 
 ## License
 
