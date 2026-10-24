@@ -46,4 +46,6 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [credit-covenant-compass](credit-covenant-compass/README.md) | Maps credit trends, policy headroom, and reverse-stress breakpoints for human review. | Node.js, deterministic calculations | sudsree |
+| [web-accessibility-agent](web-accessibility-agent/README.md) | Audits a rendered web page for WCAG accessibility barriers and provides rule-level evidence. | Node.js, Playwright, axe-core | sudsree |
+| [pr-ready-agent](pr-ready-agent/README.md) | Audits an agent/tool submission for documentation, reproducibility, and secret-handling gaps. | Python, optional OpenAI-compatible API | sudsree |
