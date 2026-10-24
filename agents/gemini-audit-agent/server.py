@@ -77,7 +77,7 @@ def health_check():
     }
 
 
-@app.get("/api/hub/spokes")
+@app.get("/api/v1/hub/spokes")
 def get_spokes():
     return {
         "hub": AutonomousHubAgent.urn,
@@ -85,12 +85,12 @@ def get_spokes():
     }
 
 
-@app.post("/api/hub/chat")
+@app.post("/api/v1/hub/chat")
 def hub_chat_endpoint(req: ChatQueryRequest):
     return AutonomousHubAgent.process_user_query(req.query, model_choice=req.model, api_key=req.api_key)
 
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/api/v1/chat", response_model=ChatResponse)
 def conversational_chat_endpoint(req: ChatQueryRequest):
     return BharatDuesChatCopilot.handle_message(
         user_message=req.query,
@@ -105,7 +105,7 @@ class OCRScanRequest(BaseModel):
     model: Optional[str] = "gemini-2.5-flash"
     api_key: Optional[str] = None
 
-@app.post("/api/ocr/scan")
+@app.post("/api/v1/ocr/scan")
 def scan_receipt_endpoint(req: OCRScanRequest):
     image_bytes = base64.b64decode(req.image_base64) if req.image_base64 else None
     return ReceiptOCRTool.scan_receipt_image(
@@ -117,7 +117,7 @@ def scan_receipt_endpoint(req: OCRScanRequest):
     )
 
 
-@app.post("/api/split/calculate")
+@app.post("/api/v1/split/calculate")
 def smart_split_endpoint(req: SmartSplitRequest):
     payer = Member(id=req.payer_id.lower(), name=req.payer_name)
     participants = [Member(id=n.lower().strip(), name=n.strip()) for n in req.participant_names]
@@ -134,7 +134,7 @@ def smart_split_endpoint(req: SmartSplitRequest):
     )
 
 
-@app.post("/api/audit", response_model=AuditReport)
+@app.post("/api/v1/audit", response_model=AuditReport)
 def run_ledger_audit(payload: GroupAuditRequest):
     return audit_ledger(
         members=payload.members,
@@ -785,7 +785,7 @@ def dashboard():
       btn.disabled = true;
 
       try {
-        const res = await fetch('/api/ocr/scan', {
+        const res = await fetch('/api/v1/ocr/scan', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -805,7 +805,7 @@ def dashboard():
     }
 
     async function runSampleOCR(type) {
-      const res = await fetch('/api/ocr/scan', {
+      const res = await fetch('/api/v1/ocr/scan', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({notes: type, model: getSelectedModel(), api_key: getStoredApiKey()})
@@ -1036,7 +1036,7 @@ def dashboard():
       historyBox.scrollTop = historyBox.scrollHeight;
 
       try {
-        const res = await fetch('/api/chat', {
+        const res = await fetch('/api/v1/chat', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({query: text, model: getSelectedModel(), api_key: getStoredApiKey()})
@@ -1079,7 +1079,7 @@ def dashboard():
 
     async function runHubSync(queryText) {
       try {
-        const res = await fetch('/api/hub/chat', {
+        const res = await fetch('/api/v1/hub/chat', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({query: queryText, model: getSelectedModel(), api_key: getStoredApiKey()})
