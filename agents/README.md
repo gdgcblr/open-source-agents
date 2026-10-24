@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`glasses-speaker-cue-agent`](glasses-speaker-cue-agent/) | AI teleprompter for smart glasses: turns talk notes into a script that fits your time slot, as short cues for Meta Ray-Ban Display | Google ADK, Gemini, Python, FastAPI | [@Priyanshu-Bej](https://github.com/Priyanshu-Bej) |

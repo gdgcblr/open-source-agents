@@ -1,0 +1,13 @@
+google-adk==2.13.0
+google-genai==2.33.0
+pydantic==2.14.1
+python-dotenv==1.2.4
+
+# HTTP server for apps (server.py)
+fastapi==0.162.0
+uvicorn==0.54.0
+
+# Development: tests and lint
+httpx==0.28.1
+pytest==9.1.1
+ruff==0.17.2

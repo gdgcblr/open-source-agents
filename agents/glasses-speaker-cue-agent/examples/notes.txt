@@ -1,0 +1,11 @@
+Lightning talk at GDG Cloud Bengaluru, FORK. BUILD. MERGE.
+
+- problem: speakers lose their place, look down at laptop, break eye contact
+- speaker notes in slides are long paragraphs, can't read at a glance
+- AI scripts ignore time: ask for 2 minutes, get 4
+- my app NeuralLens shows cues on Meta Ray-Ban Display, Neural Band to go next/back
+- today: open-sourced the brain as an agent built with Google ADK + Gemini
+- agent writes script, measures speaking time with a tool, revises up to 3 times
+- every cue is max 90 characters so it fits the lens
+- guardrails: blocks API keys in notes, redacts emails and phone numbers, flags numbers not in your notes
+- ask: try it, fork it, add your own display
