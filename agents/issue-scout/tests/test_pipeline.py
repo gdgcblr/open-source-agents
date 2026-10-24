@@ -200,3 +200,19 @@ def test_tools_find_issues_is_json_serialisable(monkeypatch):
     data = tools.find_issues(languages=["python"], limit=2)
     json.dumps(data)
     assert "skipped" not in data and data["skip_summary"] == {"open-pr": 1, "likely-resolved": 1}
+
+
+def test_brief_facts_degrade_when_extras_fail():
+    client = world()
+    client.routes["/repos/acme/app/issues/1"] = client.routes["/search/issues"]["items"][0]
+    client.routes["/repos/acme/app"] = repo_payload("acme/app")
+    client.routes["/search/issues"] = RateLimitError("GitHub's abuse protection paused requests.", 403)
+    # community profile and git tree routes are missing too -> 404s
+    facts = Scout(client, now=NOW).brief_facts("acme/app#1")
+    assert facts["issue"]["ref"] == "acme/app#1" and facts["issue"]["verdict"] == "ready"
+    assert facts["related"] == {"open_issues": [], "closed_issues": [], "merged_prs": []}
+    assert any("Related issues unavailable" in note for note in facts["notes"])
+    assert any("File suggestions unavailable" in note for note in facts["notes"])
+    from issue_scout.report import render_brief
+
+    assert "Related issues unavailable" in render_brief(facts, NOW)

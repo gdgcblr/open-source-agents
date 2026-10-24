@@ -313,7 +313,7 @@ Here are 3 open Python issues matched to your 3-hour window.
 pytest
 ```
 
-- 109 offline tests: no network, no API keys. GitHub is replaced by a fake client.
+- 110 offline tests: no network, no API keys. GitHub is replaced by a fake client.
 - Covered: claim, "already fixed" and maintainer-policy detection; timeline and PR parsing; repo merge statistics; scoring and verdicts; related-issue search; CONTRIBUTING parsing; likely-file ranking; the full `find` pipeline including rate-limit fallbacks; the GitHub client (search pacing, secondary-rate-limit retries, error messages); every guardrail; the CLI; and the tool layer.
 - `tests/test_adk_agent.py` drives the **real ADK runner** with a scripted model. It checks three things:
   - `root_agent` calls Issue Scout's tools and receives their results.

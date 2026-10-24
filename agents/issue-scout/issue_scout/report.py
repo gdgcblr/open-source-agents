@@ -190,4 +190,7 @@ def render_brief(facts: Dict[str, object], now: datetime, ai: Optional[Dict[str,
         commands = conventions.get(key) or []
         if commands:
             out.append("- %s: %s" % (name, " | ".join("`%s`" % c for c in commands)))
+    for note in facts.get("notes") or []:
+        out.append("")
+        out.append("_Note: %s_" % note)
     return "\n".join(out).rstrip() + "\n"

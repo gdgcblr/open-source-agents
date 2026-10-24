@@ -215,19 +215,31 @@ class Scout:
         """Everything a contributor (or the model) needs to plan the first PR, gathered deterministically."""
         candidate = self.inspect(ref, profile)
         health = candidate.repo_health
+        notes: List[str] = []
         facts: Dict[str, object] = {
             "issue": candidate.to_dict(include_body=True),
             "evidence": evidence(candidate, self.now),
             "keywords": keywords(candidate.title, candidate.body),
-            "related": {key: [vars(item) for item in items] for key, items in self.related(ref).items()},
-            "conventions": self.conventions(candidate.repo),
+            "related": {"open_issues": [], "closed_issues": [], "merged_prs": []},
+            "conventions": {"repo": candidate.repo, "contributing_url": None, "rules": [],
+                            "setup_commands": [], "test_commands": [], "lint_commands": []},
             "likely_files": [],
+            "notes": notes,
         }
+        # The availability check above is essential; the extras below degrade gracefully.
+        try:
+            facts["related"] = {key: [vars(item) for item in items] for key, items in self.related(ref).items()}
+        except GitHubError as exc:
+            notes.append("Related issues unavailable: %s" % exc)
+        try:
+            facts["conventions"] = self.conventions(candidate.repo)
+        except GitHubError as exc:
+            notes.append("Contributing guide unavailable: %s" % exc)
         try:
             tree = self.client.get_tree(candidate.repo, health.default_branch if health else "HEAD")
             facts["likely_files"] = conv.likely_files(tree, candidate.title, candidate.body)
         except GitHubError as exc:
-            facts["likely_files_error"] = str(exc)
+            notes.append("File suggestions unavailable: %s" % exc)
         return facts
 
 
