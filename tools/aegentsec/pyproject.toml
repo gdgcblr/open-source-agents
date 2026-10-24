@@ -1,0 +1,34 @@
+[project]
+name = "aegentsec"
+version = "0.1.0"
+description = "Agent identity, client credentials, and scoped access for MCP and APIs"
+requires-python = ">=3.12"
+dependencies = [
+  "aiosqlite>=0.20,<1",
+  "argon2-cffi>=23.1,<26",
+  "cryptography>=43,<48",
+  "fastapi>=0.115,<1",
+  "httpx>=0.27,<1",
+  "mcp>=1.30,<2",
+  "pydantic-settings>=2.5,<3",
+  "pyjwt>=2.9,<3",
+  "python-multipart>=0.0.9,<1",
+  "uvicorn>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "pytest-asyncio>=0.24,<2", "ruff>=0.8,<1"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aegentsec", "sdk/aegentsec_sdk"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
