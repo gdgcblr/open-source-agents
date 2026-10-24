@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`ai-repo-judge`](ai-repo-judge/) | Evidence-based judge and dashboard that scores every agent/tool PR on seven dimensions and lists what to fix first | Python (ast, ruff, pydantic) · Groq/Gemini · React + Vite + Tailwind · Firestore (optional) | [@nishu88](https://github.com/nishu88) |

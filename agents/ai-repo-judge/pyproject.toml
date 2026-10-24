@@ -1,0 +1,42 @@
+[project]
+name = "ai-repo-judge"
+version = "0.1.0"
+description = "Evidence-based AI judge for open-source agent and tool submissions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "httpx>=0.27,<1",
+    "pydantic>=2.7,<3",
+    "python-dotenv>=1.0,<2",
+    "ruff>=0.6",
+]
+
+[project.optional-dependencies]
+firebase = ["firebase-admin>=6.5,<8"]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+judge = "judge.cli:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["judge*"]
+
+[tool.setuptools.package-data]
+judge = ["llm/prompts/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["web", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP", "SIM", "I"]
+ignore = ["E501"]  # line length is handled by `ruff format`
