@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NammaRaktha • Presentation Deck</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @media print {
+      body { background: white !important; }
+      .no-print { display: none !important; }
+      .slide-container { display: block !important; page-break-after: always; min-height: 100vh; }
+      .slide-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-3 md:p-6 font-sans select-none">
+
+  <!-- Presentation Viewport -->
+  <div class="w-full max-w-5xl mx-auto flex flex-col">
+    
+    <!-- Top Navigation Controls -->
+    <div class="no-print flex justify-between items-center mb-3 px-2 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+        <span class="font-bold tracking-wider uppercase text-slate-200">NammaRaktha Pitch Deck</span>
+        <span class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[11px]">Slide <span id="slideIndex">1</span> of 5</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="hidden sm:inline text-slate-500">Keys: [← / →] or [Space]</span>
+        <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium transition flex items-center gap-1.5 border border-slate-700">
+          <span>Print / Export PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main 16:9 Slide Canvas -->
+    <div class="relative w-full aspect-[16/9] bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col justify-between p-6 md:p-10">
+      
+      <!-- SLIDE 1: COVER -->
+      <div id="slide-1" class="slide-container h-full flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 font-black text-lg">
+                +
+              </div>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-red-400">Crisis Response • Bengaluru</span>
+                <div class="text-[11px] text-slate-400">Google Open Source Agents</div>
+              </div>
+            </div>
+            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              PR #228 Ready
+            </span>
+          </div>
+
+          <div class="mt-8 md:mt-12">
+            <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+              Namma<span class="text-red-500">Raktha</span>
+            </h1>
+            <p class="text-base md:text-xl font-medium text-slate-300 mt-2 max-w-2xl leading-snug">
+              Bengaluru 24/7 Emergency Blood & Platelet Clinical Dispatch Agent
+            </p>
+            <p class="text-xs md:text-sm text-slate-400 mt-2 max-w-xl leading-relaxed">
+              AI clinical triage, NBTC compatibility matching, 24/7 blood bank router, and voluntary donor dispatch built for high-stress Golden Hour emergencies.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-6 border-t border-slate-800/80">
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <div class="text-[11px] text-slate-400 font-medium">Triage Engine</div>
+            <div class="text-sm font-bold text-white mt-0.5">Gemini 2.5 Flash</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Offline regex fallback</div>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <div class="text-[11px] text-slate-400 font-medium">Verified Centres</div>
+            <div class="text-sm font-bold text-white mt-0.5">14+ 24/7 Banks</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Namma Metro proximity</div>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <div class="text-[11px] text-slate-400 font-medium">Clinical Standard</div>
+            <div class="text-sm font-bold text-white mt-0.5">NBTC Protocols</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Bombay (hh) & SDP rules</div>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <div class="text-[11px] text-slate-400 font-medium">Coordination</div>
+            <div class="text-sm font-bold text-white mt-0.5">1-Tap WhatsApp</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">English & Kannada SOS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: THE PROBLEM -->
+      <div id="slide-2" class="slide-container hidden h-full flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-widest text-red-400">Context & Motivation</span>
+              <h2 class="text-xl md:text-2xl font-bold text-white">The Bengaluru Golden Hour Crisis</h2>
+            </div>
+            <span class="text-xs bg-red-950/60 text-red-400 px-3 py-1 rounded-full border border-red-800/40 font-semibold">
+              Urban Healthcare Challenge
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-2 text-red-400 font-bold text-sm mb-1.5">
+                <span>01. Bengaluru Urban Gridlock</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Severe transit chokepoints (ORR, Silk Board, Hebbal, Dairy Circle) create 60–90 minute delays during critical golden-hour medical emergencies.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-2 text-amber-400 font-bold text-sm mb-1.5">
+                <span>02. Seasonal Dengue Platelet Shortage</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Platelet (SDP) apheresis demands rigorous pre-checks (48-72h NSAID clearance, minimum platelet count). Volunteers travel across the city only to be clinically disqualified.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-2 text-blue-400 font-bold text-sm mb-1.5">
+                <span>03. Unverified WhatsApp Spam Chaos</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Emergency forwards circulate without verified hospital IP numbers, specific blood component criteria, or valid attendant phone numbers, overwhelming blood banks.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="flex items-center gap-2 text-purple-400 font-bold text-sm mb-1.5">
+                <span>04. Illegal Paid Blood Commercial Scams</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Fraudulent actors exploit panicked families in ICU corridors with illegal commercial blood trading and UPI scams, violating Supreme Court and National Blood Policy mandates.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-red-950/30 border border-red-900/40 rounded-xl text-xs text-red-300 flex items-center justify-between">
+          <span><strong>Objective:</strong> Transform frantic unverified text into a verified, clinically-routed, anti-scam dispatch within seconds.</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: ARCHITECTURE & PIPELINE -->
+      <div id="slide-3" class="slide-container hidden h-full flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-widest text-blue-400">System Design</span>
+              <h2 class="text-xl md:text-2xl font-bold text-white">Multi-Stage Clinical Architecture</h2>
+            </div>
+            <span class="text-xs bg-blue-950/60 text-blue-400 px-3 py-1 rounded-full border border-blue-800/40 font-semibold">
+              End-to-End Pipeline
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-2.5 mt-5 text-center">
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="w-7 h-7 rounded-full bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center mx-auto mb-2">1</div>
+                <div class="text-xs font-bold text-white">Guardrails</div>
+                <p class="text-[11px] text-slate-400 mt-1">Prompt injection defense & commercial scam blocking.</p>
+              </div>
+              <span class="text-[10px] text-red-400 font-medium mt-2 bg-red-950/50 py-0.5 rounded">Security</span>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center mx-auto mb-2">2</div>
+                <div class="text-xs font-bold text-white">AI Triage</div>
+                <p class="text-[11px] text-slate-400 mt-1">Gemini 2.5 Flash extracts ABO/Rh, hospital, units & urgency.</p>
+              </div>
+              <span class="text-[10px] text-blue-400 font-medium mt-2 bg-blue-950/50 py-0.5 rounded">NLP Engine</span>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold flex items-center justify-center mx-auto mb-2">3</div>
+                <div class="text-xs font-bold text-white">Clinical Validation</div>
+                <p class="text-[11px] text-slate-400 mt-1">Detects missing phone, generic hospital, or missing IP.</p>
+              </div>
+              <span class="text-[10px] text-amber-400 font-medium mt-2 bg-amber-950/50 py-0.5 rounded">Validation</span>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center mx-auto mb-2">4</div>
+                <div class="text-xs font-bold text-white">NBTC Matrix</div>
+                <p class="text-[11px] text-slate-400 mt-1">ABO/Rh rules, apheresis criteria & Bombay (hh) checks.</p>
+              </div>
+              <span class="text-[10px] text-emerald-400 font-medium mt-2 bg-emerald-950/50 py-0.5 rounded">Clinical</span>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 text-xs font-bold flex items-center justify-center mx-auto mb-2">5</div>
+                <div class="text-xs font-bold text-white">Geospatial Router</div>
+                <p class="text-[11px] text-slate-400 mt-1">14+ 24/7 bank matches, Metro proximity, SQLite registry.</p>
+              </div>
+              <span class="text-[10px] text-purple-400 font-medium mt-2 bg-purple-950/50 py-0.5 rounded">Dispatch</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-emerald-400 font-bold">Bilingual Output:</span>
+            <span>English + Kannada text broadcast with verified Google Maps navigation & 1-click WhatsApp wa.me links.</span>
+          </div>
+          <span class="text-slate-400 font-mono text-[11px]">Zero-Latency</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: CLINICAL & SAFETY DIFFERENTIATORS -->
+      <div id="slide-4" class="slide-container hidden h-full flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400">Clinical Rigor & Safety</span>
+              <h2 class="text-xl md:text-2xl font-bold text-white">Clinical Compliance & Safety Defense</h2>
+            </div>
+            <span class="text-xs bg-emerald-950/60 text-emerald-400 px-3 py-1 rounded-full border border-emerald-800/40 font-semibold">
+              NBTC India Aligned
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="text-sm font-bold text-red-400 mb-1">Rare Bombay (hh) Phenotype Protocols</div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Detects Bombay blood group anti-H antibodies. Strictly blocks regular O-negative and instantly triggers alerts for Sankalp India Foundation and Rotary TTK rare blood registries.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="text-sm font-bold text-amber-400 mb-1">Apheresis & Platelet (SDP) Restrictions</div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Enforces the mandatory 48-72h NSAID (Aspirin/Disprin/Ibuprofen) exclusion, &gt;50kg weight limit, and arm vein checks before dispatching donors to dengue wards.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="text-sm font-bold text-emerald-400 mb-1">Anti-Commercialization Scam Block</div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Enforces National Blood Policy and Supreme Court directives. Rejects paid blood buying/selling, monetary bribes, or UPI demands to protect voluntary non-remunerated donation.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div class="text-sm font-bold text-blue-400 mb-1">Deterministic Offline Resilience</div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                When network drops occur in emergency hospital basements, the agent falls back to deterministic regex clinical matching, ensuring 100% operational availability without API keys.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-emerald-950/30 border border-emerald-900/40 rounded-xl text-xs text-emerald-300 flex items-center justify-between">
+          <span><strong>Safety Summary:</strong> Zero hallucinations on clinical incompatibility. Anti-scam protection active at the prompt layer.</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: LIVE DASHBOARD & PR READINESS -->
+      <div id="slide-5" class="slide-container hidden h-full flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-widest text-purple-400">Implementation & Verification</span>
+              <h2 class="text-xl md:text-2xl font-bold text-white">Live Operations Console & PR Status</h2>
+            </div>
+            <span class="text-xs bg-purple-950/60 text-purple-400 px-3 py-1 rounded-full border border-purple-800/40 font-semibold">
+              Production Ready
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 mt-5">
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-xs font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span> Google Material 3 UI
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Mobile-first single-column thumb bar + 2-column desktop crisis console. Custom SVG favicon, typography, and accessible high-contrast chips.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-xs font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Live Requests & In-Feed Accept
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Real-time requisitions feed across Bengaluru hospitals. Clickable cards open transit routing, and 1-tap in-feed donor acceptance connects directly via WhatsApp.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-xs font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-red-500"></span> 100% Automated Test Suite
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                7 assertion suites passing: Dengue SDP, trauma O-, rare Bombay (hh), injection defense, commercial scam defense, and missing-info validator.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 mt-3 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-white">Pull Request #228 • gdgcblr/open-source-agents</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Strictly isolated under agents/namma-raktha/ • Zero secrets committed • Clean SQLite migrations</div>
+            </div>
+            <span class="px-3 py-1 bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg shadow-sm">Merged Ready</span>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-400 flex items-center justify-between">
+          <span>Demonstration: <strong>python run.py</strong> (Web on :8081) | <strong>python run.py --cli</strong> | <strong>python run.py --test</strong></span>
+          <span class="text-slate-500">Khagesh Patel</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation Controls -->
+    <div class="no-print flex justify-between items-center mt-4 px-2">
+      <button onclick="prevSlide()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1">
+        <span>← Previous</span>
+      </button>
+
+      <!-- Dots Indicator -->
+      <div class="flex items-center gap-2">
+        <button onclick="goToSlide(1)" id="dot-1" class="w-3 h-3 rounded-full bg-red-500 transition-all"></button>
+        <button onclick="goToSlide(2)" id="dot-2" class="w-3 h-3 rounded-full bg-slate-700 transition-all"></button>
+        <button onclick="goToSlide(3)" id="dot-3" class="w-3 h-3 rounded-full bg-slate-700 transition-all"></button>
+        <button onclick="goToSlide(4)" id="dot-4" class="w-3 h-3 rounded-full bg-slate-700 transition-all"></button>
+        <button onclick="goToSlide(5)" id="dot-5" class="w-3 h-3 rounded-full bg-slate-700 transition-all"></button>
+      </div>
+
+      <button onclick="nextSlide()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold transition shadow-md flex items-center gap-1">
+        <span>Next →</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 5;
+
+    function updateSlide() {
+      for (let i = 1; i <= totalSlides; i++) {
+        const slideEl = document.getElementById(`slide-${i}`);
+        const dotEl = document.getElementById(`dot-${i}`);
+        if (slideEl) {
+          slideEl.classList.toggle('hidden', i !== currentSlide);
+        }
+        if (dotEl) {
+          if (i === currentSlide) {
+            dotEl.className = "w-6 h-3 rounded-full bg-red-500 transition-all";
+          } else {
+            dotEl.className = "w-3 h-3 rounded-full bg-slate-700 hover:bg-slate-600 transition-all";
+          }
+        }
+      }
+      const idxEl = document.getElementById('slideIndex');
+      if (idxEl) idxEl.textContent = currentSlide;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateSlide();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key >= '1' && e.key <= '5') {
+        goToSlide(parseInt(e.key));
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>

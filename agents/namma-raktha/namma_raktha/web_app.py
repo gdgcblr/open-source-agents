@@ -134,6 +134,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <span class="material-symbols-outlined text-sm">local_hospital</span>
           <span>14 Blood Centres</span>
         </div>
+        <a href="/slides" target="_blank" class="flex items-center gap-1 text-[#444746] hover:text-[#0b57d0] bg-white border border-[#74777f]/30 hover:border-[#0b57d0] px-3 py-1.5 rounded-full transition shadow-xs">
+          <span class="material-symbols-outlined text-base text-[#0b57d0]">slideshow</span>
+          <span>Pitch Deck</span>
+        </a>
         <button onclick="openDonorModal()" class="rounded-full bg-[#0b57d0] hover:bg-[#0842a0] text-white font-medium text-xs px-4 py-2 transition flex items-center gap-1.5 shadow-sm">
           <span class="material-symbols-outlined text-base">person_add</span>
           <span>Register Donor</span>
@@ -1320,6 +1324,18 @@ class NammaRakthaHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "public, max-age=86400")
             self.end_headers()
             self.wfile.write(FAVICON_SVG.encode("utf-8"))
+        elif self.path == "/slides":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.end_headers()
+            import os
+            slides_path = os.path.join(os.path.dirname(__file__), "slides.html")
+            if os.path.exists(slides_path):
+                with open(slides_path, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.wfile.write(b"Slides not found")
         else:
             self.send_response(404)
             self.end_headers()
