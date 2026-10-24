@@ -1,130 +1,71 @@
-# open-source-ai
+# The Illustrated Primer
 
-> **Build it. Document it. Open-source it.**
-
-A community-driven collection of practical, documented, and open-source AI agents and developer tools, built with diverse frameworks and technologies.
+> An adaptive, Socratic AI tutor inspired by Neal Stephenson's *The Diamond Age* that maintains a child's evolving epistemic state and teaches through personalized narrative allegories.
 
 ---
 
-## Introduction
+## Overview
 
-As AI systems evolve from single prompt-response interactions to multi-step reasoning, tool-using agents, and specialized developer utilities, the need for transparent, reproducible, and practical open-source implementations has never been greater.
+### Problem Statement & Intended Users
+- **Problem**: Modern LLM-based tutors act like search engines: they immediately give away final answers to math and reading problems, lose track of a child's learning struggles across turns, and lack pedagogical scaffolding.
+- **Intended Users**: Young learners (ages 5–10) learning basic phonics, reading, and arithmetic; parents seeking a patient, one-on-one Socratic companion; educators tracking a child's Zone of Proximal Development (ZPD).
 
-`open-source-ai` is a collaborative monorepo curated to showcase working, well-documented AI projects. The goal is to provide developers, researchers, and builders with a shared catalog of real-world patterns—ranging from autonomous task agents to Model Context Protocol (MCP) servers and evaluation harnesses.
-
-This repository is designed to be accessible, framework-agnostic, and easy to navigate whether you are looking for reference implementations or contributing your own creation.
-
----
-
-## Acceptable Project Categories
-
-We welcome practical, working AI contributions across a variety of categories. These categories are illustrative rather than rigid constraints:
-
-- **AI Agents**: Autonomous, semi-autonomous, or task-oriented agents, conversational assistants, and multi-agent coordination systems.
-- **Model Context Protocol (MCP) Servers & Integrations**: Servers providing structured context, tools, and prompts to models from databases, filesystems, developer tools, or web services.
-- **AI Developer Utilities**: Command-line interfaces, prompt helpers, token trackers, context formatters, and workflow automations.
-- **AI-Powered Workflows & Automation**: Specialized pipelines for code generation, documentation review, PR triage, research synthesis, or data transformation.
-- **Evaluation, Testing & Safety Utilities**: Tools and harnesses to measure model accuracy, benchmark latency and cost, detect hallucinations, or test tool calls.
-- **Other Practical AI Tooling**: Reusable libraries, adapters, and connectors that help developers build AI applications.
+### Key Features
+- **Persistent Epistemic State**: Tracks the student's real-time knowledge graph, active learning struggles, mastered concepts, and personal interests in a structured profile (`student_profile.json`).
+- **Strict Socratic Scaffolding**: Constrained by design to never give away direct answers to arithmetic or spelling queries. It guides the child through guided discovery, sensory metaphors, and progressive hints.
+- **Narrative Allegory Engine**: Binds foundational skills (counting, phonics, reasoning) into personalized, unfolding storybook quests tailored to the child's life.
+- **Autonomous State Mutation**: Executes real-time tool calling (`update_learning_ledger`) to dynamically promote mastered skills and log observations directly from conversational breakthroughs.
+- **Dual-Loop Inspection UI**: A warm storybook interface paired with a live "Primer's Memory" sidebar that lets educators and judges observe state transitions in real time.
 
 ---
 
-## Technology Flexibility
+## Technical Stack
 
-This repository is **completely framework-agnostic and language-neutral**. Contributors are encouraged to select the stack best suited to their problem domain.
-
-Accepted technologies and ecosystems include, but are not limited to:
-- **Google Agent Development Kit (ADK)**
-- **OpenAI Agents SDK**
-- **LangGraph & LangChain**
-- **CrewAI**
-- **Model Context Protocol (MCP)**
-- **Python or TypeScript / JavaScript AI runtimes**
-- **Go, Rust, or other systems languages**
-- **Local / open-weights model runtimes** (e.g., Ollama, vLLM, llama.cpp)
-- **Hosted model APIs** (e.g., Gemini, OpenAI, Anthropic, Mistral)
-
-No single cloud provider, framework, or model vendor is mandated.
+- **Language & Runtime**: Python 3.10+
+- **Agent Framework / Core Library**: Google ADK (`google-adk`), Google GenAI SDK (`google-genai`)
+- **Frontend / Interface**: Streamlit
+- **Models**: Gemini 3.8 Flash / Gemini 3.5 Flash
+- **Persistence**: Structured local JSON Epistemic State Store
 
 ---
 
-## Repository Structure
+## Architecture & Data Flow
 
-The repository is organized into distinct directories to keep projects isolated, modular, and easy to maintain:
+The project follows a **Dual-Loop Supervisor** architecture with boundary hooks:
 
-```
-open-source-ai/
-├── README.md               # Repository overview, philosophy, and index
-├── CONTRIBUTING.md         # Detailed 12-step contributor guide and standards
-├── .gitignore              # Repository-wide ignores for secrets, virtual environments, and caches
-├── agents/                 # Directory for autonomous and task-oriented agents
-│   └── README.md           # Guidelines and index of agent projects
-├── tools/                  # Directory for developer tools, MCP servers, and utilities
-│   └── README.md           # Guidelines and index of tooling projects
-├── template/               # Starter files for new contributions
-│   ├── README.md           # Reusable project documentation template
-│   ├── .gitignore          # Recommended per-project .gitignore
-│   └── .env.example        # Sanitized environment variable template
-└── .github/
-    └── PULL_REQUEST_TEMPLATE.md  # Standard checklist for submitting pull requests
-```
-
-- **[`agents/`](agents/README.md)**: Contains end-to-end agents and multi-agent workflows. Each agent lives in its own dedicated subfolder (`agents/<project-slug>/`).
-- **[`tools/`](tools/README.md)**: Contains developer utilities, MCP servers, evaluation harnesses, and reusable components. Each tool lives in its own dedicated subfolder (`tools/<project-slug>/`).
-- **[`template/`](template/README.md)**: Provides a standardized documentation blueprint, environment template, and local `.gitignore` so contributors can document their work consistently.
+[Child / Parent Input]|v+-------------------------------+       Reads State|     Root Supervisor Agent     | <===================+ [Persistent State]|  (Socratic & Story Scaffolding|                      | (student_profile.json)+---------------+---------------+                      ||                                      ||-- (Skill Mastered / Struggling?) ---+ Tool Call:|                                      update_learning_ledger()v[Streamlit Book UI]|v[Live Memory Sidebar Rerenders]
+1. **Input**: The child submits an answer, question, or story tangent.
+2. **Contextualization**: The agent loads the active epistemic profile (reading level, math level, current struggles).
+3. **Socratic Generation**: The model answers using guided narrative hints rather than raw solutions.
+4. **Autonomous Mutation**: If the child demonstrates mastery, the model invokes `update_learning_ledger` to update the profile on disk.
+5. **UI Synchronization**: Streamlit displays the response and immediately updates the live memory sidebar.
 
 ---
 
-## Quick Start for Contributors
+## Prerequisites
 
-Ready to contribute? Follow this straightforward fork-and-pull-request workflow:
+Before running this project, ensure you have:
+- Python 3.10 or higher
+- A Google Gemini API Key from [Google AI Studio](https://aistudio.google.com/apikey)
+- A terminal with `pip` or virtual environment capabilities
 
-1. **Browse existing contributions**: Check [`agents/`](agents/README.md) and [`tools/`](tools/README.md) to explore existing work and choose a unique, descriptive project name.
-2. **Fork the repository**: Fork this repository to your personal GitHub account.
-3. **Clone your fork**:
+---
+
+## Installation & Setup
+
+1. **Navigate to the project directory:**
    ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
-   ```
-4. **Create a branch**:
-   ```bash
-   git checkout -b feat/<your-project-slug>
-   ```
-5. **Add your project**: Create a dedicated directory under `agents/<project-slug>/` or `tools/<project-slug>/`. Copy `template/README.md`, `template/.gitignore`, and `template/.env.example` into your folder.
-6. **Implement and document**: Write your code, declare dependencies in a manifest (`requirements.txt`, `package.json`, etc.), and document setup, usage, and examples in your project's `README.md`.
-7. **Test thoroughly**: Verify that installation and execution work on a clean environment and that no credentials or virtual environments are tracked.
-8. **Commit and push**:
-   ```bash
-   git add agents/<project-slug>/   # or tools/<project-slug>/
-   git commit -m "feat(agents): add <project-slug>"
-   git push -u origin feat/<your-project-slug>
-   ```
-9. **Open a Pull Request**: Submit your PR against the upstream `main` branch, completing the [Pull Request Checklist](.github/PULL_REQUEST_TEMPLATE.md).
+   cd primer_agent
+Set up virtual environment & install dependencies:Bashpython -m venv .venv
 
-For step-by-step guidance and detailed Git commands, see [CONTRIBUTING.md](CONTRIBUTING.md).
+# Windows (PowerShell):
+.venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
 
----
-
-## Contribution Standards
-
-To maintain technical credibility and long-term utility, all contributions are reviewed against four core criteria:
-
-1. **Reproducibility**: Clear prerequisites, dependency specifications, and setup instructions that work out-of-the-box.
-2. **Documentation Quality**: Comprehensive documentation using the provided template, including realistic inputs/outputs and known limitations.
-3. **Security & Privacy**: Zero committed credentials, API keys, or private data. All configuration must use environment variables or sanitized configuration files.
-4. **Focused Scope**: Each contribution is isolated in its own directory and does not alter unrelated parts of the repository.
-
----
-
-## Community Context
-
-This repository was established in collaboration with **GDG Cloud Bengaluru** as part of the **FORK. BUILD. MERGE.** initiative under **Road to DevFest 2026**.
-
-While seeded during this community event, this repository is designed as an enduring, public open-source catalog. Contributions, maintenance, and community participation continue beyond the event.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE) &copy; 2026 GDG Cloud Bengaluru Community.
-
+pip install google-adk google-genai streamlit python-dotenv
+Configure Environment Variables:Create a .env file in the project root:BashGEMINI_API_KEY="your-google-api-key-here"
+Configuration & Environment VariablesVariable NameRequiredDefaultDescriptionGEMINI_API_KEYYesNoneGoogle AI Studio Gemini API KeyMODEL_NAMENogemini-3.8-flashPrimary Gemini model identifierHow to RunOption 1: Storybook Web Interface (Recommended)Launch the interactive Streamlit UI with the live memory sidebar:Bashstreamlit run app.py
+Open your browser at http://localhost:8501.Option 2: ADK Native Web PlaygroundRun the native Google ADK agent inspector:Bashadk web .
+Open your browser at http://localhost:8000.Example Input & OutputExample InputChild: "I have 7 clockwork gears on my desk, but a squirrel stole 3 of them! How many do I have left?"Example OutputPrimer: "A mischievous squirrel indeed, Nell! Imagine your 7 polished brass gears lined in a row along the mossy stone.If you close your eyes and take 3 away with your hand, count backwards from seven with me: six, five... what is the gear your finger lands upon?"(In the sidebar, student_profile.json registers that the child is actively working through subtraction under 10.)How to TestAutomated VerificationTest if your Gemini API key and dependencies are functioning:Bashpython -c "from google import genai; client = genai.Client(); print(client.models.generate_content(model='gemini-3.8-flash', contents='Say ready').text)"
+Manual Demo Steps (For Reviewers & Judges)Launch streamlit run app.py.Inspect the Primer Memory sidebar to confirm initial struggles (subtraction from 10, the 'th' blend).Enter: "Is the answer 4 gears?"Confirm that:The Primer praises your reasoning without sounding robotic.The tool call executes in the background.The sidebar refreshes, removing subtraction from 10 from active struggles and adding it to Mastered Skills.Known LimitationsLocal File Concurrency: State is currently persisted in a local JSON file (student_profile.json), which is designed for single-session use rather than multi-tenant concurrent writes.Text-Only MVP: The prototype currently runs on text chat; multimodal live audio prosody is reserved for upcoming releases.Model Availability: Requires access to recent Gemini Flash endpoints (gemini-3.8-flash or gemini-3.5-flash).Security & Privacy ConsiderationsSecrets Handling: API keys are loaded via local .env files and environment variables, never hardcoded into source or committed to source control.Child-Safe Guardrails: The supervisor prompt is explicitly instructed to divert scary, harmful, or out-of-scope discussions back to benign narrative quests.Data Minimization: Learner state captures only educational milestones, active skills, and pedagogical progress—no sensitive personal identification data is collected.Future Improvements[ ] Real-Time Socratic Jury Node: Asynchronous auditor agent scoring pedagogical warmth and scaffolding adherence on every turn.[ ] Procedural SVG Etchings: Dynamic inline storybook illustrations generated on-the-fly alongside text.[ ] Multimodal Voice In/Out: Integrating the Gemini Live API for real-time speech and emotional prosody suited for pre-readers.[ ] FSRS Spaced Repetition: Graph-based memory modeling to revisit mastered concepts at optimal intervals.LicenseThis project is contributed under the repository's open-source license.
