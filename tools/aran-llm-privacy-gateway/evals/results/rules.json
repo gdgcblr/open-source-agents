@@ -1,0 +1,298 @@
+{
+  "mode": "rules",
+  "n_per_template": 30,
+  "summary": {
+    "structured_leak_pct": 0.0,
+    "overall_leak_pct": 10.71,
+    "utility_kept_pct": 100.0,
+    "restore_pct": 100.0,
+    "pii_values": 840,
+    "seconds": 0.3,
+    "ocr_protected_pct": 100.0,
+    "ocr_protected_without_guard_pct": 20.0,
+    "guard_false_blocks": 0,
+    "guard_catch_pct": 100.0
+  },
+  "documents": {
+    "per_type": {
+      "PERSON": {
+        "total": 240,
+        "leaked": 90
+      },
+      "DOB": {
+        "total": 60,
+        "leaked": 0
+      },
+      "PAN": {
+        "total": 60,
+        "leaked": 0
+      },
+      "AADHAAR": {
+        "total": 60,
+        "leaked": 0
+      },
+      "PHONE": {
+        "total": 120,
+        "leaked": 0
+      },
+      "ADDRESS": {
+        "total": 60,
+        "leaked": 0
+      },
+      "PINCODE": {
+        "total": 30,
+        "leaked": 0
+      },
+      "ACCOUNT_NUMBER": {
+        "total": 60,
+        "leaked": 0
+      },
+      "EMAIL": {
+        "total": 30,
+        "leaked": 0
+      },
+      "UPI": {
+        "total": 30,
+        "leaked": 0
+      },
+      "CARD": {
+        "total": 30,
+        "leaked": 0
+      },
+      "GSTIN": {
+        "total": 30,
+        "leaked": 0
+      },
+      "MEDICAL_ID": {
+        "total": 30,
+        "leaked": 0
+      }
+    },
+    "per_template": {
+      "kyc_form": {
+        "cases": 30,
+        "leaky_cases": 0,
+        "keep_total": 90,
+        "keep_lost": 0
+      },
+      "loan_email": {
+        "cases": 30,
+        "leaky_cases": 30,
+        "keep_total": 90,
+        "keep_lost": 0
+      },
+      "bank_lines": {
+        "cases": 30,
+        "leaky_cases": 30,
+        "keep_total": 270,
+        "keep_lost": 0
+      },
+      "support_chat": {
+        "cases": 30,
+        "leaky_cases": 30,
+        "keep_total": 30,
+        "keep_lost": 0
+      },
+      "gst_invoice": {
+        "cases": 30,
+        "leaky_cases": 0,
+        "keep_total": 60,
+        "keep_lost": 0
+      },
+      "lab_report": {
+        "cases": 30,
+        "leaky_cases": 0,
+        "keep_total": 60,
+        "keep_lost": 0
+      }
+    },
+    "restore": {
+      "ok": 690,
+      "total": 690
+    },
+    "failures": [
+      {
+        "case": "loan_email_0",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_1",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_2",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_3",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_4",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_5",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_6",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_7",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_8",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_9",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_10",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_11",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_12",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_13",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_14",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_15",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_16",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_17",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_18",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_19",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_20",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_21",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_22",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_23",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      },
+      {
+        "case": "loan_email_24",
+        "leaked_types": [
+          "PERSON"
+        ],
+        "over_redacted": 0
+      }
+    ],
+    "seconds": 0.3
+  },
+  "guard": {
+    "false_blocks": 0,
+    "cases": 60,
+    "caught": 230,
+    "injected": 230
+  }
+}

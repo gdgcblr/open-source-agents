@@ -1,0 +1,23 @@
+{
+  "name": "Karthik Ramanathan",
+  "father": "Ramanathan Subramanian",
+  "dob": "14/03/1991",
+  "aadhaar": "4821 5730 9624",
+  "pan": "BQKPR4821M",
+  "phone": "+91 90000 41275",
+  "email": "karthik.r@example.com",
+  "upi": "karthik.r@okexample",
+  "address": "No. 12, 4th Cross, Indiranagar 2nd Stage, Bengaluru, Karnataka",
+  "pin": "560038",
+  "account": "50100234567812",
+  "employer_gstin": "29AAKCN7712Q1ZL",
+  "expected": {
+    "verdict": "REFER",
+    "net_monthly_salary": 86500,
+    "monthly_emis": [
+      14500,
+      9800
+    ],
+    "bounces": 1
+  }
+}

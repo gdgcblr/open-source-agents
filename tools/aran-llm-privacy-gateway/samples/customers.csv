@@ -1,0 +1,5 @@
+customer_name,mobile,email,pan,aadhaar,city,loan_amount,bank_name
+Karthik Ramanathan,+91 90000 41275,karthik.r@example.com,BQKPR4821M,4821 5730 9624,Bengaluru,1200000,HDFC Bank
+Divya Natarajan,+91 90000 58210,divya.n@example.com,CXNPN7310K,6273 8190 4516,Chennai,450000,ICICI Bank
+Arjun Mehta,+91 90000 22984,arjun.m@example.com,DLMPM2209Q,3901 7264 5837,Pune,800000,Axis Bank
+Fathima Begum,+91 90000 66127,fathima.b@example.com,EFRPB5512H,7531 0428 6194,Hyderabad,300000,SBI

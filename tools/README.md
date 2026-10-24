@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`aran-llm-privacy-gateway`](aran-llm-privacy-gateway/) | Local-first gateway that hides Indian PII (Aadhaar, PAN, GSTIN, names, addresses, scans) before documents reach a cloud LLM, with restore, audit log and evals | Privacy / MCP server, CLI, Python, Gemma via Ollama | [Anto Joel](https://github.com/Antojoel) |

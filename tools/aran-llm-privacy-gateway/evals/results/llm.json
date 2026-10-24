@@ -1,0 +1,122 @@
+{
+  "mode": "llm",
+  "n_per_template": 5,
+  "summary": {
+    "structured_leak_pct": 0.0,
+    "overall_leak_pct": 0.0,
+    "utility_kept_pct": 100.0,
+    "restore_pct": 100.0,
+    "pii_values": 140,
+    "seconds": 86.6,
+    "ocr_protected_pct": 100.0,
+    "ocr_protected_without_guard_pct": 20.0,
+    "guard_false_blocks": 0,
+    "guard_catch_pct": 100.0
+  },
+  "documents": {
+    "per_type": {
+      "PERSON": {
+        "total": 40,
+        "leaked": 0
+      },
+      "DOB": {
+        "total": 10,
+        "leaked": 0
+      },
+      "PAN": {
+        "total": 10,
+        "leaked": 0
+      },
+      "AADHAAR": {
+        "total": 10,
+        "leaked": 0
+      },
+      "PHONE": {
+        "total": 20,
+        "leaked": 0
+      },
+      "ADDRESS": {
+        "total": 10,
+        "leaked": 0
+      },
+      "PINCODE": {
+        "total": 5,
+        "leaked": 0
+      },
+      "ACCOUNT_NUMBER": {
+        "total": 10,
+        "leaked": 0
+      },
+      "EMAIL": {
+        "total": 5,
+        "leaked": 0
+      },
+      "UPI": {
+        "total": 5,
+        "leaked": 0
+      },
+      "CARD": {
+        "total": 5,
+        "leaked": 0
+      },
+      "GSTIN": {
+        "total": 5,
+        "leaked": 0
+      },
+      "MEDICAL_ID": {
+        "total": 5,
+        "leaked": 0
+      }
+    },
+    "per_template": {
+      "kyc_form": {
+        "cases": 5,
+        "leaky_cases": 0,
+        "keep_total": 15,
+        "keep_lost": 0
+      },
+      "loan_email": {
+        "cases": 5,
+        "leaky_cases": 0,
+        "keep_total": 15,
+        "keep_lost": 0
+      },
+      "bank_lines": {
+        "cases": 5,
+        "leaky_cases": 0,
+        "keep_total": 45,
+        "keep_lost": 0
+      },
+      "support_chat": {
+        "cases": 5,
+        "leaky_cases": 0,
+        "keep_total": 5,
+        "keep_lost": 0
+      },
+      "gst_invoice": {
+        "cases": 5,
+        "leaky_cases": 0,
+        "keep_total": 10,
+        "keep_lost": 0
+      },
+      "lab_report": {
+        "cases": 5,
+        "leaky_cases": 0,
+        "keep_total": 10,
+        "keep_lost": 0
+      }
+    },
+    "restore": {
+      "ok": 130,
+      "total": 130
+    },
+    "failures": [],
+    "seconds": 86.6
+  },
+  "guard": {
+    "false_blocks": 0,
+    "cases": 60,
+    "caught": 230,
+    "injected": 230
+  }
+}

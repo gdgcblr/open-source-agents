@@ -1,0 +1,28 @@
+[project]
+name = "aran-kyc-underwriter"
+version = "0.1.0"
+description = "A Google ADK loan pre-screening agent that only sees applicant documents through the Aran privacy gateway."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "aran",
+    "google-adk>=2.13,<3",
+    "python-dotenv>=1.0",
+    "rich>=15.0.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+aran = { path = "../../tools/aran-llm-privacy-gateway", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

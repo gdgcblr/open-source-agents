@@ -1,0 +1,20 @@
+# Healthcare: the cloud model needs clinical values, not the patient.
+name: health
+description: Lab reports, discharge summaries and claims. Hides the patient, keeps test values, diagnoses and medicines.
+actions:
+  PERSON: mask
+  ADDRESS: mask
+  AADHAAR: mask
+  PAN: mask
+  MEDICAL_ID: mask
+  ID_NUMBER: mask   # OCR fail-closed guard: ID-shaped tokens from scans
+  ACCOUNT_NUMBER: mask
+  CARD: mask
+  PHONE: mask
+  EMAIL: mask
+  UPI: mask
+  PINCODE: mask
+  GSTIN: keep  # hospital / lab GSTIN identifies a business
+  DOB: age_band
+  IFSC: keep
+  ORG: keep    # hospital and lab names

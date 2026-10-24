@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`aran-kyc-underwriter`](aran-kyc-underwriter/) | Loan pre-screening agent that reads KYC documents only through the Aran privacy gateway; Gemini never sees the applicant's identity | Google ADK, Gemini, MCP, Python | [Anto Joel](https://github.com/Antojoel) |

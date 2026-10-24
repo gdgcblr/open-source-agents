@@ -1,0 +1,47 @@
+=== What Gemini produced (tokens only) ===
+The applicant, <PERSON_1>, is a Senior Data Engineer at Nimbus Analytics Pvt Ltd with a net monthly salary of ₹86,500, which is consistently credited to their HDFC account. The calculated FOIR is 28.1% based on two active loans (HDFC Car Loan and Bajaj Finserv PL). However, there was a single EMI bounce for the Bajaj Finserv loan on 26/08/2026 due to insufficient funds, which was subsequently paid. Additionally, the PAN card scan was not fully verified by the system (marked as <ID_NUMBER_1>), likely due to an OCR error. Based on the presence of one bounce and an unverified identity document, the case is recommended for REFER.
+
+```json
+{
+  "applicant": "<PERSON_1>",
+  "identity": {
+    "pan": "<PAN_1>",
+    "aadhaar": "<AADHAAR_1>",
+    "consistent_across_documents": false,
+    "notes": "Name and DOB are consistent. PAN <PAN_1> matches on payslip and bank statement, but the PAN card scan produced <ID_NUMBER_1>, indicating an OCR verification failure."
+  },
+  "income": {
+    "net_monthly_salary": 86500,
+    "employer": "Nimbus Analytics Pvt Ltd",
+    "salary_credits_seen": 3
+  },
+  "obligations": [
+    {
+      "lender": "HDFC Bank (Car Loan)",
+      "monthly_emi": 14500
+    },
+    {
+      "lender": "Bajaj Finserv (Personal Loan)",
+      "monthly_emi": 9800
+    }
+  ],
+  "foir_percent": 28.1,
+  "red_flags": [
+    "One EMI bounce for Bajaj Finserv on 26/08/2026 (Insufficient Funds)",
+    "Unverified identity document: PAN card scan returned <ID_NUMBER_1>"
+  ],
+  "verdict": "REFER",
+  "requires_human_review": true,
+  "reasons": [
+    "Exactly one EMI bounce detected in the 3-month statement period.",
+    "Unverified PAN card scan (OCR error) requires a clearer copy for verification."
+  ],
+  "missing_documents": [
+    "Clearer copy of PAN card"
+  ],
+  "privacy": {
+    "pii_items_hidden": 26,
+    "raw_values_sent": 0
+  }
+}
+```

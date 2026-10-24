@@ -1,0 +1,20 @@
+# Fintech / KYC: the cloud model needs money movement, not identity.
+name: kyc
+description: Loan pre-screening and KYC review. Hides identity, keeps amounts, dates and bank branch codes.
+actions:
+  PERSON: mask
+  ADDRESS: mask
+  AADHAAR: mask
+  PAN: mask
+  GSTIN: mask
+  ACCOUNT_NUMBER: mask
+  CARD: mask
+  PHONE: mask
+  EMAIL: mask
+  UPI: mask
+  PINCODE: mask
+  MEDICAL_ID: mask
+  ID_NUMBER: mask   # OCR fail-closed guard: ID-shaped tokens from scans
+  DOB: age_band
+  IFSC: keep   # identifies a bank branch, not a person
+  ORG: keep    # employer / merchant names are useful signal for underwriting

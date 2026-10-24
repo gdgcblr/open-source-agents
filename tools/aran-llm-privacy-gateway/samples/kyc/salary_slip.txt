@@ -1,0 +1,14 @@
+Nimbus Analytics Pvt Ltd - Payslip for September 2026 (SPECIMEN, synthetic data)
+GSTIN: 29AAKCN7712Q1ZL
+Employee Name: Karthik Ramanathan
+Employee ID: NA-20417        Designation: Senior Data Engineer
+PAN: BQKPR4821M              Bank A/c No: 50100234567812 (HDFC0001234)
+Date of Birth: 14/03/1991    Date of Joining: 02/05/2022
+
+Earnings                      Deductions
+Basic          45,000         Provident Fund   5,400
+HRA            22,500         Professional Tax   200
+Special Allow. 30,800         Income Tax (TDS) 6,200
+Gross          98,300         Total Deductions 11,800
+
+Net Pay: 86,500
