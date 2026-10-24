@@ -1,0 +1,3 @@
+-r requirements.txt
+pytest>=8,<10
+cryptography>=42,<51

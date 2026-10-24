@@ -1,0 +1,9 @@
+Flask>=3.1,<4
+google-adk>=1.16,<3
+google-auth>=2.47,<3
+google-genai>=2.30,<3
+pydantic>=2.12,<3
+mcp>=1.12,<2
+google-auth-oauthlib>=1.2,<2
+keyring>=25,<26
+python-dotenv>=1,<2

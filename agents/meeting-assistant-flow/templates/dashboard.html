@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meeting Assistant Flow</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='progress.js') }}" defer></script>
+</head><body>
+<header><a class="brand" href="{{ url_for('index') }}">Meeting Assistant <span>Flow</span></a><span class="step">PREPARE · FIND A TIME · REVIEW</span></header>
+<main class="chat-layout">
+  <section id="meeting">
+    <p class="eyebrow">YOUR NEXT GOOD CONVERSATION</p><h1>Let’s plan your<br>next meeting.</h1>
+    <p class="description">Tell me the details. I’ll check availability and suggest times, then you review the invitation.</p>
+    {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
+    {% set complete = draft and draft.data.meeting.agenda %}
+    <section class="card meeting-editor" aria-label="Meeting planning chat">
+      <span class="badge">GEMINI MEETING CHAT</span><h2>How can I help?</h2>
+      <p>Ask “Is Alex available tomorrow at 3 PM?”, “When is Alex free?”, or “Schedule a project call with Alex tomorrow at 3 PM”.</p>
+      <p class="privacy">I’ll ask for an email when a name is unknown. Defaults: 30 minutes, Asia/Kolkata; slot searches use 9 AM–5 PM. Never enter credentials.</p>
+      {% if not calendar_connected %}<div class="notice">Connect Calendar in account settings first.</div>{% endif %}
+      <div role="log" aria-label="Chat conversation">
+      {% if draft and draft.data.get('messages') %}
+        {% for turn in draft.data.messages %}
+        <div class="{{ 'user-message' if turn.role == 'user' else 'assistant-message' }}"><strong>{{ 'You' if turn.role == 'user' else 'Assistant' }}</strong><p>{{ turn.text }}</p></div>
+        {% endfor %}
+      {% elif draft %}
+        {% if draft.data.get('request') %}<div class="user-message"><strong>You</strong><p>{{ draft.data.request }}</p></div>{% endif %}
+      {% endif %}
+      </div>
+      {% if not draft or (draft.status in ['draft','ready'] and not draft.data.get('attempted')) %}
+      <form method="post" action="{{ url_for('meetings.chat_message') }}" data-progress="Understanding your message and checking Calendar…">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        {% if draft %}<input type="hidden" name="version" value="{{ draft.version }}">{% endif %}
+        <label for="chat-message">Your message</label>
+        <textarea id="chat-message" name="message" rows="2" maxlength="2000" required placeholder="Is Alex free tomorrow at 3 PM?" autofocus></textarea>
+        {% if ai_ready %}<p class="privacy">Gemini interprets this chat. Email addresses are replaced with placeholders; calendar event details and credentials are never sent.</p>{% else %}<p class="notice">Set GOOGLE_API_KEY in .env and restart for conversational chat. Without it, use “Meeting name on YYYY-MM-DD with email” for basic planning.</p>{% endif %}
+        <button type="submit" {{ 'disabled' if not calendar_connected else '' }}>Send message →</button>
+      </form>
+      {% endif %}
+
+    {% if draft %}
+      {% if draft.data.get('checks') %}
+      <div class="calendar-checks"><h3>Calendar check results</h3>
+        {% for check in draft.data.checks %}
+        <p><strong>{{ 'Your calendar' if check.calendar == 'primary' else check.calendar }}</strong> — {% if check.status == 'checked' %}Checked · {{ check.busy_count }} busy block(s){% if check.get('shared_calendar') %} · Shared secondary calendar only{% endif %}{% else %}Unknown: Google did not provide availability.{% if check.get('reason') == 'not_found_or_not_shared' %} Google returned notFound. Verify this main calendar is shared with {{ user.email }} and that the attendee email is correct.{% elif check.get('reason') == 'access_denied' %} Google denied access. Verify calendar sharing with {{ user.email }}.{% else %} Retry this check; Google may be temporarily unavailable.{% endif %}{% endif %}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endif %}
+    {% if complete %}
+    {% if (not draft.data.get('intent') or draft.data.intent == 'schedule') and (not draft.data.get('selected') or request.args.get('edit') == 'yes') %}
+    <section class="workflow-section">
+      <h2>{{ meeting.title }}</h2>
+      <p>{{ meeting.duration }} minutes · {{ meeting.timezone }} · {{ meeting.date_from }}</p>
+      <p>{{ meeting.purpose }}</p><h3>Suggested agenda</h3><p class="preserve-lines">{{ meeting.agenda }}</p>
+      <p>Choose a slot below, then review and send. Want to change anything? Edit the details here.</p>
+    </section>
+    {% endif %}
+    <details id="edit" class="workflow-section" {{ 'open' if request.args.get('edit') == 'yes' else '' }}><summary>Edit meeting details</summary>
+    <section class="meeting-editor">
+      <span class="badge">01 · MEETING DETAILS</span>
+      <h2>{{ 'Your meeting draft' if draft else 'What are we planning?' }}</h2>
+      <p class="privacy">Keep passwords, API keys, encrypted credentials, and private information out of all fields.</p>
+      {% if draft and (draft.status not in ['draft','ready'] or draft.data.get('attempted')) %}
+        <div class="notice">This invitation is locked because creation was attempted or completed. Its details cannot be changed here.</div>
+        <p><a href="{{ url_for('meetings.review', draft_id=draft.id) }}">View invitation and operation status →</a></p>
+      {% else %}
+        <form method="post" action="{{ url_for('meetings.save', draft_id=draft.id) if draft else url_for('meetings.new') }}" data-progress="Saving draft…">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          {% if draft %}<input type="hidden" name="version" value="{{ draft.version }}">{% endif %}
+          {% include 'meeting_fields.html' %}
+          <button type="submit">{{ 'Save changes and refresh times' if draft else 'Save meeting draft' }} <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="privacy">Saving edits automatically refreshes available slots for meetings prepared by the assistant.</p>
+      {% endif %}
+    </section>
+    </details>
+    {% endif %}
+    {% if complete and draft.status in ['draft','ready'] and not draft.data.get('attempted') and (not draft.data.get('selected') or request.args.get('edit') == 'yes') %}
+    <section class="workflow-section">
+      <span class="badge">SUGGESTED TIMES</span><h2>{{ 'Tentative slots — incomplete availability' if draft.data.get('unknown') else 'Suggested shared slots' }}</h2>
+      <p>Search the organizer's and permitted attendees' calendars within your chosen working hours.</p>
+      <form method="post" action="{{ url_for('meetings.slots', draft_id=draft.id) }}" data-progress="Checking calendars and calculating slots…">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="version" value="{{ draft.version }}">
+        <button type="submit" {{ 'disabled' if not calendar_connected else '' }}>{{ 'Refresh suggestions' if 'slots' in draft.data else 'Retry availability search' }} <span aria-hidden="true">→</span></button>
+      </form>
+      {% if 'slots' in draft.data %}
+        {% if draft.data.unknown %}<div class="notice warning">Availability is unknown for {{ draft.data.unknown }} attendee calendar(s). Suggestions fit only calendars we could check. Google did not provide their free/busy data. Check that each invitee shared the correct calendar with your signed-in organizer account using “See only free/busy”. Retry after sharing. You must acknowledge unknown availability before sending.</div>{% endif %}
+        {% if draft.data.slots %}
+          <form method="post" action="{{ url_for('meetings.preview', draft_id=draft.id) }}" data-progress="Preparing invitation preview…">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="version" value="{{ draft.version }}">
+            <fieldset><legend>Choose a time · {{ meeting.timezone }}</legend>
+            {% for slot in draft.data.slots %}
+              <label class="slot-choice"><input type="radio" name="slot" value="{{ loop.index0 }}" required><span>{{ slot.start|meeting_time(meeting.timezone) }}<br><small>until {{ slot.end|meeting_time(meeting.timezone) }}</small></span></label>
+            {% endfor %}
+            </fieldset>
+            <button type="submit">Review invitation <span aria-hidden="true">→</span></button>
+          </form>
+        {% else %}<div class="notice">No suitable times found. Try another date range, wider working hours, or include weekends, then save and search again.</div>{% endif %}
+      {% endif %}
+      {% if draft.status == 'ready' %}<p><a href="{{ url_for('meetings.review', draft_id=draft.id) }}">Return to your saved invitation preview →</a></p>{% endif %}
+    </section>
+    {% endif %}
+    {% if draft and draft.data.get('selected') and request.args.get('edit') != 'yes' %}
+    <section id="invitation" class="workflow-section">
+      {% with writable=calendar_writable %}{% include 'invitation.html' %}{% endwith %}
+    </section>
+    {% endif %}
+
+    </section>
+  </section>
+  <form id="new-chat" method="post" action="{{ url_for('reset_meeting') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="secondary">Start a new chat</button>
+  </form>
+  <details class="account-settings"><summary>Account & Calendar connection</summary><aside>
+    <section id="account" class="card account-panel">
+      <span class="badge">YOUR ACCOUNT</span><h2>You're signed in.</h2>
+      <div class="account"><span class="avatar" aria-hidden="true">{{ user.email[0]|upper }}</span><span>{{ user.email }}</span></div>
+      {% if calendar_connected %}
+        <div class="notice"><strong>Calendar connected</strong><br>{{ 'Scheduling enabled. Every invitation still needs your approval.' if calendar_writable else 'Availability only. Invitations cannot be sent until you enable scheduling.' }}</div>
+        {% if not calendar_writable %}
+        <form method="post" action="{{ url_for('enable_scheduling') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Enable scheduling <span aria-hidden="true">↗</span></button>
+        </form>
+        <p class="privacy">Google's event permission covers viewing and editing events on calendars you own. This app uses it only for approved creations and checking its own event IDs.</p>
+        {% endif %}
+        {% if availability %}
+        <details open><summary>Your availability (diagnostic check)</summary>
+        {% for period in availability.periods %}<p><strong>Busy</strong> {{ period.start }} — {{ period.end }}</p>{% else %}<p>No busy periods were reported for your calendar.</p>{% endfor %}
+        </details>
+        {% endif %}
+        <form method="post" action="{{ url_for('disconnect_calendar') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="secondary">Disconnect Calendar locally</button></form>
+        <p class="privacy">Removes saved tokens here. Revoke Google's grant through <a href="https://myaccount.google.com/connections" rel="noopener noreferrer" target="_blank">your Google account</a>.</p>
+      {% else %}
+        <div class="notice">Connect your calendar to check availability. Titles and agendas from existing meetings are not retrieved.</div>
+        <form method="post" action="{{ url_for('connect_calendar') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Connect Google Calendar <span aria-hidden="true">↗</span></button></form>
+      {% endif %}
+      {% for operation in pending_operations %}<p><a href="{{ url_for('meetings.review', draft_id=operation) }}">Check an unresolved Calendar operation →</a></p>{% endfor %}
+      <form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="secondary">Sign out</button></form>
+    </section>
+    <p class="privacy">Chat details are cleared when you refresh or start a new chat. Calendar events already sent stay in Google Calendar. Other people's meeting titles, descriptions, and agendas are never fetched. Secret detection is conservative but cannot recognize every disguised secret.</p>
+  </aside></details>
+</main>
+<footer><span>Built for thoughtful meetings.</span><span>Private by design · You approve the invitation</span></footer>
+</body></html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meeting Assistant Flow</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header><a class="brand" href="{{ url_for('index') }}">Meeting Assistant <span>Flow</span></a><span class="step">{{ 'STEP 02 · CALENDAR' if user else 'STEP 01 · ACCOUNT' }}</span></header>
+  <main>
+    <section class="intro">
+      <p class="eyebrow">LESS BACK-AND-FORTH. BETTER MEETINGS.</p>
+      <h1>A little more focus.<br>A lot less scheduling.</h1>
+      <p class="description">A meeting assistant that will help you find a time, prepare an agenda, and review every invitation before it goes out.</p>
+      <div class="flow"><span class="active">01 &nbsp; Sign in</span><span class="{{ 'active' if user else '' }}">02 &nbsp; Calendar</span><span>03 &nbsp; Prepare</span></div>
+    </section>
+    <section class="card" aria-labelledby="account-title">
+      {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
+      {% if user %}
+        <span class="badge">ACCOUNT CONNECTED</span>
+        <h2 id="account-title">You're signed in.</h2>
+        <p>Your Google account is verified.</p>
+        <div class="account"><span class="avatar" aria-hidden="true">{{ user.email[0]|upper }}</span><span>{{ user.email }}</span></div>
+        {% if calendar_connected %}
+          <div class="notice"><strong>Calendar connected · availability only</strong><br>We can check busy/free times. Meeting titles, agendas, locations, and attendees are not retrieved. Invitations cannot be sent in this step.</div>
+          <form method="post" action="{{ url_for('check_availability') }}" class="availability-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <h3>Check my availability</h3>
+            <div class="date-fields">
+              <label>From<input type="date" name="date_from" value="{{ availability.date_from if availability else today }}" min="{{ today }}" required></label>
+              <label>Through<input type="date" name="date_to" value="{{ availability.date_to if availability else today }}" min="{{ today }}" required></label>
+            </div>
+            <label>Timezone<input name="timezone" value="{{ availability.timezone if availability else 'Asia/Kolkata' }}" maxlength="80" required></label>
+            <p class="privacy">Only your own calendar is checked here. Times are not stored or sent to Gemini.</p>
+            <button type="submit">Check busy / free times <span aria-hidden="true">→</span></button>
+          </form>
+          {% if availability %}
+            <section class="availability-result" aria-label="Availability results" aria-live="polite">
+              <h3>Your availability</h3>
+              <p class="privacy">{{ availability.timezone }} · {{ availability.date_from }} through {{ availability.date_to }}</p>
+              {% for period in availability.periods %}
+                <div class="busy-period"><strong>Busy</strong><span>{{ period.start }} — {{ period.end }}</span></div>
+              {% else %}
+                <div class="notice">No busy periods were reported for this calendar in the selected range.</div>
+              {% endfor %}
+              <p class="privacy">Unlisted times were not marked busy by this calendar. Other calendars and working hours are not checked.</p>
+            </section>
+          {% endif %}
+          <form method="post" action="{{ url_for('disconnect_calendar') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="secondary">Disconnect Calendar locally</button>
+          </form>
+          <p class="privacy">Disconnect removes saved tokens from this app. To revoke Google's permission too, visit <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener noreferrer">your Google account connections</a>.</p>
+        {% else %}
+          <div class="notice"><strong>Next: connect your calendar</strong><br>Google will ask separately for availability access. We cannot read event titles or agendas, and we cannot create invitations.</div>
+          <form method="post" action="{{ url_for('connect_calendar') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">Connect Google Calendar <span aria-hidden="true">↗</span></button>
+          </form>
+          <p class="privacy">Choose the same Google account. Tokens are stored in your operating system's credential store, never in chat, cookies, or the app database.</p>
+        {% endif %}
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="secondary" type="submit">Sign out</button>
+        </form>
+      {% else %}
+        <span class="badge">YOUR ACCOUNT, YOUR CONTROL</span>
+        <h2 id="account-title">Start with your account.</h2>
+        <p>Sign in securely on Google's website. We never ask for your password.</p>
+        {% if configured %}
+          <form method="post" action="{{ url_for('google_login') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">Continue with Google <span aria-hidden="true">↗</span></button>
+          </form>
+        {% else %}
+          <div class="notice">Google sign-in needs configuration. Follow the OAuth setup in <strong>README.md</strong>, save your credentials locally, then reload this page.</div>
+          <button type="button" disabled>Google sign-in not configured</button>
+        {% endif %}
+        <p class="privacy">Sign-in requests only your Google account identifier and verified email. Calendar access requires separate consent after sign-in.</p>
+      {% endif %}
+    </section>
+  </main>
+  <footer><span>Built for thoughtful meetings.</span><span>Private by design · Invitations need your approval</span></footer>
+</body>
+</html>

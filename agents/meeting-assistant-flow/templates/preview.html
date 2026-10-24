@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review invitation · Meeting Assistant Flow</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='progress.js') }}" defer></script>
+</head><body>
+<header><a class="brand" href="{{ url_for('index') }}">Meeting Assistant <span>Flow</span></a><span class="step">FINAL REVIEW</span></header>
+<main class="review-layout"><section class="card">
+  <span class="badge">{{ draft.status|upper }}</span>
+  {% if draft.status == 'created' %}
+    <h1>It's on the calendar.</h1><div class="notice">Google confirmed event creation and the invitation notification request. Attendees have not necessarily accepted.</div>
+    {% if draft.data.event.url %}<p><a href="{{ draft.data.event.url }}" target="_blank" rel="noopener noreferrer">Open event in Google Calendar →</a></p>{% endif %}
+  {% elif draft.status == 'cancelled' %}<h1>This event was cancelled.</h1><div class="notice">Google reports that this app's event is cancelled. It will not be recreated automatically.</div>
+  {% elif draft.status in ['unknown','creating'] %}
+    <h1>Let's check before retrying.</h1><div class="notice warning">Creation is pending or wasn't confirmed. The event may already exist. Don't start a duplicate invitation.</div>
+    <form method="post" action="{{ url_for('meetings.reconcile', draft_id=draft.id) }}" data-progress="Checking operation status…"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Check calendar operation status</button></form>
+  {% else %}<h1>Ready when you are.</h1><p>Review the exact invitation below. Nothing is sent until you approve it.</p>{% endif %}
+  <h2>{{ meeting.title }}</h2>
+  <dl class="invitation-details"><dt>When</dt><dd>{{ draft.data.selected.start|meeting_time(meeting.timezone) }} — {{ draft.data.selected.end|meeting_time(meeting.timezone) }}</dd>
+    <dt>Timezone</dt><dd>{{ meeting.timezone }}</dd><dt>Duration</dt><dd>{{ meeting.duration }} minutes</dd>
+    <dt>Invitees</dt><dd>{% for email in meeting.attendees %}<div>{{ email }}</div>{% endfor %}</dd>
+    <dt>Purpose</dt><dd class="preserve-lines">{{ meeting.purpose }}</dd><dt>Agenda</dt><dd class="preserve-lines">{{ meeting.agenda }}</dd></dl>
+  <p class="privacy">Invitees receive this title, purpose, time, and agenda. The event is private and guest-list visibility is disabled. Their existing meeting details have not been read.</p>
+  {% if draft.status == 'ready' %}
+    {% if not draft.data.get('attempted') %}<p><a href="{{ url_for('index', edit='yes') }}#edit">Edit meeting details →</a></p>{% endif %}
+    {% if draft.data.get('attempted') %}<div class="notice">This is the same locked invitation from an earlier attempt. Retrying reuses its event ID to prevent duplicates.</div>{% endif %}
+    {% if not writable %}
+      <form method="post" action="{{ url_for('enable_scheduling') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Enable scheduling with Google</button></form>
+      <p class="privacy">This requests event access on calendars you own. After consent, return to this preview and approve the invitation.</p>
+    {% else %}
+      <form method="post" action="{{ url_for('meetings.confirm', draft_id=draft.id) }}" data-progress="Rechecking availability and creating your invitation…">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="version" value="{{ draft.version }}"><input type="hidden" name="review_token" value="{{ draft.data.review_token }}">
+        {% if draft.data.unknown %}<label class="check notice warning"><input type="checkbox" name="ack_unknown" value="yes" required> Availability is unknown for {{ draft.data.unknown }} attendee calendar(s). I understand this time may not suit them.</label>{% endif %}
+        <label class="check"><input type="checkbox" name="approved" value="yes" required> I approve this exact invitation and sending it to the listed email addresses.</label>
+        <button type="submit">Create meeting and send invitations <span aria-hidden="true">→</span></button>
+      </form>
+    {% endif %}
+  {% endif %}
+  <p><a href="{{ url_for('meetings.open_draft', draft_id=draft.id) }}">← Back to your meeting</a></p>
+  <p class="privacy">Availability is rechecked before submission, but calendars can change concurrently. We cannot guarantee that outside calendar changes won't cause a conflict.</p>
+</section></main></body></html>

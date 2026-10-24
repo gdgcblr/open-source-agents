@@ -1,0 +1,18 @@
+<label>Meeting title<input name="title" value="{{ meeting.title }}" maxlength="120" placeholder="Project kickoff" required></label>
+<label>Purpose<textarea name="purpose" rows="3" maxlength="2000" placeholder="What should this meeting achieve?">{{ meeting.purpose }}</textarea></label>
+<label>Attendee email addresses<input name="attendees" value="{{ meeting.attendees|join(', ') }}" maxlength="2000" placeholder="asha@example.com, ravi@example.com" required></label>
+<p class="privacy">Availability is checked only where your Google account has permission. Inaccessible calendars are marked unknown.</p>
+<div class="date-fields">
+  <label>From<input type="date" name="date_from" value="{{ meeting.date_from }}" min="{{ today }}" required></label>
+  <label>Through<input type="date" name="date_to" value="{{ meeting.date_to }}" min="{{ today }}" required></label>
+</div>
+<div class="date-fields">
+  <label>Duration in minutes<input type="number" name="duration" value="{{ meeting.duration }}" min="15" max="180" required></label>
+  <label>Timezone<input name="timezone" value="{{ meeting.timezone }}" maxlength="80" required></label>
+</div>
+<div class="date-fields">
+  <label>Working hours start (0–23)<input type="number" name="hour_start" value="{{ meeting.hour_start }}" min="0" max="22" required></label>
+  <label>Working hours end (1–23)<input type="number" name="hour_end" value="{{ meeting.hour_end }}" min="1" max="23" required></label>
+</div>
+<label class="check"><input type="checkbox" name="include_weekends" {{ 'checked' if meeting.include_weekends else '' }}> Include Saturday and Sunday</label>
+<label>Agenda<textarea name="agenda" rows="6" maxlength="4000" placeholder="Write your agenda here, or save the draft and ask the assistant to prepare one.">{{ meeting.agenda }}</textarea></label>
