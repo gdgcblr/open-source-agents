@@ -35,8 +35,8 @@ def test_topology_agent_graph():
     assert len(graph.edges) == 1
     assert graph.edges[0].source == "processor"
     assert graph.edges[0].target == "data_bucket"
-    assert "graph LR" in graph.aws_mermaid
-    assert "graph LR" in graph.gcp_mermaid
+    assert "flowchart TD" in graph.aws_mermaid
+    assert "flowchart TD" in graph.gcp_mermaid
 
 
 def test_finops_predictor_agent():
@@ -116,3 +116,23 @@ def test_agent_three_agent_pipeline():
     assert finops.total_savings > 0
     assert "Agent 2 (GCP Refactoring Engine)" in insights
     assert "Cloud Functions 2nd Gen" in insights
+
+
+def test_google_adk_agent():
+    from migrator.adk_adapter import GoogleADKMigrationAgent
+    adk_agent = GoogleADKMigrationAgent(
+        project_id="test-adk-proj",
+        region="us-central1"
+    )
+    tools = adk_agent.get_tool_declarations()
+    assert len(tools) == 3
+    tool_names = [t.name for t in tools]
+    assert "parse_infrastructure_topology" in tool_names
+    assert "predict_finops_tco" in tool_names
+    assert "generate_gcp_terraform" in tool_names
+
+    res = adk_agent.execute_adk_pipeline("agents/aws-to-gcp-migrator/examples/aws_serverless.tf")
+    assert "resources" in res
+    assert "topology" in res
+    assert "finops" in res
+    assert "terraform" in res

@@ -1,6 +1,6 @@
 """
 Agent 1: The Topology & Dependency Graph Parser
-Maps the infrastructure dependency graph and generates visual architecture diagrams.
+Maps the infrastructure dependency graph and generates robust Mermaid architecture diagrams.
 """
 
 import re
@@ -39,15 +39,14 @@ class TopologyAgent:
                 if source_res.resource_name == target_name:
                     continue
 
-                # Pattern looking for aws_<type>.<name> or simply the resource name
                 ref_pattern = rf'(aws_[a-zA-Z0-9_]+\.{re.escape(target_name)}|{re.escape(target_name)})'
                 if re.search(ref_pattern, source_res.raw_block):
                     if (source_res.resource_name, target_name) not in edge_keys:
                         edge_keys.add((source_res.resource_name, target_name))
                         rel = self._determine_relationship(source_res.resource_type, target_res.resource_type)
                         edges.append(DependencyEdge(
-                            source=source_res.resource_name,
-                            target=target_name,
+                            source=self._clean_id(source_res.resource_name),
+                            target=self._clean_id(target_name),
                             relationship=rel
                         ))
 
@@ -61,22 +60,32 @@ class TopologyAgent:
             gcp_mermaid=gcp_mermaid
         )
 
+    def _clean_id(self, name: str) -> str:
+        return re.sub(r'[^a-zA-Z0-9_]', '_', name)
+
+    def _clean_label(self, label: str) -> str:
+        # Strip parenthesis and special characters for Mermaid compatibility
+        label = label.replace("(", "").replace(")", "").replace("<br/>", " - ").replace("<b>", "").replace("</b>", "")
+        return label.replace('"', "'")
+
     def _determine_relationship(self, src_type: str, tgt_type: str) -> str:
         if "iam" in tgt_type:
-            return "assumes_identity"
+            return "assumes"
         if "sqs" in tgt_type or "pubsub" in tgt_type:
-            return "publishes_to"
+            return "publishes"
         if "s3" in tgt_type or "storage" in tgt_type:
-            return "stores_data_in"
+            return "stores_data"
         if "db" in tgt_type or "sql" in tgt_type:
-            return "connects_to"
-        return "references"
+            return "connects"
+        return "routes"
 
     def _generate_aws_mermaid(self, resources: List[AWSResource], edges: List[DependencyEdge]) -> str:
-        lines = ["graph LR", "  subgraph AWS_Source_Architecture [AWS Infrastructure]"]
+        lines = ["flowchart TD", "  subgraph AWS_Source [AWS Cloud Architecture]"]
         for res in resources:
-            icon_label = f"{res.resource_type}<br/><b>{res.resource_name}</b>"
-            lines.append(f'    {res.resource_name}["{icon_label}"]')
+            nid = self._clean_id(res.resource_name)
+            type_name = res.resource_type.replace("aws_", "").replace("_", " ").title()
+            label = self._clean_label(f"{type_name}: {res.resource_name}")
+            lines.append(f'    {nid}["{label}"]')
         lines.append("  end")
 
         for edge in edges:
@@ -85,11 +94,13 @@ class TopologyAgent:
         return "\n".join(lines)
 
     def _generate_gcp_mermaid(self, resources: List[AWSResource], edges: List[DependencyEdge]) -> str:
-        lines = ["graph LR", "  subgraph GCP_Target_Architecture [Google Cloud Modernized Infrastructure]"]
+        lines = ["flowchart TD", "  subgraph GCP_Target [Google Cloud Modernized Architecture]"]
         for res in resources:
+            nid = f"gcp_{self._clean_id(res.resource_name)}"
             mapping = get_service_mapping(res.resource_type)
-            gcp_label = f"{mapping['gcp_service']}<br/><b>{res.resource_name}</b>"
-            lines.append(f'    gcp_{res.resource_name}["{gcp_label}"]')
+            service_name = mapping.get("gcp_service", "GCP Service")
+            label = self._clean_label(f"{service_name}: {res.resource_name}")
+            lines.append(f'    {nid}["{label}"]')
         lines.append("  end")
 
         for edge in edges:

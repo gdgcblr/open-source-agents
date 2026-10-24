@@ -474,7 +474,7 @@ resource "google_firestore_database" "{clean_name}" {{
         finops: FinOpsReport,
         llm_insights: str = ""
     ) -> str:
-        """Constructs an interactive presentation dashboard with deep-dive comparison drawers and ROI calculator."""
+        """Constructs an interactive presentation dashboard with deep-dive comparison drawers, ROI calculator, and rendered markdown."""
 
         # Build comparison cards data
         comparison_cards_html = []
@@ -499,8 +499,9 @@ resource "google_firestore_database" "{clean_name}" {{
                 </div>
                 """)
 
-        # Serialize comparisons for client-side JavaScript drawer
+        # Serialize comparisons and markdown for client-side JavaScript
         comparisons_json = json.dumps(COMPARISON_MATRIX)
+        gemini_markdown_json = json.dumps(llm_insights)
 
         # Build FinOps table rows
         table_rows = []
@@ -516,14 +517,6 @@ resource "google_firestore_database" "{clean_name}" {{
             </tr>
             """)
 
-        # Format Gemini text for clean HTML rendering
-        clean_insights = (
-            llm_insights.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\n", "<br/>")
-        )
-
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -531,7 +524,15 @@ resource "google_firestore_database" "{clean_name}" {{
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AWS to GCP Migration Command Center | GDG DevFest</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({{ startOnLoad: true, theme: 'dark' }});</script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script>
+    mermaid.initialize({{
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      flowchart: {{ useMaxWidth: true, htmlLabels: true, curve: 'basis' }}
+    }});
+  </script>
   <style>
     :root {{
       --bg: #0b0f19;
@@ -741,6 +742,17 @@ resource "google_firestore_database" "{clean_name}" {{
     @media (max-width: 900px) {{
       .diagrams-grid {{ grid-template-columns: 1fr; }}
     }}
+    .mermaid-box {{
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: auto;
+    }}
     table {{
       width: 100%;
       border-collapse: collapse;
@@ -853,14 +865,76 @@ resource "google_firestore_database" "{clean_name}" {{
       width: 100%;
       accent-color: var(--accent-green);
     }}
-    pre {{
+
+    /* Markdown Presentable Body Styling */
+    .markdown-body {{
+      color: #cbd5e1;
+      line-height: 1.7;
+      font-size: 15px;
+    }}
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 {{
+      color: #f8fafc;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }}
+    .markdown-body h1 {{
+      font-size: 22px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }}
+    .markdown-body h2 {{
+      font-size: 18px;
+      color: var(--accent);
+    }}
+    .markdown-body h3 {{
+      font-size: 16px;
+      color: #93c5fd;
+    }}
+    .markdown-body p {{
+      margin: 0 0 16px 0;
+    }}
+    .markdown-body ul, .markdown-body ol {{
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }}
+    .markdown-body li {{
+      margin-bottom: 6px;
+    }}
+    .markdown-body code {{
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }}
+    .markdown-body pre {{
       background: #090d16;
       border: 1px solid var(--border);
       padding: 16px;
       border-radius: 8px;
       overflow-x: auto;
-      font-size: 13px;
+      margin: 16px 0;
+    }}
+    .markdown-body pre code {{
+      background: transparent;
+      padding: 0;
       color: #7dd3fc;
+    }}
+    .markdown-body table {{
+      margin: 20px 0;
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }}
+    .markdown-body blockquote {{
+      border-left: 4px solid var(--accent);
+      background: rgba(66, 133, 244, 0.08);
+      margin: 16px 0;
+      padding: 12px 18px;
+      border-radius: 0 8px 8px 0;
     }}
   </style>
 </head>
@@ -921,19 +995,23 @@ resource "google_firestore_database" "{clean_name}" {{
       <div class="card">
         <div class="card-title">
           <span>Infrastructure Topology Transpilation</span>
-          <span style="font-size: 12px; color: var(--accent);">Rendered with Mermaid.js</span>
+          <span style="font-size: 12px; color: var(--accent);">Rendered dynamically with Mermaid.js</span>
         </div>
         <div class="diagrams-grid">
           <div>
             <h4 style="color: var(--text-muted); margin: 0 0 12px 0;">AWS Source Topology</h4>
-            <div class="mermaid">
+            <div class="mermaid-box">
+              <pre class="mermaid">
 {topology.aws_mermaid}
+              </pre>
             </div>
           </div>
           <div>
             <h4 style="color: var(--accent); margin: 0 0 12px 0;">Google Cloud Modernized Topology</h4>
-            <div class="mermaid">
+            <div class="mermaid-box">
+              <pre class="mermaid">
 {topology.gcp_mermaid}
+              </pre>
             </div>
           </div>
         </div>
@@ -997,9 +1075,7 @@ resource "google_firestore_database" "{clean_name}" {{
     <div id="tab-gemini" class="tab-content">
       <div class="card">
         <div class="card-title">Live Google Gemini 3.8 Flash Architectural Synthesis</div>
-        <div style="line-height: 1.7; color: #cbd5e1; font-size: 14px;">
-          {clean_insights}
-        </div>
+        <div id="gemini-content" class="markdown-body"></div>
       </div>
     </div>
   </div>
@@ -1034,12 +1110,27 @@ resource "google_firestore_database" "{clean_name}" {{
 
   <script>
     const comparisons = {comparisons_json};
+    const geminiRaw = {gemini_markdown_json};
+
+    // Render presentable markdown with marked.js
+    if (geminiRaw && document.getElementById('gemini-content')) {{
+      document.getElementById('gemini-content').innerHTML = marked.parse(geminiRaw);
+    }}
+
+    let mermaidInitialized = false;
 
     function switchTab(tabId) {{
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       event.target.classList.add('active');
+
+      if (tabId === 'tab-topology' && !mermaidInitialized) {{
+        mermaidInitialized = true;
+        setTimeout(() => {{
+          mermaid.run({{ querySelector: '.mermaid' }});
+        }}, 60);
+      }}
     }}
 
     function openDrawer(resType) {{
@@ -1063,11 +1154,9 @@ resource "google_firestore_database" "{clean_name}" {{
       const reqs = parseFloat(document.getElementById('slider-requests').value);
       document.getElementById('val-requests').innerText = reqs + 'M';
 
-      // Base costs from 10M requests
       const baseAWS = 147.50;
       const baseGCP = 79.40;
 
-      // Scaling factor: Fargate scales linearly; Cloud Run scales with concurrency
       const scaledAWS = (baseAWS * (reqs / 10)).toFixed(2);
       const scaledGCP = (baseGCP * (1 + (reqs - 10) * 0.05)).toFixed(2);
       const savings = (scaledAWS - scaledGCP).toFixed(2);
@@ -1081,4 +1170,5 @@ resource "google_firestore_database" "{clean_name}" {{
 </body>
 </html>
 """
+        return html
         return html
