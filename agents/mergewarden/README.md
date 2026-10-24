@@ -26,7 +26,7 @@ python -m mergewarden.coach serve        # newcomer coach simulator → http://1
 ```
 
 ### The Newcomer Coach in action (real conversation, in Kannada)
-Rendered from a live run of `mergewarden.coach` with Gemini on 2026-10-24. The text is exactly what the coach replied. Only the WhatsApp-style chat frame is added (the same chat runs on real WhatsApp through Twilio).
+Rendered from a live run of `mergewarden.coach` with Gemini on 2026-10-24. The text is exactly what the coach replied. Only the WhatsApp (iOS, dark) chat frame is added. The same chat runs on real WhatsApp through Twilio.
 
 | ① Onboarding and skill-matched picks | ② Mentoring, and a secret refused |
 | :---: | :---: |
