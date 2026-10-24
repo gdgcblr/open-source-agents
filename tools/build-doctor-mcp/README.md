@@ -44,6 +44,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `inspect_ci_annotations`: extract GitHub/GitLab/Azure-style error and warning annotations from CI output.
 - `inspect_api_error`: normalize common JSON API error envelopes with status, message, request ID, and retry guidance.
 - `compare_diagnoses`: compare structured results across runs without retaining or re-reading raw logs.
+- `verify_alert_signature`: verify an HMAC-signed gateway payload before alert analysis.
 - `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
 - Deterministic categories for compilation, dependencies, tests, runtime/API, configuration, permissions, network/TLS, resources, data/schema, CI/container, and concurrency/state failures.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
@@ -91,7 +92,7 @@ BuildDoctor does not poll or mutate monitoring systems. Use a provider webhook o
        summarize_diagnosis(log, project_path)
 ```
 
-The provider adapter should map vendor fields into the contract shown in [`examples/observability-alert.json`](examples/observability-alert.json). The standard fields are `event_type`, `service`, `environment`, `metric`, `value`, `threshold`, `unit`, `condition`, `timestamp`, and `correlation_id`. Vendor-specific fields may be retained in the gateway, but only sanitized evidence should be sent to BuildDoctor.
+The provider adapter should map vendor fields into the contract shown in [`examples/observability-alert.json`](examples/observability-alert.json). The standard fields are `event_type`, `service`, `environment`, `metric`, `value`, `threshold`, `unit`, `condition`, `timestamp`, and `correlation_id`. Vendor-specific fields may be retained in the gateway, but only sanitized evidence should be sent to BuildDoctor. Configure `BUILD_DOCTOR_WEBHOOK_SECRET` and call `verify_alert_signature` before `analyze_alert`; signature verification fails closed when no secret is configured.
 
 Supported event categories include latency, error rate, availability, saturation, deployment, security, certificate expiry, and queue lag. A threshold breach identifies an incident signal, not its root cause. BuildDoctor returns the next evidence to collect, such as traces, structured logs, deployment changes, dependency health, and resource saturation.
 
@@ -176,6 +177,9 @@ set BUILD_DOCTOR_ALLOWED_ROOT=C:\\Users\\you\\workspace
 | `BUILD_DOCTOR_MAX_LOG_CHARS` | No | `200000` | Maximum log characters analyzed |
 | `BUILD_DOCTOR_MAX_REPORTS` | No | `20` | Maximum XML reports inspected per project |
 | `BUILD_DOCTOR_ALLOWED_ROOT` | No | unset | If set, project paths must remain below this absolute workspace directory |
+| `BUILD_DOCTOR_REQUIRE_ALLOWED_ROOT` | No | `false` | If `true`, project inspection fails unless an allowed workspace root is configured |
+| `BUILD_DOCTOR_ALLOWED_TOOLS` | No | all | Comma-separated MCP tools to permit; unlisted tools fail closed |
+| `BUILD_DOCTOR_WEBHOOK_SECRET` | No | unset | HMAC secret for gateway alert verification; never commit it |
 
 ## How to Run
 
@@ -249,7 +253,10 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 - No shell commands or external network requests are made by the server.
 - Logs and manifest reads are bounded by `BUILD_DOCTOR_MAX_LOG_CHARS` and `BUILD_DOCTOR_MAX_FILE_BYTES`.
 - Set `BUILD_DOCTOR_ALLOWED_ROOT` to restrict inspection to a workspace directory.
+- Set `BUILD_DOCTOR_REQUIRE_ALLOWED_ROOT=true` when an ungranted workspace must always be rejected.
+- Set `BUILD_DOCTOR_ALLOWED_TOOLS` to grant only the MCP operations required by a client.
 - Symlinked manifests are skipped.
+- Webhook payloads must be HMAC-verified by the gateway before alert analysis.
 - Suggested fixes are never executed, and verification remains `pending` until the client supplies a new result.
 - Never include API keys, tokens, passwords, or private data in diagnostic logs sent to an MCP client.
 
