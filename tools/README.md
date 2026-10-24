@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [convoy-mcp](convoy-mcp/) | Control Convoy downloads and verify completed files by SHA-256 on macOS. | MCP / stdio | [@TheDynamicPunk](https://github.com/TheDynamicPunk) |
