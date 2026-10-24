@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
 import os
 import re
 from pathlib import Path
@@ -20,6 +22,7 @@ _MANIFESTS = (
 _MAX_FILE_BYTES = min(max(int(os.getenv("BUILD_DOCTOR_MAX_FILE_BYTES", "200000")), 1), 1000000)
 _MAX_LOG_CHARS = min(max(int(os.getenv("BUILD_DOCTOR_MAX_LOG_CHARS", "200000")), 1), 1000000)
 _MAX_REPORTS = min(max(int(os.getenv("BUILD_DOCTOR_MAX_REPORTS", "20")), 1), 100)
+_REQUIRE_ALLOWED_ROOT = os.getenv("BUILD_DOCTOR_REQUIRE_ALLOWED_ROOT", "false").lower() == "true"
 _SECRET_PATTERNS = (
     (re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[^\s,;]+"), r"\1[REDACTED]"),
     (re.compile(r'''(?i)(["']?(?:api[_-]?key|token|password|secret|client_secret)["']?\s*[:=]\s*["']?)[^"'\s,;}]+'''), r"\1[REDACTED]"),
@@ -318,6 +321,8 @@ def _safe_root(project_path: str) -> Path | None:
     if not root.is_dir():
         return None
     allowed = os.getenv("BUILD_DOCTOR_ALLOWED_ROOT")
+    if _REQUIRE_ALLOWED_ROOT and not allowed:
+        return None
     if allowed:
         try:
             root.relative_to(Path(allowed).expanduser().resolve())
@@ -326,9 +331,42 @@ def _safe_root(project_path: str) -> Path | None:
     return root
 
 
+def _tool_allowed(name: str) -> bool:
+    configured = os.getenv("BUILD_DOCTOR_ALLOWED_TOOLS", "").strip()
+    return not configured or name in {item.strip() for item in configured.split(",")}
+
+
+def _tool_denied(name: str) -> str:
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "error": f"tool '{name}' is disabled by BUILD_DOCTOR_ALLOWED_TOOLS",
+        "guardrails": ["The operation was denied before reading input or project files."],
+    })
+
+
+@mcp.tool()
+def verify_alert_signature(payload: str, signature: str) -> str:
+    """Verify a gateway HMAC signature before an alert is passed to analyze_alert."""
+    if not _tool_allowed("verify_alert_signature"):
+        return _tool_denied("verify_alert_signature")
+    secret = os.getenv("BUILD_DOCTOR_WEBHOOK_SECRET")
+    if not secret:
+        return json.dumps({"schema_version": SCHEMA_VERSION, "valid": False, "error": "BUILD_DOCTOR_WEBHOOK_SECRET is not configured"})
+    digest = hmac.new(secret.encode("utf-8"), (payload or "").encode("utf-8"), hashlib.sha256).hexdigest()
+    expected = f"sha256={digest}"
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "valid": hmac.compare_digest(expected, signature.strip()),
+        "algorithm": "HMAC-SHA256",
+        "guardrails": ["Signature verification only; payload was not analyzed or forwarded."],
+    })
+
+
 @mcp.tool()
 def analyze_failure(log: str) -> str:
     """Score deterministic signals in sanitized failure output and return JSON."""
+    if not _tool_allowed("analyze_failure"):
+        return _tool_denied("analyze_failure")
     return json.dumps(_diagnosis(log), indent=2)
 
 
@@ -389,6 +427,8 @@ def _alert_breached(alert: dict[str, Any]) -> bool | None:
 @mcp.tool()
 def analyze_alert(provider: str, payload: str, supporting_log: str = "") -> str:
     """Normalize an observability alert and return deterministic evidence collection guidance."""
+    if not _tool_allowed("analyze_alert"):
+        return _tool_denied("analyze_alert")
     bounded_payload, truncated = _bounded_log(payload)
     try:
         parsed = json.loads(bounded_payload)
@@ -447,6 +487,8 @@ def analyze_alert(provider: str, payload: str, supporting_log: str = "") -> str:
 @mcp.tool()
 def inspect_ci_annotations(log: str) -> str:
     """Extract provider-neutral error annotations from CI output without executing a job."""
+    if not _tool_allowed("inspect_ci_annotations"):
+        return _tool_denied("inspect_ci_annotations")
     bounded, truncated = _bounded_log(log)
     annotations: list[dict[str, Any]] = []
     patterns = (
@@ -473,6 +515,8 @@ def inspect_ci_annotations(log: str) -> str:
 @mcp.tool()
 def inspect_api_error(payload: str) -> str:
     """Normalize a sanitized JSON API error envelope into stable evidence."""
+    if not _tool_allowed("inspect_api_error"):
+        return _tool_denied("inspect_api_error")
     bounded, truncated = _bounded_log(payload)
     try:
         parsed = json.loads(bounded)
@@ -499,6 +543,8 @@ def inspect_api_error(payload: str) -> str:
 @mcp.tool()
 def compare_diagnoses(before_result: str, after_result: str) -> str:
     """Compare two structured BuildDoctor results without retaining or re-reading raw logs."""
+    if not _tool_allowed("compare_diagnoses"):
+        return _tool_denied("compare_diagnoses")
     try:
         before = json.loads(before_result)
         after = json.loads(after_result)
@@ -529,6 +575,8 @@ def compare_diagnoses(before_result: str, after_result: str) -> str:
 @mcp.tool()
 def inspect_project(project_path: str) -> str:
     """Read bounded, redacted metadata from root project manifests without executing code."""
+    if not _tool_allowed("inspect_project"):
+        return _tool_denied("inspect_project")
     root = _safe_root(project_path)
     if root is None:
         return json.dumps({"schema_version": SCHEMA_VERSION, "error": "project_path is missing, invalid, or outside BUILD_DOCTOR_ALLOWED_ROOT"})
@@ -567,6 +615,8 @@ def _integer_attribute(element: Any, name: str) -> int:
 @mcp.tool()
 def inspect_test_reports(project_path: str) -> str:
     """Parse bounded JUnit, Surefire, or pytest-style XML reports without executing tests."""
+    if not _tool_allowed("inspect_test_reports"):
+        return _tool_denied("inspect_test_reports")
     root = _safe_root(project_path)
     if root is None:
         return json.dumps({"schema_version": SCHEMA_VERSION, "error": "project_path is missing, invalid, or outside BUILD_DOCTOR_ALLOWED_ROOT"})
@@ -607,6 +657,8 @@ def inspect_test_reports(project_path: str) -> str:
 @mcp.tool()
 def summarize_diagnosis(log: str, project_path: str = "") -> str:
     """Combine scored failure analysis and optional project metadata as JSON."""
+    if not _tool_allowed("summarize_diagnosis"):
+        return _tool_denied("summarize_diagnosis")
     project = json.loads(inspect_project(project_path)) if project_path else {"schema_version": SCHEMA_VERSION, "manifests": [], "content": ""}
     reports = json.loads(inspect_test_reports(project_path)) if project_path else {"schema_version": SCHEMA_VERSION, "reports": []}
     return json.dumps({"schema_version": SCHEMA_VERSION, "diagnosis": _diagnosis(log), "project": project, "test_reports": reports}, indent=2)
@@ -615,6 +667,8 @@ def summarize_diagnosis(log: str, project_path: str = "") -> str:
 @mcp.tool()
 def verify_resolution(before_log: str, after_log: str) -> str:
     """Compare supplied before/after output without executing a command or claiming unsupported success."""
+    if not _tool_allowed("verify_resolution"):
+        return _tool_denied("verify_resolution")
     before = _diagnosis(before_log)
     after = _diagnosis(after_log)
     after_clean = _redact(after_log or "")

@@ -1,10 +1,12 @@
 import json
+import hashlib
+import hmac
 import os
 import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_alert, analyze_failure, compare_diagnoses, inspect_api_error, inspect_ci_annotations, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
+from build_doctor_mcp.server import analyze_alert, analyze_failure, compare_diagnoses, inspect_api_error, inspect_ci_annotations, inspect_project, inspect_test_reports, summarize_diagnosis, verify_alert_signature, verify_resolution
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -108,6 +110,35 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
         result = json.loads(compare_diagnoses("not-json", "{}"))
 
         self.assertIn("error", result)
+
+    def test_verifies_gateway_hmac_signature(self):
+        payload = '{"event_type":"latency"}'
+        secret = "test-secret"
+        signature = "sha256=" + hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+        previous = os.environ.get("BUILD_DOCTOR_WEBHOOK_SECRET")
+        os.environ["BUILD_DOCTOR_WEBHOOK_SECRET"] = secret
+        try:
+            result = json.loads(verify_alert_signature(payload, signature))
+        finally:
+            if previous is None:
+                os.environ.pop("BUILD_DOCTOR_WEBHOOK_SECRET", None)
+            else:
+                os.environ["BUILD_DOCTOR_WEBHOOK_SECRET"] = previous
+
+        self.assertTrue(result["valid"])
+
+    def test_tool_allowlist_denies_unapproved_operation(self):
+        previous = os.environ.get("BUILD_DOCTOR_ALLOWED_TOOLS")
+        os.environ["BUILD_DOCTOR_ALLOWED_TOOLS"] = "analyze_failure"
+        try:
+            result = json.loads(inspect_project("/tmp"))
+        finally:
+            if previous is None:
+                os.environ.pop("BUILD_DOCTOR_ALLOWED_TOOLS", None)
+            else:
+                os.environ["BUILD_DOCTOR_ALLOWED_TOOLS"] = previous
+
+        self.assertIn("disabled", result["error"])
 
     def test_parses_structured_test_report_evidence(self):
         report = """<testsuite name=\"unit\" tests=\"2\" failures=\"1\" errors=\"0\" skipped=\"0\">
