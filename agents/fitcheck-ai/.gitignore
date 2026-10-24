@@ -1,20 +1,6 @@
-# Python
 __pycache__/
 *.py[cod]
 .venv/
-venv/
 .pytest_cache/
-*.egg-info/
-
-# Secrets
 .env
-.env.*
-!.env.example
-
-# OS / editor
 .DS_Store
-.vscode/
-.idea/
-
-# ADK local artifacts
-.adk/

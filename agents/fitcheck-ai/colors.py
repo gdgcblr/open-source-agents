@@ -1,15 +1,7 @@
-"""Deterministic color science for FitCheck AI.
+"""Colour analysis: lighting correction, skin tone, palettes and outfit harmony.
 
-The LLM agents never "eyeball" raw pixels for color facts. Instead this module
-measures colors in code — after correcting for lighting and camera differences —
-and hands the agents grounded numbers to reason about.
-
-Lighting / camera handling:
-  1. Gray-world white balance (with clipped-pixel rejection) removes color casts
-     from warm bulbs, cool daylight, or phone camera tuning.
-  2. Exposure normalisation pulls median luminance toward a neutral mid-grey.
-  3. A confidence score drops when the photo is very dark, blown out, or had a
-     strong cast — and the agents are told to hedge accordingly.
+Colours are measured here rather than by the model, so the agents get
+reliable numbers to reason about.
 """
 
 from __future__ import annotations
@@ -17,15 +9,11 @@ from __future__ import annotations
 import base64
 import io
 import math
+from dataclasses import asdict, dataclass, field
 from functools import lru_cache
-from dataclasses import dataclass, field, asdict
 
 import numpy as np
 from PIL import Image, ImageOps
-
-# ---------------------------------------------------------------------------
-# Colour conversions
-# ---------------------------------------------------------------------------
 
 def hex_to_rgb(h: str) -> tuple[int, int, int]:
     h = h.strip().lstrip("#")
@@ -45,7 +33,7 @@ def _srgb_to_linear(c: np.ndarray) -> np.ndarray:
 
 
 def rgb_to_lab(rgb) -> np.ndarray:
-    """sRGB (0-255) -> CIE Lab (D65). Accepts shape (..., 3)."""
+    """sRGB (0-255) to CIE Lab (D65). Works on arrays of shape (..., 3)."""
     arr = np.asarray(rgb, dtype=np.float64)
     lin = _srgb_to_linear(arr)
     m = np.array([[0.4124564, 0.3575761, 0.1804375],
@@ -63,7 +51,7 @@ def rgb_to_lab(rgb) -> np.ndarray:
 
 @lru_cache(maxsize=65536)
 def delta_e(hex1: str, hex2: str) -> float:
-    """CIE76 colour difference (good enough for wardrobe matching)."""
+    """CIE76 colour difference."""
     l1, l2 = rgb_to_lab(hex_to_rgb(hex1)), rgb_to_lab(hex_to_rgb(hex2))
     return float(np.linalg.norm(l1 - l2))
 
@@ -95,10 +83,6 @@ def hsl_to_hex(hue: float, s: float, l: float) -> str:
     return rgb_to_hex(((r + m) * 255, (g + m) * 255, (b + m) * 255))
 
 
-# ---------------------------------------------------------------------------
-# Colour naming
-# ---------------------------------------------------------------------------
-
 NAMED_COLORS: dict[str, str] = {
     "black": "#111111", "charcoal": "#36454f", "grey": "#8e8e8e", "light grey": "#cfcfcf",
     "white": "#f7f7f5", "ivory": "#f4efe1", "cream": "#efe3c8", "beige": "#d9c4a3",
@@ -129,16 +113,12 @@ def is_neutral(hex_color: str) -> bool:
     return s < 0.15 or l < 0.12 or l > 0.93 or name in neutral_names
 
 
-# ---------------------------------------------------------------------------
-# Image loading + lighting correction
-# ---------------------------------------------------------------------------
-
 @dataclass
 class LightingReport:
-    cast: str              # e.g. "warm (yellow/orange) cast" or "neutral"
-    cast_strength: float   # 0..1
-    exposure: str          # "dark", "balanced", "bright"
-    confidence: float      # 0..1 — how much to trust colour readings
+    cast: str
+    cast_strength: float  # 0..1
+    exposure: str  # dark / balanced / bright
+    confidence: float  # 0..1
     notes: list[str] = field(default_factory=list)
 
 
@@ -167,53 +147,46 @@ def correct_lighting(img: Image.Image, exclude_skin: bool = False,
     flat = px.reshape(-1, 3)
     lum = flat @ np.array([0.2126, 0.7152, 0.0722])
 
-    # Reject clipped / near-black pixels when estimating the illuminant.
+    # Gray-world white balance, ignoring clipped and near-black pixels.
     usable = (lum > 20) & (flat.max(axis=1) < 250)
     if exclude_skin:
-        # In a selfie, skin dominates the frame; gray-world on skin would "correct"
-        # away the very warmth we're trying to measure. Estimate light from the rest.
+        # Estimate the light from the background so we don't neutralise the skin tone.
         bg = usable & ~_skin_mask(flat)
         if bg.sum() > 0.15 * len(flat):
             usable = bg
         else:
-            strength = 0.35  # mostly skin in frame → only correct gently
+            strength = 0.35
     sample = flat[usable] if usable.sum() > 200 else flat
     means = sample.mean(axis=0)
     gray = means.mean()
     gains = gray / np.maximum(means, 1e-6)
-    gains = np.clip(1 + (gains - 1) * strength, 0.6, 1.6)  # don't over-correct
+    gains = np.clip(1 + (gains - 1) * strength, 0.6, 1.6)
 
     balanced = np.clip(flat * gains, 0, 255)
 
-    # Exposure: pull median luminance toward ~118 (mid-grey in sRGB).
-    # Judged on the same reference pixels as the illuminant (the background, for
-    # selfies), so a deep skin tone isn't mistaken for an underexposed photo.
+    # Only fix exposure when the photo is clearly too dark or too bright.
     ref = balanced[usable] if usable.sum() > 200 else balanced
     med = float(np.median(ref @ np.array([0.2126, 0.7152, 0.0722])))
-    # Only touch exposure when the shot is clearly mis-exposed — otherwise we'd
-    # erase real differences in skin depth / garment lightness.
     if med < 90:
         exp_gain = float(np.clip(118 / max(med, 1), 1.0, 1.8))
     elif med > 185:
         exp_gain = float(np.clip(160 / med, 0.7, 1.0))
     else:
         exp_gain = 1.0
-    # ...but never push the bright subject (face, light garments) into clipping.
     p98 = float(np.percentile(balanced.max(axis=1), 98))
     exp_gain = min(exp_gain, max(1.0, 245 / max(p98, 1)))
     corrected = np.clip(balanced * exp_gain, 0, 255).reshape(px.shape)
 
-    # Describe what we corrected.
     r, g, b = means / max(gray, 1e-6)
     cast_strength = float(min(1.0, (abs(r - b) + abs(g - (r + b) / 2)) / 0.6))
     if cast_strength < 0.12:
         cast = "neutral"
     elif r > b and g >= b:
-        cast = "warm (yellow/orange) cast — likely indoor bulb light"
+        cast = "warm cast (indoor bulb light)"
     elif b > r:
-        cast = "cool (blue) cast — likely shade, overcast or LED light"
+        cast = "cool cast (shade or LED light)"
     elif g > max(r, b):
-        cast = "green tint — likely fluorescent light"
+        cast = "green tint (fluorescent light)"
     else:
         cast = "magenta tint"
 
@@ -228,20 +201,16 @@ def correct_lighting(img: Image.Image, exclude_skin: bool = False,
     if exposure == "bright" or clipped > 0.15:
         confidence -= 0.25
         notes.append("Highlights are blown out; pale colours may be lost.")
-    confidence -= 0.5 * cast_strength  # the stronger the cast, the less certain the fix
+    confidence -= 0.5 * cast_strength
     if cast_strength > 0.5:
         notes.append("Strong colour cast was corrected; true colours may differ slightly.")
     if cast != "neutral":
         notes.append(f"Detected {cast}; white balance was auto-corrected.")
-    notes.append("For best accuracy: daylight near a window, no flash, no beauty filters.")
+    notes.append("Best results: daylight near a window, no flash or filters.")
 
     return corrected, LightingReport(cast, round(cast_strength, 2), exposure,
                                      round(max(0.2, confidence), 2), notes)
 
-
-# ---------------------------------------------------------------------------
-# Dominant colours (tiny k-means, no sklearn needed)
-# ---------------------------------------------------------------------------
 
 def dominant_colors(pixels: np.ndarray, k: int = 5, seed: int = 7) -> list[dict]:
     flat = pixels.reshape(-1, 3)
@@ -266,7 +235,6 @@ def dominant_colors(pixels: np.ndarray, k: int = 5, seed: int = 7) -> list[dict]
             continue
         hx = rgb_to_hex(flat[mask].mean(0))
         out.append({"hex": hx, "name": name_color(hx), "share": round(float(mask.mean()), 3)})
-    # merge clusters that got the same name
     merged: dict[str, dict] = {}
     for c in sorted(out, key=lambda c: -c["share"]):
         if c["name"] in merged:
@@ -282,17 +250,13 @@ def center_crop(px: np.ndarray, frac: float = 0.7) -> np.ndarray:
     return px[dh:h - dh, dw:w - dw]
 
 
-# ---------------------------------------------------------------------------
-# Selfie -> undertone / depth / contrast
-# ---------------------------------------------------------------------------
-
 @dataclass
 class SkinReport:
     skin_hex: str | None
-    undertone: str        # warm / cool / neutral / unknown
-    depth: str            # light / medium / deep / unknown
-    contrast: str         # low / medium / high / unknown
-    season: str           # Spring / Summer / Autumn / Winter / unknown
+    undertone: str  # warm / cool / neutral
+    depth: str  # light / medium / deep
+    contrast: str  # low / medium / high
+    season: str  # Spring / Summer / Autumn / Winter
     skin_pixel_share: float
 
 
@@ -309,7 +273,7 @@ def analyze_skin(px: np.ndarray) -> SkinReport:
     undertone = "warm" if hue > 58 else "cool" if hue < 47 else "neutral"
     depth = "light" if L > 68 else "medium" if L > 48 else "deep"
 
-    # Contrast: skin vs the darkest features in frame (hair, brows, eyes).
+    # Contrast between skin and the darkest features (hair, brows, eyes).
     all_L = rgb_to_lab(flat)[:, 0]
     dark_L = float(np.percentile(all_L, 8))
     gap = L - dark_L
@@ -317,18 +281,12 @@ def analyze_skin(px: np.ndarray) -> SkinReport:
 
     warmish = undertone in ("warm", "neutral") and hue >= 52
     if warmish:
-        # light & bright → Spring; deep or muted → Autumn
         season = "Spring" if depth == "light" or (depth == "medium" and contrast == "high") else "Autumn"
     else:
-        # deep or high-contrast → Winter; soft & light → Summer
         season = "Winter" if contrast == "high" or depth == "deep" else "Summer"
 
     return SkinReport(rgb_to_hex(skin), undertone, depth, contrast, season, round(share, 3))
 
-
-# ---------------------------------------------------------------------------
-# Palettes
-# ---------------------------------------------------------------------------
 
 SEASON_PALETTES: dict[str, list[str]] = {
     "Spring": ["#f6b896", "#ee7c6b", "#f2d22e", "#2fc2b8", "#9caf88", "#c19a6b", "#f4efe1", "#2b4fbf"],
@@ -339,14 +297,14 @@ SEASON_PALETTES: dict[str, list[str]] = {
 
 
 def palette_from_liked(liked: list[str]) -> list[str]:
-    """No selfie? Build a harmonious palette around colours the user loves."""
+    """Build a palette around the user's favourite colours (used when there's no selfie)."""
     palette: list[str] = []
     for hx in liked[:3]:
         h, s, l = hex_to_hsl(hx)
         palette += [hx,
-                    hsl_to_hex(h + 30, s * 0.85, min(0.85, l + 0.1)),   # analogous, lighter
-                    hsl_to_hex(h + 180, s * 0.7, l)]                     # complementary accent
-    palette += ["#f4efe1", "#1f2a44"]  # anchor neutrals
+                    hsl_to_hex(h + 30, s * 0.85, min(0.85, l + 0.1)),  # analogous
+                    hsl_to_hex(h + 180, s * 0.7, l)]  # complementary
+    palette += ["#f4efe1", "#1f2a44"]
     seen, uniq = set(), []
     for p in palette:
         n = name_color(p)
@@ -369,26 +327,22 @@ def build_palette(skin: SkinReport | None, liked: list[str]) -> dict:
                               "closest_palette_color": name_color(closest)})
             if fits and name_color(hx) not in {name_color(p) for p in palette}:
                 palette.append(hx)
-        source = f"{skin.season} palette from selfie (+ your favourites that suit you)"
+        source = f"{skin.season} palette from your selfie"
     elif liked:
         palette = palette_from_liked(liked)
         liked_fit = [{"hex": h, "name": name_color(h), "fits_palette": True,
                       "closest_palette_color": name_color(h)} for h in liked]
-        source = "harmony rules built around the colours you love"
+        source = "built around your favourite colours"
     else:
         palette = ["#f4efe1", "#1f2a44", "#c19a6b", "#9caf88", "#a6788c", "#4f6d8f"]
         liked_fit = []
-        source = "versatile default palette (add a selfie or favourite colours to personalise)"
+        source = "default palette (add a selfie or favourite colours to personalise it)"
     return {
         "source": source,
         "colors": [{"hex": p, "name": name_color(p)} for p in palette],
         "liked_colors": liked_fit,
     }
 
-
-# ---------------------------------------------------------------------------
-# Outfit colour harmony
-# ---------------------------------------------------------------------------
 
 def harmony_report(hexes: list[str]) -> dict:
     """Classify the colour relationship of an outfit's key colours."""
@@ -424,23 +378,19 @@ def _harmony(hexes: tuple[str, ...]) -> tuple:
         elif len(accents) >= 3 and all(100 <= d <= 140 or d >= 200 for d in diffs):
             scheme, score = "triadic", 6.5
         else:
-            scheme, score = "mixed / potentially clashing", 5.0
+            scheme, score = "mixed", 5.0
         if len(accents) >= 4:
             score -= 1.5
     return (("scheme", scheme), ("value_contrast", contrast), ("accent_count", len(accents)),
             ("rule_based_harmony_score", round(max(1.0, min(10.0, score)), 1)))
 
 
-# ---------------------------------------------------------------------------
-# Public entry points
-# ---------------------------------------------------------------------------
-
 def analyze_selfie(data: bytes | str) -> dict:
     img = decode_image(data)
     px, lighting = correct_lighting(img, exclude_skin=True)
     skin = analyze_skin(center_crop(px, 0.8))
     if skin.skin_hex is None:
-        lighting.notes.append("Couldn't find enough skin in the selfie — using your favourite colours instead.")
+        lighting.notes.append("Couldn't detect skin in the selfie, so the palette uses your favourite colours.")
         lighting.confidence = min(lighting.confidence, 0.3)
     return {"lighting": asdict(lighting), "skin": asdict(skin)}
 
