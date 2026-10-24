@@ -93,18 +93,7 @@
 
 ## Installation & Setup
 
-### Option A — Install from PyPI (recommended)
 
-```bash
-# Core CLI only (policy enforcement, no AI features):
-pip install devguard
-
-# With AI features (commit messages, PR descriptions, diagnosis):
-pip install "devguard[ai]"
-
-# Everything:
-pip install "devguard[all]"
-```
 
 After installation the `devguard` command is available globally.
 You can also invoke it as a Python module:
@@ -316,26 +305,7 @@ The 80-test suite covers:
 
 ---
 
-## Building & Publishing (Maintainers)
 
-```bash
-# Install build tools
-pip install build twine
-
-# Build source distribution and wheel
-python -m build
-
-# Check the distribution for PyPI compliance
-twine check dist/*
-
-# Upload to TestPyPI first (recommended)
-twine upload --repository testpypi dist/*
-
-# Upload to PyPI
-twine upload dist/*
-```
-
-> **Note:** Set `TWINE_USERNAME=__token__` and `TWINE_PASSWORD=<your-api-token>` or use a `~/.pypirc` file.
 
 ---
 
