@@ -1,0 +1,119 @@
+# A complete, runnable autodemo scene file for the bundled Taskbench demo app.
+#
+#   npx serve examples/todo-app -l 5173     # or any static server
+#   autodemo render --config examples/todo-app/autodemo.config.yaml
+#
+# voice.engine is `none` so this renders identically on CI and on a laptop
+# with no TTS installed: each scene gets a silent clip sized to its narration
+# text, so the pacing is real even though the audio is silent. Switch it to
+# `edge-tts` for an actually-voiced video.
+
+app:
+  url: http://localhost:5173/
+  viewport: { width: 1280, height: 720 }
+  chromePath: auto
+  waitForSelector: "#root"
+
+voice:
+  engine: none
+  voice: en-US-AriaNeural
+  rate: "+0%"
+  tailMs: 500
+
+theme:
+  accent: "#7dd3fc"
+  font: "Inter, Segoe UI, system-ui, sans-serif"
+  position: bottom
+  eyebrow: "Taskbench"
+
+output:
+  dir: ./out
+  file: taskbench-demo.mp4
+  crf: 23
+  thumbnail: true
+
+outro:
+  title: "That's Taskbench"
+  subtitle: "Rendered by autodemo"
+  holdMs: 2500
+
+scenes:
+  - id: intro
+    layout: title
+    title: "Taskbench"
+    subtitle: "Sprint tracking without the ceremony"
+    narration: >-
+      This is Taskbench, a small task tracker. In the next minute I will walk
+      through adding work, completing it, and reading the throughput report.
+    steps: []
+
+  - id: tasks
+    layout: caption
+    title: "The task list"
+    subtitle: "Open work, owners, and tags"
+    narration: >-
+      The task list opens on everything in flight. The three counters at the
+      top track what is open, what is finished, and the completion rate across
+      the sprint.
+    steps:
+      - { do: waitForText, text: "Everything in flight" }
+      - { do: wait, ms: 900 }
+      - { do: scrollPanel, selector: "#list-scroll", to: bottom }
+      - { do: wait, ms: 900 }
+      - { do: scrollPanel, selector: "#list-scroll", to: top }
+
+  - id: add_task
+    layout: caption
+    title: "Adding work"
+    subtitle: "Type it, press Enter, it is tracked"
+    narration: >-
+      Adding work is one field and one key press. The new task lands at the
+      bottom of the list and the open counter moves immediately.
+    steps:
+      - { do: click, selector: "#new-task" }
+      - { do: type, text: "Ship the demo video", delay: 60 }
+      - { do: press, key: "Enter" }
+      - { do: wait, ms: 1200 }
+      - { do: scrollPanel, selector: "#list-scroll", to: bottom }
+      - { do: wait, ms: 800 }
+
+  - id: complete
+    layout: caption
+    title: "Completing a task"
+    subtitle: "The counters update live"
+    narration: >-
+      Ticking a task off strikes it through and recalculates the completion
+      rate on the spot, so the header always reflects the real state.
+    steps:
+      - { do: click, role: checkbox, name: "Complete Draft the Q3 roadmap" }
+      - { do: wait, ms: 1000 }
+      - { do: click, role: checkbox, name: "Complete Write release notes for 2.4" }
+      - { do: wait, ms: 1200 }
+
+  - id: reports
+    layout: caption
+    title: "Throughput report"
+    subtitle: "Four weeks of shipped work"
+    narration: >-
+      The reports tab charts throughput over the last four weeks. Fifty four
+      tasks shipped this month, trending up every week.
+    steps:
+      - { do: navClick, name: "Reports" }
+      - { do: waitForText, text: "Total shipped this month" }
+      - { do: wait, ms: 1800 }
+
+  - id: settings
+    layout: caption
+    title: "Settings"
+    subtitle: "Switches, toggled by accessible name"
+    narration: >-
+      Settings are plain switches. Autodemo drives them by their accessible
+      name, so the script keeps working after a restyle.
+    steps:
+      - { do: navClick, name: "Settings" }
+      - { do: wait, ms: 700 }
+      - { do: toggle, name: "Group tasks by project" }
+      - { do: wait, ms: 700 }
+      - { do: toggle, name: "Email me a weekly digest" }
+      - { do: wait, ms: 900 }
+      - { do: screenshot, name: "settings" }
