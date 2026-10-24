@@ -70,6 +70,44 @@ Every offer carries a provenance label — `offline-demo-catalog` (bundled stati
 
 ---
 
+## Demo catalog (the Phase-1 data source)
+
+The bundled **offline demo catalog** is what powers the agent by default — it is deterministic, works entirely offline, and is always available regardless of network or external services. It exists so the full comparison workflow (identify → serviceability → offers → ranking → approval gate) can be demonstrated and tested with zero setup, while staying clearly labeled as demo data.
+
+**Source of truth:** `internal/retailers/catalog.go` (products + per-retailer prices/fees) and `internal/retailers/offer.go` (serviceability zones + ETAs).
+
+### What's in it
+
+- **10 common Indian quick-commerce products**, each with a brand, variant, quantity, category, search keywords and aliases (e.g. "maggi", "namak", "amul taaza"), so free-text queries resolve deterministically:
+  Amul Taaza Milk 1L · Britannia Whole Wheat Bread 400g · Maggi Noodles 420g · Coca-Cola 750ml · Lay's Magic Masala 73g · Tata Salt 1kg · Aashirvaad Atta 5kg · Nescafe Classic 50g · Amul Butter 500g · Fresh Onion 1kg.
+- **Per-retailer offer for every product** across all four retailers — Swiggy Instamart, Blinkit, Zepto, and Amazon India (Amazon is *only* ever served from this catalog) — with realistic integer-paise price, MRP, delivery/platform/handling/small-cart fees, taxes, discount, ETA, stock and a product/checkout URL.
+- **Membership-aware fees**: delivery fees are modeled per retailer and speed tier so Amazon Prime / Instamart One / Blinkit / Zepto passes can waive them during ranking.
+
+### Serviceability & delivery zones (demo)
+
+Serviceability is resolved per PIN code from demo zone knowledge:
+
+- **Quick-commerce (Instamart/Blinkit/Zepto)** — serviceable only in known metro dark-store areas (matched by PIN **prefix**: Delhi 11, Mumbai 40, Bengaluru 56, Chennai 60, Hyderabad 50, Pune 41, Kolkata 70, Ahmedabad 38, NCR/Noida 12/20). ETAs are realistic: Instamart 12 min, Blinkit 10 min, Zepto 16 min. Other PINs → not serviceable, stated plainly.
+- **Amazon India** — broader coverage (many more prefixes), next-day (~1440 min) in fast zones and up to 3 days (4320 min) for remote zones.
+
+### Provenance & limits
+
+- Every offer it returns is labeled **`offline-demo-catalog`** and timestamped at call time; the agent must present this label per retailer.
+- Prices/fees are **static, realistic-but-demo values** — *never* presented as live prices, and never silently substituted for real data.
+- When a live adapter (qbuys) is enabled, the catalog is the deterministic fallback: if the live source is unreachable or has no data for a retailer, that retailer's demo offer is used and a warning is recorded.
+
+### If the URL or product is wrong / unrecognized
+
+The agent never guesses or silently invents a match. `identify_product` handles each failure explicitly:
+
+- **Unparseable or unsafe URL** (malformed, or a look-alike/non-allowlisted domain like `swiggy-deals.evil.example`): ignored as a source — no platform hint, no fetch. The agent falls back to your free-text description, or asks you to clarify.
+- **Valid retailer URL, but the product isn't one it knows** (Phase 1 = the demo catalog only): returns `found=false`, `match_confidence=0`, and a note like *"The URL looks like instamart, but live page-title scraping is out of scope, so the product could not be resolved."* It does **not** pretend to know the product.
+- **Free-text product with no catalog match** (e.g. "organic quinoa pasta"): `found=false` with *"No match in the offline demo catalog."* The agent says so and asks for a clearer description or a supported product.
+- Either way, workflow: the agent tells you it couldn't identify the item and asks for a better description **rather than fabricating offers**. If a qbuys live adapter is enabled you may proceed via `get_offers` on the raw text, clearly caveated that the product itself wasn't identified.
+- **Partial/junk inputs** (empty product, non-6-digit PIN): rejected with a clear error from the tool; the agent asks you to correct it.
+
+---
+
 ## Prerequisites
 
 - Go 1.26+ (`go version`)
