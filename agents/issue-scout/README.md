@@ -107,6 +107,7 @@ Every verdict comes from deterministic code and links to its evidence. Gemini su
 | `GITHUB_TOKEN` | No | *None* | Raises GitHub's limit to 5,000 requests per hour and lets each `find` check 25 issues instead of 10. A fine-grained token with no extra permissions is enough. |
 | `GOOGLE_API_KEY` | Only for Gemini features | *None* | Gemini API key for `brief` summaries, `adk web` and `adk run`. `GEMINI_API_KEY` is also accepted. |
 | `ISSUE_SCOUT_MODEL` | No | `gemini-3.5-flash` | Gemini model used by both ADK agents. |
+| `ISSUE_SCOUT_FALLBACK_MODELS` | No | `gemini-3.8-flash,gemini-3.5-flash-lite` | Comma-separated models the `brief` command tries, in order, when the main model is overloaded or rate-limited (HTTP 429/5xx). |
 
 The CLI and the ADK entry point both read `agents/issue-scout/.env`. Real environment variables take precedence.
 
@@ -253,7 +254,54 @@ From [the contributing guide](https://github.com/brekkylab/backlot/blob/main/CON
 _Note: Gemini brief skipped: set GOOGLE_API_KEY to add a summary and plan._
 ```
 
-With `GOOGLE_API_KEY` set, the brief adds Gemini sections (Summary, Suggested approach, Questions worth asking first, Risks). These are produced by the ADK `brief_writer` agent and validated against the `StarterBrief` schema.
+### Starter brief with Gemini
+With `GOOGLE_API_KEY` set, the same command runs the ADK `brief_writer` agent. Its output is validated against the `StarterBrief` schema, and these sections are added above the facts (excerpt, same issue):
+```
+### Summary (gemini-3.5-flash)
+Backlot's Confluence emulator uses standard HTML escaping on body representations, escaping single quotes as &#x27; and leaving named entity characters as unescaped literals. Real Confluence Cloud leaves single quotes unescaped across view and storage formats and encodes HTML4 named characters (except U+0160 and U+0161) as entity references in storage mode.
+
+### Suggested approach (Gemini, verify before coding)
+1. Locate where Confluence body representations (_storage, _view, _export_view) are constructed in the Confluence mock handlers.
+2. Replace standard html.escape with a custom helper function for Confluence body representations.
+3. For storage bodies, map non-ASCII characters present in Python's html.entities.codepoint2name to their named entities (excluding U+0160 and U+0161), and leave single quotes (') unescaped.
+4. For view and export_view bodies, ensure only &, <, >, and " are escaped while keeping single quotes (') as literal characters.
+5. Add reproduction unit tests over the HTTP endpoint verifying storage, view, and export_view output against expected entity encodings.
+6. Run pytest and ruff check . to verify tests pass and code style guidelines are met.
+
+### Questions worth asking first
+- Should the custom HTML4 entity escaping logic for Confluence be isolated to a helper within the Confluence provider or added as a general utility in Backlot?
+
+### Risks
+- Care must be taken to only convert raw text characters to HTML4 entity references without double-escaping existing markup tags or standard HTML entities like &quot;.
+```
+
+### Chatting with the ADK agent
+A real two-turn session with `root_agent` (the agent behind `adk web adk_agents`). Gemini picks the tools itself. Tool calls are shown in brackets, and the replies are trimmed:
+```
+>>> USER: I know Python and have about 3 hours tonight. Find me 3 issues I can actually work on.
+[tool call] find_issues({'languages': ['python'], 'hours': 3, 'limit': 3})
+<<< AGENT:
+Here are 3 open Python issues matched to your 3-hour window.
+*(Filtered out **4 dead ends**: 2 already had open PRs and 2 had merged PRs.)*
+
+### 1. [brekkylab/backlot#988](https://github.com/brekkylab/backlot/issues/988)
+* **Verdict:** Ready
+* **Score:** 90/100
+* **Estimated Effort:** Medium *(heuristic)*
+* **Why it's a good pick:** High outside PR merge rate (92% merged, ~0.6 days turnaround), labelled for newcomers, detailed description, and no competing claims or PRs.
+[... picks 2 and 3 trimmed ...]
+
+>>> USER: Make me a plan for the first one.
+[tool call] starter_brief_facts({'hours': 3, 'issue': 'brekkylab/backlot#988'})
+<<< AGENT:
+### 3. Prior Work to Review
+* Check issue **#983** (*"confluence: a character past U+FFFF in a title..."*), as #988 was discovered while measuring behavior for it.
+
+### 4. House Rules & Setup Commands
+* **Running Tests:** pytest   # or for detailed summary: pytest -rs
+* **Linting & Code Style:** ruff check . && ruff format --check .
+[... goal, files, setup and questions trimmed ...]
+```
 
 ---
 
@@ -263,8 +311,8 @@ With `GOOGLE_API_KEY` set, the brief adds Gemini sections (Summary, Suggested ap
 pytest
 ```
 
-- 65 offline tests: no network, no API keys. GitHub is replaced by a fake client.
-- Covered: claim, "already fixed" and maintainer-policy detection; timeline and PR parsing; repo merge statistics; scoring and verdicts; related-issue search; CONTRIBUTING parsing; likely-file ranking; the full `find` pipeline including rate-limit fallbacks; the CLI; and the tool layer.
+- 71 offline tests: no network, no API keys. GitHub is replaced by a fake client.
+- Covered: claim, "already fixed" and maintainer-policy detection; timeline and PR parsing; repo merge statistics; scoring and verdicts; related-issue search; CONTRIBUTING parsing; likely-file ranking; the full `find` pipeline including rate-limit fallbacks; the GitHub client (search pacing, secondary-rate-limit retries, error messages); the CLI; and the tool layer.
 - `tests/test_adk_agent.py` drives the **real ADK runner** with a scripted model. It checks three things:
   - `root_agent` calls Issue Scout's tools and receives their results.
   - Gemini briefs are validated against `StarterBrief`.
@@ -278,6 +326,8 @@ pytest
 
 - **Heuristics, not certainty**: claim and "already fixed" detection uses English phrase patterns. It misses some wordings and occasionally misreads a comment, which is why each flag links to the comment so you can judge. Effort estimates are rough guesses from labels and description length.
 - **Rate limits**: without `GITHUB_TOKEN`, GitHub allows 60 requests per hour. One `find` uses about 20 and one `brief` about 10. The tool checks fewer issues when unauthenticated and returns partial results with a note if the limit is hit. Search is limited to 10 queries per minute unauthenticated (30 with a token).
+- **GitHub's secondary rate limit**: many searches in a short burst (for example several `find` and `brief` runs back to back) can trigger GitHub's abuse protection, even with a token. Issue Scout spaces searches at least 1 s apart and retries twice, after 5 s and 15 s (or after `Retry-After`). If the limit persists, it says so plainly; wait a few minutes.
+- **Gemini availability**: popular models sometimes return 503 "high demand". `brief` falls back through `ISSUE_SCOUT_FALLBACK_MODELS` and, if every model fails, still prints the facts-only brief. The `adk web` chat uses the main model only.
 - **Sampling**: merge statistics use the 50 most recently updated closed PRs, and fewer than 3 outside PRs is treated as "not enough data". Bots and core-team PRs are excluded by GitHub's `author_association`.
 - **GitHub only**: GitLab, Codeberg and other forges are not supported.
 - **Large repos**: likely-file suggestions use the git tree API, which GitHub truncates for very large repositories, so suggestions may be incomplete there.

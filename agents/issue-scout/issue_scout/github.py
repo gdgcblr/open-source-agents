@@ -32,13 +32,29 @@ class RateLimitError(GitHubError):
     """Raised when the GitHub rate limit is exhausted."""
 
 
+class SecondaryRateLimitError(RateLimitError):
+    """GitHub's abuse protection: too many requests in a short burst, even with a token."""
+
+    def __init__(self, message: str, status: int = 0, retry_after: Optional[float] = None):
+        super().__init__(message, status)
+        self.retry_after = retry_after
+
+
+SEARCH_INTERVAL = 1.0  # seconds between search calls; bursts trip GitHub's secondary limit
+SECONDARY_BACKOFF = (5.0, 15.0)  # waits before each retry after a secondary limit
+MAX_RETRY_AFTER = 30.0
+
+
 class GitHubClient:
-    def __init__(self, token: Optional[str] = None, timeout: float = 20.0):
+    def __init__(self, token: Optional[str] = None, timeout: float = 20.0, sleep=time.sleep):
         self.token = token if token is not None else os.environ.get("GITHUB_TOKEN") or None
         self.timeout = timeout
         self.requests_made = 0
         self._cache: Dict[str, Any] = {}
         self._lock = threading.Lock()
+        self._search_lock = threading.Lock()
+        self._last_search: Optional[float] = None
+        self._sleep = sleep
 
     @property
     def authenticated(self) -> bool:
@@ -60,18 +76,37 @@ class GitHubClient:
             headers["Authorization"] = "Bearer " + self.token
 
         request = urllib.request.Request(url, headers=headers)
-        with self._lock:
-            self.requests_made += 1
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                data = json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            raise _to_error(exc) from None
-        except urllib.error.URLError as exc:
-            raise GitHubError("Could not reach GitHub: %s" % exc.reason) from None
+        is_search = url.startswith(API_ROOT + "/search/")
+        for attempt in range(len(SECONDARY_BACKOFF) + 1):
+            if is_search:
+                self._pace_search()
+            with self._lock:
+                self.requests_made += 1
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                    data = json.loads(response.read().decode("utf-8"))
+                break
+            except urllib.error.HTTPError as exc:
+                error = _to_error(exc, self.authenticated)
+                if not isinstance(error, SecondaryRateLimitError) or attempt == len(SECONDARY_BACKOFF):
+                    raise error from None
+                wait = SECONDARY_BACKOFF[attempt]
+                if error.retry_after is not None and error.retry_after <= MAX_RETRY_AFTER:
+                    wait = max(wait, error.retry_after)
+                self._sleep(wait)
+            except urllib.error.URLError as exc:
+                raise GitHubError("Could not reach GitHub: %s" % exc.reason) from None
 
         self._cache[url] = data
         return data
+
+    def _pace_search(self) -> None:
+        with self._search_lock:
+            if self._last_search is not None:
+                wait = self._last_search + SEARCH_INTERVAL - time.monotonic()
+                if wait > 0:
+                    self._sleep(wait)
+            self._last_search = time.monotonic()
 
     # --- Endpoints -----------------------------------------------------------
 
@@ -113,20 +148,27 @@ class GitHubClient:
         return self.get("/users/%s/repos" % urllib.parse.quote(user), params)
 
 
-def _to_error(exc: urllib.error.HTTPError) -> GitHubError:
+def _to_error(exc: urllib.error.HTTPError, authenticated: bool = False) -> GitHubError:
     try:
         message = json.loads(exc.read().decode("utf-8")).get("message", "")
     except Exception:
         message = ""
+    if exc.code in (403, 429) and "secondary rate limit" in message.lower():
+        retry_after = exc.headers.get("Retry-After")
+        return SecondaryRateLimitError(
+            "GitHub's abuse protection (secondary rate limit) paused requests after a burst of searches. "
+            "Wait a few minutes and try again.",
+            exc.code,
+            float(retry_after) if retry_after and retry_after.isdigit() else None,
+        )
     remaining = exc.headers.get("X-RateLimit-Remaining")
     if exc.code in (403, 429) and (remaining == "0" or "rate limit" in message.lower()):
         reset = exc.headers.get("X-RateLimit-Reset")
         wait = ""
         if reset and reset.isdigit():
             wait = " Resets in about %d min." % max(1, (int(reset) - int(time.time())) // 60 + 1)
-        return RateLimitError(
-            "GitHub rate limit reached.%s Set GITHUB_TOKEN to raise the limit." % wait, exc.code
-        )
+        advice = "" if authenticated else " Set GITHUB_TOKEN to raise the limit."
+        return RateLimitError("GitHub rate limit reached.%s%s" % (wait, advice), exc.code)
     return GitHubError("GitHub API error %d: %s" % (exc.code, message or exc.reason), exc.code)
 
 

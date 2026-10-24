@@ -21,6 +21,11 @@ from pydantic import BaseModel, Field
 from .tools import ALL_TOOLS
 
 MODEL = os.environ.get("ISSUE_SCOUT_MODEL", "gemini-3.5-flash")
+# Tried in order when the main model is overloaded or rate-limited (HTTP 429/5xx).
+FALLBACK_MODELS = [
+    name.strip() for name in os.environ.get("ISSUE_SCOUT_FALLBACK_MODELS", "gemini-3.8-flash,gemini-3.5-flash-lite").split(",") if name.strip()
+]
+TRANSIENT_STATUS = {429, 500, 503, 504}
 
 if not os.environ.get("GOOGLE_API_KEY") and os.environ.get("GEMINI_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = os.environ["GEMINI_API_KEY"]
@@ -50,8 +55,8 @@ Rules:
 - Only state facts that a tool returned. Effort estimates and file suggestions are heuristics;
   say so. Never claim an issue is free without having called a tool on it.
 - Always include the evidence link when you warn about a claim, a PR or an "already fixed" comment.
-- If a tool returns an "error" (for example a GitHub rate limit), explain it plainly and suggest
-  setting GITHUB_TOKEN.
+- If a tool returns an "error" (for example a GitHub rate limit), relay its message plainly and
+  offer to retry. Do not fill the gap with guesses: no invented file paths, commands or rules.
 - Keep answers short and skimmable.
 """ + "\n" + UNTRUSTED_NOTE
 
@@ -100,8 +105,35 @@ brief_writer = LlmAgent(
 )
 
 
+def is_transient(exc: BaseException) -> bool:
+    """True for overload / rate-limit errors worth retrying on another model."""
+    seen = 0
+    while exc is not None and seen < 5:
+        if getattr(exc, "code", None) in TRANSIENT_STATUS:
+            return True
+        exc = exc.__cause__ or exc.__context__
+        seen += 1
+    return False
+
+
 async def _write_brief_async(facts: Dict[str, Any], agent: Optional[LlmAgent] = None) -> Dict[str, Any]:
-    runner = InMemoryRunner(agent=agent or brief_writer, app_name="issue_scout_brief")
+    if agent is not None:
+        return await _run_brief(facts, agent)
+    models = [MODEL] + [name for name in FALLBACK_MODELS if name != MODEL]
+    for index, model in enumerate(models):
+        try:
+            brief = await _run_brief(facts, brief_writer.model_copy(update={"model": model}))
+        except Exception as exc:
+            if index == len(models) - 1 or not is_transient(exc):
+                raise
+            continue
+        brief["model"] = model
+        return brief
+    raise RuntimeError("no Gemini model configured")
+
+
+async def _run_brief(facts: Dict[str, Any], agent: LlmAgent) -> Dict[str, Any]:
+    runner = InMemoryRunner(agent=agent, app_name="issue_scout_brief")
     user_id = "cli"
     session = await runner.session_service.create_session(app_name="issue_scout_brief", user_id=user_id)
     message = types.Content(role="user", parts=[types.Part(text=json.dumps(facts, default=str))])

@@ -146,7 +146,7 @@ def render_brief(facts: Dict[str, object], now: datetime, ai: Optional[Dict[str,
     out.append("")
 
     if ai:
-        out.append("### Summary (Gemini)")
+        out.append("### Summary (%s)" % ai.get("model", "Gemini"))
         out.append(str(ai.get("summary", "")))
         out.append("")
         if ai.get("suggested_approach"):

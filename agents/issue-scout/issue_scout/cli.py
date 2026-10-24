@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -139,10 +140,12 @@ def _brief(scout: Scout, args) -> int:
             note = "Gemini brief skipped: install requirements.txt on Python 3.11+ to enable it."
         else:
             if api_key_configured():
+                # ADK logs full tracebacks for model errors; the note below is enough for a CLI user.
+                logging.getLogger("google_adk").setLevel(logging.CRITICAL)
                 try:
                     ai = write_brief(facts)
                 except Exception as exc:  # model or network failure should not lose the facts
-                    note = "Gemini brief failed (%s); showing gathered facts only." % exc
+                    note = "Gemini brief failed (%s); showing gathered facts only." % _short_error(exc)
             else:
                 note = "Gemini brief skipped: set GOOGLE_API_KEY to add a summary and plan."
     if args.json:
@@ -152,6 +155,13 @@ def _brief(scout: Scout, args) -> int:
         if note:
             print("\n_Note: %s_" % note)
     return 0
+
+
+def _short_error(exc: Exception) -> str:
+    code, message = getattr(exc, "code", None), getattr(exc, "message", None)
+    if code and message:
+        return "%s: %s" % (code, message)
+    return str(exc).splitlines()[0][:200]
 
 
 def _emit(args, data, render) -> None:
