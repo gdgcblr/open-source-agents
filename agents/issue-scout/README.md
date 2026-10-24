@@ -1,6 +1,58 @@
 # Issue Scout
 
-> Finds open-source issues you can actually work on: not claimed, not already fixed, no PR in flight, in repos that merge outside PRs. Then gives you a starter brief so your first PR takes hours, not days.
+> Finds open-source issues you can actually work on: not claimed, not already fixed, no PR in flight, in repos that merge outside PRs. Then gives you a starter brief, so you start coding with a plan instead of a blank page.
+
+---
+
+## Pitch
+
+### The problem: "open" issues that aren't
+Finding an issue is the first step of every open-source contribution, and it's where newcomers lose the most time. An issue labelled `good first issue`, with no assignee and no linked PR, looks free. Often it isn't:
+- someone claimed it in a comment last week;
+- a PR that fixes it is already open;
+- a contributor says the feature "already exists on master";
+- or the repo hasn't merged a PR from an outsider in months.
+
+GitHub search can't see any of this. You only find out by opening each issue, reading every comment, following every cross-reference and checking the repo's merge history. Then you repeat that for the next issue.
+
+**Measured, not estimated:** in two real runs on 24 Oct 2026, GitHub's own "nobody is on this" filters (`no:assignee -linked:pr`) still returned dead ends. **6 of the 10** issues Issue Scout checked in the first run already had PRs, and **3 of 10** in the second ([details](#problem-statement--intended-users)). Without the tool, each of those is an evening that can end in a duplicate PR.
+
+### Why now: this is the event's first step
+FORK. BUILD. MERGE. is about making real open-source contributions, and attendees were encouraged to start searching for issues today. This week, hundreds of people are doing the same manual search at the same time. The event repo alone had 181 forks within days. They're competing for the same `good first issue` labels, so stale and already-claimed issues waste even more of everyone's time. Issue Scout is built for exactly that moment:
+
+```bash
+python -m issue_scout find --lang python --hours 3        # or: --user <your-github-username>
+```
+
+### What it replaces: the manual checks, per issue
+
+| What a careful contributor does by hand | What Issue Scout does |
+| :--- | :--- |
+| Open the issue and check assignees | Read automatically |
+| Read every comment for "can I work on this?" claims | Detected, with the date and a link to the comment |
+| Look for "already fixed", "duplicate of" or "this can be closed" | Detected, with a link. Denials and questions are ignored ([eval](#detector-accuracy-evals)) |
+| Follow cross-references to find open, merged or abandoned PRs | Read from the issue timeline, including PRs that GitHub's `-linked:pr` filter misses |
+| Check whether the repo actually merges outside PRs, and how fast | Computed from the last 50 closed PRs, ignoring bots and the core team |
+| Search for related issues and previous fixes | Two to four targeted searches, with possible duplicates flagged |
+| Read CONTRIBUTING.md for CLA, DCO sign-off, commit style and test commands | Extracted into "house rules" |
+| Guess which files to open | Ranked from the repo tree; Gemini adds a step-by-step plan |
+
+**What one command does, measured:** a single unauthenticated `find` run checked 20 repositories and 10 issues using 20 GitHub API calls, in about 8 seconds ([example](#example-input--output)). It returns a ranked shortlist, the evidence behind every warning, and a count of the dead ends it removed. With a GitHub token it checks 25 issues per run. A starter brief with Gemini took about 30–40 seconds, including automatic fallback when a model was overloaded.
+
+### Ready to use today, not a prototype
+
+| Readiness claim | Evidence |
+| :--- | :--- |
+| Installs in three commands, works with **no API keys** | [Installation & Setup](#installation--setup); verified from a fresh clone in an empty directory |
+| Fits how people already work: CLI, a Google ADK chat agent (`adk web`), and an MCP server for Gemini CLI, Claude Code and Cursor | [How to Run](#how-to-run) |
+| Built on Google's stack | Google ADK 2.13 agents with Gemini, structured output and ADK guardrail callbacks |
+| Tested | 110 offline tests, including the real ADK runner; live runs against GitHub and Gemini ([How to Test](#how-to-test)) |
+| Accuracy is measured | A held-out eval: every detector had 100% precision ([Detector accuracy](#detector-accuracy-evals)) |
+| Safe for a newcomer to run | Read-only; never comments, claims or opens PRs; guardrails against prompt injection, query injection, leaked secrets, invented links and runaway loops ([Guardrails](#guardrails)) |
+| Honest about limits | Pattern-based detectors miss some terse claims (57% recall), and every flag links to its source so you can judge ([Known Limitations](#known-limitations)) |
+
+### Why it matters beyond this event
+Maintainers benefit too: fewer duplicate PRs on issues someone already took, and fewer newcomers asking "is this still open?". Contributors land their first PR in a repo that merges outside work, instead of waiting on one that doesn't. The same tools work after the event, from the terminal or inside any MCP-capable AI assistant.
 
 ---
 
