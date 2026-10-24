@@ -169,6 +169,7 @@ pytest
 - **Several channels are placeholders.** Portal URLs and social handles that haven't been researched yet are `null`. The agent reports them as "not yet available" rather than guessing.
 - **No automatic filing.** City grievance portals don't offer public APIs, so the user must submit the draft themselves.
 - **Location is free text.** The agent does not yet resolve a location to a ward or zone, or read GPS from photo EXIF data.
+- **Free-tier rate limits.** One complaint takes about 4 model requests (one per tool step plus the final reply). The Gemini free tier allows only a few requests per minute, so back-to-back complaints can fail with `429 RESOURCE_EXHAUSTED`. Wait a minute and retry, or use a paid tier.
 - **Kannada quality depends on the model.** Have a native speaker review drafts before relying on them.
 - **Classification can be wrong**, especially for ambiguous photos (e.g. storm drain vs sewer). Always review the draft.
 - **Tested on:** offline tool tests pass on macOS. End-to-end runs with a live model, and Linux/Windows, are not yet tested.
