@@ -1,0 +1,13 @@
+invoice_no,client_id,issue_date,due_date,amount,currency,description
+INV-2026-001,C01,2026-08-01,2026-08-31,50000,INR,Brand refresh - August retainer
+INV-2026-002,C02,2026-08-20,2026-09-19,30000,INR,Packaging design
+INV-2026-003,C03,2026-09-10,2026-10-10,1200,USD,Dashboard UI mockups
+INV-2026-004,C04,2026-09-05,2026-10-05,18000,INR,Menu redesign
+INV-2026-005,C05,2026-08-11,2026-09-10,75000,INR,Course illustrations (12 modules)
+INV-2026-006,C06,2026-09-15,2026-10-15,22000,INR,Shop signage
+INV-2026-007,C07,2026-09-20,2026-10-20,40000,INR,Game UI kit
+INV-2026-008,C07,2026-09-26,2026-10-26,15000,INR,Icon set add-on
+INV-2026-009,C08,2026-10-16,2026-11-15,28000,INR,Festive campaign creatives
+INV-2026-010,C01,2026-09-01,2026-09-30,50000,INR,Brand refresh - September retainer
+INV-2026-011,C04,2026-09-30,2026-10-30,12000,INR,Social media templates
+INV-2026-012,C08,2026-09-01,2026-10-01,28000,INR,Product label design
