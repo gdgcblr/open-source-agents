@@ -1,0 +1,35 @@
+# idle-janitor policy file
+# Location: ~/.idle-janitor/policies.yaml
+# Generate the live copy with:  idle-janitor policies --init
+
+# "protect" rules win over everything else and are the only rules consulted
+# before the AI agent (or the CLI) is allowed to call terminate.
+protect:
+  - image_contains: postgres
+  - image_contains: mysql
+  - image_contains: mariadb
+  - name_contains: production
+  - name_contains: prod-
+
+# "rules" are evaluated top-down; first match per resource wins.
+# Supported match keys:
+#   kind:               "docker" | "process"
+#   name_contains:      substring on resource name
+#   image_contains:     substring on docker image
+#   cmdline_contains:   substring on process cmdline
+#   idle_minutes_min:   resource must be idle for at least N minutes
+#   cpu_percent_max:    cpu% must be at or below this value
+# Supported actions:
+#   reap:    recommend termination
+#   warn:    surface in the dashboard with a yellow tag
+#   snooze:  auto-snooze for `snooze_minutes` minutes
+rules:
+  - name: reap-stale-ngrok
+    match: { kind: process, name_contains: ngrok, idle_minutes_min: 60 }
+    action: reap
+  - name: warn-stale-vite
+    match: { kind: process, name_contains: vite, idle_minutes_min: 180 }
+    action: warn
+  - name: warn-very-old-containers
+    match: { kind: docker, idle_minutes_min: 1440 }  # 24h
+    action: warn

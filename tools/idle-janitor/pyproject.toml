@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "idle-janitor"
+version = "0.1.0"
+description = "Audit and reap idle Docker containers and local dev-server processes. MCP server + CLI + live TUI."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "idle-janitor contributors" }]
+keywords = ["mcp", "docker", "developer-tools", "sustainability", "ai-agents"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "mcp>=2.3.0,<3",
+    "docker>=7.1.0",
+    "psutil>=5.9.0",
+    "rich>=13.7.0",
+    "typer>=0.12.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+idle-janitor = "janitor.cli:main"
+
+[tool.setuptools]
+py-modules = ["server"]
+
+[tool.setuptools.packages.find]
+include = ["janitor*"]

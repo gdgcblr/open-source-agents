@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`idle-janitor`](./idle-janitor/) | Audits and safely shuts down idle Docker containers, local dev-server processes, and (fixture-driven) AWS/Firebase resources draining your laptop battery and cloud credits. Ships with a 5-layer safety guard, policy engine, live TUI, autonomous watcher, and ₹/Wh/g CO₂ accounting. | MCP Server + CLI (Python) | [@pritikumari24](https://github.com/pritikumari24) |
