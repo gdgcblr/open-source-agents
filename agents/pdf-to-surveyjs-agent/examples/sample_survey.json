@@ -1,0 +1,34 @@
+{
+  "title": "Community Workshop Registration",
+  "elements": [
+    {
+      "type": "text",
+      "name": "full_name",
+      "title": "Full name",
+      "isRequired": true
+    },
+    {
+      "type": "text",
+      "name": "email",
+      "title": "Email address",
+      "inputType": "email",
+      "isRequired": true
+    },
+    {
+      "type": "radiogroup",
+      "name": "experience_level",
+      "title": "Experience level",
+      "choices": [
+        "Beginner",
+        "Intermediate",
+        "Advanced"
+      ]
+    },
+    {
+      "type": "boolean",
+      "name": "updates_consent",
+      "title": "May we email you workshop updates?"
+    }
+  ]
+}
+
