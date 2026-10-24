@@ -123,6 +123,8 @@ For a client that supports an MCP server configuration file, use an absolute pat
 
 On Windows, use the absolute path to `.venv\\Scripts\\python.exe`. Do not commit personal machine paths to this repository.
 
+A portable starting configuration is available at [`examples/mcp-client-config.json`](examples/mcp-client-config.json). Replace the workspace placeholder with a real path. If the MCP client does not inherit the virtual environment, replace `python` with the absolute path to `.venv/bin/python` on macOS/Linux or `.venv\\Scripts\\python.exe` on Windows.
+
 Set an optional workspace boundary before starting the server:
 
 ```bash
@@ -192,9 +194,10 @@ For an ADK client, an optional smaller explanation model can be configured with 
 
 ```bash
 python -m unittest discover -s tests -v
+PYTHONPATH=src:. python evaluation/run.py
 ```
 
-The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, combined reports, and missing-path handling.
+The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs five public cross-language cases and exits non-zero if any expected signal or classification changes.
 
 ## Known Limitations
 
@@ -225,7 +228,7 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 1. Add opt-in parsers for JUnit, Surefire, pytest, npm, Gradle, and CI report formats.
 2. Add a verification tool that accepts a developer-supplied before/after result and compares it without executing commands.
 3. Publish tested MCP client presets for common editors and desktop clients on macOS, Linux, and Windows.
-4. Build a public evaluation fixture set measuring evidence accuracy, hypothesis quality, redaction, and verification honesty.
+4. Expand the public evaluation fixture set with real anonymized CI and API failure examples.
 
 ## License
 
