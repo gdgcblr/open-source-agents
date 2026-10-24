@@ -53,13 +53,7 @@ def headings(markdown: str) -> list[Heading]:
 
 
 def conform(readme: str, template: str) -> str:
-    """Gives the README exactly the template's sections, in the template's order.
-
-    Sections are matched by title, also when the model shortened or reworded one
-    ("Installation" for "Installation & Setup"), and get the template's wording. Missing
-    sections and sub-sections are added with a TODO line. Sections the template does not
-    have stay after the section the model put them under.
-    """
+    """Gives the README the template's sections in order: renames reworded ones, adds missing ones as TODO."""
     wanted, top, sub = _structure(headings(template))
     if not wanted:
         return readme
@@ -106,11 +100,7 @@ def remove_copied_examples(readme: str, template: str) -> str:
 
 
 def is_unfilled_template(readme: str, template: str) -> bool:
-    """True when a project's README is still mostly the template's own text.
-
-    Contributors to this repository copy template/README.md into their folder first,
-    so their README often is the template itself and says nothing about the project.
-    """
+    """True when a project's README is still mostly the template's own text."""
     lines = {
         line.strip() for line in template.splitlines()
         if len(line.strip()) >= 25 and not line.strip().startswith(("#", "|", "```", "---"))
@@ -121,10 +111,7 @@ def is_unfilled_template(readme: str, template: str) -> bool:
 
 
 def insert_diagram(readme: str, mermaid: str | None) -> str:
-    """Adds the import diagram at the end of the README's architecture section, if it has one.
-
-    A Mermaid block the model drew there is replaced, because the generated one follows the code.
-    """
+    """Puts the import diagram at the end of the architecture section, replacing any model-drawn one."""
     if not mermaid:
         return readme
     lines = readme.splitlines()

@@ -20,7 +20,7 @@ from pathlib import Path
 from .guardrails import redact
 from .tools import LEAKED_TOKEN_RE
 
-PART_CHARS = 20000  # one part per model call: about 6k tokens, ~6 s on an Apple M5 Pro GPU
+PART_CHARS = 20000  # one part per model call (~6k tokens)
 MAX_PARTS = 40
 SUMMARY_CHARS = 700
 MAX_CACHED_SUMMARIES = 2000
@@ -118,10 +118,7 @@ def load_cache(folder: Path) -> dict[str, str]:
 
 
 def save_cache(folder: Path, cache: dict[str, str]) -> None:
-    """Writes the cache atomically, keeping the most recently used summaries.
-
-    os.replace swaps in a new file, so a symlink planted at the cache path is replaced, not followed.
-    """
+    """Writes the cache atomically; os.replace replaces a planted symlink instead of following it."""
     folder.mkdir(parents=True, exist_ok=True)
     kept = dict(list(cache.items())[-MAX_CACHED_SUMMARIES:])
     with tempfile.NamedTemporaryFile(

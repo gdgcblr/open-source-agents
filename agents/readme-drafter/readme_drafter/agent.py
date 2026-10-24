@@ -168,11 +168,9 @@ def save_readme_reply(callback_context: CallbackContext, llm_response: LlmRespon
 
 
 class ReadmeDrafter(BaseAgent):
-    """Runs the README writer, after summarising every part of the project in big-project mode.
+    """Runs the writer, first summarising each part in big-project mode.
 
-    Python decides the flow, not the model. Each sub-agent runs in its own ADK branch, so the
-    writer never sees the summariser's messages in its history: summaries reach it only through
-    the {temp:part_summaries} block of its instruction.
+    Each sub-agent runs in its own ADK branch, so summaries reach the writer only via its instruction.
     """
 
     summarizer: Agent
@@ -228,7 +226,7 @@ class ReadmeDrafter(BaseAgent):
                     summaries.append((part, summary))
                     continue  # not cached, so the next run tries again
                 cache[key] = summary
-                big_project.save_cache(folder, cache)  # after each part, so an interrupted run keeps its work
+                big_project.save_cache(folder, cache)  # keeps work if the run is interrupted
             summaries.append((part, cache[key]))
         if parts:
             big_project.save_cache(folder, cache)
@@ -268,9 +266,8 @@ class ReadmeDrafter(BaseAgent):
                 "to summarise every part of the project first (slower).")
 
 
-# Thinking off: with it on, gemma4:e4b sometimes imagines tool results instead of calling tools.
-# Retries cover the occasional malformed tool call that Ollama rejects. Both sub-agents use the
-# same settings, because a different num_ctx would make Ollama reload the model between calls.
+# Thinking off: with it on, gemma4:e4b imagines tool results. Retries cover malformed tool calls.
+# Both sub-agents share these settings; a different num_ctx would make Ollama reload the model.
 MODEL = LiteLlm(model=f"ollama_chat/{MODEL_NAME}", num_ctx=NUM_CTX, reasoning_effort="none", num_retries=3)
 
 root_agent = ReadmeDrafter(

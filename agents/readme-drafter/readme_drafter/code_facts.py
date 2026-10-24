@@ -126,12 +126,7 @@ def is_test_file(path: str) -> bool:
 
 
 def outline(path: str, text: str) -> str:
-    """Returns a compact outline of one source file.
-
-    The outline keeps the file's header doc line, the classes and functions it declares
-    with their first doc line, its command-line options and its web routes. Function
-    bodies are left out, so an outline is usually about 5% of the file.
-    """
+    """Returns a file's declarations, doc lines, CLI options and routes, without bodies (~5% of the size)."""
     suffix = posixpath.splitext(path)[1]
     lines = _python_outline(text) if suffix == ".py" else None
     if lines is None:
@@ -169,8 +164,7 @@ def _python_outline(text: str) -> list[str] | None:
 
 
 def _python_function(node: ast.FunctionDef | ast.AsyncFunctionDef, indent: str) -> list[str]:
-    # Only decorators that are calls: @app.get("/users") and @click.option(...) say something,
-    # @property and @staticmethod do not.
+    # Only call decorators like @app.get("/users") are informative.
     lines = [f"{indent}@{ast.unparse(d)}" for d in node.decorator_list if isinstance(d, ast.Call)]
     kind = "async def" if isinstance(node, ast.AsyncFunctionDef) else "def"
     returns = f" -> {ast.unparse(node.returns)}" if node.returns else ""
@@ -232,13 +226,7 @@ def _notable_lines(text: str, already: set[str], skip_decorators: bool) -> list[
 
 
 def find_settings(files: list[tuple[str, str]]) -> list[dict]:
-    """Lists the environment variables the code reads, with the default written next to the read.
-
-    Recognises os.getenv/os.environ (Python), process.env (JavaScript/TypeScript), os.Getenv
-    (Go), env::var (Rust), System.getenv (Java/Kotlin), Environment.GetEnvironmentVariable (C#),
-    ENV (Ruby), getenv/$_ENV/env() (PHP, C), Platform.environment (Dart) and ${NAME:-default}
-    in shell scripts and Compose files. Test files are skipped.
-    """
+    """Lists the environment variables the code reads, with their defaults. Skips test files."""
     found: dict[str, dict] = {}
     for path, text in files:
         if is_test_file(path):
@@ -289,12 +277,7 @@ def _clean_default(name: str, raw: str) -> str:
 
 
 def import_diagram(files: list[tuple[str, str]], all_paths: list[str], go_module: str | None = None) -> str | None:
-    """Draws which parts of the project import which, as Mermaid source that GitHub shows as a picture.
-
-    Follows imports between the project's own files in Python, JavaScript/TypeScript, Go, Rust,
-    C/C++ (#include "...") and Ruby (require_relative). Small projects get one box per file,
-    bigger ones one box per folder. Returns None when the project has no internal imports.
-    """
+    """Returns a Mermaid graph of imports between project files (per folder for big projects), or None."""
     known = set(all_paths)
     python_modules, python_packages = _python_modules(all_paths)
     go_packages: dict[str, str] = {}
@@ -346,7 +329,7 @@ def _python_modules(paths: list[str]) -> tuple[dict[str, list[str]], set[str]]:
             continue
         folder, name = posixpath.split(path[:-3])
         parts = [] if name == "__init__" else [name]
-        while folder and folder in packages:  # stops at the project root, even when it is a package itself
+        while folder and folder in packages:  # stop at the project root
             folder, package = posixpath.split(folder)
             parts.insert(0, package)
         if parts:
@@ -360,7 +343,7 @@ def _python_module_file(name: str, importer: str, modules: dict[str, list[str]],
         return None
     for end in range(len(parts), 0, -1):
         candidates = modules.get(".".join(parts[:end]), [])
-        if len(candidates) > 1:  # loose scripts with the same name: only a sibling can be meant
+        if len(candidates) > 1:  # same-named scripts: only a sibling is meant
             candidates = [c for c in candidates if posixpath.dirname(c) == posixpath.dirname(importer)]
         if len(candidates) == 1:
             folder = posixpath.dirname(candidates[0])
@@ -389,7 +372,7 @@ def _python_imports(
             stem = posixpath.join(base, *node.module.split(".")) if node.module else base
             module = _first([stem + ".py", stem + "/__init__.py"], known) if node.module else None
             package = _first([posixpath.join(stem, "__init__.py")], known)
-            for alias in node.names:  # an imported name can itself be a module: from . import tools
+            for alias in node.names:  # the name may itself be a module
                 sub = posixpath.join(stem, alias.name)
                 targets.append(_first([sub + ".py", sub + "/__init__.py"], known) or module or package)
         elif isinstance(node, ast.ImportFrom) and node.module:
@@ -480,7 +463,7 @@ def _mermaid(edges: Counter) -> str | None:
         return None
     grouped = edges
     if len({node for pair in edges for node in pair}) > DIAGRAM_MAX_NODES:
-        for depth in (1, 2, 3):  # one box per folder, as shallow as still shows some structure
+        for depth in (1, 2, 3):  # one box per folder
             grouped = Counter()
             for (source, target), count in edges.items():
                 pair = (_group(source, depth), _group(target, depth))
