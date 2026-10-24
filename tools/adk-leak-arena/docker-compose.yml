@@ -1,0 +1,37 @@
+name: adk-leak-arena
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: adk_leak_arena_db
+    ports:
+      - "54330:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_admin_pass
+      POSTGRES_DB: memshield
+    volumes:
+      - ./sql/init_arena.sql:/docker-entrypoint-initdb.d/01_init_arena.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d memshield"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  web:
+    build: .
+    container_name: adk_leak_arena_web
+    ports:
+      - "8090:8090"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MEMSHIELD_DB_DSN: "postgresql://memshield_app:memshield_pass@db:5432/memshield"
+      ARENA_DB_DSN: "postgresql://memshield_app:memshield_pass@db:5432/memshield"
+      ARENA_ADMIN_DSN: "postgresql://postgres:postgres_admin_pass@db:5432/memshield"
+      OLLAMA_BASE_URL: "http://host.docker.internal:11434"
+      OLLAMA_MODEL: "ollama_chat/gemma3:4b"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

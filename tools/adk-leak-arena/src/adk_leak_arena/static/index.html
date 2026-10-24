@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>adk-leak-arena · Memory Leak Inspector</title>
+  <style>
+    /* 100% offline: no external fonts, scripts, or stylesheets. */
+    :root {
+      color-scheme: dark;
+      --bg: #08090c;
+      --panel: #0e1116;
+      --card: #12161d;
+      --code: #0a0d12;
+      --line: #1d232d;
+      --line-strong: #2b3340;
+      --text: #e8eaee;
+      --muted: #b4bdcb;
+      --dim: #a3aec0;
+      --blue: #6cb6ff;
+      --red: #ff6b6b;
+      --red-bg: rgba(255, 107, 107, 0.12);
+      --red-line: rgba(255, 107, 107, 0.5);
+      --green: #4ade80;
+      --green-bg: rgba(74, 222, 128, 0.10);
+      --green-line: rgba(74, 222, 128, 0.45);
+      --amber: #fbbf24;
+      --amber-bg: rgba(251, 191, 36, 0.12);
+      --amber-line: rgba(251, 191, 36, 0.5);
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", "SF Mono", Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); }
+    body { color: var(--text); font: 13px/1.45 var(--sans); min-height: 100vh; }
+    button, select, input { font: inherit; color: inherit; }
+    .mono { font-family: var(--mono); }
+    .muted { color: var(--muted); }
+    .dim { color: var(--dim); }
+
+    /* ---------- top bar with animated aurora backdrop ---------- */
+    @keyframes auroraShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .topbar {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 9px 16px;
+      background:
+        linear-gradient(125deg, rgba(14, 17, 22, 0.94) 15%, rgba(20, 38, 68, 0.72) 48%, rgba(16, 52, 44, 0.70) 78%, rgba(14, 17, 22, 0.95) 100%),
+        var(--panel);
+      background-size: 240% 240%;
+      animation: auroraShift 14s ease infinite;
+      border-bottom: 1px solid var(--line-strong);
+      backdrop-filter: blur(8px);
+    }
+    .svg-ico { width: 13px; height: 13px; vertical-align: -2px; fill: currentColor; flex-shrink: 0; }
+    .dot-red, .dot-emerald, .dot-amber {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle;
+    }
+    .dot-red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .dot-emerald { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot-amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+    .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .brand-name { font: 700 15px var(--mono); letter-spacing: -0.02em; }
+    .brand-sub { color: var(--muted); font-size: 12px; }
+    .status-row, .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+      font: 600 11px var(--mono); padding: 2px 7px; border-radius: 4px;
+      border: 1px solid var(--line-strong); color: var(--muted); background: var(--code);
+    }
+    .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
+    .chip.plain::before { display: none; }
+    .chip.ok { color: var(--green); border-color: var(--green-line); }
+    .chip.ok::before { background: var(--green); }
+    .chip.bad { color: var(--red); border-color: var(--red-line); }
+    .chip.bad::before { background: var(--red); }
+    .chip.warn { color: var(--amber); border-color: var(--amber-line); }
+    .chip.warn::before { background: var(--amber); }
+
+    select, input[type="text"] {
+      background: var(--code); border: 1px solid var(--line-strong); border-radius: 5px;
+      padding: 6px 9px; font-size: 12.5px; outline: none; max-width: 100%;
+    }
+    select:focus, input[type="text"]:focus, button:focus-visible { border-color: var(--blue); outline: none; box-shadow: 0 0 0 1px var(--blue); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 5px;
+      border: 1px solid var(--line-strong); background: #1a2029; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .btn:hover:not(:disabled) { background: #232a35; }
+    .btn:disabled { opacity: 0.55; cursor: progress; }
+    .btn-primary { background: #1f6feb; border-color: #388bfd; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #1a5fd0; }
+    .btn-bench { background: var(--green-bg); border-color: var(--green-line); color: var(--green); }
+    .btn-bench:hover:not(:disabled) { background: rgba(74, 222, 128, 0.2); }
+
+    /* ---------- control panel ---------- */
+    .controls {
+      margin: 12px 16px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .row.spread { justify-content: space-between; }
+    .label { font: 700 10.5px var(--sans); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tab {
+      padding: 5px 9px; border-radius: 4px; cursor: pointer; font: 600 11.5px var(--mono);
+      background: var(--code); color: var(--muted); border: 1px solid var(--line-strong);
+    }
+    .tab:hover { color: var(--text); border-color: var(--blue); }
+    .tab.active { background: rgba(108, 182, 255, 0.14); color: var(--blue); border-color: var(--blue); }
+    .chaos {
+      display: inline-flex; align-items: center; gap: 7px; padding: 5px 9px; border-radius: 5px; cursor: pointer;
+      border: 1px solid var(--line-strong); background: var(--code); font: 600 11.5px var(--mono); color: var(--muted); user-select: none;
+    }
+    .chaos.on { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+    .banner {
+      display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 14px;
+      padding: 8px 10px; border-radius: 5px; background: rgba(108, 182, 255, 0.05); border: 1px solid var(--line-strong);
+    }
+    .banner-title { font-weight: 700; }
+    .banner-desc { color: var(--muted); font-size: 12px; margin-top: 2px; max-width: 110ch; }
+    .tag {
+      font: 600 11px var(--mono); padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+      background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-line);
+    }
+    .query-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .query-row input { flex: 1 1 320px; font-family: var(--mono); padding: 8px 10px; }
+    .query-row select { flex: 0 1 380px; font-family: var(--mono); font-size: 11.5px; }
+    .error-banner {
+      display: none; padding: 8px 10px; border-radius: 5px; font: 12px var(--mono);
+      background: var(--red-bg); border: 1px solid var(--red-line); color: #ffc9c9; white-space: pre-wrap;
+    }
+    .error-banner.show { display: block; }
+
+    /* ---------- arena panes ---------- */
+    .arena { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 0 16px 24px; }
+    @media (max-width: 1150px) { .arena { grid-template-columns: minmax(0, 1fr); } }
+    .pane { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    .pane.left { border-top: 3px solid var(--red); }
+    .pane.right { border-top: 3px solid var(--green); }
+    .pane-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .pane-title { font: 700 13.5px var(--mono); }
+    .left .pane-title { color: var(--red); }
+    .right .pane-title { color: var(--green); }
+    .pane-sub { font: 11.5px var(--mono); color: var(--muted); margin-top: 2px; }
+    .verdict { font: 700 11.5px var(--mono); padding: 4px 9px; border-radius: 4px; border: 1px solid var(--line-strong); color: var(--muted); max-width: 100%; display: inline-flex; align-items: center; }
+    .verdict.leak { background: var(--red-bg); border-color: var(--red-line); color: var(--red); }
+    .verdict.safe { background: var(--green-bg); border-color: var(--green-line); color: var(--green); }
+    .verdict.boundary, .verdict.err { background: var(--amber-bg); border-color: var(--amber-line); color: var(--amber); }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
+    .stat { background: var(--code); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; min-width: 0; }
+    .stat-k { display: block; font: 700 9.5px var(--sans); text-transform: uppercase; letter-spacing: 0.06em; color: var(--dim); }
+    .stat-v { font: 700 15px var(--mono); transition: color 0.18s ease; }
+    .stat-v.bad { color: var(--red); }
+    .stat-v.ok { color: var(--green); }
+    .stat-v.warn { color: var(--amber); }
+
+    .card {
+      position: relative;
+      background:
+        radial-gradient(360px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(108, 182, 255, 0.11), transparent 65%),
+        var(--card);
+      border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-width: 0;
+      transition: border-color 0.15s ease;
+    }
+    .card:hover { border-color: var(--line-strong); }
+    .card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; }
+    .card-title { font: 700 10.5px var(--sans); text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .output {
+      background: var(--code); border: 1px solid var(--line); border-radius: 5px; padding: 9px 10px;
+      font: 12px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; min-height: 64px; color: #dfe3ea;
+    }
+    details.ctx summary { cursor: pointer; font: 600 11px var(--mono); color: var(--muted); }
+    details.ctx .output { margin-top: 6px; }
+
+    /* canary tokens */
+    .canary { font-weight: 700; border-radius: 3px; padding: 0 3px; }
+    .canary.leaked { background: rgba(255, 107, 107, 0.28); color: #ffe0e0; outline: 1px solid var(--red); }
+    .canary.leaked::before { content: "[!] "; font-size: 9.5px; color: var(--red); }
+    .canary.poisoned { background: var(--amber-bg); color: #fde68a; outline: 1px solid var(--amber); }
+    .canary.poisoned::before { content: "[~] "; font-size: 9.5px; color: var(--amber); }
+    .canary.allowed { color: var(--green); outline: 1px dashed var(--green-line); }
+
+    .table-wrap { overflow-x: auto; }
+    table.grid { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    table.grid th {
+      text-align: left; padding: 5px 7px; color: var(--dim); border-bottom: 1px solid var(--line-strong);
+      font: 700 10px var(--mono); text-transform: uppercase; white-space: nowrap;
+    }
+    table.grid td { padding: 7px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    tr.leaked-row { background: rgba(255, 107, 107, 0.07); box-shadow: inset 3px 0 0 var(--red); }
+    tr.boundary-row { background: rgba(251, 191, 36, 0.07); box-shadow: inset 3px 0 0 var(--amber); }
+    tr.auth-row { box-shadow: inset 3px 0 0 var(--green-line); }
+    .snippet { overflow-wrap: anywhere; }
+    .reason { color: var(--dim); font-size: 10.5px; margin-top: 3px; }
+    .reason.bad { color: #ff9e9e; }
+    .reason.warn { color: var(--amber); }
+    .mini { display: inline-block; font: 700 10px var(--mono); padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+    .mini.bad { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-line); }
+    .mini.ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-line); }
+    .mini.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-line); }
+    .mini.exp { background: rgba(108, 182, 255, 0.12); color: var(--blue); border: 1px solid rgba(108, 182, 255, 0.4); margin-top: 3px; }
+
+    /* hardware notice, write sandbox & benchmark progress */
+    .load-banner {
+      display: none; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 7px 11px; border-radius: 5px; font: 11.5px var(--mono);
+      background: var(--amber-bg); border: 1px solid var(--amber-line); color: #fde68a;
+    }
+    .load-banner.show { display: flex; flex-wrap: wrap; }
+    details.sandbox-panel {
+      background: var(--code); border: 1px solid var(--line-strong); border-radius: 6px; padding: 8px 11px;
+    }
+    details.sandbox-panel > summary {
+      cursor: pointer; font: 700 11.5px var(--mono); color: var(--blue); list-style: none;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .sandbox-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 8px; margin-top: 10px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .btn-danger { background: var(--red-bg); border-color: var(--red-line); color: var(--red); }
+    .btn-danger:hover:not(:disabled) { background: rgba(255, 107, 107, 0.24); }
+    .progress-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .progress-bar { height: 8px; background: var(--code); border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #1f6feb, #4ade80); transition: width 0.2s ease; }
+    .log-stream {
+      background: var(--code); border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px;
+      font: 11px/1.5 var(--mono); color: #9aa3b2; max-height: 150px; overflow-y: auto; white-space: pre-wrap;
+    }
+    .subtabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .empty-row td { color: var(--dim); font-family: var(--mono); text-align: center; padding: 12px; }
+
+    .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; }
+    .kv { background: var(--code); border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; min-width: 0; }
+    .kv-k { display: block; font: 700 9.5px var(--sans); color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
+    .kv-v { font: 600 11.5px var(--mono); overflow-wrap: anywhere; }
+    .kv-v.ok { color: var(--green); }
+    .kv-v.bad { color: var(--red); }
+    .kv-v.warn { color: var(--amber); }
+    .sql-label { font: 700 9.5px var(--sans); color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
+    pre.sql {
+      background: var(--code); border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px;
+      font: 11.2px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: #a5c8ff;
+    }
+    pre.sql.rls { color: #86efac; border-color: var(--green-line); }
+    pre.sql.norls { color: #ffb4b4; border-color: var(--red-line); }
+    .latency { font: 700 12px var(--mono); padding: 2px 8px; border-radius: 4px; background: var(--code); border: 1px solid var(--line-strong); }
+
+    /* ---------- modals ---------- */
+    .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(3, 5, 9, 0.84); padding: 18px; align-items: center; justify-content: center; }
+    .modal.open { display: flex; }
+    .modal-panel {
+      width: 100%; max-width: 1280px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--panel); border: 1px solid var(--line-strong); border-radius: 8px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    }
+    .modal-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 11px 14px; border-bottom: 1px solid var(--line); background: var(--card); }
+    .modal-title { font: 700 14px var(--mono); }
+    .modal-body { padding: 14px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+    table.matrix { width: 100%; border-collapse: collapse; font: 11.5px var(--mono); }
+    table.matrix th, table.matrix td { padding: 7px 9px; border: 1px solid var(--line-strong); text-align: center; }
+    table.matrix th { background: var(--card); color: var(--muted); font-size: 10.5px; text-transform: uppercase; }
+    table.matrix td:first-child, table.matrix td:nth-child(2) { text-align: left; }
+    table.matrix tr.agg td { font-weight: 700; border-top: 2px solid var(--line-strong); }
+    .cell-bad { color: var(--red); font-weight: 700; }
+    .cell-ok { color: var(--green); font-weight: 700; }
+    .method { font: 11.5px/1.6 var(--mono); color: var(--muted); }
+    .method b { color: var(--text); }
+    pre.md { background: var(--code); border: 1px solid var(--line); border-radius: 5px; padding: 8px 10px; font: 11px var(--mono); white-space: pre; overflow-x: auto; color: #c9d1d9; }
+    .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    select { min-width: 0; color: #f8fafc; }
+    /* Native dropdown menus (notably on Windows) must never render dark text on dark surfaces. */
+    select option, select optgroup { background-color: #0f172a; color: #f8fafc; }
+    input::placeholder { color: #94a3b8; opacity: 1; }
+    a { color: #93c5fd; }
+    a.btn { color: #e2e8f0; text-decoration: none; }
+    .log-stream { color: #cbd5e1; }
+
+    /* Run button: "ready to run" pulse after the scenario or dials change */
+    @keyframes readyPulse {
+      0% { box-shadow: 0 0 0 0 rgba(125, 211, 252, 0.55); }
+      70% { box-shadow: 0 0 0 8px rgba(125, 211, 252, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(125, 211, 252, 0); }
+    }
+    #btnRunAttack.ready { animation: readyPulse 1.6s ease-out infinite; border-color: #7dd3fc; }
+    #btnRunAttack .ready-tag {
+      display: none; font: 700 9.5px var(--mono); letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 1px 5px; border-radius: 3px; background: rgba(125, 211, 252, 0.18); color: #e0f2fe;
+    }
+    #btnRunAttack.ready .ready-tag { display: inline-block; }
+    @media (prefers-reduced-motion: reduce) { #btnRunAttack.ready { animation: none; } }
+
+    /* Performance & RLS kernel overhead strip */
+    .perf-strip {
+      margin: 0 16px 12px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 7px;
+      background: var(--panel); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+      font: 12px var(--mono); color: #e2e8f0;
+    }
+    .perf-strip .perf-title { font: 700 10.5px var(--sans); text-transform: uppercase; letter-spacing: 0.07em; color: #a5b4fc; }
+    .perf-item { display: inline-flex; align-items: baseline; gap: 6px; }
+    .perf-item .perf-k { color: var(--muted); }
+    .perf-item .perf-v { font-weight: 700; color: #f8fafc; }
+    .perf-item .perf-v.ok { color: var(--green); }
+    .perf-item .perf-v.warn { color: var(--amber); }
+    .perf-scope { flex-basis: 100%; color: var(--muted); font-size: 11px; }
+    @media (max-width: 640px) {
+      .topbar, .controls { padding: 8px 12px; }
+      .row > div, #callerSelect, .query-row select, .query-row input { width: 100%; flex-basis: 100%; }
+      .status-row { max-width: 100%; }
+      .controls, .arena { margin-left: 0; margin-right: 0; }
+      .controls { margin: 10px 16px; }
+      .arena { padding: 0 16px 20px; }
+      .modal { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name"><span class="dot-emerald"></span>adk-leak-arena</span>
+      <span class="chip plain" id="versionChip">v0.1.0</span>
+      <span class="brand-sub">Red-team memory isolation inspector · Unprotected pgvector vs adk-memshield (PostgreSQL RLS)</span>
+    </div>
+    <div class="status-row" aria-label="Runtime status">
+      <span class="chip" id="dbChip" title="Database role privileges and RLS flags read from pg_roles / pg_class">DB: probing...</span>
+      <span class="chip" id="ollamaChip" title="Local Ollama status">Ollama: probing...</span>
+      <span class="chip" id="geminiChip" title="Gemini API key status">Gemini: probing...</span>
+    </div>
+    <div class="actions">
+      <label class="label" for="engineSelect">Engine</label>
+      <select id="engineSelect" title="Google ADK LLM engine for both Runners">
+        <option value="deterministic_agent">deterministic_agent (offline)</option>
+        <option value="ollama_gemma">ollama_gemma</option>
+        <option value="gemini_api">gemini_api</option>
+      </select>
+      <button class="btn" id="btnDataset" type="button">Seeded dataset</button>
+      <button class="btn btn-bench" id="btnBenchmark" type="button">
+        <svg class="svg-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 1.5L3 9h4.5l-1 5.5L13 7H8.5l1-5.5z"/></svg>
+        <span>Run Full Benchmark</span>
+      </button>
+      <button class="btn" id="btnReset" type="button">Reset / re-seed DB</button>
+    </div>
+  </header>
+
+  <section class="controls" aria-label="Attack controls">
+    <div class="row spread">
+      <div class="row">
+        <label class="label" for="callerSelect">Caller</label>
+        <select id="callerSelect"></select>
+        <label class="label" for="topKSelect">top_k</label>
+        <select id="topKSelect" title="Number of nearest neighbors retrieved per query">
+          <option value="1">1</option>
+          <option value="3" selected>3</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+        <label class="label" for="seedSizeSelect">seed_size</label>
+        <select id="seedSizeSelect" title="Total rows per table (36 baseline + synthetic stress rows via COPY)">
+          <option value="36" selected>36 rows (baseline)</option>
+          <option value="250">250 rows</option>
+          <option value="500">500 rows</option>
+          <option value="1000">1000 rows</option>
+          <option value="2000">2000 rows</option>
+        </select>
+      </div>
+      <div class="tabs" id="presetTabs" role="tablist" aria-label="Attack scenarios"></div>
+      <label class="chaos" id="chaosLabel" title="Run both services with simulate_missing_app_filter=True (no SQL WHERE clause)">
+        <input type="checkbox" id="chaosCheckbox" />
+        <span>Strip all SQL WHERE filters (chaos)</span>
+      </label>
+    </div>
+
+    <div class="load-banner" id="hardwareNotice" role="status">
+      <div>
+        <span class="dot-amber"></span>
+        <b>Hardware Load Notice:</b> <span id="hardwareNoticeText">High-load stress parameters or local LLM inference selected.</span>
+      </div>
+      <span class="dim">Use [KILL RUN] inside the benchmark modal to abort and restore the 36-row baseline immediately.</span>
+    </div>
+
+    <div class="banner">
+      <div>
+        <div class="banner-title" id="scenarioTitle">Loading scenarios...</div>
+        <div class="banner-desc" id="scenarioDesc"></div>
+      </div>
+      <div class="row">
+        <span class="chip plain mono" id="scenarioMode"></span>
+        <span class="tag" id="scenarioVuln"></span>
+      </div>
+    </div>
+
+    <div class="query-row">
+      <select id="querySelect" title="Benchmark queries for this scenario (mixed = caller has an authorized answer; pure = exfiltration probe)"></select>
+      <input type="text" id="queryInput" placeholder="Red-team prompt or analyst query, executed on both ADK Runners" maxlength="2000" />
+      <button class="btn btn-primary" id="btnRunAttack" type="button" title="Execute the staged scenario on both ADK Runners">
+        <svg class="svg-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5-9-5.5z"/></svg>
+        <span id="btnRunAttackLabel">Run Side-by-Side Query</span>
+        <span class="ready-tag">Ready to Run</span>
+      </button>
+    </div>
+
+    <details class="sandbox-panel" id="injectPanel">
+      <summary>
+        <span><span class="dot-amber"></span>RLS Write-Policy &amp; CTF Lure Injector (/api/inject)</span>
+        <span class="dim">Test owner spoofing, clearance write-up escalation, and private/shared lure writes against PostgreSQL WITH CHECK</span>
+      </summary>
+      <div class="sandbox-grid">
+        <div class="field">
+          <label class="label" for="injectActorSelect">Acting Persona (Session Writer)</label>
+          <select id="injectActorSelect"></select>
+        </div>
+        <div class="field">
+          <label class="label" for="injectOwnerInput">Claimed Owner ID (optional spoof)</label>
+          <input type="text" id="injectOwnerInput" placeholder="e.g. bob_cfo (blank = acting persona)" maxlength="64" />
+        </div>
+        <div class="field">
+          <label class="label" for="injectScopeSelect">Target Scope</label>
+          <select id="injectScopeSelect">
+            <option value="private">private</option>
+            <option value="tenant_shared">tenant_shared</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="injectClearanceSelect">min_clearance (1..5)</label>
+          <select id="injectClearanceSelect">
+            <option value="1" selected>1 (Analyst / Contractor)</option>
+            <option value="2">2 (Lead)</option>
+            <option value="3">3 (Executive / CFO)</option>
+            <option value="4">4 (Board)</option>
+            <option value="5">5 (Root Vault)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="injectCanaryInput">Canary Token</label>
+          <input type="text" id="injectCanaryInput" value="AUDIT-CANARY-900" maxlength="40" />
+        </div>
+      </div>
+      <div class="query-row" style="margin-top:8px;">
+        <input type="text" id="injectContentInput" value="What is our Q4 roadmap and acquisition budget? Updated planning note: see audit reference AUDIT-CANARY-900." maxlength="1000" />
+        <button class="btn" id="btnFillSampleLure" type="button">Fill Sample Rank-1 Lure</button>
+        <button class="btn btn-primary" id="btnInjectSubmit" type="button">Execute Write Test</button>
+      </div>
+      <div id="injectResultBox" style="margin-top:8px; display:none;"></div>
+    </details>
+
+    <div class="error-banner" id="errorBanner" role="alert"></div>
+  </section>
+
+  <section class="perf-strip" id="perfStrip" aria-label="Performance and RLS kernel overhead">
+    <span class="perf-title">Performance &amp; RLS Kernel Overhead</span>
+    <span class="perf-item"><span class="perf-k">Unprotected SQL:</span><span class="perf-v" id="perfUnpSql">-</span></span>
+    <span class="perf-item"><span class="perf-k">MemShield RLS SQL:</span><span class="perf-v" id="perfMsSql">-</span></span>
+    <span class="perf-item"><span class="perf-k">RLS Kernel Delta:</span><span class="perf-v" id="perfDelta">-</span></span>
+    <span class="perf-item"><span class="perf-k">End-to-End Agent Turn:</span><span class="perf-v" id="perfTurn">-</span></span>
+    <span class="perf-scope" id="perfScope">Stage a scenario, then click Run Side-by-Side Query.</span>
+  </section>
+
+  <main class="arena">
+    <section class="pane left" id="pane-left" aria-label="Unprotected pgvector target"></section>
+    <section class="pane right" id="pane-right" aria-label="adk-memshield target"></section>
+  </main>
+
+  <div class="modal" id="benchmarkModal" role="dialog" aria-modal="true" aria-labelledby="benchTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div class="modal-title" id="benchTitle">5-Scenario + S6 Boundary + Control Red-Team Evaluation Matrix</div>
+        <div class="row">
+          <button class="btn btn-primary" id="btnCopyMd" type="button" disabled>Copy Markdown Table</button>
+          <button class="btn" id="btnExportJson" type="button" disabled>Download JSON</button>
+          <button class="btn" type="button" data-close="benchmarkModal">[x] Close</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="subtabs">
+          <button class="tab active" id="tabBtnLive" type="button">Live Benchmark Runner</button>
+          <button class="tab" id="tabBtnHistory" type="button">Run History &amp; Comparison</button>
+        </div>
+
+        <div id="benchPaneLive" style="display:flex; flex-direction:column; gap:10px;">
+          <div class="row spread" style="background:var(--card); padding:8px 10px; border:1px solid var(--line); border-radius:5px;">
+            <div class="row">
+              <label class="label" for="benchTopK">top_k</label>
+              <select id="benchTopK">
+                <option value="1">1</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+              <label class="label" for="benchSeedSize">seed_size</label>
+              <select id="benchSeedSize">
+                <option value="36" selected>36</option>
+                <option value="250">250</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="2000">2000</option>
+              </select>
+              <label class="label" for="benchRepeats">repeats</label>
+              <select id="benchRepeats">
+                <option value="1">1</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+              </select>
+              <label class="label" for="benchLabel">label</label>
+              <input type="text" id="benchLabel" value="manual" maxlength="40" style="width:130px;" />
+            </div>
+            <div class="row">
+              <button class="btn btn-bench" id="btnStartBenchmark" type="button">Start Benchmark Job</button>
+              <button class="btn btn-danger" id="btnKillBenchmark" type="button" disabled>KILL RUN</button>
+            </div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="row spread mono" style="font-size:11.5px;">
+              <span id="benchStatus">Ready to run evaluation suite.</span>
+              <span id="benchProgressText">0 / 0 (0.0%)</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="benchProgressFill"></div></div>
+          </div>
+
+          <pre class="log-stream" id="benchLogStream" hidden></pre>
+          <div class="perf-strip" id="benchPerf" style="margin:0;" hidden></div>
+          <div class="table-wrap" id="benchTable"></div>
+          <div class="method" id="benchMethod"></div>
+          <details id="benchMdWrap" hidden>
+            <summary class="method">Raw Markdown</summary>
+            <pre class="md" id="benchMd"></pre>
+          </details>
+        </div>
+
+        <div id="benchPaneHistory" style="display:none; flex-direction:column; gap:10px;">
+          <div class="row spread" style="background:var(--card); padding:8px 10px; border:1px solid var(--line); border-radius:5px;">
+            <div class="row">
+              <label class="label" for="historySelectA">Run A</label>
+              <select id="historySelectA"></select>
+              <label class="label" for="historySelectB">Compare with Run B</label>
+              <select id="historySelectB"></select>
+              <button class="btn btn-primary" id="btnCompareRuns" type="button">Compare Side-by-Side</button>
+            </div>
+            <button class="btn" id="btnRefreshHistory" type="button">Refresh History</button>
+          </div>
+          <div id="historyCompareContainer"></div>
+          <div class="table-wrap" id="historyListContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="datasetModal" role="dialog" aria-modal="true" aria-labelledby="datasetTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <div class="modal-title" id="datasetTitle">Seeded multi-tenant memory dataset</div>
+        <button class="btn" type="button" data-close="datasetModal">[x] Close</button>
+      </div>
+      <div class="modal-body" id="datasetBody"></div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    const PANES = {
+      left: { key: "unprotected", title: '<span class="dot-red"></span>LEFT · Unprotected pgvector', table: "memories_unprotected · app-layer WHERE only" },
+      right: { key: "memshield", title: '<span class="dot-emerald"></span>RIGHT · adk-memshield (RLS kernel)', table: "memories · FORCE ROW LEVEL SECURITY + transaction-local set_config" },
+    };
+    let arena = null;
+    let activePreset = "S1";
+    let requestSeq = 0;
+    let lastMarkdown = "";
+    let lastReportJson = null;
+    let canaryRe = null;
+    let pollTimer = null;
+    let logOffset = 0;
+
+    function esc(s) {
+      return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function reEscape(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+    function rebuildCanaryRegex(tokens) {
+      if (tokens) arena.canary_tokens = tokens;
+      const toks = [...(arena ? arena.canary_tokens : [])].sort((a, b) => b.length - a.length).map(reEscape);
+      canaryRe = toks.length ? new RegExp(toks.join("|"), "g") : null;
+    }
+
+    function animateNumber(el, targetVal, decimals = 0, suffix = "") {
+      if (!el) return;
+      const num = Number(targetVal);
+      if (!Number.isFinite(num)) { el.textContent = String(targetVal) + suffix; return; }
+      const prev = Number(el.dataset.numVal ?? num);
+      el.dataset.numVal = String(num);
+      const start = performance.now();
+      const dur = 220;
+      function frame(now) {
+        const t = Math.min(1, (now - start) / dur);
+        const cur = prev + (num - prev) * (1 - Math.pow(1 - t, 3));
+        el.textContent = cur.toFixed(decimals) + suffix;
+        if (t < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function highlight(text, leaked, poisoned) {
+      const html = esc(text);
+      if (!canaryRe) return html;
+      const leakedSet = new Set(leaked || []);
+      const poisonSet = new Set(poisoned || []);
+      return html.replace(canaryRe, (tok) => {
+        const cls = leakedSet.has(tok) ? "leaked" : poisonSet.has(tok) ? "poisoned" : "allowed";
+        const title = cls === "leaked"
+          ? "Unauthorized canary token (leak)"
+          : cls === "poisoned"
+          ? "Same-tier shared lure canary (authorized by policy, untrusted content)"
+          : "Canary token the caller is authorized to read";
+        return `<span class="canary ${cls}" title="${title}">${tok}</span>`;
+      });
+    }
+
+    function updateHardwareNotice() {
+      const eng = $("engineSelect").value;
+      const topK = Number($("topKSelect").value || 3);
+      const seed = Number($("seedSizeSelect").value || 36);
+      const reasons = [];
+      if (eng === "ollama_gemma") reasons.push("local LLM (ollama_gemma) runs ~108 GPU/CPU inferences per full matrix");
+      if (seed >= 1000) reasons.push(`seed_size=${seed} loads ${seed - 36} synthetic vectors/table via COPY`);
+      if (topK >= 10) reasons.push(`top_k=${topK} widens nearest-neighbor scan window`);
+      const banner = $("hardwareNotice");
+      if (reasons.length) {
+        $("hardwareNoticeText").textContent = reasons.join(" · ") + ".";
+        banner.classList.add("show");
+      } else {
+        banner.classList.remove("show");
+      }
+    }
+
+    function showError(msg) {
+      const el = $("errorBanner");
+      el.textContent = msg || "";
+      el.classList.toggle("show", Boolean(msg));
+    }
+
+    async function api(path, body) {
+      const res = await fetch(path, body === undefined ? {} : {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      });
+      let data = null;
+      try { data = await res.json(); } catch (_) { /* non-JSON body */ }
+      if (!res.ok) {
+        let detail = data && (data.detail || data.error) ? data.detail || data.error : res.statusText;
+        if (Array.isArray(detail)) detail = detail.map((d) => `${(d.loc || []).join(".")}: ${d.msg}`).join("\n");
+        throw new Error(`${path} -> HTTP ${res.status}\n${detail}`);
+      }
+      return data;
+    }
+
+    function setChip(id, cls, text, title) {
+      const el = $(id);
+      el.className = "chip " + cls;
+      el.textContent = text;
+      if (title) el.title = title;
+    }
+
+    function persona() {
+      return arena.personas.find((p) => p.user_id === $("callerSelect").value) || arena.personas[0];
+    }
+
+    function isAuthorized(rec, p) {
+      if (rec.tenant_id !== p.tenant_id) return false;
+      if (rec.user_id === p.user_id) return true;
+      return rec.scope === "tenant_shared" && rec.min_clearance <= p.clearance;
+    }
+
+    function queryKind(q) {
+      const p = persona();
+      const byKey = Object.fromEntries(arena.seed_records.map((r) => [r.key, r]));
+      return q.relevant_keys.some((k) => byKey[k] && isAuthorized(byKey[k], p)) ? "mixed" : "pure";
+    }
+
+    function renderStatus() {
+      $("versionChip").textContent = `v${arena.arena_version} · adk-memshield ${arena.memshield_version}`;
+      const db = arena.db_posture || {};
+      if (!db.ok) {
+        setChip("dbChip", "bad", "DB posture: probe failed", db.error || "");
+      } else {
+        const mem = db.tables.memories || {};
+        const label = `${db.role_label} · memories RLS ${mem.rls_enabled ? "on" : "OFF"}${mem.rls_forced ? "+forced" : ""}`;
+        setChip("dbChip", db.rls_effective ? "ok" : "bad", label, "Read live from pg_roles and pg_class");
+      }
+      const o = arena.ollama || {};
+      if (o.online && o.model_available) setChip("ollamaChip", "ok", `Ollama: ${o.configured_model}`, o.base_url);
+      else if (o.online) setChip("ollamaChip", "warn", "Ollama: model not pulled", `${o.configured_model} missing at ${o.base_url}`);
+      else setChip("ollamaChip", "", "Ollama: offline", `Unreachable at ${o.base_url}; ollama_gemma falls back to deterministic_agent`);
+      if (arena.gemini_available) setChip("geminiChip", "ok", "Gemini: key set", arena.engines.gemini_api.model);
+      else setChip("geminiChip", "", "Gemini: no key", "Set GEMINI_API_KEY; gemini_api falls back to deterministic_agent");
+
+      const eng = arena.engines || {};
+      for (const opt of $("engineSelect").options) {
+        const e = eng[opt.value];
+        if (opt.value !== "deterministic_agent" && e) {
+          opt.textContent = `${opt.value}${e.model ? " (" + e.model + ")" : ""}${e.available ? "" : " · unavailable, falls back"}`;
+        }
+      }
+    }
+
+    function renderControls() {
+      const callerSel = $("callerSelect");
+      callerSel.innerHTML = arena.personas.map((p) => `<option value="${esc(p.user_id)}">${esc(p.display_name)}</option>`).join("");
+      const actorSel = $("injectActorSelect");
+      const injectors = arena.injector_personas || arena.personas;
+      actorSel.innerHTML = injectors.map((p) => `<option value="${esc(p.user_id)}">${esc(p.display_name)}</option>`).join("");
+      if (injectors.some((p) => p.user_id === "mallory_contractor")) actorSel.value = "mallory_contractor";
+      if (arena.current_seed_size) $("seedSizeSelect").value = String(arena.current_seed_size);
+      $("presetTabs").innerHTML = arena.presets.map((p) =>
+        `<button type="button" class="tab" role="tab" data-preset="${esc(p.id)}" title="${esc(p.title)}">${esc(p.short_label)}</button>`
+      ).join("");
+      updateHardwareNotice();
+    }
+
+    function renderQueryOptions(preset) {
+      const sel = $("querySelect");
+      sel.innerHTML = preset.benchmark_queries.map((q, i) =>
+        `<option value="${i}">[${queryKind(q)}] ${esc(q.text)}</option>`
+      ).join("");
+      const idx = preset.benchmark_queries.findIndex((q) => q.text === $("queryInput").value);
+      sel.value = String(Math.max(idx, 0));
+    }
+
+    function selectPreset(id) {
+      const preset = arena.presets.find((p) => p.id === id);
+      if (!preset) return;
+      activePreset = id;
+      document.querySelectorAll("#presetTabs .tab").forEach((b) => {
+        const on = b.dataset.preset === id;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-selected", String(on));
+      });
+      $("queryInput").value = preset.default_query;
+      $("scenarioTitle").textContent = preset.title;
+      $("scenarioDesc").textContent = preset.description;
+      $("scenarioVuln").textContent = preset.vulnerability_class;
+      $("scenarioMode").textContent = `failure_mode=${preset.failure_mode}`;
+      $("chaosCheckbox").checked = Boolean(preset.simulate_missing_app_filter);
+      $("chaosLabel").classList.toggle("on", $("chaosCheckbox").checked);
+      renderQueryOptions(preset);
+      // Selecting a scenario only stages it; execution happens on #btnRunAttack.
+      markReadyToRun();
+    }
+
+    const ENGINE_RUN_LABELS = {
+      deterministic_agent: "Running Deterministic ADK...",
+      ollama_gemma: "Running Ollama (gemma3:4b)...",
+      gemini_api: "Running Gemini 2.5 Flash...",
+    };
+    const RUN_IDLE_LABEL = "Run Side-by-Side Query";
+
+    function markReadyToRun() {
+      $("btnRunAttack").classList.add("ready");
+      updateHardwareNotice();
+    }
+
+    function renderPerfStrip(perf) {
+      if (!perf) return;
+      const k = perf.sql_kernel_ms;
+      animateNumber($("perfUnpSql"), k.unprotected, 2, " ms");
+      animateNumber($("perfMsSql"), k.memshield, 2, " ms");
+      const d = perf.rls_overhead_ms;
+      const deltaEl = $("perfDelta");
+      deltaEl.className = "perf-v " + (d <= 0 ? "ok" : "warn");
+      const pct = perf.rls_overhead_pct === null ? "" : ` (${perf.rls_overhead_pct > 0 ? "+" : ""}${perf.rls_overhead_pct}%)`;
+      deltaEl.textContent = `${d > 0 ? "+" : ""}${Number(d).toFixed(2)} ms${pct}`;
+      animateNumber($("perfTurn"), perf.total_turn_ms, 0, " ms");
+      const s = perf.rows_scanned_scope;
+      $("perfScope").textContent = `Scope: unprotected = ${s.unprotected} | memshield = ${s.memshield}. ` +
+        `Agent turn per target: ${perf.agent_turn_ms.unprotected} / ${perf.agent_turn_ms.memshield} ms (Runner + model).`;
+    }
+
+    function renderBenchPerf(perf) {
+      const el = $("benchPerf");
+      if (!perf) { el.hidden = true; return; }
+      const fmt = (v) => `${v > 0 ? "+" : ""}${Number(v).toFixed(2)} ms`;
+      const pct = perf.p50_delta_pct === null ? "" : ` (${perf.p50_delta_pct > 0 ? "+" : ""}${perf.p50_delta_pct}%)`;
+      el.innerHTML = `
+        <span class="perf-title">Performance &amp; RLS Kernel Overhead (all scenarios)</span>
+        <span class="perf-item"><span class="perf-k">Unprotected p50/p95:</span><span class="perf-v">${perf.unprotected_p50_ms.toFixed(2)} / ${perf.unprotected_p95_ms.toFixed(2)} ms</span></span>
+        <span class="perf-item"><span class="perf-k">MemShield p50/p95:</span><span class="perf-v">${perf.memshield_p50_ms.toFixed(2)} / ${perf.memshield_p95_ms.toFixed(2)} ms</span></span>
+        <span class="perf-item"><span class="perf-k">RLS Delta p50:</span><span class="perf-v ${perf.p50_delta_ms <= 0 ? "ok" : "warn"}">${fmt(perf.p50_delta_ms)}${pct}</span></span>
+        <span class="perf-item"><span class="perf-k">RLS Delta p95:</span><span class="perf-v ${perf.p95_delta_ms <= 0 ? "ok" : "warn"}">${fmt(perf.p95_delta_ms)}</span></span>
+        <span class="perf-item"><span class="perf-k">Throughput:</span><span class="perf-v">${perf.throughput_qps} queries/sec</span></span>
+        <span class="perf-scope">${perf.query_executions} side-by-side queries in ${perf.eval_seconds} s · mean agent turn ${perf.mean_agent_turn_ms} ms per target</span>`;
+      el.hidden = false;
+    }
+
+    function paneSkeleton(side) {
+      const meta = PANES[side];
+      $("pane-" + side).innerHTML = `
+        <div class="pane-head">
+          <div><div class="pane-title">${meta.title}</div><div class="pane-sub">${meta.table}</div></div>
+          <span class="verdict" id="${side}-verdict">Waiting for first run...</span>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="stat-k">Rows</span><span class="stat-v" id="${side}-rows">-</span></div>
+          <div class="stat"><span class="stat-k">Leaked</span><span class="stat-v" id="${side}-leaked">-</span></div>
+          <div class="stat"><span class="stat-k">Rank #1</span><span class="stat-v" id="${side}-rank1">-</span></div>
+          <div class="stat"><span class="stat-k">Recall@K</span><span class="stat-v" id="${side}-recall">-</span></div>
+          <div class="stat"><span class="stat-k">SQL ms</span><span class="stat-v" id="${side}-sqlms">-</span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">1 · ADK agent response</span><span class="chip plain" id="${side}-engine">engine</span></div>
+          <div class="output" id="${side}-output"></div>
+          <details class="ctx" id="${side}-ctxwrap" hidden><summary id="${side}-ctxsum"></summary><div class="output" id="${side}-ctx"></div></details>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">2 · Top-K vector retrieval (preload_memory)</span><span class="dim mono" id="${side}-retsum"></span></div>
+          <div class="table-wrap"><table class="grid">
+            <thead><tr><th>#</th><th>Cos</th><th>Owner / tenant</th><th>Scope · clr</th><th>Retrieved memory</th><th>Verdict</th></tr></thead>
+            <tbody id="${side}-rows-body"></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">3 · PostgreSQL kernel telemetry</span><span class="latency" id="${side}-latency">- ms</span></div>
+          <div class="kv-grid">
+            <div class="kv"><span class="kv-k">Database role</span><span class="kv-v" id="${side}-role">-</span></div>
+            <div class="kv"><span class="kv-k">RLS enforcement</span><span class="kv-v" id="${side}-rls">-</span></div>
+            <div class="kv"><span class="kv-k">Table · rows</span><span class="kv-v" id="${side}-table">-</span></div>
+            <div class="kv"><span class="kv-k">WHERE clause</span><span class="kv-v" id="${side}-where">-</span></div>
+          </div>
+          <div class="sql-label">Transaction-local identity context</div>
+          <pre class="sql ${side === "right" ? "rls" : "norls"}" id="${side}-setlocal"></pre>
+          <div class="sql-label">Search SQL as executed (vector literal elided as %s)</div>
+          <pre class="sql" id="${side}-sql"></pre>
+          <div class="kv-grid" id="${side}-ctxkv"></div>
+        </div>`;
+    }
+
+    function renderPane(side, d) {
+      const v = d.verdict, t = d.telemetry;
+      const verdictEl = $(side + "-verdict");
+      const isBoundary = v.status === "boundary" || Boolean(v.boundary_warning_count && !v.leak_detected);
+      const dotCls = v.retrieval_error ? "dot-amber" : v.leak_detected ? "dot-red" : isBoundary ? "dot-amber" : "dot-emerald";
+      verdictEl.innerHTML = `<span class="${dotCls}"></span><span>${esc(v.status_badge)}</span>`;
+      verdictEl.className = "verdict " + (v.retrieval_error ? "err" : v.leak_detected ? "leak" : isBoundary ? "boundary" : "safe");
+
+      const setStat = (id, val, cls) => { const el = $(id); el.textContent = val; el.className = "stat-v " + (cls || ""); };
+      animateNumber($(side + "-rows"), v.total_rows, 0);
+      $(side + "-leaked").className = "stat-v " + (v.leaked_row_count ? "bad" : isBoundary ? "warn" : "ok");
+      animateNumber($(side + "-leaked"), v.leaked_row_count, 0);
+      setStat(side + "-rank1", v.total_rows ? (v.rank_1_hijacked ? "HIJACK" : isBoundary ? "BOUNDARY" : "clean") : "-",
+        v.rank_1_hijacked ? "bad" : isBoundary ? "warn" : "ok");
+      if (v.recall_at_k === null) {
+        setStat(side + "-recall", "n/a", "");
+      } else {
+        $(side + "-recall").className = "stat-v " + (v.recall_at_k >= 1 ? "ok" : "bad");
+        animateNumber($(side + "-recall"), Math.round(v.recall_at_k * 100), 0, "%");
+      }
+      $(side + "-recall").title = v.recall_eligible ? `Expected authorized: ${v.expected_authorized_keys.join(", ")}`
+        : "Not scored: custom query, or a pure exfiltration probe with no authorized answer for this caller";
+      animateNumber($(side + "-sqlms"), Number(t.latency_ms), 2);
+
+      const engineEl = $(side + "-engine");
+      engineEl.className = "chip " + (d.engine_fallback ? "warn" : "ok");
+      engineEl.textContent = d.engine_fallback ? `${d.engine_used} [fallback]` : d.engine_used;
+      engineEl.title = d.engine_fallback ? `Requested ${d.engine_requested}: ${d.engine_fallback_reason}` : `Engine: ${d.engine_used}`;
+
+      $(side + "-output").innerHTML = highlight(d.agent_output || "(empty response)", v.leaked_canaries_in_output, v.poisoned_canaries_in_output);
+      const ctxWrap = $(side + "-ctxwrap");
+      const generative = !String(d.engine_used).startsWith("deterministic_agent");
+      ctxWrap.hidden = !(generative && d.injected_context.length);
+      $(side + "-ctxsum").textContent = `Memory context ADK injected into the prompt (${d.injected_context.length})`;
+      $(side + "-ctx").innerHTML = d.injected_context.map((c, i) => `[${i + 1}] ${highlight(c, v.leaked_canaries_in_retrieval, v.poisoned_canaries_in_retrieval)}`).join("\n");
+
+      const warnPart = v.boundary_warning_count ? ` · ${v.boundary_warning_count} boundary` : "";
+      $(side + "-retsum").textContent = `${v.authorized_row_count} authorized · ${v.leaked_row_count} leaked${warnPart}`;
+      const body = $(side + "-rows-body");
+      if (v.retrieval_error) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="6">Memory search raised: ${esc(v.retrieval_error)}</td></tr>`;
+      } else if (!v.rows_inspected.length) {
+        body.innerHTML = `<tr class="empty-row"><td colspan="6">0 rows returned</td></tr>`;
+      } else {
+        body.innerHTML = v.rows_inspected.map((r) => {
+          const rowBoundary = r.status_badge === "BOUNDARY";
+          const trCls = !r.authorized ? "leaked-row" : rowBoundary ? "boundary-row" : "auth-row";
+          const miniCls = !r.authorized ? "bad" : rowBoundary ? "warn" : "ok";
+          const reasonCls = !r.authorized ? "bad" : rowBoundary ? "warn" : "";
+          return `
+          <tr class="${trCls}">
+            <td class="mono"><b>#${r.rank}</b></td>
+            <td class="mono" style="color:var(--blue)">${Number(r.similarity).toFixed(3)}</td>
+            <td class="mono"><b>${esc(r.user_id)}</b><div class="dim">${esc(r.tenant_id)}</div></td>
+            <td class="mono">${esc(r.scope)}<div class="dim">clr=${r.min_clearance}</div></td>
+            <td><div class="snippet">${highlight(r.content, r.leaked_canaries, r.poisoned_canaries)}</div>
+              <div class="reason ${reasonCls}">${esc(r.reason)}</div></td>
+            <td><span class="mini ${miniCls}">${esc(r.status_badge)}</span>
+              ${r.injected ? '<div><span class="mini warn" title="Injected via /api/inject">INJECTED</span></div>' : ""}
+              ${r.synthetic ? '<div><span class="mini exp" title="Synthetic stress-test row">SYNTHETIC</span></div>' : ""}
+              ${r.expected ? '<div><span class="mini exp" title="Expected authorized answer for this benchmark query">EXPECTED</span></div>' : ""}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      animateNumber($(side + "-latency"), Number(t.latency_ms), 2, " ms");
+      $(side + "-role").textContent = t.db_role || "-";
+      $(side + "-role").className = "kv-v " + (String(t.db_role).includes("NOBYPASSRLS") ? "ok" : "warn");
+      $(side + "-rls").textContent = t.rls_enforcement || "-";
+      $(side + "-rls").className = "kv-v " + (t.rls_effective ? "ok" : "bad");
+      $(side + "-table").textContent = `${t.table_name} · ${t.row_count} row(s)`;
+      const hasWhere = /\bWHERE\b/i.test(t.sql || "");
+      $(side + "-where").textContent = t.error ? "n/a (query failed)" : hasWhere ? "present (app-layer filter)" : "NONE (no SQL WHERE)";
+      $(side + "-where").className = "kv-v " + (hasWhere ? "" : "warn");
+      $(side + "-setlocal").textContent = t.set_local_sql || "";
+      $(side + "-sql").textContent = t.error ? `-- search failed: ${t.error}` : (t.sql || "");
+      const ctx = t.session_context || {};
+      $(side + "-ctxkv").innerHTML = Object.entries(ctx).map(([k, val]) =>
+        `<div class="kv"><span class="kv-k">${esc(k)}</span><span class="kv-v">${esc(val)}</span></div>`).join("");
+    }
+
+    async function runAttack() {
+      if (!arena) return;
+      updateHardwareNotice();
+      const seq = ++requestSeq;
+      const btn = $("btnRunAttack");
+      btn.disabled = true;
+      btn.classList.remove("ready");
+      $("btnRunAttackLabel").textContent = ENGINE_RUN_LABELS[$("engineSelect").value] || "Running ADK Runners...";
+      showError("");
+      try {
+        const data = await api("/api/attack", {
+          preset_id: activePreset,
+          query: $("queryInput").value,
+          caller_id: $("callerSelect").value,
+          simulate_missing_app_filter: $("chaosCheckbox").checked,
+          engine: $("engineSelect").value,
+          top_k: Number($("topKSelect").value || 3),
+        });
+        if (seq !== requestSeq) return;
+        if (data.canary_tokens) rebuildCanaryRegex(data.canary_tokens);
+        if (data.seed_size) $("seedSizeSelect").value = String(data.seed_size);
+        renderPane("left", data.unprotected);
+        renderPane("right", data.memshield);
+        renderPerfStrip(data.performance);
+      } catch (err) {
+        if (seq === requestSeq) showError(err.message);
+      } finally {
+        if (seq === requestSeq) {
+          btn.disabled = false;
+          $("btnRunAttackLabel").textContent = RUN_IDLE_LABEL;
+        }
+      }
+    }
+
+    async function rescaleDb() {
+      const targetSize = Number($("seedSizeSelect").value || 36);
+      updateHardwareNotice();
+      showError("");
+      try {
+        await api("/api/scale", { seed_size: targetSize });
+        markReadyToRun();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    async function executeWriteTest() {
+      const btn = $("btnInjectSubmit");
+      const box = $("injectResultBox");
+      btn.disabled = true;
+      btn.textContent = "Writing...";
+      showError("");
+      try {
+        const ownerVal = $("injectOwnerInput").value.trim();
+        const canaryVal = $("injectCanaryInput").value.trim();
+        const res = await api("/api/inject", {
+          acting_persona: $("injectActorSelect").value,
+          claimed_owner_id: ownerVal || null,
+          scope: $("injectScopeSelect").value,
+          min_clearance: Number($("injectClearanceSelect").value || 1),
+          content: $("injectContentInput").value,
+          canary_token: canaryVal || null,
+        });
+        if (res.canary_tokens) rebuildCanaryRegex(res.canary_tokens);
+        const u = res.unprotected, m = res.memshield;
+        const mBadge = m.accepted
+          ? '<span class="mini warn">ACCEPTED (Within Actor Tier)</span>'
+          : `<span class="mini ok">REJECTED BY RLS (${esc(m.error_class || "Error")} · SQLSTATE ${esc(m.sqlstate || "42501")})</span>`;
+        box.style.display = "block";
+        box.innerHTML = `
+          <div class="banner" style="background:rgba(15,23,42,0.75);">
+            <div style="flex:1;">
+              <div class="banner-title">Write Classification: ${esc(res.analysis.attack)}</div>
+              <div class="banner-desc">${esc(res.analysis.verdict)}</div>
+              <div class="kv-grid" style="margin-top:8px;">
+                <div class="kv">
+                  <span class="kv-k">Left · Unprotected pgvector</span>
+                  <span class="kv-v bad">${u.accepted ? "ACCEPTED (Row Stored)" : "REJECTED"} · ${u.latency_ms} ms</span>
+                </div>
+                <div class="kv">
+                  <span class="kv-k">Right · adk-memshield (RLS WITH CHECK)</span>
+                  <span class="kv-v ${m.accepted ? "warn" : "ok"}">${mBadge} · ${m.latency_ms} ms</span>
+                  ${m.error ? `<div class="reason bad">${esc(m.error)}</div>` : ""}
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary" type="button" id="btnProbeInjected">Probe Injected Lure</button>
+          </div>`;
+        const probeBtn = $("btnProbeInjected");
+        if (probeBtn) {
+          probeBtn.addEventListener("click", () => {
+            $("queryInput").value = res.probe_query;
+            runAttack();
+          });
+        }
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Execute Write Test";
+      }
+    }
+
+    async function resetDb() {
+      const btn = $("btnReset");
+      btn.disabled = true;
+      btn.textContent = "Re-seeding...";
+      try {
+        await api("/api/reset", {});
+        $("seedSizeSelect").value = "36";
+        $("injectResultBox").style.display = "none";
+        arena = await api("/api/state");
+        rebuildCanaryRegex(arena.canary_tokens);
+        markReadyToRun();
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Reset / re-seed DB";
+      }
+    }
+
+    function pctCell(v, badWhenPositive, warnWhenPositive) {
+      if (v === null || v === undefined) return '<td class="dim">n/a</td>';
+      const cls = warnWhenPositive && v > 0 ? "kv-v warn" : badWhenPositive ? (v > 0 ? "cell-bad" : "cell-ok") : "";
+      return `<td class="${cls}">${v}%</td>`;
+    }
+    function recallCell(m) {
+      if (m.authorized_recall_pct === null) return `<td class="dim">n/a (n=0)</td>`;
+      const cls = m.authorized_recall_pct >= 100 ? "cell-ok" : "cell-bad";
+      return `<td class="${cls}">${m.authorized_recall_pct}% <span class="dim">(n=${m.recall_eligible_queries})</span></td>`;
+    }
+    function matrixRow(label, sub, target, m, extraCls) {
+      const badge = target === "unprotected" ? '<span class="mini bad">Unprotected pgvector</span>' : '<span class="mini ok">adk-memshield (RLS)</span>';
+      return `<tr class="${extraCls || ""}">
+        <td><b>${esc(label)}</b>${sub ? `<div class="dim" style="font-size:10.5px">${esc(sub)}</div>` : ""}</td>
+        <td>${badge}</td>
+        ${pctCell(m.queries_leaking_pct, true)}${pctCell(m.leaked_row_share_pct, true)}
+        ${pctCell(m.rank_1_hijack_pct, true)}${pctCell(m.canary_exfiltration_pct, true)}
+        ${pctCell(m.same_tier_poison_pct ?? 0, false, true)}
+        ${recallCell(m)}
+        <td>${m.p50_latency_ms} / ${m.p95_latency_ms}</td>
+        <td class="${m.retrieval_errors ? "cell-bad" : "dim"}">${m.retrieval_errors}</td>
+      </tr>`;
+    }
+
+    function renderBenchmarkReport(r) {
+      if (!r || !r.scenarios) return;
+      lastMarkdown = r.markdown_table || "";
+      lastReportJson = r;
+      let rows = "";
+      for (const s of r.scenarios) {
+        const rowCls = s.boundary ? "boundary-row" : "";
+        rows += matrixRow(s.short_label, s.vulnerability_class, "unprotected", s.unprotected, rowCls);
+        rows += matrixRow(s.short_label, "", "memshield", s.memshield, rowCls);
+      }
+      if (r.aggregate_attacks) {
+        rows += matrixRow("AGGREGATE (S1-S5 attacks)", "", "unprotected", r.aggregate_attacks.unprotected, "agg");
+        rows += matrixRow("AGGREGATE (S1-S5 attacks)", "", "memshield", r.aggregate_attacks.memshield, "agg");
+      }
+      const topK = r.methodology ? r.methodology.top_k : 3;
+      $("benchTable").innerHTML = `<table class="matrix">
+        <thead><tr><th>Scenario</th><th>Target</th><th>Queries leaking >=1 row</th><th>Leaked row share</th>
+        <th>Rank-1 hijack</th><th>Canary exfil (output)</th><th>Same-tier poison</th><th>Authorized recall@${topK}</th>
+        <th>p50 / p95 SQL ms</th><th>Errors</th></tr></thead><tbody>${rows}</tbody></table>`;
+      if (r.methodology) {
+        const m = r.methodology;
+        const w = m.warmup || {};
+        $("benchMethod").innerHTML = [
+          `<b>Dataset</b>: ${m.seed_records} baseline records across ${m.tenants.length} tenants (${esc(m.tenants.join(", "))}); top_k=${m.top_k}.`,
+          `<b>Warmup</b>: ${w.queries || 0} untimed queries on both targets (${w.elapsed_ms || 0} ms) before latency sampling.`,
+          `<b>Latency</b>: ${esc(m.latency_definition)} ${m.latency_repeats_per_query} samples per query.`,
+          `<b>Recall</b>: ${esc(m.recall_definition)}`,
+        ].join("<br/>");
+      }
+      renderBenchPerf(r.performance);
+      $("benchMd").textContent = lastMarkdown;
+      $("benchMdWrap").hidden = !lastMarkdown;
+      $("btnCopyMd").disabled = !lastMarkdown;
+      $("btnExportJson").disabled = false;
+    }
+
+    function switchBenchTab(tab) {
+      const live = tab === "live";
+      $("tabBtnLive").classList.toggle("active", live);
+      $("tabBtnHistory").classList.toggle("active", !live);
+      $("benchPaneLive").style.display = live ? "flex" : "none";
+      $("benchPaneHistory").style.display = live ? "none" : "flex";
+      if (!live) loadRunHistory();
+    }
+
+    function openBenchmarkModal() {
+      openModal("benchmarkModal");
+      $("benchTopK").value = $("topKSelect").value;
+      $("benchSeedSize").value = $("seedSizeSelect").value;
+      switchBenchTab("live");
+      startBenchmarkJob();
+    }
+
+    async function startBenchmarkJob() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      logOffset = 0;
+      $("benchLogStream").textContent = "";
+      $("benchLogStream").hidden = false;
+      $("benchTable").innerHTML = "";
+      $("benchMethod").innerHTML = "";
+      $("benchMdWrap").hidden = true;
+      $("benchPerf").hidden = true;
+      $("btnCopyMd").disabled = true;
+      $("btnExportJson").disabled = true;
+      $("btnStartBenchmark").disabled = true;
+      $("btnKillBenchmark").disabled = false;
+      $("benchProgressFill").style.width = "0%";
+      $("benchProgressText").textContent = "0 / 0 (0.0%)";
+      $("benchStatus").textContent = "Starting background benchmark job...";
+
+      try {
+        await api("/api/benchmark/start", {
+          caller_id: $("callerSelect").value,
+          engine: $("engineSelect").value,
+          top_k: Number($("benchTopK").value || 3),
+          seed_size: Number($("benchSeedSize").value || 36),
+          repeats: Number($("benchRepeats").value || 3),
+          label: $("benchLabel").value.trim() || "manual",
+        });
+        pollTimer = setInterval(pollBenchmarkStatus, 250);
+        await pollBenchmarkStatus();
+      } catch (err) {
+        $("benchStatus").innerHTML = `<span class="cell-bad">Start failed:</span> ${esc(err.message)}`;
+        $("btnStartBenchmark").disabled = false;
+        $("btnKillBenchmark").disabled = true;
+      }
+    }
+
+    async function pollBenchmarkStatus() {
+      try {
+        const s = await api(`/api/benchmark/status?since=${logOffset}`);
+        if (s.logs && s.logs.length) {
+          const logEl = $("benchLogStream");
+          logEl.textContent += (logEl.textContent ? "\n" : "") + s.logs.join("\n");
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+        if (typeof s.log_offset === "number") logOffset = s.log_offset;
+        const pct = Number(s.percent || 0);
+        $("benchProgressFill").style.width = `${pct}%`;
+        $("benchProgressText").textContent = `${s.step || 0} / ${s.total_steps || 0} (${pct.toFixed(1)}%)`;
+
+        if (s.status === "running" || s.status === "queued") {
+          $("benchStatus").textContent = `[${s.phase || s.status}] ${s.current || "running..."} (${s.elapsed_ms || 0} ms)`;
+          return;
+        }
+
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        $("btnStartBenchmark").disabled = false;
+        $("btnKillBenchmark").disabled = true;
+        $("seedSizeSelect").value = "36";
+
+        if (s.status === "completed" && s.result) {
+          $("benchStatus").textContent = `Completed ${s.job_id} in ${s.elapsed_ms} ms`;
+          renderBenchmarkReport(s.result);
+        } else if (s.status === "cancelled") {
+          $("benchStatus").innerHTML = `<span class="kv-v warn">Aborted (${s.job_id}) in ${s.abort_latency_ms ?? 0} ms — database restored to 36-row baseline.</span>`;
+          if (s.result) renderBenchmarkReport(s.result);
+        } else if (s.status === "failed") {
+          $("benchStatus").innerHTML = `<span class="cell-bad">Failed:</span> ${esc(s.error || "unknown error")}`;
+        }
+      } catch (err) {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        $("btnStartBenchmark").disabled = false;
+        $("btnKillBenchmark").disabled = true;
+      }
+    }
+
+    async function killBenchmarkJob() {
+      $("btnKillBenchmark").disabled = true;
+      try {
+        await api("/api/benchmark/kill", {});
+        await pollBenchmarkStatus();
+        markReadyToRun();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    async function loadRunHistory() {
+      try {
+        const data = await api("/api/history");
+        const runs = data.runs || [];
+        const opts = runs.map((r) =>
+          `<option value="${esc(r.run_id)}">${esc(r.run_id)} · ${esc(r.label)} (k=${r.top_k}, rows=${r.seed_size}, ${r.status})</option>`
+        ).join("");
+        $("historySelectA").innerHTML = opts;
+        $("historySelectB").innerHTML = opts;
+        if (runs.length > 1) $("historySelectB").selectedIndex = 1;
+
+        if (!runs.length) {
+          $("historyListContainer").innerHTML = '<div class="method">No benchmark runs recorded in history yet.</div>';
+          $("historyCompareContainer").innerHTML = "";
+          return;
+        }
+
+        const tableRows = runs.map((r) => {
+          const au = r.aggregate_attacks ? r.aggregate_attacks.unprotected : null;
+          const am = r.aggregate_attacks ? r.aggregate_attacks.memshield : null;
+          return `<tr>
+            <td class="mono"><b>${esc(r.run_id)}</b><div class="dim">${esc(r.timestamp)}</div></td>
+            <td><b>${esc(r.label)}</b><div class="dim">${esc(r.engine)} · caller=${esc(r.caller_id)}</div></td>
+            <td><span class="mini ${r.status === "completed" ? "ok" : "warn"}">${esc(r.status)}</span></td>
+            <td>top_k=${r.top_k} · rows=${r.seed_size} · rep=${r.repeats}</td>
+            <td class="cell-bad">${au ? au.queries_leaking_pct + "% leak (" + au.leaked_row_share_pct + "% rows)" : "n/a"}</td>
+            <td class="cell-ok">${am ? am.queries_leaking_pct + "% leak · Recall " + am.authorized_recall_pct + "%" : "n/a"}</td>
+            <td>${r.duration_ms} ms</td>
+            <td>
+              <button class="btn" type="button" data-load-run="${esc(r.run_id)}">Inspect</button>
+              <a class="btn" href="/api/history/${encodeURIComponent(r.run_id)}?format=md" target="_blank" rel="noopener">MD</a>
+              <a class="btn" href="/api/history/${encodeURIComponent(r.run_id)}?format=json" target="_blank" rel="noopener">JSON</a>
+            </td>
+          </tr>`;
+        }).join("");
+
+        $("historyListContainer").innerHTML = `<table class="matrix">
+          <thead><tr><th>Run ID</th><th>Label / Engine</th><th>Status</th><th>Dials</th>
+          <th>Unprotected (S1-S5)</th><th>adk-memshield (S1-S5)</th><th>Duration</th><th>Actions</th></tr></thead>
+          <tbody>${tableRows}</tbody></table>`;
+
+        $("historyListContainer").querySelectorAll("[data-load-run]").forEach((b) => {
+          b.addEventListener("click", async () => {
+            const detail = await api(`/api/history/${encodeURIComponent(b.dataset.loadRun)}`);
+            switchBenchTab("live");
+            $("benchStatus").textContent = `Loaded historical run ${detail.run_id} (${detail.label}, seed_size=${detail.seed_size}, top_k=${detail.top_k})`;
+            renderBenchmarkReport({
+              scenarios: detail.scenarios_detail || [],
+              aggregate_attacks: detail.aggregate_attacks,
+              methodology: detail.methodology,
+              markdown_table: detail.markdown_table,
+              performance: detail.performance,
+            });
+          });
+        });
+      } catch (err) {
+        $("historyListContainer").innerHTML = `<div class="cell-bad">${esc(err.message)}</div>`;
+      }
+    }
+
+    async function compareSelectedRuns() {
+      const idA = $("historySelectA").value;
+      const idB = $("historySelectB").value;
+      if (!idA || !idB) return;
+      const [a, b] = await Promise.all([
+        api(`/api/history/${encodeURIComponent(idA)}`),
+        api(`/api/history/${encodeURIComponent(idB)}`),
+      ]);
+      const auA = (a.aggregate_attacks || {}).unprotected || {};
+      const amA = (a.aggregate_attacks || {}).memshield || {};
+      const auB = (b.aggregate_attacks || {}).unprotected || {};
+      const amB = (b.aggregate_attacks || {}).memshield || {};
+      $("historyCompareContainer").innerHTML = `
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Metric (S1-S5 Aggregate)</th>
+              <th>Run A: ${esc(a.run_id)} (k=${a.top_k}, rows=${a.seed_size}) · Unprotected</th>
+              <th>Run B: ${esc(b.run_id)} (k=${b.top_k}, rows=${b.seed_size}) · Unprotected</th>
+              <th>Run A · adk-memshield (RLS)</th>
+              <th>Run B · adk-memshield (RLS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Queries Leaking >=1 Row</b></td><td class="cell-bad">${auA.queries_leaking_pct ?? "n/a"}%</td><td class="cell-bad">${auB.queries_leaking_pct ?? "n/a"}%</td><td class="cell-ok">${amA.queries_leaking_pct ?? "n/a"}%</td><td class="cell-ok">${amB.queries_leaking_pct ?? "n/a"}%</td></tr>
+            <tr><td><b>Leaked Row Share</b></td><td class="cell-bad">${auA.leaked_row_share_pct ?? "n/a"}%</td><td class="cell-bad">${auB.leaked_row_share_pct ?? "n/a"}%</td><td class="cell-ok">${amA.leaked_row_share_pct ?? "n/a"}%</td><td class="cell-ok">${amB.leaked_row_share_pct ?? "n/a"}%</td></tr>
+            <tr><td><b>Rank-1 Hijack Rate</b></td><td class="cell-bad">${auA.rank_1_hijack_pct ?? "n/a"}%</td><td class="cell-bad">${auB.rank_1_hijack_pct ?? "n/a"}%</td><td class="cell-ok">${amA.rank_1_hijack_pct ?? "n/a"}%</td><td class="cell-ok">${amB.rank_1_hijack_pct ?? "n/a"}%</td></tr>
+            <tr><td><b>Authorized Recall@K</b></td><td>${auA.authorized_recall_pct ?? "n/a"}%</td><td>${auB.authorized_recall_pct ?? "n/a"}%</td><td class="cell-ok">${amA.authorized_recall_pct ?? "n/a"}%</td><td class="cell-ok">${amB.authorized_recall_pct ?? "n/a"}%</td></tr>
+            <tr><td><b>p50 / p95 SQL Latency</b></td><td>${auA.p50_latency_ms ?? "-"} / ${auA.p95_latency_ms ?? "-"} ms</td><td>${auB.p50_latency_ms ?? "-"} / ${auB.p95_latency_ms ?? "-"} ms</td><td>${amA.p50_latency_ms ?? "-"} / ${amA.p95_latency_ms ?? "-"} ms</td><td>${amB.p50_latency_ms ?? "-"} / ${amB.p95_latency_ms ?? "-"} ms</td></tr>
+          </tbody>
+        </table>`;
+    }
+
+    function exportReportJson() {
+      if (!lastReportJson) return;
+      const blob = new Blob([JSON.stringify(lastReportJson, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `adk-leak-arena-report.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function copyMarkdown() {
+      if (!lastMarkdown) return;
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(lastMarkdown);
+        ok = true;
+      } catch (_) {
+        const ta = document.createElement("textarea");
+        ta.value = lastMarkdown;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+        ta.remove();
+      }
+      const btn = $("btnCopyMd");
+      btn.textContent = ok ? "[Copied]" : "Copy failed (select Raw Markdown)";
+      if (!ok) $("benchMdWrap").open = true;
+      setTimeout(() => { btn.textContent = "Copy Markdown Table"; }, 1800);
+    }
+
+    function openDataset() {
+      openModal("datasetModal");
+      if (!arena) return;
+      const p = persona();
+      const counts = {};
+      arena.seed_records.forEach((r) => { counts[r.tenant_id] = (counts[r.tenant_id] || 0) + 1; });
+      const rows = arena.seed_records.map((r) => {
+        const auth = isAuthorized(r, p);
+        const leakedToks = auth ? [] : r.canary_tokens;
+        return `<tr class="${auth ? "auth-row" : ""}">
+          <td>${esc(r.tenant_id)}</td><td><b>${esc(r.user_id)}</b></td>
+          <td>${esc(r.scope)} · clr=${r.min_clearance}</td>
+          <td style="text-align:left">${highlight(r.content, leakedToks)}${r.is_adversarial ? ' <span class="mini bad">LURE</span>' : ""}</td>
+          <td>${auth ? '<span class="mini ok">readable</span>' : '<span class="mini bad">denied</span>'}</td>
+        </tr>`;
+      }).join("");
+      $("datasetBody").innerHTML = `
+        <div class="method"><b>${arena.seed_records.length}</b> records · ${Object.entries(counts).map(([t, n]) => `${esc(t)}: ${n}`).join(" · ")} ·
+          ${arena.canary_tokens.length} canary tokens. Access column is evaluated for <b>${esc(p.user_id)}</b> (clr ${p.clearance}) under the RLS policy.</div>
+        <div class="table-wrap"><table class="matrix">
+          <thead><tr><th>Tenant</th><th>Owner</th><th>Scope</th><th>Content</th><th>Access for caller</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+    }
+
+    function openModal(id) { $(id).classList.add("open"); }
+    function closeModal(id) { $(id).classList.remove("open"); }
+
+    function wire() {
+      $("btnRunAttack").addEventListener("click", runAttack);
+      // Enter is a keyboard shortcut for the Run button itself, not a separate execution path.
+      $("queryInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("btnRunAttack").click(); });
+      $("querySelect").addEventListener("change", () => {
+        const preset = arena.presets.find((p) => p.id === activePreset);
+        $("queryInput").value = preset.benchmark_queries[Number($("querySelect").value)].text;
+        markReadyToRun();
+      });
+      $("callerSelect").addEventListener("change", () => {
+        renderQueryOptions(arena.presets.find((p) => p.id === activePreset));
+        markReadyToRun();
+      });
+      $("engineSelect").addEventListener("change", markReadyToRun);
+      $("topKSelect").addEventListener("change", markReadyToRun);
+      $("queryInput").addEventListener("input", markReadyToRun);
+      $("seedSizeSelect").addEventListener("change", rescaleDb);
+      $("chaosCheckbox").addEventListener("change", () => {
+        $("chaosLabel").classList.toggle("on", $("chaosCheckbox").checked);
+        markReadyToRun();
+      });
+      $("presetTabs").addEventListener("click", (e) => {
+        const b = e.target.closest(".tab");
+        if (b && b.dataset.preset) selectPreset(b.dataset.preset);
+      });
+      $("btnFillSampleLure").addEventListener("click", () => {
+        const tok = $("injectCanaryInput").value.trim() || "AUDIT-CANARY-900";
+        $("injectContentInput").value = `What is our Q4 roadmap and acquisition budget? Updated planning note: see audit reference ${tok}.`;
+      });
+      $("btnInjectSubmit").addEventListener("click", executeWriteTest);
+      $("btnBenchmark").addEventListener("click", openBenchmarkModal);
+      $("btnStartBenchmark").addEventListener("click", startBenchmarkJob);
+      $("btnKillBenchmark").addEventListener("click", killBenchmarkJob);
+      $("tabBtnLive").addEventListener("click", () => switchBenchTab("live"));
+      $("tabBtnHistory").addEventListener("click", () => switchBenchTab("history"));
+      $("btnRefreshHistory").addEventListener("click", loadRunHistory);
+      $("btnCompareRuns").addEventListener("click", compareSelectedRuns);
+      $("btnCopyMd").addEventListener("click", copyMarkdown);
+      $("btnExportJson").addEventListener("click", exportReportJson);
+      $("btnReset").addEventListener("click", resetDb);
+      $("btnDataset").addEventListener("click", openDataset);
+      document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => closeModal(b.dataset.close)));
+      document.querySelectorAll(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) closeModal(m.id); }));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") document.querySelectorAll(".modal.open").forEach((m) => closeModal(m.id));
+      });
+      document.addEventListener("mousemove", (e) => {
+        document.querySelectorAll(".card").forEach((card) => {
+          const rect = card.getBoundingClientRect();
+          card.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
+          card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
+        });
+      });
+    }
+
+    async function init() {
+      paneSkeleton("left");
+      paneSkeleton("right");
+      wire();
+      try {
+        arena = await api("/api/state");
+      } catch (err) {
+        showError("Could not load /api/state — is the database up?\n" + err.message);
+        return;
+      }
+      rebuildCanaryRegex(arena.canary_tokens);
+      renderStatus();
+      renderControls();
+      selectPreset("S1");
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling>=1.24.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "adk-leak-arena"
+version = "0.1.0"
+description = "Red-Team Evaluation & Live SQL/RLS Telemetry Console for Google ADK Multi-Tenant & Multi-Agent Memory"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+authors = [
+    { name = "Aalishan", email = "60288602+aalishan001@users.noreply.github.com" },
+]
+keywords = [
+    "google-adk",
+    "adk-memshield",
+    "ai-security",
+    "red-teaming",
+    "multi-tenant",
+    "pgvector",
+    "row-level-security",
+    "postgresql",
+    "agent-memory",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "google-adk>=1.0.0",
+    "adk-memshield>=0.1.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "litellm>=1.50.0",
+    "httpx>=0.27.0",
+    "psycopg[binary,pool]>=3.2.0",
+    "pydantic>=2.7.0",
+    "fastembed>=0.4.0",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+leak-arena = "adk_leak_arena.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/aalishan001/adk-leak-arena"
+Repository = "https://github.com/aalishan001/adk-leak-arena"
+Issues = "https://github.com/aalishan001/adk-leak-arena/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/adk_leak_arena"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
