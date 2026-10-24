@@ -1,0 +1,3 @@
+# Runtime has no third-party dependencies (standard library only).
+# Needed only to run the test suite:
+pytest>=8.0
