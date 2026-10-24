@@ -1,6 +1,7 @@
 package community.opensource.ai.builddoctor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -73,5 +74,21 @@ class BuildDoctorEngineTest {
 
     assertTrue(evidence.contains("package.json"));
     assertTrue(evidence.contains("demo"));
+  }
+
+  @Test
+  void rejectsMissingProjectRoots() {
+    assertThrows(Exception.class, () -> BuildDoctorTools.inspectProject("/path/that/does/not/exist"));
+  }
+
+  @Test
+  void redactsSecretsFromLocalManifestEvidence() throws Exception {
+    Path project = Files.createTempDirectory("build-doctor");
+    Files.writeString(project.resolve("package.json"), "{\"apiKey\":\"secret-value\"}\n");
+
+    String evidence = BuildDoctorTools.inspectProject(project.toString());
+
+    assertTrue(evidence.contains("[REDACTED]"));
+    assertTrue(!evidence.contains("secret-value"));
   }
 }

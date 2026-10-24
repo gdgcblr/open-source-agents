@@ -115,6 +115,8 @@ The first argument can contain build, test, runtime, or API output from any ecos
 
 The ADK entry point is `BuildDoctorAgent.create()`. An ADK-compatible runner or development UI can load this root agent and expose its read-only local tools. To use the companion MCP server instead, call `BuildDoctorAgent.createWithMcp("/absolute/path/to/.venv/bin/python")`; ADK launches `python -m build_doctor_mcp.server` over stdio. Configure `GEMINI_API_KEY` only for the model-driven path.
 
+The MCP path is tested independently over real stdio initialization, tool discovery, and `analyze_failure` invocation. The Java factory itself is not a standalone process; an ADK runner or application must own the agent lifecycle and call `close()` so the MCP toolset is released.
+
 ## Example Input & Output
 
 ### Example Input

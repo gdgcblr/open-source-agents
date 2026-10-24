@@ -50,6 +50,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
 - Deterministic signal IDs and scores make classification inspectable and reproducible for the same input.
 - Standard MCP stdio transport for desktop and editor clients.
+- Real stdio protocol coverage verifies server startup, tool discovery, and tool invocation.
 - Redaction, input limits, optional workspace allowlisting, and no automatic remediation.
 
 ## Technical Stack
@@ -247,6 +248,7 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 - The server reads only a fixed list of root-level manifests and does not recursively scan repositories.
 - The server does not run builds, tests, network calls, or remediation commands.
 - XML reports are parsed with `defusedxml`; malformed or oversized reports are reported as unreadable or skipped.
+- Recursive report discovery rejects resolved paths outside the selected workspace.
 - Diagnostic output is redacted heuristically; do not treat redaction as a guarantee and review client permissions and supplied paths.
 
 ## Security & Privacy Considerations
