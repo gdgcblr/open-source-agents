@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [issue-triage-assistant](issue-triage-assistant/) | Checks issue readiness and provides exact-quote evidence, template checks, allowlisted labels, and a draft reply. | Python, Google ADK, Ollama | — |
