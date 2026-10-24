@@ -15,8 +15,9 @@ Intended users include developers, open-source contributors, students, support e
 - `analyze_failure`: classify common compilation, dependency, test, runtime, and API failure signals.
 - `inspect_project`: read bounded content from recognized project manifests without executing code.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
+- Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
 - Standard MCP stdio transport for desktop and editor clients.
-- No API key, database, shell execution, file mutation, or external service required.
+- Redaction, input limits, optional workspace allowlisting, and no automatic remediation.
 
 ## Technical Stack
 
@@ -96,6 +97,8 @@ On Windows, use the absolute path to `.venv\\Scripts\\python.exe`. Do not commit
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `BUILD_DOCTOR_MAX_FILE_BYTES` | No | `200000` | Maximum bytes read from each recognized manifest |
+| `BUILD_DOCTOR_MAX_LOG_CHARS` | No | `200000` | Maximum log characters analyzed |
+| `BUILD_DOCTOR_ALLOWED_ROOT` | No | unset | If set, project paths must remain below this absolute workspace directory |
 
 ## How to Run
 
@@ -106,6 +109,8 @@ python -m build_doctor_mcp.server
 ```
 
 The process waits for MCP messages on standard input and writes protocol messages to standard output. Use an MCP client to invoke its tools.
+
+The Java ADK agent in `agents/build-doctor` can connect to this server through `BuildDoctorAgent.createWithMcp("python")`, which launches `python -m build_doctor_mcp.server` over stdio. Use the absolute path to the virtual-environment Python executable when the ADK process does not inherit your shell environment.
 
 For a quick direct smoke check without an MCP client:
 
@@ -145,14 +150,16 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 - Failure classification uses transparent signatures; it is not a replacement for ecosystem-specific report parsers.
 - The server reads only a fixed list of root-level manifests and does not recursively scan repositories.
 - The server does not run builds, tests, network calls, or remediation commands.
-- Diagnostic output may contain sensitive log or manifest content; review client permissions and supplied paths.
+- Diagnostic output is redacted heuristically; do not treat redaction as a guarantee and review client permissions and supplied paths.
 
 ## Security & Privacy Considerations
 
 - All operations are read-only.
 - No shell commands or external network requests are made by the server.
-- Manifest reads are bounded by `BUILD_DOCTOR_MAX_FILE_BYTES`.
+- Logs and manifest reads are bounded by `BUILD_DOCTOR_MAX_LOG_CHARS` and `BUILD_DOCTOR_MAX_FILE_BYTES`.
+- Set `BUILD_DOCTOR_ALLOWED_ROOT` to restrict inspection to a workspace directory.
 - Symlinked manifests are skipped.
+- Suggested fixes are never executed, and verification remains `pending` until the client supplies a new result.
 - Never include API keys, tokens, passwords, or private data in diagnostic logs sent to an MCP client.
 
 ## Future Improvements
