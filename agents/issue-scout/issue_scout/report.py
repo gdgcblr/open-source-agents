@@ -47,6 +47,9 @@ def evidence(candidate: Candidate, now: datetime) -> List[str]:
             elif flag in ("likely-resolved", "possibly-resolved"):
                 hint = signals.resolved_hints[-1]
                 proof = '@%s: "%s" %s' % (hint.author, hint.quote, hint.url)
+            elif flag == "suspicious-instructions":
+                hint = signals.injection_hints[0]
+                proof = '@%s: "%s" %s' % (hint.author, hint.quote, hint.url)
         lines.append("%s%s" % (label, (" -> " + proof) if proof else ""))
     if signals is not None and signals.open_policy and "recently-claimed" in candidate.flags:
         policy = signals.open_policy

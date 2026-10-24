@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from .github import GitHubError
+from .guardrails import redact_secrets
 from .models import BEGINNER_LABELS, Profile
 from .report import render_brief, render_candidate, render_find, render_related
 from .scout import Scout
@@ -149,9 +150,11 @@ def _brief(scout: Scout, args) -> int:
             else:
                 note = "Gemini brief skipped: set GOOGLE_API_KEY to add a summary and plan."
     if args.json:
-        print(json.dumps({"facts": facts, "ai_brief": ai, "note": note}, indent=2, default=str))
+        print(redact_secrets(json.dumps({"facts": facts, "ai_brief": ai, "note": note}, indent=2, default=str)))
     else:
-        sys.stdout.write(render_brief(facts, scout.now, ai))
+        sys.stdout.write(redact_secrets(render_brief(facts, scout.now, ai)))
+        if (ai or {}).get("dropped_files"):
+            print("\n_Guardrail: removed file suggestions not found in the repo data: %s_" % ", ".join(ai["dropped_files"]))
         if note:
             print("\n_Note: %s_" % note)
     return 0
@@ -165,10 +168,11 @@ def _short_error(exc: Exception) -> str:
 
 
 def _emit(args, data, render) -> None:
+    # Issue text can contain leaked credentials; never echo them.
     if args.json:
-        print(json.dumps(data, indent=2, default=str))
+        print(redact_secrets(json.dumps(data, indent=2, default=str)))
     else:
-        sys.stdout.write(render())
+        sys.stdout.write(redact_secrets(render()))
 
 
 if __name__ == "__main__":

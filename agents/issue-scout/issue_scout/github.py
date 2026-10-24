@@ -16,6 +16,8 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional
 
+from .guardrails import check_repo
+
 API_ROOT = "https://api.github.com"
 USER_AGENT = "issue-scout (+https://github.com/gdgcblr/open-source-agents)"
 
@@ -61,6 +63,9 @@ class GitHubClient:
         return bool(self.token)
 
     def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        """Read-only GET. Absolute URLs (e.g. links inside API responses) must point at api.github.com."""
+        if path.startswith("http") and not path.startswith(API_ROOT + "/"):
+            raise GitHubError("Refusing to fetch a non-GitHub-API URL: %s" % path[:80])
         url = path if path.startswith("http") else API_ROOT + path
         if params:
             url += "?" + urllib.parse.urlencode(params)
@@ -181,9 +186,11 @@ def parse_issue_url(value: str) -> tuple:
     if "#" in text and "://" not in text:
         repo, _, number = text.partition("#")
         if repo.count("/") == 1 and number.isdigit():
-            return repo, int(number)
+            return check_repo(repo), int(number)
     parsed = urllib.parse.urlparse(text if "://" in text else "https://github.com/" + text)
+    if parsed.netloc.lower() not in ("github.com", "www.github.com"):
+        raise ValueError("Only github.com issues are supported, got %r" % value)
     parts = [p for p in parsed.path.split("/") if p]
     if len(parts) >= 4 and parts[2] in ("issues", "pull") and parts[3].isdigit():
-        return "%s/%s" % (parts[0], parts[1]), int(parts[3])
+        return check_repo("%s/%s" % (parts[0], parts[1])), int(parts[3])
     raise ValueError("Not a GitHub issue reference: %r (expected owner/repo#123 or an issue URL)" % value)

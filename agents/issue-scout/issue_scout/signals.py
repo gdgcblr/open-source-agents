@@ -11,6 +11,7 @@ import statistics
 from datetime import datetime, timezone
 from typing import Iterable, List, Optional
 
+from .guardrails import detect_injection
 from .models import IssueSignals, Mention, PullRef, RepoHealth
 
 CLAIM_WINDOW_DAYS = 30
@@ -24,15 +25,23 @@ _CLAIM_PATTERNS = [
     r"\b(please )?assign (this |it |the issue )?(issue )?to me\b",
     r"\bi(?:'m| am) interested (in|to) (work|implement|tak|fix|contribut|solv)",
     r"(^|\s)/(assign|take|claim)\b",
+    r"^\s*(i'?m |i am )?working on (this|it)\b",
+    r"\blet me (give|take) (this|it) a (shot|try|stab|go)\b",
+    r"\bdibs\b",
 ]
 _RESOLVED_PATTERNS = [
     r"\balready (exists|been (fixed|implemented|resolved|addressed|merged|done)|fixed|implemented|resolved|addressed|supported|done)\b",
     r"\b(fixed|resolved|addressed|implemented|closed) (in|by|via) (#\d+|https?://\S+|[0-9a-f]{7,40}\b)",
     r"\bduplicate of #?\d+",
-    r"\b(this|it) (can|should) (now )?be closed\b",
+    r"\b(this|it) (can|should) (now )?be closed\b(?! off| once| after| when| if| with)",
     r"\bno longer (needed|relevant|reproducible|an issue|applies)\b",
+    r"\b(was|been|got) (done|fixed|implemented|added|resolved) in (the |a )?(last|latest|recent|new|newest|previous) (release|version|update)\b",
+    r"\bclosing (this )?(as|since|because)\b",
 ]
+# A resolved-looking phrase right after one of these is a denial ("not fixed in #12").
+_NEGATION_BEFORE = re.compile(r"\b(not|n't|never|no)\b[\w ']{0,6}$", re.IGNORECASE)
 _OPEN_POLICY_PATTERNS = [
+    r"\bno (need for )?assign(ment|ing|ees?)\b",
     r"\b(don'?t|do not|we don'?t) (need to )?assign\b",
     r"\bno need to (ask|be assigned|wait)\b",
     r"\bjust (open|submit|send|raise|create) (a |the )?(pr|pull request)\b",
@@ -83,7 +92,17 @@ def detect_claim(text: str) -> Optional[str]:
 
 
 def detect_resolved(text: str) -> Optional[str]:
-    return _first_match(_resolved_re, _strip_quotes(text or ""))
+    """Ignore denials ("not fixed in #12") and questions ("is this already fixed?")."""
+    text = _strip_quotes(text or "")
+    for pattern in _resolved_re:
+        for match in pattern.finditer(text):
+            if _NEGATION_BEFORE.search(text[max(0, match.start() - 20) : match.start()]):
+                continue
+            sentence_end = re.search(r"[.!?\n]", text[match.end() :])
+            if sentence_end and sentence_end.group() == "?":
+                continue
+            return _snippet(text, match.start(), match.end())
+    return None
 
 
 def detect_open_policy(text: str) -> Optional[str]:
@@ -137,6 +156,10 @@ def analyze_timeline(timeline: List[dict], repo: str, assignees: List[str], now:
             resolved = detect_resolved(body)
             if resolved:
                 signals.resolved_hints.append(Mention(author, created, url, resolved, is_maintainer))
+
+            injection = detect_injection(body)
+            if injection:
+                signals.injection_hints.append(Mention(author, created, url, injection, is_maintainer))
 
         elif kind == "cross-referenced":
             source = (event.get("source") or {}).get("issue") or {}

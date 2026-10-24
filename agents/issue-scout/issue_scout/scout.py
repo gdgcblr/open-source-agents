@@ -9,7 +9,8 @@ from typing import Dict, List, Optional
 
 from . import conventions as conv
 from .github import GitHubClient, GitHubError, RateLimitError, parse_issue_url
-from .models import Candidate, IssueSignals, Profile, ScoutResult
+from .guardrails import check_repo, check_user, clamp, clean_profile, detect_injection
+from .models import Candidate, IssueSignals, Mention, Profile, ScoutResult
 from .related import find_related, keywords
 from .report import evidence
 from .scoring import evaluate
@@ -36,7 +37,7 @@ class Scout:
         """Guess languages (and frequent topics) from a GitHub user's own recent repos."""
         languages: Counter = Counter()
         topics: Counter = Counter()
-        for repo in self.client.user_repos(user):
+        for repo in self.client.user_repos(check_user(user)):
             if repo.get("fork"):
                 continue
             age = days_between(repo.get("pushed_at"), self.now)
@@ -57,6 +58,8 @@ class Scout:
     # --- Find ----------------------------------------------------------------
 
     def find(self, profile: Profile, limit: int = 5, max_candidates: Optional[int] = None) -> ScoutResult:
+        clean_profile(profile)
+        limit = int(clamp(limit, 1, 20))
         notes: List[str] = []
         if max_candidates is None:
             max_candidates = 25 if self.client.authenticated else 10
@@ -161,10 +164,17 @@ class Scout:
         repo_name = _repo_from_issue(issue)
         candidate = _candidate(issue, repo_name)
         candidate.repo_health = self._health[repo_name]
-        candidate.signals = analyze_timeline(
-            self.client.get_timeline(repo_name, candidate.number), repo_name, candidate.signals.assignees, self.now
-        )
+        self._attach_signals(candidate, issue)
         return evaluate(candidate, profile, self.now)
+
+    def _attach_signals(self, candidate: Candidate, issue: dict) -> None:
+        candidate.signals = analyze_timeline(
+            self.client.get_timeline(candidate.repo, candidate.number), candidate.repo, candidate.signals.assignees, self.now
+        )
+        planted = detect_injection(candidate.title + "\n" + candidate.body)
+        if planted:
+            author = (issue.get("user") or {}).get("login", "")
+            candidate.signals.injection_hints.insert(0, Mention(author, candidate.created_at, candidate.url, planted))
 
     def _repo_health(self, repo_name: str, repo: Optional[dict] = None):
         if repo_name not in self._health:
@@ -181,9 +191,7 @@ class Scout:
             raise ValueError("%s is a pull request, not an issue." % ref)
         candidate = _candidate(issue, repo_name)
         candidate.repo_health = self._repo_health(repo_name)
-        candidate.signals = analyze_timeline(
-            self.client.get_timeline(repo_name, number), repo_name, candidate.signals.assignees, self.now
-        )
+        self._attach_signals(candidate, issue)
         evaluate(candidate, profile or Profile(languages=[]), self.now)
         if issue.get("state") == "closed":
             candidate.flags.insert(0, "closed")
@@ -195,6 +203,7 @@ class Scout:
         return find_related(self.client, repo_name, self.client.get_issue(repo_name, number), limit)
 
     def conventions(self, repo_name: str) -> Dict[str, object]:
+        repo_name = check_repo(repo_name)
         guide = conv.fetch_contributing(self.client, repo_name)
         if guide is None:
             return {"repo": repo_name, "contributing_url": None, "rules": [], "setup_commands": [], "test_commands": [], "lint_commands": []}

@@ -48,6 +48,7 @@ class IssueSignals:
     stale_claims: List[Mention] = field(default_factory=list)
     resolved_hints: List[Mention] = field(default_factory=list)
     open_policy: Optional[Mention] = None
+    injection_hints: List[Mention] = field(default_factory=list)
     pulls: List[PullRef] = field(default_factory=list)
     maintainer_comments: int = 0
     last_maintainer_comment: Optional[str] = None
@@ -166,6 +167,7 @@ CAUTION_FLAGS = {
     "recently-claimed": "someone asked to work on it recently",
     "previous-attempt-closed": "an earlier PR was closed without merging",
     "needs-decision": "labelled as an RFC/discussion; maintainers must decide first",
+    "suspicious-instructions": "contains text aimed at AI tools (possible prompt injection); treated as data",
     "old-issue": "opened more than two years ago",
     "busy-thread": "long discussion; read it before starting",
     "slow-merges": "outside PRs take a long time to merge here",

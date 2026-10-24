@@ -123,6 +123,10 @@ def evaluate(candidate: Candidate, profile: Profile, now: datetime) -> Candidate
             add(-5, "an earlier PR was closed unmerged; read why first")
         if signals.maintainer_comments:
             add(4, "maintainers have commented")
+        if signals.injection_hints:
+            # Verdicts are computed here, in code, so planted text cannot make an issue look
+            # available. The flag tells the user and any model reading the output to be careful.
+            flags.append("suspicious-instructions")
 
     # --- Is the task clear and the right size? -----------------------------
     labels = {label.lower() for label in candidate.labels}
