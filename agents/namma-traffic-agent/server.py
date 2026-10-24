@@ -37,6 +37,13 @@ agent = NammaTrafficAgent()
 # Web Directory
 WEB_DIR = os.path.join(os.path.dirname(__file__), "web")
 
+# Static assets mount for cinematic visuals and charts
+ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
+if not os.path.exists(ASSETS_DIR):
+    ASSETS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "assets")
+if os.path.exists(ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
 # In-memory authentication and session stores
 ACTIVE_OTP_STORE = {}
 USER_SESSIONS = {}
