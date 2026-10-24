@@ -94,6 +94,8 @@ BuildDoctor does not poll or mutate monitoring systems. Use a provider webhook o
 
 The provider adapter should map vendor fields into the contract shown in [`examples/observability-alert.json`](examples/observability-alert.json). The standard fields are `event_type`, `service`, `environment`, `metric`, `value`, `threshold`, `unit`, `condition`, `timestamp`, and `correlation_id`. Vendor-specific fields may be retained in the gateway, but only sanitized evidence should be sent to BuildDoctor. Configure `BUILD_DOCTOR_WEBHOOK_SECRET` and call `verify_alert_signature` before `analyze_alert`; signature verification fails closed when no secret is configured.
 
+See [`examples/observability-gateway/README.md`](examples/observability-gateway/README.md) for the provider-adapter boundary and signature responsibilities.
+
 Supported event categories include latency, error rate, availability, saturation, deployment, security, certificate expiry, and queue lag. A threshold breach identifies an incident signal, not its root cause. BuildDoctor returns the next evidence to collect, such as traces, structured logs, deployment changes, dependency health, and resource saturation.
 
 ## Prerequisites
