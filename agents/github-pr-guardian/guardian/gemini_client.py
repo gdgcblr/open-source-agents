@@ -4,9 +4,19 @@ from __future__ import annotations
 import json
 import os
 import re
+import ssl
 import urllib.error
 import urllib.request
 from typing import Any
+
+
+def _get_ssl_context() -> ssl.SSLContext:
+    """Create a verified SSL context using certifi on macOS if available."""
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl.create_default_context()
 
 
 REVIEW_SYSTEM_PROMPT = """You are "GitHub PR Guardian", an elite open-source maintainer and security engineer.
@@ -121,7 +131,7 @@ Git Diff:
         )
 
         try:
-            with urllib.request.urlopen(req, timeout=45) as resp:
+            with urllib.request.urlopen(req, timeout=45, context=_get_ssl_context()) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
                 candidate = resp_data.get("candidates", [{}])[0]
                 text_response = (

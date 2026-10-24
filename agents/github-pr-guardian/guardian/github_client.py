@@ -3,9 +3,19 @@
 from __future__ import annotations
 import json
 import re
+import ssl
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+
+
+def _get_ssl_context() -> ssl.SSLContext:
+    """Create a verified SSL context using certifi on macOS if available."""
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl.create_default_context()
 
 
 @dataclass
@@ -62,7 +72,7 @@ class GitHubClient:
         req = urllib.request.Request(url, headers=self._get_headers())
 
         try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=15, context=_get_ssl_context()) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return PullRequestMetadata(
                     owner=owner,
@@ -96,7 +106,7 @@ class GitHubClient:
         )
 
         try:
-            with urllib.request.urlopen(req, timeout=20) as resp:
+            with urllib.request.urlopen(req, timeout=20, context=_get_ssl_context()) as resp:
                 return resp.read().decode("utf-8")
         except urllib.error.HTTPError as e:
             raise RuntimeError(f"Failed to fetch PR diff ({e.code}): {e}")
