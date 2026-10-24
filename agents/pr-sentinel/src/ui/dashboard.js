@@ -319,10 +319,14 @@ function renderDashboardHtml(report) {
       position: relative;
     }
 
-    .copy-btn {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
+    @media print {
+      body { background: #fff !important; color: #111 !important; }
+      header { border-bottom: 2px solid #ccc; background: #fff !important; position: static; }
+      .header-actions, .tabs, .copy-btn { display: none !important; }
+      .score-card, .summary-card, .finding-card, pre { background: #f8fafc !important; color: #111 !important; border: 1px solid #ddd !important; box-shadow: none !important; }
+      .finding-title, .score-num, .brand h1 { color: #000 !important; }
+      .tab-content { display: block !important; margin-bottom: 2rem; }
+      pre { white-space: pre-wrap; word-break: break-all; }
     }
   </style>
 </head>
@@ -336,8 +340,9 @@ function renderDashboardHtml(report) {
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary" onclick="runScan()">⚡ Re-Run Audit</button>
-      <button class="btn btn-primary" onclick="downloadMarkdown()">📥 Download PR Review (.md)</button>
+      <button class="btn btn-secondary" onclick="runScan()">⚡ Re-Run</button>
+      <button class="btn btn-secondary" onclick="exportPdf()">📄 Export PDF</button>
+      <button class="btn btn-primary" onclick="downloadMarkdown()">📥 Download .md</button>
     </div>
   </header>
 
@@ -518,6 +523,10 @@ function renderDashboardHtml(report) {
       } catch (e) {
         alert('Audit failed: ' + e.message);
       }
+    }
+
+    function exportPdf() {
+      window.print();
     }
 
     function downloadMarkdown() {
