@@ -15,6 +15,7 @@ export function renderTable(rows: Row[]): void {
     const status =
       score.status === 'Available' ? pc.green('🟢 Available') :
       score.status === 'Claimed' ? pc.yellow(`🟡 Claimed (${score.reason})`) :
+      score.status === 'Fixed' ? pc.dim(`✅ Likely fixed (${score.reason})`) :
       pc.red(`🔴 Taken (${score.reason})`);
     const label = `${issue.repo_full_name}#${issue.number} ${issue.title}`;
     console.log(`${String(i + 1).padStart(2)}  ${clip(label, TABLE.issueWidth)}${color(clip(`${score.score} ${scoreBand(score.score)}`, TABLE.mergeWidth))}${clip(dots, TABLE.difficultyWidth)}${status}`);

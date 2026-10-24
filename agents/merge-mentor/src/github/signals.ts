@@ -6,15 +6,22 @@ export function isClaimComment(body: string): boolean {
   return CLAIM_PATTERNS.some((p) => p.test(body));
 }
 
-/** Looks through an issue timeline for an open linked PR or a recent claim comment. */
+/**
+ * Looks through an issue timeline. Priority: an open linked PR (Taken), then a merged PR that references
+ * the issue although it is still open (probably already Fixed), then a recent claim comment (Claimed).
+ */
 export function detectClaim(timeline: any[], now: number, repoFullName: string): ClaimResult {
   let claim: ClaimResult = { status: 'Available' };
+  let fixed: ClaimResult | undefined;
   for (const event of timeline) {
     const source = event.source?.issue;
     // Only a PR in this same repository counts; mentions from other repos are ignored.
     const sameRepo = source?.repository?.full_name?.toLowerCase() === repoFullName.toLowerCase();
     if (event.event === 'cross-referenced' && sameRepo && source?.pull_request && source.state === 'open') {
       return { status: 'Taken', reason: `PR #${source.number} open` };
+    }
+    if (event.event === 'cross-referenced' && sameRepo && source?.pull_request?.merged_at) {
+      fixed = { status: 'Fixed', reason: `PR #${source.number} already merged` };
     }
     const login: string = event.user?.login ?? event.actor?.login ?? '';
     const isBot = login.endsWith('[bot]') || event.user?.type === 'Bot';
@@ -24,7 +31,7 @@ export function detectClaim(timeline: any[], now: number, repoFullName: string):
       claim = { status: 'Claimed', reason: `@${login} asked ${days === 0 ? 'today' : `${days}d ago`}` };
     }
   }
-  return claim;
+  return fixed ?? claim;
 }
 
 const isBot = (pr: any) => pr.user?.type === 'Bot' || String(pr.user?.login ?? '').endsWith('[bot]');
@@ -63,7 +70,7 @@ export function scoreMergeChance(health: RepoHealth, repoPushedAt: string, issue
   score += bandPoints(W.repoActivityBands, (b) => daysSincePush <= b.maxDays);
   score += bandPoints(W.quietIssueBands, (b) => issueComments <= b.maxComments);
 
-  if (claim.status === 'Taken') score = Math.min(score, W.takenCap);
+  if (claim.status === 'Taken' || claim.status === 'Fixed') score = Math.min(score, W.takenCap);
   if (claim.status === 'Claimed') score -= W.claimedPenalty;
   return Math.max(0, Math.min(100, Math.round(score)));
 }

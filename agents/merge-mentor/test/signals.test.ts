@@ -69,3 +69,35 @@ test('computeRepoHealth ignores bot PRs (dependabot must not look like outside c
   assert.equal(health.mergedPRs, 1);
   assert.equal(health.outsideMerged, 1);
 });
+
+// ---- "probably already fixed": a merged PR in the same repo references an issue that is still open ----
+
+const xref = (state: string, merged: string | null, repo = 'a/b', number = 11) => ({
+  event: 'cross-referenced',
+  source: { issue: { number, state, pull_request: { merged_at: merged }, repository: { full_name: repo } } },
+});
+
+test('detectClaim: a merged PR that references the open issue means probably Fixed', () => {
+  const result = detectClaim([xref('closed', daysAgo(3))], NOW, 'a/b');
+  assert.deepEqual(result, { status: 'Fixed', reason: 'PR #11 already merged' });
+});
+
+test('detectClaim: an open PR still wins over a merged one (someone is still working on it)', () => {
+  assert.equal(detectClaim([xref('closed', daysAgo(3), 'a/b', 11), xref('open', null, 'a/b', 12)], NOW, 'a/b').status, 'Taken');
+  assert.equal(detectClaim([xref('open', null, 'a/b', 12), xref('closed', daysAgo(3), 'a/b', 11)], NOW, 'a/b').status, 'Taken');
+});
+
+test('detectClaim: Fixed beats a claim comment, because a fixed issue needs no one', () => {
+  const comment = { event: 'commented', body: 'Can I work on this?', created_at: daysAgo(1), user: { login: 'sam', type: 'User' } };
+  assert.equal(detectClaim([comment, xref('closed', daysAgo(3))], NOW, 'a/b').status, 'Fixed');
+});
+
+test('detectClaim: a PR closed without merging, or merged in another repo, does not make it Fixed', () => {
+  assert.equal(detectClaim([xref('closed', null)], NOW, 'a/b').status, 'Available');
+  assert.equal(detectClaim([xref('closed', daysAgo(3), 'other/repo')], NOW, 'a/b').status, 'Available');
+});
+
+test('scoreMergeChance caps a Fixed issue like a Taken one', () => {
+  const healthy = { closedPRs: 50, mergedPRs: 50, outsideMerged: 50, medianDaysToMerge: 1 };
+  assert.equal(scoreMergeChance(healthy, daysAgo(1), 0, { status: 'Fixed', reason: 'x' }, NOW), 15);
+});

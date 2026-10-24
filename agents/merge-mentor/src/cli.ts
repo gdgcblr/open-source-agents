@@ -115,7 +115,7 @@ async function main() {
       log: (m) => console.log(`✔ ${m}`),
     });
     if (rows.length === 0) fail(`No free issues found for ${language} at ${level} level (${hiddenTaken} already have an open PR). Try another level.`);
-    if (hiddenTaken > 0) console.log(pc.dim(`(${hiddenTaken} issues hidden because they already have an open PR; use --show-taken to see them)`));
+    if (hiddenTaken > 0) console.log(pc.dim(`(${hiddenTaken} issues hidden because they already have an open PR or look fixed; use --show-taken to see them)`));
     if (fixture && mode === 'record') fixture.gemini.difficulty = ratings;
     renderTable(rows);
 

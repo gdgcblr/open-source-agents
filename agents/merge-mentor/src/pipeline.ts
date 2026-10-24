@@ -34,8 +34,8 @@ export async function rankIssues(o: RankOptions): Promise<RankResult> {
     return { issue, repo, score: await getMergeChance(o.gh, issue, repo, healthCache, o.now) };
   });
 
-  // An issue with an open PR is not worth the reader's time, and rating it would waste Gemini quota.
-  const kept = o.hideTaken === false ? scored : scored.filter((s) => s.score.status !== 'Taken');
+  // An issue with an open PR, or one a merged PR already references, is not worth the reader's time, and rating it would waste Gemini quota.
+  const kept = o.hideTaken === false ? scored : scored.filter((s) => s.score.status !== 'Taken' && s.score.status !== 'Fixed');
   const hiddenTaken = scored.length - kept.length;
 
   let ratings: Record<string, DifficultyResult> = o.recordedRatings ?? {};

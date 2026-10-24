@@ -34,7 +34,7 @@ Most issue finders stop at a ranked list. merge-mentor goes further, and it chec
 
 ### Key Features
 - **Language + level search**: finds active repos written mainly in your language, and their open, unassigned issues for your level.
-- **Claim check**: flags issues that already have an open PR or a "can I work on this?" comment.
+- **Claim check**: hides issues that already have an open PR or that a merged PR already references (probably fixed), and flags a recent "can I work on this?" comment.
 - **Merge Chance score**: ranks issues by how often the repo merges outside contributors, how fast, and how active it is.
 - **Automatic checks**: every `file:line` citation and suggested diff is compared with the code the agent really read, with one repair round if something is off.
 - **AI code mentor**: a Gemini agent reads the repo with read-only tools and explains the issue, where it happens, its impact, the concept and code flow, how to solve it, a suggested fix, how to test it, and a ready-to-use PR description.
@@ -56,7 +56,7 @@ Most issue finders stop at a ranked list. merge-mentor goes further, and it chec
 flowchart TD
     A["You: language + level"] --> B["Find projects (1 GitHub search, no AI)"]
     B --> C["You pick a project"]
-    C --> D["Its open, unassigned issues for your level<br/>drop issues with an open PR, flag claims"]
+    C --> D["Its open, unassigned issues for your level<br/>drop issues with an open PR or a merged fix, flag claims"]
     D --> E["Merge Chance score + difficulty (1 Gemini call)"]
     E --> F["You pick an issue"]
     F --> G["Mentor agent (Gemini)<br/>reads the repo with read-only tools:<br/>list_files · read_file · search_code"]
@@ -105,7 +105,7 @@ agents/merge-mentor/
 │       ├── mentor.ts      the agent loop and its read-only tools
 │       └── guardrails.ts  automatic checks on the AI's answer
 ├── web/index.html         the web UI (one file, no build step)
-├── test/                  56 tests, no network or keys needed
+├── test/                  65 tests, no network or keys needed
 ├── fixtures/demo.json     recorded data for offline demo mode
 └── docs/                  screenshots
 ```
@@ -215,7 +215,7 @@ In this run the first draft guessed a file it had never opened; the automatic ch
 ## How to Test
 
 ```bash
-npm test       # 56 tests, no network and no API keys
+npm test       # 65 tests, no network and no API keys
 npm run demo   # end-to-end run on recorded data
 ```
 
@@ -223,7 +223,7 @@ What the tests cover:
 
 | Area | What is checked |
 |---|---|
-| **Scoring** | claim detection (open PR, recent claim, bots, PRs from other repos), Merge Chance weights, repo health, bot PRs ignored |
+| **Scoring** | claim detection (open PR, merged PR meaning probably fixed, recent claim, bots, PRs from other repos); hidden issues cost no Gemini quota, Merge Chance weights, repo health, bot PRs ignored |
 | **Guardrails** | citations must point at lines the agent was shown; diffs are compared with the real file; risky additions; prompt-injection phrases; problems sent back for repair |
 | **Security** | path traversal blocked, search qualifiers stripped, repo names validated, only `api.github.com` reachable, secrets masked |
 | **Mentor loop** | a fake Gemini drives the real agent loop: a good answer is accepted at once; a vague one is repaired exactly once; hostile tool arguments (path traversal, unknown tools, junk line numbers) only produce errors; cancelling stops further model calls |

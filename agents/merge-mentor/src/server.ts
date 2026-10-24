@@ -27,6 +27,9 @@ const gh = new GitHubClient(config.githubToken, demo ? 'replay' : 'live', fixtur
 const gemini = !demo && config.geminiApiKey ? new Gemini(config.geminiApiKey, config.modelName) : undefined;
 const port = Number(values.port ?? process.env.PORT ?? DEFAULT_PORT);
 
+/** Demo mode: the issues that have a recorded explanation. */
+const recordedKeys: string[] = fixture?.gemini.mentorFor ? [String(fixture.gemini.mentorFor)] : [];
+
 /** Rows from the most recent searches, so opening an issue does not refetch it. */
 const known = new Map<string, { issue: Issue; repo: Repository }>();
 /** Projects seen in the project list, so opening one does not refetch it. */
@@ -161,7 +164,7 @@ async function handleIssues(url: URL, res: http.ServerResponse): Promise<void> {
     recordedRatings: fixture ? ((fixture.gemini.difficulty ?? {}) as Record<string, any>) : undefined,
   });
   for (const r of rows) remember(known, issueKey(r.issue), { issue: r.issue, repo: r.repo });
-  json(res, 200, { issues: rows.map(toJson), hiddenTaken, page, hasMore });
+  json(res, 200, { issues: rows.map((r) => ({ ...toJson(r), recorded: recordedKeys.includes(issueKey(r.issue)) })), hiddenTaken, page, hasMore });
 }
 
 function handleExplain(url: URL, req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -244,7 +247,7 @@ const server = http.createServer(async (req, res) => {
       return void res.end(pageHtml.replace('<script>', `<script nonce="${nonce}">`));
     }
     if (url.pathname === '/api/status') {
-      return json(res, 200, { demo, ai: demo || Boolean(gemini), githubToken: gh.hasToken, model: config.modelName });
+      return json(res, 200, { demo, ai: demo || Boolean(gemini), githubToken: gh.hasToken, model: config.modelName, recorded: recordedKeys });
     }
     if (url.pathname === '/api/projects') return await handleProjects(url, res);
     if (url.pathname === '/api/issues') return await handleIssues(url, res);

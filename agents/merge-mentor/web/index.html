@@ -119,7 +119,7 @@ const LANGS = ['typescript', 'javascript', 'python', 'go', 'rust', 'java', 'c++'
 const LEVELS = ['beginner', 'intermediate', 'advanced'];
 const $ = (id) => document.getElementById(id);
 const state = { lang: 'typescript', level: 'beginner', issues: [], current: null, source: null, demo: false, page: 1, hasMore: false, hidden: 0,
-  view: 'projects', projects: [], pPage: 1, pMore: false, repo: null };
+  view: 'projects', projects: [], pPage: 1, pMore: false, repo: null, recorded: [] };
 
 function remember(key, value) { try { localStorage.setItem('mm.' + key, value); } catch {} }
 function recall(key) { try { return localStorage.getItem('mm.' + key); } catch { return null; } }
@@ -188,7 +188,8 @@ document.addEventListener('click', (e) => {
   else if (t.dataset.copy !== undefined) {
     const text = [...t.parentElement.querySelectorAll('.l')].map((n) => n.textContent.replace(/^ $/, '')).join('\n');
     navigator.clipboard?.writeText(text).then(() => { t.textContent = 'Copied'; setTimeout(() => (t.textContent = 'Copy'), 1200); });
-  } else if (t.id === 'more') loadMore();
+  } else if (t.dataset.showRecorded) showRecorded(t.dataset.showRecorded);
+  else if (t.id === 'more') loadMore();
   else if (t.id === 'more-projects') loadMoreProjects();
   else if (t.id === 'back') { closeStream(); state.view = 'projects'; state.current = null; $('detail').innerHTML = EMPTY_DETAIL; renderProjects(); }
   else if (t.dataset.project) openProject(t.dataset.project);
@@ -205,8 +206,8 @@ document.addEventListener('input', (e) => {
 
 function dots(n) { return n ? '●'.repeat(n) + '○'.repeat(5 - n) : '–'; }
 function card(i) {
-  const cls = i.status === 'Available' ? 'b-ok' : i.status === 'Claimed' ? 'b-claimed' : 'b-taken';
-  const label = i.status === 'Available' ? '🟢 Available' : i.status === 'Claimed' ? '🟡 Claimed' : '🔴 Taken';
+  const cls = i.status === 'Available' ? 'b-ok' : i.status === 'Claimed' || i.status === 'Fixed' ? 'b-claimed' : 'b-taken';
+  const label = i.status === 'Available' ? '🟢 Available' : i.status === 'Claimed' ? '🟡 Claimed' : i.status === 'Fixed' ? '✅ Likely fixed' : '🔴 Taken';
   const bar = i.score >= 70 ? '' : i.score >= 45 ? 'mid' : 'low';
   return `<button class="issue" type="button" data-key="${esc(i.key)}" aria-current="${state.current === i.key}">
     <div class="repo">${esc(i.repo)} #${i.number} · ★ ${i.stars.toLocaleString()}</div>
@@ -215,6 +216,7 @@ function card(i) {
       <span class="badge ${cls}">${label}</span>
       <span title="Merge Chance">Merge chance <span class="bar ${bar}"><i style="width:${i.score}%"></i></span> ${i.score}</span>
       <span title="${esc(i.difficultyReason || 'Difficulty')}">Difficulty ${dots(i.difficulty)}</span>
+      ${state.demo ? (i.recorded ? '<span class="chip">▶ recorded explanation</span>' : '<span class="chip">explanation: live mode</span>') : ''}
     </div></button>`;
 }
 const EMPTY_DETAIL = '<h2 class="sec">Explanation</h2><div class="panel empty">Select an issue to see what it means, where it happens, and how to fix it.</div>';
@@ -238,7 +240,7 @@ function renderList() {
   $('list-title').textContent = state.repo; $('list-title').style.textTransform = 'none';
   const back = '<button class="pill" type="button" id="back" style="margin-bottom:10px">← All projects</button>';
   const head = state.issues.length
-    ? `<div class="chip" style="margin:0 0 10px 8px">${state.issues.length} free issue${state.issues.length === 1 ? '' : 's'}${state.hidden ? ` · ${state.hidden} hidden (already have an open PR)` : ''}</div>`
+    ? `<div class="chip" style="margin:0 0 10px 8px">${state.issues.length} free issue${state.issues.length === 1 ? '' : 's'}${state.hidden ? ` · ${state.hidden} hidden (open PR or already fixed)` : ''}</div>`
     : '';
   const empty = '<div class="panel empty">No free issues in this project right now. ' + (state.hasMore ? 'Try loading more, or ' : 'Try ') + 'another project.</div>';
   const more = state.hasMore ? '<button class="pill" type="button" id="more" style="width:100%;margin-top:4px;padding:10px">Load more issues</button>' : '';
@@ -296,6 +298,12 @@ async function openProject(name) {
   }
 }
 
+async function showRecorded(key) {
+  const [repo] = key.split('#');
+  await openProject(repo);
+  openIssue(key);
+}
+
 async function loadMore() {
   const btn = $('more'); if (!btn) return;
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Loading…';
@@ -313,7 +321,9 @@ function closeStream() { if (state.source) { state.source.close(); state.source 
 function openIssue(key) {
   const issue = state.issues.find((i) => i.key === key); if (!issue) return;
   closeStream(); state.current = key; renderList();
-  const notice = issue.status === 'Taken'
+  const notice = issue.status === 'Fixed'
+    ? `<div class="notice b-claimed">A merged pull request already references this issue (${esc(issue.reason || '')}). It may already be fixed.</div>`
+    : issue.status === 'Taken'
     ? `<div class="notice b-taken">Someone already has an open pull request for this issue (${esc(issue.reason || '')}). Consider picking another one.</div>`
     : issue.status === 'Claimed' ? `<div class="notice b-claimed">Someone recently asked to work on this (${esc(issue.reason || '')}). Check the thread before you start.</div>` : '';
   const head = `<h2 class="sec">Explanation</h2><div class="panel"><h2>${esc(issue.title)}</h2>
@@ -321,6 +331,13 @@ function openIssue(key) {
     <div><span class="spin"></span>Mentor is reading the code…</div><ul class="steps" id="steps"></ul></div></div>`;
   $('detail').innerHTML = head;
   if (window.innerWidth <= 860) $('detail').scrollIntoView({ behavior: 'smooth' });
+
+  // Demo mode has one recorded explanation: point the visitor to it instead of a dead end.
+  if (state.demo && !issue.recorded) {
+    const target = state.recorded[0];
+    $('out').innerHTML = `<div class="notice b-claimed">Demo mode has a pre-recorded explanation for one issue only. ${target ? `<button class="pill" type="button" data-show-recorded="${esc(target)}">▶ Show the recorded example</button>` : ''} To explain any issue live, run <code>npm run ui</code> with a Gemini key.</div>`;
+    return;
+  }
 
   const es = new EventSource(`/api/explain?repo=${encodeURIComponent(issue.repo)}&number=${issue.number}`);
   state.source = es;
@@ -341,7 +358,7 @@ async function init() {
   if (!LEVELS.includes(state.level)) state.level = 'beginner';
   try {
     const s = await (await fetch('/api/status')).json();
-    state.demo = s.demo;
+    state.demo = s.demo; state.recorded = s.recorded || [];
     const chips = [];
     if (s.demo) { chips.push('<span class="chip warn">Demo mode: recorded data (first 5 typescript projects)</span>'); state.lang = 'typescript'; state.level = 'beginner'; }
     chips.push(s.ai ? `<span class="chip">AI mentor on</span>` : '<span class="chip warn">No Gemini key: scores only</span>');

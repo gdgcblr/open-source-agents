@@ -93,6 +93,11 @@ test('demo mode walks the recorded flow: projects, one project\'s issues, and th
   assert.equal(issues.issues.length, 5);
   assert.equal(issues.issues[0].number, 1032);
 
+  // The page needs to know which issue has a recorded explanation, so it can guide visitors to it.
+  const flags = Object.fromEntries(issues.issues.map((i: { number: number; recorded: boolean }) => [i.number, i.recorded]));
+  assert.deepEqual(flags, { 1032: true, 992: false, 1528: false, 1123: false, 1052: false });
+  assert.deepEqual(JSON.parse((await request('/api/status')).body).recorded, ['dexie/Dexie.js#1032']);
+
   const sse = (await request('/api/explain?repo=dexie/Dexie.js&number=1032')).body;
   assert.match(sse, /^event: done/m);
   assert.match(sse, /Automatic checks/);

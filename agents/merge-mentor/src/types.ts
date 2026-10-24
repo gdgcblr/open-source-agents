@@ -47,7 +47,8 @@ export interface Issue {
 
 // ---- Scoring: is an issue free, and is the project welcoming? ----------------------------------
 
-export type ClaimStatus = 'Available' | 'Claimed' | 'Taken';
+/** Available: free. Claimed: someone asked recently. Taken: an open PR exists. Fixed: a merged PR already references it. */
+export type ClaimStatus = 'Available' | 'Claimed' | 'Taken' | 'Fixed';
 
 export interface ClaimResult {
   status: ClaimStatus;

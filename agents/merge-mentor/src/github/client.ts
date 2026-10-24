@@ -20,7 +20,7 @@ export function slimForFixture(key: string, data: any): unknown {
         body: typeof e.body === 'string' ? e.body.slice(0, 300) : undefined,
         user: e.user ? { login: e.user.login, type: e.user.type } : undefined,
         source: e.source?.issue
-          ? { issue: { number: e.source.issue.number, state: e.source.issue.state, pull_request: e.source.issue.pull_request ? {} : undefined, repository: { full_name: e.source.issue.repository?.full_name } } }
+          ? { issue: { number: e.source.issue.number, state: e.source.issue.state, pull_request: e.source.issue.pull_request ? { merged_at: e.source.issue.pull_request.merged_at ?? null } : undefined, repository: { full_name: e.source.issue.repository?.full_name } } }
           : undefined,
       }));
   }
