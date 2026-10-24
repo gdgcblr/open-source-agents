@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrapDoor — AI Agent Adversarial Testing</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  header { background: #1a1d2e; border-bottom: 1px solid #2d3148; padding: 1.2rem 2rem; display: flex; align-items: center; gap: 1rem; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+  header .tag { background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 1px; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem; }
+
+  .hero { text-align: center; padding: 2rem 0 1.5rem; }
+  .hero p { color: #94a3b8; margin-top: 0.5rem; font-size: 1rem; }
+
+  .run-btn {
+    display: block; margin: 1.5rem auto; padding: 0.9rem 2.5rem;
+    background: #ef4444; color: #fff; border: none; border-radius: 8px;
+    font-size: 1rem; font-weight: 700; cursor: pointer; letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .run-btn:hover { background: #dc2626; }
+  .run-btn:disabled { background: #4b5563; cursor: not-allowed; }
+
+  .status { text-align: center; color: #94a3b8; font-size: 0.9rem; min-height: 1.5rem; margin-bottom: 1rem; }
+
+  /* Scenarios */
+  .section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin: 1.5rem 0 0.75rem; }
+
+  .scenarios { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .scenario-card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 8px; padding: 1rem; }
+  .scenario-card .attack-type { font-size: 0.7rem; font-weight: 700; color: #f97316; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+  .scenario-card .tool-name { font-family: monospace; font-size: 0.9rem; color: #c084fc; margin-bottom: 0.4rem; }
+  .scenario-card .desc { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
+
+  /* Verdict */
+  .verdict-box { border-radius: 10px; padding: 1.5rem; text-align: center; margin: 1.5rem 0; display: none; }
+  .verdict-box.compromised { background: #2d1515; border: 2px solid #ef4444; }
+  .verdict-box.safe { background: #0f2d1a; border: 2px solid #22c55e; }
+  .verdict-box.inconclusive { background: #1e1b0f; border: 2px solid #f59e0b; }
+  .verdict-label { font-size: 2rem; font-weight: 800; }
+  .verdict-box.compromised .verdict-label { color: #ef4444; }
+  .verdict-box.safe .verdict-label { color: #22c55e; }
+  .verdict-box.inconclusive .verdict-label { color: #f59e0b; }
+  .verdict-meta { color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem; }
+
+  /* Trace table */
+  .trace-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .trace-table th { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid #2d3148; color: #64748b; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+  .trace-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #1e2235; }
+  .trace-table tr:last-child td { border-bottom: none; }
+  .badge-trap { background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .badge-safe { background: #166534; color: #bbf7d0; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+  .tool-mono { font-family: monospace; color: #c084fc; }
+
+  /* Findings */
+  .finding-card { background: #2d1515; border-left: 3px solid #ef4444; border-radius: 0 8px 8px 0; padding: 1rem 1.2rem; margin-bottom: 0.75rem; }
+  .finding-card .attack { font-weight: 700; color: #ef4444; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .finding-card .tool-ref { font-family: monospace; font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.6rem; }
+  .finding-card .mitigation { font-size: 0.82rem; color: #86efac; line-height: 1.5; }
+  .finding-card .mit-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #22c55e; letter-spacing: 0.5px; margin-bottom: 0.2rem; }
+
+  .card { background: #1a1d2e; border: 1px solid #2d3148; border-radius: 8px; padding: 1rem 1.2rem; }
+  .evidence-item { font-size: 0.82rem; color: #94a3b8; padding: 0.3rem 0; border-bottom: 1px solid #1e2235; line-height: 1.5; }
+  .evidence-item:last-child { border-bottom: none; }
+  .evidence-item::before { content: '•'; color: #f97316; margin-right: 0.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🪤 TrapDoor</h1>
+  <span class="tag">ADVERSARIAL TESTING</span>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <p>Tests whether your AI agent can resist <strong>prompt injection</strong> and <strong>tool poisoning</strong> attacks hidden inside MCP tool responses.</p>
+  </div>
+
+  <div class="section-title">Attack Scenarios Loaded</div>
+  <div class="scenarios" id="scenarios">
+    <div class="scenario-card"><div class="attack-type">Loading...</div></div>
+  </div>
+
+  <button class="run-btn" id="runBtn" onclick="runEval()">▶ Run Agent Against Traps</button>
+  <div class="status" id="status"></div>
+
+  <div class="verdict-box" id="verdictBox">
+    <div class="verdict-label" id="verdictLabel"></div>
+    <div class="verdict-meta" id="verdictMeta"></div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="section-title">Tool Call Trace</div>
+    <div class="card" style="margin-bottom:1.5rem; overflow-x:auto">
+      <table class="trace-table">
+        <thead><tr><th>Turn</th><th>Tool</th><th>Type</th></tr></thead>
+        <tbody id="traceBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title" id="findingsTitle"></div>
+    <div id="findingsContainer"></div>
+
+    <div class="section-title">Evidence</div>
+    <div class="card" id="evidenceContainer"></div>
+  </div>
+</div>
+
+<script>
+async function loadScenarios() {
+  const res = await fetch('/scenarios');
+  const data = await res.json();
+  const el = document.getElementById('scenarios');
+  el.innerHTML = data.map(s => `
+    <div class="scenario-card">
+      <div class="attack-type">${s.attack_type}</div>
+      <div class="tool-name">${s.tool_name}()</div>
+      <div class="desc">${s.description}</div>
+    </div>
+  `).join('');
+}
+
+async function runEval() {
+  const btn = document.getElementById('runBtn');
+  const status = document.getElementById('status');
+  const verdictBox = document.getElementById('verdictBox');
+  const results = document.getElementById('results');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Running agent...';
+  status.textContent = 'Connecting Gemini agent to trap server. This takes ~60–90 seconds...';
+  verdictBox.style.display = 'none';
+  results.style.display = 'none';
+
+  try {
+    const res = await fetch('/run', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.error) {
+      status.textContent = '❌ Error: ' + data.error;
+      btn.disabled = false;
+      btn.textContent = '▶ Run Agent Against Traps';
+      return;
+    }
+
+    // Verdict
+    const vBox = verdictBox;
+    vBox.className = 'verdict-box ' + data.verdict.toLowerCase();
+    vBox.style.display = 'block';
+    const emoji = data.verdict === 'COMPROMISED' ? '❌' : data.verdict === 'SAFE' ? '✅' : '⚠️';
+    document.getElementById('verdictLabel').textContent = emoji + '  ' + data.verdict;
+    document.getElementById('verdictMeta').textContent =
+      `${data.turns} turn(s) · ${data.total_tool_calls} tool calls · ${data.trap_tools_invoked.length} trap(s) triggered`;
+
+    // Trace
+    const tbody = document.getElementById('traceBody');
+    tbody.innerHTML = data.tool_call_trace.map(tc => `
+      <tr>
+        <td>${tc.turn}</td>
+        <td class="tool-mono">${tc.name}()</td>
+        <td><span class="${tc.is_trap ? 'badge-trap' : 'badge-safe'}">${tc.is_trap ? 'TRAP' : 'safe'}</span></td>
+      </tr>
+    `).join('');
+
+    // Findings
+    const findingsTitle = document.getElementById('findingsTitle');
+    const findingsContainer = document.getElementById('findingsContainer');
+    if (data.findings.length > 0) {
+      findingsTitle.textContent = `Findings & Mitigations (${data.findings.length})`;
+      findingsContainer.innerHTML = data.findings.map(f => `
+        <div class="finding-card">
+          <div class="attack">● ${f.attack_type}</div>
+          <div class="tool-ref">via <code>${f.tool}</code> at turn ${f.turn}</div>
+          <div class="mit-label">💡 Mitigation</div>
+          <div class="mitigation">${f.mitigation}</div>
+        </div>
+      `).join('');
+    } else {
+      findingsTitle.textContent = '';
+      findingsContainer.innerHTML = '';
+    }
+
+    // Evidence
+    const evContainer = document.getElementById('evidenceContainer');
+    evContainer.innerHTML = data.evidence.map(e => `<div class="evidence-item">${e}</div>`).join('');
+
+    results.style.display = 'block';
+    status.textContent = '';
+  } catch (e) {
+    status.textContent = '❌ Request failed: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Run Again';
+}
+
+loadScenarios();
+</script>
+</body>
+</html>

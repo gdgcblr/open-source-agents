@@ -64,14 +64,35 @@ def run_session() -> AgentSession:
     log.info(f"Starting agent session — model: {cfg.MODEL_NAME}")
     log.info(f"Task: {AGENT_TASK[:80]}...")
 
+    import time
     for turn in range(1, cfg.MAX_AGENT_TURNS + 1):
         log.info(f"── Turn {turn} ──────────────────────────────")
 
-        response = client.models.generate_content(
-            model=cfg.MODEL_NAME,
-            contents=messages,
-            config=types.GenerateContentConfig(tools=tools),
-        )
+        # Retry on 503 overload
+        response = None
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model=cfg.MODEL_NAME,
+                    contents=messages,
+                    config=types.GenerateContentConfig(tools=tools),
+                )
+                break
+            except Exception as e:
+                if "503" in str(e) and attempt < 2:
+                    wait = 15 * (attempt + 1)
+                    log.warning(f"Model overloaded — retrying in {wait}s (attempt {attempt+1}/3)")
+                    time.sleep(wait)
+                else:
+                    # Partial session — still evaluate what we captured
+                    log.warning(f"API error on turn {turn}: {e}")
+                    session.turns = max(turn - 1, 1)
+                    session.final_response = f"[Session ended early: {e}]"
+                    return session
+
+        if response is None:
+            session.turns = max(turn - 1, 1)
+            return session
 
         candidate = response.candidates[0]
         messages.append(types.Content(role="model", parts=candidate.content.parts))
