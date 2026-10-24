@@ -85,7 +85,7 @@ java -cp target/classes community.opensource.ai.builddoctor.BuildDoctorCli /path
 
 The first argument can contain build, test, runtime, or API output from any ecosystem. The second argument is optional project context; when provided, BuildDoctor reads only recognized manifest files.
 
-The ADK entry point is `BuildDoctorAgent.create()`. An ADK-compatible runner or development UI can load this root agent and expose its read-only tools. Configure `GEMINI_API_KEY` only for that model-driven path.
+The ADK entry point is `BuildDoctorAgent.create()`. An ADK-compatible runner or development UI can load this root agent and expose its read-only local tools. To use the companion MCP server instead, call `BuildDoctorAgent.createWithMcp("/absolute/path/to/.venv/bin/python")`; ADK launches `python -m build_doctor_mcp.server` over stdio. Configure `GEMINI_API_KEY` only for the model-driven path.
 
 ## Example Input & Output
 
@@ -126,12 +126,14 @@ The tests cover compilation, dependency, test, and unknown failure signatures, c
 - The analyzer does not rerun builds or tests; verification remains pending until a separate result is supplied.
 - The ADK path requires a configured Gemini model and an ADK-compatible runner or development UI.
 - Logs and manifests can contain secrets or personal data; review them before sending them to a hosted model.
+- The MCP bridge requires the companion server to be installed in the configured Python environment.
 
 ## Security & Privacy Considerations
 
 - API keys are loaded from environment variables and are never stored in source control.
 - The selected project path is inspected read-only. No shell commands are executed.
 - The agent does not edit files, install dependencies, delete data, commit code, or push changes.
+- Suggested changes are hypotheses, not automatic fixes; verification is `pending` until a new result is supplied.
 - Treat diagnostic logs as potentially sensitive input and provide only the files needed for diagnosis.
 
 ## Future Improvements
