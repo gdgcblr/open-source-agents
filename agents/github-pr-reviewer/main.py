@@ -23,6 +23,7 @@ from pr_agent.terminal_ui import print_rich_report, print_healing_scorecard
 from pr_agent.self_healing import SelfHealingEngine
 from pr_agent.server import start_server
 from pr_agent.hooks import install_git_hook
+from pr_agent.exceptions import PRAgentError
 
 
 def parse_args():
@@ -174,23 +175,11 @@ def main():
         diff_text, source_title = load_diff_from_file(sample_path)
         source_title = f"Sample PR Diff ({source_title})"
     elif args.pr:
-        try:
-            diff_text, source_title = fetch_pr_diff(args.pr, token=args.token)
-        except Exception as e:
-            sys.stderr.write(f"Error fetching PR: {e}\n")
-            sys.exit(1)
+        diff_text, source_title = fetch_pr_diff(args.pr, token=args.token)
     elif args.diff:
-        try:
-            diff_text, source_title = load_diff_from_file(args.diff)
-        except Exception as e:
-            sys.stderr.write(f"Error reading diff file: {e}\n")
-            sys.exit(1)
+        diff_text, source_title = load_diff_from_file(args.diff)
     elif args.stdin:
-        try:
-            diff_text, source_title = load_diff_from_stdin()
-        except Exception as e:
-            sys.stderr.write(f"Error reading from stdin: {e}\n")
-            sys.exit(1)
+        diff_text, source_title = load_diff_from_stdin()
     else:
         # Default fallback to sample mode
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -306,4 +295,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except PRAgentError as err:
+        sys.stderr.write(f"\n{err.format_diagnostic()}\n\n")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\n\n👋 Operation cancelled by user.")
+        sys.exit(0)
+    except Exception as err:
+        sys.stderr.write(f"\n❌ Unexpected Error: {err}\n\n")
+        sys.exit(1)

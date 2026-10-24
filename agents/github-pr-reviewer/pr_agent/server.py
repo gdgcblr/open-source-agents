@@ -199,13 +199,30 @@ class PRReviewHandler(http.server.BaseHTTPRequestHandler):
 
 
 def start_server(port: int = 8080):
-    """Start local zero-dependency interactive dashboard server."""
+    """Start local zero-dependency interactive dashboard server with port collision fallback."""
+    from .exceptions import ServerPortError
     server_address = ("", port)
-    httpd = http.server.HTTPServer(server_address, PRReviewHandler)
+    try:
+        httpd = http.server.HTTPServer(server_address, PRReviewHandler)
+    except OSError as e:
+        if getattr(e, "errno", None) in (48, 98):  # Address already in use (macOS 48, Linux 98)
+            alt_port = port + 1
+            print(f"⚠️ Port {port} is already in use. Trying alternative port {alt_port}...")
+            try:
+                httpd = http.server.HTTPServer(("", alt_port), PRReviewHandler)
+                port = alt_port
+            except OSError:
+                raise ServerPortError(
+                    f"Port {port} and {alt_port} are currently in use by another process.",
+                    tip="Specify an unused port: python main.py --serve 9000."
+                )
+        else:
+            raise ServerPortError(f"Failed to bind web server to port {port}: {e}")
+
     print(f"\n🚀 Interactive PR Reviewer Council Server running at: http://localhost:{port}")
     print("Press Ctrl+C to terminate.\n")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down server.")
+        print("\nShutting down server cleanly.")
         httpd.server_close()

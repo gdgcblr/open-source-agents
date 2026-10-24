@@ -128,6 +128,21 @@ class TestPRReviewerCouncil(unittest.TestCase):
         sec_healed = agent.security_agent.evaluate(healed_diffs)
         self.assertGreater(sec_healed.score, 50)
 
+    def test_invalid_diff_file_raises_custom_exception(self):
+        from pr_agent.exceptions import DiffReadError
+        with self.assertRaises(DiffReadError) as ctx:
+            load_diff_from_file("non_existent_file.patch")
+        self.assertIn("not found", ctx.exception.message)
+        self.assertIsNotNone(ctx.exception.tip)
+
+    def test_fetch_invalid_pr_target_raises_exception(self):
+        from pr_agent.exceptions import InvalidTargetError
+        from pr_agent.github_client import fetch_pr_diff
+        with self.assertRaises(InvalidTargetError) as ctx:
+            fetch_pr_diff("completely_bogus_target")
+        self.assertIn("Invalid PR target", ctx.exception.message)
+        self.assertIsNotNone(ctx.exception.tip)
+
 
 if __name__ == "__main__":
     unittest.main()
