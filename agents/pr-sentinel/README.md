@@ -1,39 +1,62 @@
-# PR Sentinel
+# 🛡️ PR Sentinel
 
-> Autonomous Multi-Agent Pull Request Review, Security Triage, and Auto-Patch System powered by Google Gemini.
+> **Autonomous Multi-Agent Pull Request Review, Security Triage, and Auto-Patch System powered by Google Gemini.**
+
+[![Tests: Passing](https://img.shields.io/badge/tests-14%2F14%20passing-brightgreen)](tests/)
+[![Runtime: Node.js 18+](https://img.shields.io/badge/node-%3E%3D18.0.0-blue)](package.json)
+[![LLM: Google Gemini 2.5](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash%2FPro-orange)](https://aistudio.google.com/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+---
+
+## 📑 Table of Contents
+1. [Overview & Problem Statement](#overview)
+2. [Key Capabilities](#key-capabilities)
+3. [System Architecture & Data Flow](#architecture--data-flow)
+4. [Codebase Anatomy & Directory Map](#codebase-anatomy)
+5. [Prerequisites & Quickstart](#quickstart)
+6. [Configuration & Environment Variables](#configuration--environment-variables)
+7. [Running PR Sentinel (CLI, Demo, Dashboard, Markdown, PDF)](#how-to-run)
+8. [Developer Guide: Extending PR Sentinel](#developer-guide-extending-pr-sentinel)
+   - [How to Add a New Autonomous Agent](#how-to-add-a-new-agent)
+   - [How to Add a New Static Scanner Tool](#how-to-add-a-new-scanner-tool)
+   - [How to Add a New LLM Provider](#how-to-add-a-new-llm-provider)
+9. [Automated Testing Suite](#automated-testing)
+10. [Export Options (Markdown & Executive PDF)](#export-options)
+11. [Security & Privacy Standards](#security--privacy-standards)
+12. [Known Limitations & Future Roadmap](#known-limitations--future-roadmap)
+13. [License](#license)
 
 ---
 
 ## Overview
 
-### Problem Statement & Intended Users
-- **Problem**: Reviewing open-source pull requests is time-consuming, repetitive, and error-prone. Critical issues—such as leaked API tokens, unvalidated command execution, missing documentation templates, and broken repository guidelines—frequently slip past manual reviews or slow down maintainer velocity.
-- **Intended Users**: Open-source maintainers, hackathon participants, code reviewers, and developer platform teams looking to automate PR triage, enforce quality standards, and receive instant corrective patches.
+### Problem Statement
+Reviewing open-source pull requests is repetitive, slow, and prone to human oversight. Critical risks regularly slip through:
+- **Credential & Secret Leaks**: Exposed API keys (Gemini, OpenAI, AWS, GitHub tokens) committed in code or git history.
+- **Uncontained Code Execution**: Unsafe `eval()`, unescaped shell commands (`exec`), or unhandled infinite loops.
+- **Repository Violations**: Non-conforming folder naming, missing manifests, unmaintained `.env.example`, or broken directory isolation.
+- **Missing Remediation**: Reviewers spend hours writing repetitive review comments instead of providing actionable code patches.
 
-### Key Features
-- **Multi-Agent Orchestrated Swarm**: Coordinates four specialized autonomous agents:
-  - 🛡️ **SecuritySentinel**: Deep scanner for leaked API keys (Gemini, OpenAI, AWS, GitHub tokens), unsafe `eval`/`exec`, and shell command injections.
-  - 📋 **ComplianceAuditor**: Audits contribution structure against `CONTRIBUTING.md` standards (directory isolation, kebab-case naming, manifest presence, README completeness).
-  - 🏗️ **QualityCritic**: Inspects AST structures for error resilience, asynchronous error handling, modularity, and maintainability.
-  - 🛠️ **PatchSynthesizer**: Synthesizes unified git diff patches ready for review or immediate application.
-- **Dual Execution Engine (Zero-Key Demo + Live Gemini)**:
-  - **Live Gemini 2.5 Mode**: Uses `@google/genai` with structured JSON schema outputs and low latency.
-  - **Zero-Key Offline Simulation Mode (`--demo`)**: Fully functional offline mode allowing any reviewer or judge to run the multi-agent pipeline immediately without configuring an API key.
-- **Multi-Modal Interfaces**:
-  - **Rich Terminal UI**: Animated progress bars, colored status badges, findings summaries, and ANSI tables.
-  - **Visual Web Dashboard (`--serve`)**: Embedded zero-dependency dark-mode dashboard (`http://localhost:3737`) featuring live score gauges, interactive diff viewer, agent timeline, and one-click GitHub PR review export.
-- **Automated Patch Generation**: Produces copy-pasteable unified diff blocks that resolve discovered credential leaks and missing environment configurations.
-- **Composite Readiness Scoring**: Generates an executive verdict (`APPROVED`, `NEEDS_REVIEW`, `REQUEST_CHANGES`) with an overall 0–100 PR readiness score.
+### Solution: PR Sentinel
+**PR Sentinel** is an autonomous multi-agent system designed for open-source maintainers, contributors, and hackathon teams. It automatically ingests pull requests, orchestrates four specialized AI agents to evaluate security, guidelines compliance, and code architecture, and synthesizes unified diff patches ready for merge.
 
 ---
 
-## Technical Stack
+## Key Capabilities
 
-- **Language & Runtime**: Node.js 18+ (tested on Node.js 22.17.1, ES Modules)
-- **Agent Framework / Core Library**: Custom Autonomous Multi-Agent Orchestrator
-- **LLM Provider & Models**: Google GenAI SDK (`@google/genai` v2.31.0) with `gemini-2.5-flash` / `gemini-2.5-pro`
-- **Testing**: Native Node.js Test Runner (`node:test`, `node:assert`)
-- **Dashboard & UI**: Built-in `node:http` server with modern HTML5/CSS3 glassmorphic UI and native ANSI terminal styling
+- **🤖 Orchestrated Multi-Agent Swarm**:
+  - 🛡️ **`SecuritySentinel`**: High-accuracy scanner for 25+ secret patterns, private keys, dynamic code execution (`eval`), and unescaped shell calls.
+  - 📋 **`ComplianceAuditor`**: Verifies repository contribution guidelines (`CONTRIBUTING.md`), directory naming (lowercase kebab-case), manifest tracking, and directory isolation.
+  - 🏗️ **`QualityCritic`**: Reviews code modularity, error resilience, asynchronous exception handling, and code smells.
+  - 🛠️ **`PatchSynthesizer`**: Synthesizes verified unified git diff patches to fix detected issues automatically.
+- **⚡ Dual Execution Engine**:
+  - **Live Gemini 2.5 Flash / Pro**: Structured reasoning powered by Google's official `@google/genai` SDK with strict JSON schema outputs.
+  - **Zero-Key Deterministic Simulation Mode (`--demo`)**: Full offline execution with authentic agent handoffs, metrics, and patches without requiring paid API keys.
+- **📊 Multi-Modal Interfaces**:
+  - **Rich Terminal UI**: Native ANSI styling with step-by-step agent thinking, progress meters, and score badges.
+  - **Embedded Web Dashboard (`http://localhost:3737`)**: Modern dark-mode glassmorphic dashboard with live score meters, diff viewers, and agent timelines.
+  - **Downloadable Reports**: One-click export to GitHub PR review Markdown (`.md`) and human-readable executive audit PDFs (`.pdf`).
 
 ---
 
@@ -73,233 +96,297 @@
                        │     Executive Synthesis     │
                        │ - Composite Score (0-100)   │
                        │ - Verdict (PASS/WARN/FAIL)  │
-                       │ - GitHub PR Review Markdown │
+                       │ - Markdown & PDF Exporter   │
                        └──────┬───────────────┬──────┘
                               │               │
                  ┌────────────┴───┐       ┌───┴────────────┐
                  ▼                ▼       ▼                ▼
-          [Terminal UI]    [Web Dashboard]  [JSON CI Stream] [GitHub Markdown]
+          [Terminal UI]    [Web Dashboard]  [JSON CI Stream] [Markdown / PDF]
+```
+
+### Composite Verdict Scoring Logic
+- **`APPROVED`**: Composite score ≥ 85, 0 critical findings, compliance verified.
+- **`NEEDS_REVIEW`**: Composite score 60–84, minor warnings, non-blocking items.
+- **`REQUEST_CHANGES`**: Composite score < 60, exposed credentials, unsafe execution, or isolation violations.
+
+---
+
+## Codebase Anatomy
+
+Here is the exact layout of the codebase to help you navigate and contribute:
+
+```text
+agents/pr-sentinel/
+├── .env.example             # Sanitized environment variable template
+├── .gitignore               # Ignores node_modules, .env, and build artifacts
+├── package.json             # ES Module manifest, dependencies, and npm scripts
+├── README.md                # Comprehensive documentation and developer handbook
+├── src/
+│   ├── config.js            # Environment loader, Gemini model config, fallback toggles
+│   ├── cli.js               # Command-line interface and interactive menu runner
+│   ├── agents/
+│   │   ├── orchestrator.js  # Master pipeline: phase transitions, timing, composite scoring
+│   │   ├── security.js      # SecuritySentinel agent implementation
+│   │   ├── compliance.js    # ComplianceAuditor agent implementation
+│   │   ├── quality.js       # QualityCritic agent implementation
+│   │   └── patcher.js       # PatchSynthesizer agent implementation
+│   ├── tools/
+│   │   ├── secrets.js       # Regex & entropy secret scanner (Gemini, OpenAI, AWS, GitHub)
+│   │   ├── compliance.js    # CONTRIBUTING.md validator, isolation & template checker
+│   │   ├── git.js           # Git diff extractor, unified diff parser, file tree crawler
+│   │   ├── ast.js           # Static AST pattern analyzer (eval, exec, unhandled exceptions)
+│   │   └── patcher.js       # Unified diff generator & line replacement patch creator
+│   ├── models/
+│   │   ├── gemini.js        # Google GenAI SDK integration with JSON response formatting
+│   │   └── mock.js          # Deterministic simulation engine for zero-key demo execution
+│   └── ui/
+│       ├── terminal.js      # ANSI banners, spinners, progress meters, and status tables
+│       └── dashboard.js     # Zero-dependency embedded web server (:3737) with print styles
+└── tests/
+    ├── secrets.test.js      # Unit tests for credential detection and masking
+    ├── compliance.test.js   # Unit tests for repository guidelines and isolation
+    ├── git.test.js          # Unit tests for diff parsing and patch generation
+    └── agents.test.js       # Integration tests for multi-agent pipeline orchestration
 ```
 
 ---
 
-## Prerequisites
+## Quickstart
 
-Before running this project, ensure you have:
-- **Node.js**: v18.0.0 or higher (Node.js 20+ or 22+ recommended). Check with `node --version`.
-- **npm**: v9+ (check with `npm --version`).
-- **Google Gemini API Key** *(Optional)*: Required only for live LLM reasoning. Obtain a free key at [Google AI Studio](https://aistudio.google.com/). If omitted, PR Sentinel automatically runs in simulation/demo mode.
+### Prerequisites
+- **Node.js**: `v18.0.0` or higher (tested on Node.js `v22.17.1`).
+- **npm**: `v9.0.0` or higher.
+- **Google Gemini API Key** *(Optional)*: If omitted, PR Sentinel automatically runs in offline simulation mode without failing.
 
----
+### 1. Install Dependencies
+```bash
+cd agents/pr-sentinel
+npm install
+```
 
-## Installation & Setup
+### 2. (Optional) Configure Gemini API Key
+```bash
+# On Linux/macOS:
+cp .env.example .env
 
-1. **Navigate to the project directory:**
-   ```bash
-   cd agents/pr-sentinel
-   ```
+# On Windows (PowerShell):
+Copy-Item .env.example -Destination .env
+```
+Edit `.env` and paste your `GEMINI_API_KEY`:
+```env
+GEMINI_API_KEY=AIzaSyYourKeyHere
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables (Optional):**
-   ```bash
-   # On Linux/macOS:
-   cp .env.example .env
-
-   # On Windows (PowerShell):
-   Copy-Item .env.example -Destination .env
-   ```
-   Open `.env` and paste your `GEMINI_API_KEY`. (Skip this step if running with `--demo`).
+### 3. Run the Instant Demo
+```bash
+npm run demo
+```
 
 ---
 
 ## Configuration & Environment Variables
 
-| Variable Name | Required | Default | Description |
+| Variable | Type | Default | Description |
 | :--- | :---: | :--- | :--- |
-| `GEMINI_API_KEY` | No | *None* | Google Gemini API key. If unset, runs in deterministic simulation mode. |
-| `GEMINI_MODEL` | No | `gemini-2.5-flash` | Gemini model variant (`gemini-2.5-flash`, `gemini-2.5-pro`). |
-| `MOCK_MODE` | No | `false` | When `true`, forces offline deterministic simulation mode. |
-| `PORT` | No | `3737` | Local HTTP port for the embedded web dashboard. |
-| `HOST` | No | `localhost` | Host interface for the embedded dashboard server. |
-| `LOG_LEVEL` | No | `info` | Logging verbosity (`info`, `debug`, `warn`, `error`). |
+| `GEMINI_API_KEY` | `string` | `""` | Google Gemini API key. If omitted, runs in mock simulation mode. |
+| `GEMINI_MODEL` | `string` | `gemini-2.5-flash` | Gemini model variant (`gemini-2.5-flash`, `gemini-2.5-pro`). |
+| `MOCK_MODE` | `boolean` | `false` | When `true`, forces deterministic offline simulation. |
+| `PORT` | `number` | `3737` | Local HTTP port for the web dashboard server. |
+| `HOST` | `string` | `localhost` | Host interface for the embedded dashboard server. |
+| `LOG_LEVEL` | `string` | `info` | Logging verbosity (`info`, `debug`, `warn`, `error`). |
+| `MAX_DIFF_LINES` | `number` | `5000` | Maximum git diff lines processed before truncation. |
 
 ---
 
 ## How to Run
 
 ### 1. Instant Multi-Agent Demonstration (Zero-Key)
-Run an end-to-end evaluation with simulated vulnerability vectors, agent handoffs, and corrective patch synthesis:
+Runs an end-to-end evaluation using simulated vulnerability vectors, demonstrating multi-agent coordination, secret detection, and auto-patching:
 ```bash
 npm run demo
-# or
-node src/cli.js --demo
 ```
 
-### 2. Audit Current Directory or Local Git Branch
-Audit the current git working tree or staged changes:
+### 2. Audit Current Working Directory or Git Diff
+Audit the repository or a specific target path:
 ```bash
-# Audit unstaged or recent commits
+# Audit current working tree
 npm run audit
 
-# Audit a specific directory
-node src/cli.js audit --path .
+# Audit a specific folder
+node src/cli.js audit --path agents/pr-sentinel
 
 # Audit only git staged changes
 node src/cli.js --staged
+
+# Audit a branch comparison against main
+node src/cli.js --base main
 ```
 
 ### 3. Launch Local Visual Web Dashboard
-Start the interactive glassmorphic web dashboard on `http://localhost:3737`:
+Starts the glassmorphic dark-mode web dashboard on `http://localhost:3737`:
 ```bash
 npm run serve
-# or
-node src/cli.js --demo --serve
 ```
+Open **[http://localhost:3737](http://localhost:3737)** in any browser.
 
-### 4. Interactive Terminal Console
-Launch the interactive terminal prompt:
+### 4. Interactive Terminal Session
+Launches an interactive prompt menu:
 ```bash
 npm run dev
-# or
-node src/cli.js interactive
 ```
 
-### 5. Generate Copy-Ready GitHub PR Review Comment
-Output a formatted markdown report ready for pasting into GitHub Pull Request reviews:
+### 5. Export Downloadable Reports
+Save the review directly to a local Markdown file:
 ```bash
-node src/cli.js --demo --markdown
+node src/cli.js --demo --output pr-review.md
 ```
 
 ---
 
-## Example Input & Output
+## Developer Guide: Extending PR Sentinel
 
-### Example Command
-```bash
-node src/cli.js --demo
-```
+PR Sentinel is designed to be highly modular. New contributors can easily add new agents, static scanners, or LLM providers.
 
-### Example Terminal Output
-```
-  ██████╗ ██████╗     ███████╗███████╗███╗   ██╗████████╗██╗███╗   ██╗███████╗██╗     
-  ██╔══██╗██╔══██╗    ██╔════╝██╔════╝████╗  ██║╚══██╔══╝██║████╗  ██║██╔════╝██║     
-  ██████╔╝██████╔╝    ███████╗█████╗  ██╔██╗ ██║   ██║   ██║██╔██╗ ██║█████╗  ██║     
-  ██╔═══╝ ██╔══██╗    ╚════██║██╔══╝  ██║╚██╗██║   ██║   ██║██║╚██╗██║██╔══╝  ██║     
-  ██║     ██║  ██║    ███████║███████╗██║ ╚████║   ██║   ██║██║ ╚████║███████╗███████╗
-  ╚═╝     ╚═╝  ╚═╝    ╚══════╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝
-  Autonomous Multi-Agent PR Review, Security Triage, and Auto-Patch System
-  Powered by Google Gemini 2.5 & Google Developer Groups
+### How to Add a New Agent
 
-Initiating Multi-Agent Pipeline...
+All agents live in `src/agents/`. To create a new agent (e.g. `PerformanceAgent`):
 
-  ▸ [Orchestrator] Initializing PR Sentinel Multi-Agent Review Pipeline
-  ▸ [SecuritySentinel] Auditing for exposed credentials and dangerous code patterns
-  ▸ [QualityCritic] Evaluating code architecture, error resilience, and maintainability
-  ▸ [ComplianceAuditor] Verifying open-source repository guidelines & directory isolation
-  ▸ [PatchSynthesizer] Synthesizing automated corrective diff patches
-  ▸ [Orchestrator] Synthesizing executive PR readiness score and markdown review
-  ▸ [Orchestrator] Review finished. Verdict: REQUEST_CHANGES (Score: 58/100)
+1. **Create `src/agents/performance.js`**:
+   ```javascript
+   import { generateWithGemini } from '../models/gemini.js';
+   import { config } from '../config.js';
 
-Target Directory: .
-Branch: feat/pr-sentinel  |  Commit: b0ad2a4
-Files Scanned: 1  |  Duration: 1232ms
+   export class PerformanceAgent {
+     constructor() {
+       this.name = 'PerformanceAuditor';
+     }
 
-PR READINESS VERDICT:  FAIL   (Score: 58/100)
-────────────────────────────────────────────────────────────────────────────
+     async audit(context) {
+       // 1. Run local inspection or prepare prompt
+       const prompt = `Review performance bottlenecks in: ${JSON.stringify(context.files)}`;
 
-AGENT EXECUTION SUMMARY:
-  • SecuritySentinel:    FAIL  Score: 10/100 (261ms)
-    Scanned 1 files. Found 2 exposed secrets and 3 security observations.
-  • ComplianceAuditor:   PASS  Score: 100/100 (264ms)
-    Verified contribution structure against CONTRIBUTING.md checklist. Result: Compliant.
-  • QualityCritic:       PASS  Score: 90/100 (264ms)
-    Analyzed AST structure, error resilience, and code clarity across modified modules.
-  • PatchSynthesizer:   2 patch(es) generated
+       if (config.isLiveApiAvailable()) {
+         const response = await generateWithGemini({
+           systemInstruction: 'You are PerformanceAuditor. Identify O(n^2) operations and memory leaks.',
+           prompt,
+           jsonMode: true,
+         });
+         return response.data;
+       }
 
-KEY FINDINGS (4):
-  [CRITICAL] Exposed gemini_api_key detected in agents/sample-agent/agent.js
-    Location: agents/sample-agent/agent.js:10
-    Issue:    Potential unredacted credential matching pattern for gemini_api_key found on line 10.
-    Action:   Remove credential immediately, revoke the exposed key, and move to environment variables.
+       // 2. Return fallback simulation data
+       return {
+         agent: 'PerformanceAuditor',
+         status: 'PASS',
+         score: 95,
+         findings: [],
+       };
+     }
+   }
+   ```
 
-  [HIGH] Unsafe command execution in agents/sample-agent/agent.js
-    Location: agents/sample-agent/agent.js:1
-    Issue:    Direct call to eval() or exec() without proper input validation.
-    Action:   Use execFile() with parameterized arguments and strict input sanitization.
-
-AVAILABLE AUTO-PATCHES:
-  • agents/sample-agent/agent.js: Replace hardcoded credential with process.env lookup in agents/sample-agent/agent.js
-```
+2. **Register it in `src/agents/orchestrator.js`**:
+   - Import your agent: `import { PerformanceAgent } from './performance.js';`
+   - Instantiate it in `Orchestrator.constructor`.
+   - Call it in `Orchestrator.runReview()` and incorporate its score into `compositeScore`.
 
 ---
 
-## How to Test
+### How to Add a New Scanner Tool
 
-Run the automated test suite powered by the native Node.js test runner:
+All static analysis tools live in `src/tools/`. To add a new secret pattern or code rule:
 
+1. **Add a pattern in `src/tools/secrets.js`**:
+   ```javascript
+   {
+     name: 'HuggingFace Access Token',
+     regex: /hf_[A-Za-z0-9]{34}/g,
+     type: 'huggingface_token',
+     severity: 'CRITICAL',
+   }
+   ```
+2. **Add a test case in `tests/secrets.test.js`** to guarantee 100% test coverage!
+
+---
+
+### How to Add a New LLM Provider
+
+LLM providers reside in `src/models/`. PR Sentinel currently supports Google Gemini via `@google/genai` and a deterministic simulation provider in `mock.js`.
+
+To add another provider (e.g., Anthropic Claude or local Ollama):
+1. Create `src/models/ollama.js`.
+2. Implement a `generateWithOllama({ systemInstruction, prompt, jsonMode })` function.
+3. Switch providers in `src/config.js` based on `process.env.LLM_PROVIDER`.
+
+---
+
+## Automated Testing
+
+PR Sentinel uses the native Node.js test runner (`node:test` and `node:assert/strict`). It requires **zero extra test frameworks** and runs in milliseconds.
+
+### Run All Tests
 ```bash
 npm test
 ```
 
-### Verified Test Suite Results
+### Run a Specific Test Suite
 ```bash
-> pr-sentinel@1.0.0 test
-> node --test tests/*.test.js
-
-TAP version 13
-ok 1 - Orchestrator executes full multi-agent pipeline deterministically in mock mode
-ok 2 - Orchestrator generates clean markdown review report
-ok 3 - compliance auditor verifies valid kebab-case folder name
-ok 4 - compliance auditor checks presence of package manifest
-ok 5 - compliance auditor flags isolation violations when PR modifies outside files
-ok 6 - compliance auditor allows updating root agents/README.md index
-ok 7 - parseUnifiedDiff correctly extracts changed files and additions/deletions
-ok 8 - createLineReplacementPatch formats valid git unified diff
-ok 9 - generateFixPatches generates patches for credential leaks
-ok 10 - secrets scanner detects Gemini API keys
-ok 11 - secrets scanner detects OpenAI API keys
-ok 12 - secrets scanner detects AWS Access Keys
-ok 13 - secrets scanner ignores placeholder values in .env.example
-ok 14 - maskSecret safely truncates credentials
-
-1..14
-# tests 14
-# suites 0
-# pass 14
-# fail 0
+node --test tests/secrets.test.js
+node --test tests/compliance.test.js
+node --test tests/git.test.js
+node --test tests/agents.test.js
 ```
 
----
-
-## Known Limitations
-
-- **Binary Files**: Diff inspection is optimized for UTF-8 text files; binary assets (images, compiled archives) are excluded from AST and regex parsing.
-- **Diff Size Cap**: Very large diffs exceeding `MAX_DIFF_LINES` (default 5,000 lines) are truncated to prevent context window overflow.
-- **Git Context**: Requires a standard git working tree to extract commit diffs; when run outside a git repository, it falls back to inspecting local directory files.
+### Test Suite Coverage
+- `tests/secrets.test.js`: Verifies detection of Gemini keys, OpenAI keys, AWS tokens, masking algorithms, and placeholder filtering.
+- `tests/compliance.test.js`: Verifies kebab-case naming, manifest detection, and cross-project isolation checks.
+- `tests/git.test.js`: Verifies unified diff parsing, chunk indexing, and line replacement patches.
+- `tests/agents.test.js`: Verifies end-to-end multi-agent orchestration, state handoffs, and markdown report generation.
 
 ---
 
-## Security & Privacy Considerations
+## Export Options
 
-- **Zero Secrets Storage**: Never stores or logs plain-text API keys. Discovered credentials are automatically masked using partial prefix/suffix redaction (e.g., `AIza...5678`).
-- **Sandboxed Analysis**: Operates strictly read-only on code files during review. Auto-patches are emitted as unified diffs and are not forcibly written without explicit user intent.
-- **Local First**: All AST, regex scanning, compliance audits, and local web dashboards run entirely on `localhost`.
+### 1. GitHub PR Review Markdown (`.md`)
+Formatted specifically for GitHub review comments:
+- Summary score table with emojis (`✅`, `⚠️`, `❌`).
+- Detailed finding cards with file location and remediation steps.
+- Expandable `<details>` tags enclosing unified diff codeblocks for auto-patches.
+
+### 2. Human-Readable Executive PDF (`.pdf`)
+- Clean, corporate A4 print layout styled via `@media print`.
+- Numbered executive sections:
+  1. Detailed Findings & Audit Observations
+  2. Automated Remediation Patches (Unified Diffs)
+  3. Multi-Agent Audit Trail & Execution Timeline
+- Smart page-break protection (`page-break-inside: avoid`) preventing awkwardly split cards.
+- Export by clicking **"📄 Export PDF"** on the Web Dashboard (`http://localhost:3737`).
 
 ---
 
-## Future Improvements
+## Security & Privacy Standards
 
-- [ ] GitHub Actions CI workflow integration to auto-comment reviews on PR open.
-- [ ] Direct git commit applicator for approved auto-patches (`pr-sentinel apply`).
-- [ ] Support for local LLM inference via Ollama (`llama3`, `deepseek-r1`).
-- [ ] Semantic AST call graph analysis using Tree-sitter.
+- **Zero Secret Commits**: Real API keys are loaded strictly from `.env` and excluded via `.gitignore`.
+- **Automatic Key Masking**: Exposed keys detected during audits are masked (e.g. `AIza...5678`) before being displayed in the UI, markdown, or logs.
+- **Read-Only Inspection**: Code analysis and diff extraction are strictly read-only. Auto-patches are emitted as unified diffs and are never applied without explicit user approval.
+- **Local-First Architecture**: Regex scanning, compliance audits, diff parsing, and local web dashboards run 100% on `localhost`.
+
+---
+
+## Known Limitations & Future Roadmap
+
+### Known Limitations
+- **Binary Assets**: Diff analysis is tailored for UTF-8 source code files; binary files (images, audio, compiled binaries) are ignored.
+- **Diff Size Cap**: Changes exceeding `5,000` lines are truncated by default to prevent context overflow.
+
+### Future Roadmap
+- [ ] **GitHub Actions Workflow**: Auto-comment PR Sentinel audit reviews on incoming pull requests.
+- [ ] **One-Click Patch Applicator**: CLI command `pr-sentinel apply --patch-id <id>` to directly apply generated diffs.
+- [ ] **Ollama Integration**: Run local offline inference using open-weights models (`llama3`, `deepseek-r1`).
+- [ ] **Tree-sitter Parser**: Language-specific AST call-graph tracing for complex multi-file refactoring.
 
 ---
 
 ## License
 
-*This project is contributed under the repository's open-source MIT license.*
+This project is contributed under the repository's open-source [MIT License](../../LICENSE).
