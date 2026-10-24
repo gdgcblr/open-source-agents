@@ -1,0 +1,16 @@
+# Known steady-state behaviour of the lab services. The agent treats these as
+# background noise unless they change versus their baseline.
+- service: payments
+  signal: 'ERROR log "exchange-rate refresh failed" (job=fx_rate_refresh), metric background_job_errors_total'
+  normal: about 300 per minute, always on
+  why: Flaky third-party FX provider; the job retries and serves cached rates. Not customer-facing.
+- service: payments
+  signal: 'HTTP 402 / WARN log "card declined"'
+  normal: about 1% of /pay requests
+  why: Business outcome (customer card declined), not a system error.
+- service: checkout
+  signal: p99 latency of /checkout
+  normal: 60-120 ms
+- service: payments
+  signal: p99 latency of /pay
+  normal: 50-70 ms

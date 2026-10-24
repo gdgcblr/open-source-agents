@@ -1,0 +1,14 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  - job_name: shop
+    static_configs:
+      - targets: ["checkout:8080"]
+        labels: {service: checkout}
+      - targets: ["payments:8080"]
+        labels: {service: payments}
