@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`aso-optimizer-agent`](./aso-optimizer-agent/) | Optimizes Play Store listings (titles, descriptions, keywords) via Hub & Spoke architecture with guardrails & fallback chain | TypeScript, Gemini GenAI SDK | Amrutha |

@@ -1,0 +1,21 @@
+{
+  "name": "aso-optimizer-agent",
+  "version": "1.0.0",
+  "description": "Play Store ASO Optimizer — Hub & Spoke multi-agent system with guardrails and fallback chain",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "demo": "ts-node src/index.ts --demo",
+    "build": "tsc",
+    "start": "node dist/index.js --demo"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}
