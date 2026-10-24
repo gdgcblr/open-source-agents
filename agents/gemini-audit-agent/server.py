@@ -246,13 +246,18 @@ def dashboard():
         </span>
       </div>
       <div class="flex items-center gap-2 font-semibold">
-        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">📸 Receipt OCR</span>
+        <!-- QUICK HERO API KEY ENTRY -->
+        <button onclick="openApiKeyModal()" class="flex items-center gap-1.5 bg-white hover:bg-slate-50 px-3 py-1 rounded-lg border border-sky-200 text-[#002E6E] font-bold shadow-2xs transition">
+          <span>🔑</span>
+          <span id="heroApiKeyLabel">Key: Heuristic Mode (Click to Enter)</span>
+        </button>
+        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">📸 OCR</span>
         <span class="text-sky-300">&rarr;</span>
-        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">✂️ Smart Split</span>
+        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">✂️ Split</span>
         <span class="text-sky-300">&rarr;</span>
-        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">⚖️ Invariant Audit</span>
+        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">⚖️ Audit</span>
         <span class="text-sky-300">&rarr;</span>
-        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">⚡ UPI Payment</span>
+        <span class="bg-white px-2.5 py-1 rounded-lg border border-sky-200 text-[#002E6E]">⚡ UPI</span>
       </div>
     </div>
   </div>
@@ -696,20 +701,24 @@ def dashboard():
       const key = getStoredApiKey();
       const label = document.getElementById('apiKeyBtnLabel');
       const btn = document.getElementById('apiKeyStatusBtn');
+      const heroLabel = document.getElementById('heroApiKeyLabel');
       if (key) {
         label.innerText = 'Key: Active (AI Studio)';
         btn.className = 'px-3 py-1.5 bg-emerald-50 text-emerald-800 font-bold rounded-xl transition border border-emerald-300 flex items-center gap-1.5';
+        if (heroLabel) heroLabel.innerText = 'Key: Active (AI Studio)';
       } else {
         label.innerText = 'API Key (Heuristic Mode)';
         btn.className = 'px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-200 flex items-center gap-1.5';
+        if (heroLabel) heroLabel.innerText = 'Key: Heuristic Mode (Click to Enter)';
       }
     }
 
     function getSelectedModel() {
-      return document.getElementById('globalModelSelect').value || 'gemini-2.5-flash';
+      return localStorage.getItem('bharat_dues_model') || (document.getElementById('globalModelSelect') ? document.getElementById('globalModelSelect').value : 'gemini-2.5-flash');
     }
 
     function onModelChange(val) {
+      localStorage.setItem('bharat_dues_model', val);
       console.log('Model switched to:', val);
     }
 
@@ -1134,6 +1143,10 @@ def dashboard():
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      const savedModel = localStorage.getItem('bharat_dues_model');
+      if (savedModel && document.getElementById('globalModelSelect')) {
+        document.getElementById('globalModelSelect').value = savedModel;
+      }
       updateApiKeyStatusDisplay();
       renderMembers();
       recalcSplit();
