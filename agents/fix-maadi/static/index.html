@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fix Maadi — Civic Routing Agent</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="brand-lockup"><div class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></div><div><div class="eyebrow">Community civic case desk</div><div class="brand-name">Fix Maadi</div></div></div>
+      <div class="header-status"><span class="status-dot"></span> Local-first · no auto-submit</div>
+    </header>
+
+    <section class="intro-strip">
+      <div><div class="eyebrow">From street problem to the right action</div><h1>Show us what happened.<br><em>We’ll help you act.</em></h1></div>
+      <p>Take a photo. Fix Maadi will draft the report, find the responsible route, and ask you to confirm what matters.</p>
+    </section>
+
+    <nav class="stepper" aria-label="Case progress">
+      <button class="step active" data-step="1"><span>1</span> Problem</button>
+      <button class="step" data-step="2" disabled><span>2</span> Route</button>
+      <button class="step" data-step="3" disabled><span>3</span> Details</button>
+      <button class="step" data-step="4" disabled><span>4</span> Review</button>
+      <button class="step" data-step="5" disabled><span>5</span> Handoff</button>
+    </nav>
+
+    <section class="journey-guide" aria-label="How Fix Maadi works">
+      <div class="journey-heading"><div><span class="eyebrow">Your case journey</span><h2>Five small steps. One usable report.</h2></div><span class="journey-note">You stay in control at every handoff.</span></div>
+      <div class="journey-grid">
+        <div class="journey-item"><span class="journey-icon">01</span><div><strong>Describe</strong><small>Say it naturally</small></div></div>
+        <div class="journey-item"><span class="journey-icon">02</span><div><strong>Route</strong><small>Find who can act</small></div></div>
+        <div class="journey-item"><span class="journey-icon">03</span><div><strong>Complete</strong><small>Answer what’s missing</small></div></div>
+        <div class="journey-item"><span class="journey-icon">04</span><div><strong>Review</strong><small>Edit before sharing</small></div></div>
+        <div class="journey-item"><span class="journey-icon">05</span><div><strong>Handoff</strong><small>Choose the channel</small></div></div>
+      </div>
+    </section>
+
+    <div id="error" class="error" role="alert" hidden></div>
+
+    <section class="card stage active" data-stage="1">
+      <div class="stage-number">Step 1 of 5</div>
+      <h2>Take a photo of the problem</h2>
+      <p>The agent will use the image and location context to prepare a first draft. You can edit every detail before sharing.</p>
+      <label for="image" class="dropzone"><span class="camera-glyph">⌾</span><span><strong>Choose a photo or use your camera</strong><small>JPG or PNG · kept local in this demo</small></span></label>
+      <input id="image" type="file" accept="image/*" capture="environment">
+      <div id="image-preview" class="image-preview" hidden></div>
+      <label for="description">Draft description <span class="optional">editable</span></label>
+      <textarea id="description" placeholder="Your photo-based draft will appear here after you choose an image."></textarea>
+      <p class="fineprint">Your draft stays reviewable and nothing is sent to an authority without your approval. Remove faces, number plates, and personal details.</p>
+      <div class="actions">
+        <button class="primary" id="identify">Analyze report</button>
+        <button class="quiet" id="sample">Try a single-issue example</button>
+      </div>
+    </section>
+
+    <section class="card stage" data-stage="2">
+      <div class="stage-number">Step 2 of 5</div>
+      <h2>Here’s where this should go</h2>
+      <div id="issue-summary"></div>
+      <details class="agent-trace"><summary>How the agent decided</summary><div id="trace-list"></div></details>
+      <div id="route-summary"></div>
+      <div class="notice">This is a sourced recommendation, not a legal jurisdiction decision. Confirm the category shown by the official service.</div>
+      <div class="actions">
+        <button class="quiet back" data-back="1">Back</button>
+        <button class="primary" id="collect-details">Continue with this route</button>
+      </div>
+    </section>
+
+    <section class="card stage" data-stage="3">
+      <div class="stage-number">Step 3 of 5</div>
+      <h2>A few details to confirm</h2>
+      <p>The agent has narrowed down what matters. Confirm the location and any issue-specific detail before it writes the report.</p>
+      <div class="form-grid">
+        <div><label for="location">Street or area</label><input id="location" placeholder="e.g. ORR service road, Bellandur"><button class="location-button" id="locate" type="button">Use my current location</button><span id="location-status" class="fineprint"></span></div>
+        <div><label for="landmark">Nearest landmark</label><input id="landmark" placeholder="e.g. Ecospace Gate 2"></div>
+        <div><label for="observed_at">When did you see it?</label><input id="observed_at" placeholder="e.g. today, 8:30 AM"></div>
+        <div id="duration-wrap" hidden><label for="duration">How long has it continued?</label><input id="duration" placeholder="e.g. four days"></div>
+        <div id="pole-wrap" hidden><label for="pole_number">Pole number <span class="optional">if visible</span></label><input id="pole_number" placeholder="e.g. SL-104, or not visible"></div>
+      </div>
+      <div id="missing-box" class="notice"></div>
+      <div class="actions">
+        <button class="quiet back" data-back="2">Back</button>
+        <button class="primary" id="prepare">Prepare complaint</button>
+      </div>
+    </section>
+
+    <section class="card stage" data-stage="4">
+      <div class="stage-number">Step 4 of 5</div>
+      <div class="title-row"><h2>Check the report before sharing</h2><span id="case-id" class="case-id"></span></div>
+      <div id="review-badges" class="badges"></div>
+      <div id="duplicate-box"></div>
+      <div class="review-grid">
+        <div><h3>Evidence checklist</h3><div id="evidence-list"></div></div>
+        <div><h3>Safety and privacy</h3><p id="safety-note"></p><p id="privacy-note" class="fineprint"></p></div>
+      </div>
+      <div id="guardrail-box" class="guardrail-box"></div>
+      <label for="english-draft">English complaint — editable</label>
+      <textarea id="english-draft" class="draft"></textarea>
+      <label for="kannada-draft">Kannada complaint — editable</label>
+      <textarea id="kannada-draft" class="draft"></textarea>
+      <label class="confirm"><input id="approval-check" type="checkbox"> I checked the location, description, and evidence. Nothing will be submitted automatically.</label>
+      <div class="actions">
+        <button class="quiet back" data-back="3">Back</button>
+        <button class="primary" id="approve-review" disabled>Approve and choose handoff</button>
+      </div>
+    </section>
+
+    <section class="card stage" data-stage="5">
+      <div class="stage-number">Step 5 of 5</div>
+      <h2>Choose where to send it</h2>
+      <p>The agent recommends options; you choose the destination and remain in control of final submission.</p>
+      <div id="handoff-routes"></div>
+      <div id="handoff-result" class="success" hidden></div>
+      <div id="feedback-panel" class="feedback-panel" hidden>
+        <h3>Help the next resident</h3>
+        <p>Did this channel accept the complaint? This is stored only as local demo feedback.</p>
+        <div class="actions">
+          <button class="quiet feedback" data-accepted="true">Yes, it was accepted</button>
+          <button class="quiet feedback" data-accepted="false">No, the channel did not work</button>
+          <button class="quiet feedback" data-accepted="true" data-resolved="true">Accepted and later resolved</button>
+        </div>
+      </div>
+      <div class="actions"><button class="quiet" id="start-over">Start another case</button></div>
+    </section>
+
+    <details class="history card">
+      <summary>Local case history</summary>
+      <p class="fineprint">Saved only in this project folder for the demo.</p>
+      <div id="cases">No cases yet.</div>
+    </details>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>

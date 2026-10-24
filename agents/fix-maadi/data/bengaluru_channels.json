@@ -1,0 +1,65 @@
+{
+  "city": "Bengaluru",
+  "last_reviewed": "2026-10-24",
+  "disclaimer": "Routes are guidance. Confirm the category and destination on the official service before submitting.",
+  "categories": {
+    "Pothole / road damage": {
+      "authority": "BBMP road infrastructure / relevant ward engineering team",
+      "reason": "Road-surface defects on civic roads are generally handled through BBMP road-maintenance workflows.",
+      "options": [
+        {"id": "sahaaya-portal", "name": "Namma Bengaluru / Sahaaya 2.0", "best_for": "A trackable pothole grievance with status updates", "mode": "portal_handoff", "destination": "https://nammabengaluru.org.in/", "source": "https://bbmp.gov.in/ucc_file/KarnatakaAdministrativeReforms.pdf", "source_title": "BBMP administrative reforms report", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "exact location", "description"]},
+        {"id": "fix-my-street", "name": "BBMP Fix My Street guidance", "best_for": "Understanding the photo and geolocation workflow for potholes", "mode": "guided_handoff", "destination": "https://site.bbmp.gov.in/departmentwebsites/BBMPIT/fms.html", "source": "https://site.bbmp.gov.in/departmentwebsites/BBMPIT/fms.html", "source_title": "BBMP IT — Fix My Street", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "GPS location", "landmark"]},
+        {"id": "bbmp-control-room", "name": "BBMP civic control room", "best_for": "Calling in a civic grievance and requesting a complaint number", "mode": "phone_handoff", "contact": "080-22660000", "destination": "tel:08022660000", "source": "https://site.bbmp.gov.in/departmentwebsites/PRO/objectives.html", "source_title": "BBMP Public Relation Office", "last_verified": "2026-10-24", "official": true, "needs": ["exact location", "description"]},
+        {"id": "copy-only", "name": "Copy prepared complaint", "best_for": "Keeping a reusable message for another verified channel", "mode": "copy_text", "source": null, "official": false, "track_feedback": false, "needs": ["location", "description"]}
+      ]
+    },
+    "Waterlogging / drainage": {
+      "authority": "BBMP storm-water drain / ward engineering team; BWSSB may be relevant for sewage or water-pipe issues",
+      "reason": "The responsible body depends on whether the water comes from rain, a blocked storm drain, sewage, or a pipe leak.",
+      "options": [
+        {"id": "sahaaya-portal", "name": "Namma Bengaluru / Sahaaya 2.0", "best_for": "Routing road waterlogging or drainage complaints across civic agencies", "mode": "portal_handoff", "destination": "https://nammabengaluru.org.in/", "source": "https://bbmp.gov.in/ucc_file/KarnatakaAdministrativeReforms.pdf", "source_title": "BBMP administrative reforms report", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "exact location", "time observed"]},
+        {"id": "bbmp-control-room", "name": "BBMP civic control room", "best_for": "Road flooding or cleaning of roadside drains", "not_for": "A confirmed sewage or water-pipe fault that belongs to another utility", "mode": "phone_handoff", "contact": "080-22660000", "destination": "tel:08022660000", "source": "https://site.bbmp.gov.in/departmentwebsites/PRO/objectives.html", "source_title": "BBMP Public Relation Office", "last_verified": "2026-10-24", "official": true, "needs": ["exact location", "water source if known", "description"]},
+        {"id": "copy-only", "name": "Copy evidence-backed complaint", "best_for": "A second verified authority when sewage or a pipe leak is confirmed", "mode": "copy_text", "source": null, "official": false, "track_feedback": false, "needs": ["cause if known", "location", "description"]}
+      ]
+    },
+    "Garbage / waste": {
+      "authority": "BBMP Solid Waste Management / relevant ward team",
+      "reason": "Collection failures and public dumping are solid-waste issues, but the exact category should be confirmed in the chosen service.",
+      "options": [
+        {"id": "bbmp-waste-whatsapp", "name": "BBMP WhatsApp — illegal dumping evidence", "best_for": "A photo of someone dumping waste on a roadside or vacant land", "not_for": "General missed collection unless BBMP confirms this channel", "mode": "whatsapp_handoff", "contact": "+91 94806 85700", "destination": "https://wa.me/919480685700", "source": "https://site.bbmp.gov.in/departmentwebsites/PRO/objectives.html", "source_title": "BBMP Public Relation Office", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "exact location", "short description"]},
+        {"id": "bbmp-waste-helpline", "name": "BBMP Solid Waste helpline", "best_for": "Waste service complaints and illegal dumping or burning", "mode": "phone_handoff", "contact": "080-22660000", "destination": "tel:08022660000", "source": "https://apps.bbmpgov.in/SWM/Home/Forms/Publicaboutus.aspx?Page=Contact", "source_title": "BBMP Solid Waste Management", "last_verified": "2026-10-24", "official": true, "needs": ["location", "description", "photo if available"]},
+        {"id": "bbmp-swm-guidance", "name": "BBMP Solid Waste Management guidance", "best_for": "Checking the current waste contact or escalation path", "mode": "guided_handoff", "destination": "https://apps.bbmpgov.in/SWM/Home/Forms/Publicaboutus.aspx?Page=Contact", "source": "https://apps.bbmpgov.in/SWM/Home/Forms/Publicaboutus.aspx?Page=Contact", "source_title": "BBMP Solid Waste Management", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "location", "duration"]},
+        {"id": "sahaaya-portal", "name": "Namma Bengaluru / Sahaaya 2.0", "best_for": "A trackable civic grievance", "mode": "portal_handoff", "destination": "https://nammabengaluru.org.in/", "source": "https://site.bbmp.gov.in/departmentwebsites/bbmpit/mobileapps.html", "source_title": "BBMP IT mobile apps", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "location", "description"]},
+        {"id": "copy-only", "name": "Copy prepared complaint", "best_for": "A verified helpline or ward contact", "mode": "copy_text", "source": null, "official": false, "track_feedback": false, "needs": ["location", "description"]}
+      ]
+    },
+    "Streetlight / visibility": {
+      "authority": "BBMP electrical / streetlight maintenance team",
+      "reason": "Non-working civic streetlights are generally routed to the electrical maintenance workflow.",
+      "options": [
+        {"id": "sahaaya-portal", "name": "Namma Bengaluru / Sahaaya 2.0", "best_for": "A trackable streetlight grievance", "mode": "portal_handoff", "destination": "https://nammabengaluru.org.in/", "source": "https://bbmp.gov.in/ucc_file/KarnatakaAdministrativeReforms.pdf", "source_title": "BBMP administrative reforms report", "last_verified": "2026-10-24", "official": true, "needs": ["location", "pole number if visible", "description"]},
+        {"id": "fix-my-street", "name": "BBMP Fix My Street guidance", "best_for": "Understanding the photo and geolocation workflow for streetlights", "mode": "guided_handoff", "destination": "https://site.bbmp.gov.in/departmentwebsites/BBMPIT/fms.html", "source": "https://site.bbmp.gov.in/departmentwebsites/BBMPIT/fms.html", "source_title": "BBMP IT — Fix My Street", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "location", "pole number if visible"]},
+        {"id": "bbmp-control-room", "name": "BBMP civic control room", "best_for": "Calling in a streetlight grievance and requesting a complaint number", "mode": "phone_handoff", "contact": "080-22660000", "destination": "tel:08022660000", "source": "https://site.bbmp.gov.in/departmentwebsites/PRO/objectives.html", "source_title": "BBMP Public Relation Office", "last_verified": "2026-10-24", "official": true, "needs": ["exact location", "pole number if visible"]},
+        {"id": "copy-only", "name": "Copy prepared complaint", "best_for": "A verified ward or maintenance contact", "mode": "copy_text", "source": null, "official": false, "track_feedback": false, "needs": ["location", "description"]}
+      ]
+    },
+    "Footpath / accessibility": {
+      "authority": "BBMP roads / public-realm team; another agency may own specific corridors",
+      "reason": "Footpath damage and obstruction need road-ownership and issue-type confirmation before routing.",
+      "options": [
+        {"id": "sahaaya-portal", "name": "Namma Bengaluru / Sahaaya 2.0", "best_for": "A trackable civic footpath or accessibility grievance", "mode": "portal_handoff", "destination": "https://nammabengaluru.org.in/", "source": "https://site.bbmp.gov.in/departmentwebsites/bbmpit/mobileapps.html", "source_title": "BBMP IT mobile apps", "last_verified": "2026-10-24", "official": true, "needs": ["photo", "exact location", "accessibility impact"]},
+        {"id": "bbmp-control-room", "name": "BBMP civic control room", "best_for": "Calling in a civic grievance and requesting a complaint number", "mode": "phone_handoff", "contact": "080-22660000", "destination": "tel:08022660000", "source": "https://site.bbmp.gov.in/departmentwebsites/PRO/objectives.html", "source_title": "BBMP Public Relation Office", "last_verified": "2026-10-24", "official": true, "needs": ["exact location", "accessibility impact"]},
+        {"id": "copy-only", "name": "Copy prepared complaint", "best_for": "A verified corridor owner or ward contact", "mode": "copy_text", "source": null, "official": false, "track_feedback": false, "needs": ["location", "description"]}
+      ]
+    },
+    "General civic issue": {
+      "authority": "BBMP grievance routing team; the final department depends on the issue and asset owner",
+      "reason": "The description does not yet match a supported specialist category, so a general grievance route is safer than guessing.",
+      "options": [
+        {"id": "sahaaya-portal", "name": "Namma Bengaluru / Sahaaya 2.0", "best_for": "A trackable Bengaluru civic grievance", "mode": "portal_handoff", "destination": "https://nammabengaluru.org.in/", "source": "https://site.bbmp.gov.in/departmentwebsites/bbmpit/mobileapps.html", "source_title": "BBMP IT mobile apps", "last_verified": "2026-10-24", "official": true, "needs": ["photo if relevant", "exact location", "description"]},
+        {"id": "bbmp-control-room", "name": "BBMP civic control room", "best_for": "Calling in a civic grievance and requesting a complaint number", "mode": "phone_handoff", "contact": "080-22660000", "destination": "tel:08022660000", "source": "https://site.bbmp.gov.in/departmentwebsites/PRO/objectives.html", "source_title": "BBMP Public Relation Office", "last_verified": "2026-10-24", "official": true, "needs": ["exact location", "description"]},
+        {"id": "copy-only", "name": "Copy prepared complaint", "best_for": "Taking the prepared text to another verified authority", "mode": "copy_text", "source": null, "official": false, "track_feedback": false, "needs": ["location", "description"]}
+      ]
+    }
+  }
+}

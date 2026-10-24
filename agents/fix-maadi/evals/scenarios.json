@@ -1,0 +1,8 @@
+[
+  {"id": "pothole", "input": {"description": "Deep pothole on the ORR service road", "location": "Bellandur", "observed_at": "today"}, "expect": {"category": "Pothole / road damage", "status": "ready_for_review", "recommended_channel": "sahaaya-portal"}},
+  {"id": "waterlogged-pothole", "input": {"description": "Pothole filled with rainwater beside a blocked drain", "location": "HSR Layout", "observed_at": "today"}, "expect": {"category": "Waterlogging / drainage", "related": "Pothole / road damage"}},
+  {"id": "illegal-dumping", "input": {"description": "Someone is dumping garbage on a vacant site", "location": "Jayanagar", "observed_at": "today", "duration": "one day"}, "expect": {"category": "Garbage / waste", "recommended_channel": "bbmp-waste-whatsapp"}},
+  {"id": "missed-collection", "input": {"description": "Garbage was not collected for a week", "location": "Indiranagar", "observed_at": "today", "duration": "one week"}, "expect": {"category": "Garbage / waste", "recommended_channel": "bbmp-waste-helpline"}},
+  {"id": "streetlight", "input": {"description": "Streetlight is not working near the bus stop", "location": "BTM Layout", "observed_at": "tonight"}, "expect": {"category": "Streetlight / visibility", "recommended_channel": "sahaaya-portal"}},
+  {"id": "unknown", "input": {"description": "A public civic issue needs attention", "location": "Bengaluru", "observed_at": "today"}, "expect": {"category": "General civic issue", "recommended_channel": "sahaaya-portal"}}
+]

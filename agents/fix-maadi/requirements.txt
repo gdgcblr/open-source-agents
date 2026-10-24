@@ -1,0 +1,2 @@
+# The core Fix Maadi agent uses only the Python standard library.
+# Optional MCP dependencies are declared separately in mcp/pyproject.toml.
