@@ -24,6 +24,7 @@
 ## Technical Stack
 
 - **Language & Runtime**: TypeScript, Node.js 20+
+- **Agent framework**: Google ADK (`@google/adk`)
 - **Protocols**: Model Context Protocol (`@modelcontextprotocol/sdk`), Agent2Agent (A2A, JSON-RPC over HTTP)
 - **Models**: Gemini via `@google/genai` (default `gemini-3.8-flash`); local Gemma (default `gemma3`) via Ollama
 - **External APIs / Tools**: GitHub REST API, `git`
@@ -104,6 +105,17 @@ The self-contained page (no scripts, escaped content, `reports/` is git-ignored)
 
 [Nerajno/learnt-project#43](https://github.com/Nerajno/learnt-project/issues/43): every project screenshot 404s. The agent localizes `src/data/projects.ts` and generates the steps below; I followed them manually (clone, `npm ci`, `npm run dev`) and `curl` for `/images/screenshots/status-tracker.png` returned 404 on that commit.
 
+### Google ADK agent
+
+The same evidence tools are also wrapped as a [Google ADK](https://github.com/google/adk-js) `LlmAgent` (`src/adk-agent.ts`, exported as `rootAgent`). Gemini orchestrates the read-only tools and writes the brief; the tools also save the HTML report.
+
+```bash
+npm run adk -- "Triage Nerajno/learnt-project#43"
+npm run adk -- "Triage this bug: <text> in the repo at /abs/path/to/repo"
+```
+
+Unlike the CLI's default offline mode, the ADK agent **always sends tool results (issue text, code excerpts) to Gemini** and requires `GEMINI_API_KEY`.
+
 ### MCP server (stdio)
 
 ```bash
@@ -179,7 +191,7 @@ TypeError occurs on GET /api/dashboard when accessing 'count' on an undefined el
 ## How to Test
 
 ```bash
-npm test      # builds, then runs 17 tests with node:test
+npm test      # builds, then runs 21 tests with node:test
 ```
 
 Tests use temporary git repositories, a mocked model provider and mocked `fetch`; no network, API key or Ollama is needed. They cover signal extraction, localization, git history, the LLM + fallback paths, provider configuration, Ollama request shape, an in-memory MCP client/server session, and the A2A HTTP endpoint.
@@ -207,7 +219,7 @@ Implement `ModelProvider` (`src/model-provider.ts`) and register a factory in `s
 
 ## Future Improvements
 
-- [ ] Wrap the pipeline as a Google ADK agent for multi-step planning.
+- [ ] Ollama/Gemma support for the ADK agent (currently Gemini only).
 - [ ] Optionally *run* a generated test in a sandbox/container to verify reproduction.
 - [ ] Semantic (embedding) retrieval to complement lexical localization.
 - [ ] A2A streaming/tasks and authentication.

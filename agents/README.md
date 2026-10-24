@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| [issue-reproduction-assistant](issue-reproduction-assistant/README.md) | Turns a GitHub issue into an evidence-backed reproduction brief (code localization, git history, draft test); CLI, MCP server and A2A agent. | TypeScript, MCP, A2A, Gemini / Gemma (Ollama) | — |
+| [issue-reproduction-assistant](issue-reproduction-assistant/README.md) | Turns a GitHub issue into an evidence-backed reproduction brief (code localization, git history, draft test); CLI, Google ADK agent, MCP server and A2A agent. | TypeScript, Google ADK, MCP, A2A, Gemini / Gemma (Ollama) | — |

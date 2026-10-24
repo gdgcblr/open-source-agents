@@ -13,9 +13,11 @@
     "mcp": "npm run build --silent && node dist/src/mcp-main.js",
     "a2a": "npm run build --silent && node dist/src/a2a-main.js",
     "demo": "npm run build --silent && node dist/src/cli.js --github",
-    "test": "npm run build && node --test dist/test/*.test.js"
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "adk": "npm run build --silent && node dist/src/adk-main.js"
   },
   "dependencies": {
+    "@google/adk": "^2.3.0",
     "@google/genai": "^1.0.0",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "dotenv": "^16.4.7",
