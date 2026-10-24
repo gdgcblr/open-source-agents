@@ -385,6 +385,11 @@ $("#occChips").querySelectorAll(".chip").forEach(c => c.onclick = () => { $("#oc
 setupDrop($("#outfitDrop"), $("#outfitInput"), "outfit");
 setupDrop($("#selfieDrop"), $("#selfieInput"), "selfie", previewBoard);
 renderMembers(); renderSwatches();
+fetch("/api/health").then(r => r.json()).then(h => {
+  const pill = $("#modelPill");
+  pill.textContent = `${h.model} · ${h.provider}`;
+  if (h.api_key_configured === false) { pill.textContent += " · no API key!"; pill.style.color = "#b42318"; pill.style.borderColor = "#b42318"; }
+}).catch(() => {});
 fetch("/api/wardrobe").then(r => r.json()).then(w => { state.wardrobe = w; renderWardrobe(); });
 
 // ---------- run the council ----------

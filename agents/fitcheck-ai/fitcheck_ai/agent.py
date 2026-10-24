@@ -21,24 +21,22 @@ from typing import AsyncGenerator
 from google.adk.agents import BaseAgent, LlmAgent, ParallelAgent, SequentialAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
-from google.adk.models.lite_llm import LiteLlm
 from google.genai import types
 
 from . import color_engine as ce
+from .models import build_model, default_model, generation_config
 from .wardrobe import describe_combos, describe_items, generate_combos, load_wardrobe
 
-MODEL_ID = os.getenv("FITCHECK_MODEL", "ollama_chat/gemma3:4b")
-VISION_MODEL_ID = os.getenv("FITCHECK_VISION_MODEL", MODEL_ID)
+MODEL_ID = os.getenv("FITCHECK_MODEL") or default_model()
+VISION_MODEL_ID = os.getenv("FITCHECK_VISION_MODEL") or MODEL_ID
 
 
 def _model(model_id: str):
-    # Any LiteLLM model string works: "ollama_chat/gemma3:4b" (local),
-    # "gemini/gemma-3-27b-it" (AI Studio), etc.
-    return LiteLlm(model=model_id)
+    return build_model(model_id)
 
 
-def _cfg(temp: float = 0.6) -> types.GenerateContentConfig:
-    return types.GenerateContentConfig(temperature=temp, max_output_tokens=700)
+def _cfg(temp: float = 0.6, model_id: str = MODEL_ID) -> types.GenerateContentConfig:
+    return generation_config(model_id, temp)
 
 
 # ---------------------------------------------------------------------------
@@ -138,7 +136,7 @@ class ColorLab(BaseAgent):
 outfit_reader = LlmAgent(
     name="OutfitReader",
     model=_model(VISION_MODEL_ID),
-    generate_content_config=_cfg(0.2),
+    generate_content_config=_cfg(0.2, VISION_MODEL_ID),
     instruction="""You are the eyes of a fashion stylist council.
 {outfit_text}
 Measured colours (lighting-corrected, trust these over how the image looks): {outfit_colors_text}

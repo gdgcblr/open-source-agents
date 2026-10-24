@@ -25,7 +25,8 @@ from google.genai import types  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 from fitcheck_ai import color_engine as ce  # noqa: E402
-from fitcheck_ai.agent import MODEL_ID, root_agent  # noqa: E402
+from fitcheck_ai.agent import MODEL_ID, VISION_MODEL_ID, root_agent  # noqa: E402
+from fitcheck_ai.models import api_key, is_hosted, provider_label  # noqa: E402
 from fitcheck_ai.wardrobe import load_wardrobe  # noqa: E402
 
 APP_NAME = "fitcheck_ai"
@@ -128,6 +129,34 @@ def build_result(state: dict) -> dict:
     }
 
 
+def explain_error(exc: Exception) -> str:
+    msg = f"{type(exc).__name__}: {exc}"
+    low = msg.lower()
+    if is_hosted(MODEL_ID):
+        if not api_key() or "api key" in low or "api_key" in low or "401" in low or "permission" in low:
+            return ("Gemini API rejected the request — check GOOGLE_API_KEY in .env "
+                    "(create one at https://aistudio.google.com/apikey). " + msg[:300])
+        if "429" in low or "resource_exhausted" in low or "quota" in low:
+            return ("Gemini API quota hit even after retries. Wait a minute, set "
+                    "FITCHECK_MODEL=gemma-4-26b-a4b-it, or raise your AI Studio tier. " + msg[:300])
+        if "404" in low or "not found" in low:
+            return (f"Model '{MODEL_ID}' isn't available to your key. Run "
+                    "`python scripts/check_api.py` to list Gemma models you can use. " + msg[:300])
+    elif "connect" in low:
+        return msg + " — is Ollama running? Try `ollama serve` and `ollama pull gemma3:4b`."
+    return msg
+
+
+@app.get("/api/health")
+def health():
+    """What the UI needs to show which Gemma is running — never exposes the key."""
+    return {
+        "model": MODEL_ID, "vision_model": VISION_MODEL_ID,
+        "provider": provider_label(MODEL_ID),
+        "api_key_configured": bool(api_key()) if is_hosted(MODEL_ID) else None,
+    }
+
+
 @app.get("/")
 def index():
     return FileResponse(STATIC / "index.html")
@@ -167,7 +196,9 @@ async def fitcheck(req: FitCheckRequest):
         try:
             async for event in runner.run_async(user_id=user_id, session_id=session_id,
                                                 new_message=message):
-                text = "".join(p.text or "" for p in (event.content.parts if event.content else []))
+                # skip Gemma 4 "thinking" parts — only show each expert's final answer
+                text = "".join(p.text or "" for p in (event.content.parts if event.content else [])
+                               if not getattr(p, "thought", False))
                 if text.strip() and event.author in AGENT_LABELS:
                     yield json.dumps({"type": "agent", "agent": event.author,
                                       "label": AGENT_LABELS[event.author], "text": text}) + "\n"
@@ -175,10 +206,7 @@ async def fitcheck(req: FitCheckRequest):
                 app_name=APP_NAME, user_id=user_id, session_id=session_id)
             yield json.dumps({"type": "result", "result": build_result(session.state)}) + "\n"
         except Exception as exc:  # surface model/runtime errors to the UI
-            hint = ""
-            if "ollama" in MODEL_ID and ("Connection" in repr(exc) or "connect" in str(exc).lower()):
-                hint = " Is Ollama running? Try: `ollama serve` and `ollama pull gemma3:4b`."
-            yield json.dumps({"type": "error", "message": f"{type(exc).__name__}: {exc}{hint}"}) + "\n"
+            yield json.dumps({"type": "error", "message": explain_error(exc)}) + "\n"
 
     return StreamingResponse(stream(), media_type="application/x-ndjson")
 
