@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ev-diff-001",
+    "source_type": "diff",
+    "content": "File: services/checkout/payment_processor.py:22\n+ query = f\"SELECT * FROM customer_accounts WHERE user_id = '{user_id}'\"",
+    "timestamp": "2026-10-24T09:50:00Z",
+    "service": "checkout-service",
+    "commit_id": "a7b9c1d",
+    "metadata": {
+      "file_path": "services/checkout/payment_processor.py",
+      "line_number": 22,
+      "heuristic": true
+    }
+  },
+  {
+    "id": "ev-log-001",
+    "source_type": "log",
+    "content": "Database connection pool exhausted: timeout waiting for connection after 30s. Active connections: 50/50.",
+    "timestamp": "2026-10-24T10:05:00Z",
+    "service": "checkout-service",
+    "commit_id": "a7b9c1d",
+    "metadata": {
+      "level": "ERROR",
+      "count": 48
+    }
+  },
+  {
+    "id": "ev-met-001",
+    "source_type": "metric",
+    "content": "Metric 'http_error_rate_5xx' surged from baseline 0.001 to 0.185 (185x increase) peaking at 10:06:00Z.",
+    "timestamp": "2026-10-24T10:06:00Z",
+    "service": "checkout-service",
+    "metadata": {
+      "baseline": 0.001,
+      "peak": 0.185
+    }
+  }
+]

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentrelay"
+version = "0.1.0"
+description = "Evidence-Driven AI Engineering Investigation Platform"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "AgentRelay Contributors"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+google = [
+    "google-genai>=0.1.0",
+]
+
+[project.scripts]
+agentrelay = "agentrelay.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agentrelay*"]

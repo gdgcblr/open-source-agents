@@ -1,0 +1,90 @@
+{
+  "simulation_note": "SIMULATED INCIDENT DATA FOR DEMONSTRATION PURPOSES ONLY",
+  "incident_id": "INC-8921",
+  "service": "checkout-service",
+  "start_time": "2026-10-24T10:00:00Z",
+  "end_time": "2026-10-24T10:30:00Z",
+  "deployments": [
+    {
+      "deployment_id": "dep-902",
+      "commit_id": "a7b9c1d",
+      "service": "checkout-service",
+      "version": "v2.4.1",
+      "timestamp": "2026-10-24T09:55:00Z"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "http_error_rate_5xx",
+      "service": "checkout-service",
+      "datapoints": [
+        {"timestamp": "2026-10-24T09:40:00Z", "value": 0.001},
+        {"timestamp": "2026-10-24T09:50:00Z", "value": 0.001},
+        {"timestamp": "2026-10-24T10:00:00Z", "value": 0.002},
+        {"timestamp": "2026-10-24T10:05:00Z", "value": 0.125},
+        {"timestamp": "2026-10-24T10:10:00Z", "value": 0.185},
+        {"timestamp": "2026-10-24T10:15:00Z", "value": 0.170}
+      ]
+    },
+    {
+      "name": "p99_latency_ms",
+      "service": "checkout-service",
+      "datapoints": [
+        {"timestamp": "2026-10-24T09:40:00Z", "value": 115.0},
+        {"timestamp": "2026-10-24T09:50:00Z", "value": 120.0},
+        {"timestamp": "2026-10-24T10:00:00Z", "value": 140.0},
+        {"timestamp": "2026-10-24T10:05:00Z", "value": 3200.0},
+        {"timestamp": "2026-10-24T10:10:00Z", "value": 4500.0},
+        {"timestamp": "2026-10-24T10:15:00Z", "value": 4100.0}
+      ]
+    }
+  ],
+  "logs": [
+    {
+      "id": "log-001",
+      "timestamp": "2026-10-24T10:04:12Z",
+      "service": "checkout-service",
+      "level": "ERROR",
+      "message": "Database connection pool exhausted: timeout waiting for connection after 30s. Pool size: 50/50."
+    },
+    {
+      "id": "log-002",
+      "timestamp": "2026-10-24T10:04:45Z",
+      "service": "checkout-service",
+      "level": "ERROR",
+      "message": "Database connection pool exhausted: timeout waiting for connection after 30s. Pool size: 50/50."
+    },
+    {
+      "id": "log-003",
+      "timestamp": "2026-10-24T10:05:10Z",
+      "service": "checkout-service",
+      "level": "ERROR",
+      "message": "Database connection pool exhausted: timeout waiting for connection after 30s. Pool size: 50/50."
+    },
+    {
+      "id": "log-004",
+      "timestamp": "2026-10-24T10:06:02Z",
+      "service": "checkout-service",
+      "level": "ERROR",
+      "message": "OperationalError: cannot allocate database cursor: socket closed by peer."
+    }
+  ],
+  "traces": [
+    {
+      "trace_id": "trc-9901",
+      "timestamp": "2026-10-24T10:04:15Z",
+      "duration_ms": 30045,
+      "error": true,
+      "root_span": "POST /checkout/process",
+      "error_message": "Timeout in db_pool.acquire after 30000ms"
+    },
+    {
+      "trace_id": "trc-9902",
+      "timestamp": "2026-10-24T10:05:12Z",
+      "duration_ms": 30012,
+      "error": true,
+      "root_span": "POST /checkout/process",
+      "error_message": "Timeout in db_pool.acquire after 30000ms"
+    }
+  ]
+}

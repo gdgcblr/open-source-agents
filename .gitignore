@@ -85,3 +85,6 @@ out/
 tmp/
 temp/
 .cache/
+
+# Local AgentRelay virtual environment
+.venv-agentrelay/
