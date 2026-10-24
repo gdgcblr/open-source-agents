@@ -180,3 +180,9 @@ Tests include real subprocess runs against the toy server and prove, among other
 - [ ] Streamable HTTP transport with host allow-listing.
 - [ ] Markdown / SARIF reports and a GitHub Action.
 - [ ] Record mode to generate a fixture from `tools/list`.
+
+---
+
+## Sample Input and Output
+
+See [Sample_Demo.md](Sample_Demo.md) for a full walkthrough of the toy-server demo: the fixture input, `check` output, the `diff` text report, the JSON report (including secret redaction) and what each exit code means.
