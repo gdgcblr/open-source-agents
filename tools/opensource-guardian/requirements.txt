@@ -1,0 +1,4 @@
+streamlit>=1.32.0
+pytest>=8.1.1
+numpy
+google-genai
