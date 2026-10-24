@@ -38,7 +38,7 @@ Thumbs.db
 *~
 
 # Invoice Chaser local data (real client data must never be committed)
-data/
+/data/
 *.db
 *.db-journal
 .adk/

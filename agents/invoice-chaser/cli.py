@@ -212,7 +212,9 @@ def cmd_audit(args):
 
 
 def run_agent(message: str) -> int:
-    if not os.getenv("GOOGLE_API_KEY") and os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "").upper() != "TRUE":
+    key = os.getenv("GOOGLE_API_KEY", "")
+    if (not key or key.startswith("your_")) and \
+            os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "").upper() != "TRUE":
         print("GOOGLE_API_KEY is not set. Copy .env.example to .env and add your key from "
               "https://aistudio.google.com/apikey")
         return 1
@@ -242,7 +244,18 @@ def run_agent(message: str) -> int:
             await runner.close()
         return final
 
-    print(f"\n{asyncio.run(go()) or '(no reply)'}")
+    try:
+        reply = asyncio.run(go())
+    except Exception as e:  # e.g. invalid key, quota exhausted, network down
+        message = getattr(e, "message", None) or str(e).splitlines()[0]
+        cause = e.__cause__ or e.__context__
+        if cause is not None and "API key" in str(cause):
+            message = "Gemini rejected the API key. Check GOOGLE_API_KEY in .env."
+        print(f"\n✗ The agent run failed: {message[:300]}")
+        print("  Nothing was approved or sent. Ledger changes made before the failure are kept "
+              "and listed in `python cli.py audit`.")
+        return 1
+    print(f"\n{reply or '(no reply)'}")
     return 0
 
 
