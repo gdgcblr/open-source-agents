@@ -1,0 +1,90 @@
+# Default rules for the open-source-ai repository (gdgcblr/open-source-agents).
+# Every value here comes from CONTRIBUTING.md or .github/PULL_REQUEST_TEMPLATE.md.
+# Checks read their settings from this file, so a future per-repo rules file can
+# override it without touching check code.
+
+schema_version = 1
+
+[structure]
+categories = ["agents", "tools"]
+slug_pattern = "^[a-z0-9]+(-[a-z0-9]+)*$"
+generic_names = [
+    "agent", "tool", "project", "my-agent", "my-tool", "my-project",
+    "final", "final-project", "final-test", "test", "tests", "demo",
+    "sample", "example", "helper", "untitled", "new-project", "hackathon",
+]
+
+[readme]
+file = "README.md"
+# README text beyond this many characters is not sent to the AI reviewer.
+max_ai_chars = 20000
+
+# Sections a reviewer will look for. A README heading matches when it contains
+# one of the aliases as whole words (case-insensitive). Template headings not
+# listed here are still expected, but only produce a warning when missing.
+[[readme.sections]]
+title = "Overview"
+aliases = ["overview", "introduction", "about", "what it does"]
+
+[[readme.sections]]
+title = "Prerequisites"
+aliases = ["prerequisites", "requirements"]
+
+[[readme.sections]]
+title = "Installation & Setup"
+aliases = ["installation", "install", "setup", "getting started"]
+
+[[readme.sections]]
+title = "How to Run"
+aliases = ["how to run", "usage", "running", "run"]
+
+[[readme.sections]]
+title = "Example Input & Output"
+aliases = ["example", "examples", "sample", "demo"]
+
+[[readme.sections]]
+title = "How to Test"
+aliases = ["test", "testing", "tests"]
+
+[[readme.sections]]
+title = "Known Limitations"
+aliases = ["limitations", "limitation", "known issues"]
+
+[[readme.sections]]
+title = "Security & Privacy Considerations"
+aliases = ["security", "privacy"]
+
+[dependencies]
+manifests = [
+    "requirements.txt", "requirements-dev.txt", "pyproject.toml", "Pipfile",
+    "setup.py", "setup.cfg", "environment.yml", "package.json", "deno.json",
+    "go.mod", "Cargo.toml", "pom.xml", "build.gradle", "build.gradle.kts",
+    "composer.json", "Gemfile",
+]
+
+[files]
+# Files that must never be committed (matched against the file name).
+forbidden_names = [
+    ".env", "credentials.json", "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519",
+    ".npmrc", ".pypirc",
+]
+forbidden_globs = [
+    ".env.*", "*.pem", "*.key", "*.p12", "*.pfx", "*.keystore", "*.jks",
+    "service-account*.json",
+]
+# Allowed even though they match a forbidden pattern above.
+allowed_names = [".env.example", ".env.sample", ".env.template"]
+# Folders that are build output or local environments, never source.
+junk_dirs = [
+    ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache",
+    ".mypy_cache", ".ruff_cache", ".tox", ".ipynb_checkpoints",
+]
+# Files larger than this are not scanned for secrets.
+max_scan_bytes = 1000000
+
+[scope]
+# Base branches tried, in order, when --base is not given.
+default_bases = ["upstream/main", "origin/main", "main"]
+# Contributors may add one row to their category's index table.
+max_index_lines_added = 2
+max_index_lines_removed = 1
