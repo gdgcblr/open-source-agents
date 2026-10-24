@@ -62,6 +62,12 @@ def test_redacts_phones_and_emails_but_not_dates():
 def test_secret_detection():
     assert guardrails.find_secret(f"here is my key {fake_google_key()}") == "Google API key"
     assert guardrails.find_secret("my otp is 482913") == "a password or one-time code"
+    key = fake_google_key()
+    split = f'key = "{key[:18]}" + "{key[18:]}"'
+    assert guardrails.find_secret(split) == "Google API key (split across strings)"
+    b64 = __import__("base64").b64encode(key.encode()).decode()
+    assert guardrails.find_secret(f"here you go: {b64}") == "Google API key (base64-encoded)"
+    assert guardrails.find_secret("ನನ್ನ ಪಾಸ್\u200cವರ್ಡ್ ಮರೆತಿದ್ದೇನೆ, ಏನು ಮಾಡಲಿ?") is None  # asking about passwords is fine
     assert guardrails.find_secret("what is an API key and where do I put it?") is None
     assert guardrails.find_secret("How do I fork a repo?") is None
 

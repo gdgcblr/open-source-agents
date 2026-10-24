@@ -14,7 +14,7 @@ from collections import defaultdict, deque
 from pathlib import Path
 
 from ..checks import injection
-from ..checks.secrets import GENERIC, PLACEHOLDER, VENDOR_PATTERNS, _entropy
+from ..checks.secrets import GENERIC, PLACEHOLDER, VENDOR_PATTERNS, _entropy, scan_line
 from . import config
 
 # --- identity ---------------------------------------------------------------
@@ -40,6 +40,10 @@ def find_secret(text: str) -> str | None:
     for name, pat in VENDOR_PATTERNS.items():
         if re.search(pat, text):
             return name
+    for line in text.splitlines():  # keys split across strings or base64-encoded
+        hit = scan_line(line)
+        if hit:
+            return hit[0]
     m = GENERIC.search(text)
     if m and not PLACEHOLDER.search(m.group(2)) and _entropy(m.group(2)) > 3.5:
         return "a secret value"
