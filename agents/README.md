@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`namma-civic-agent`](namma-civic-agent/README.md) | Turns a photo of a Bengaluru civic issue into an English + Kannada complaint routed to the right authority | Google ADK, Gemini | [@vi5hnuu](https://github.com/vi5hnuu) |

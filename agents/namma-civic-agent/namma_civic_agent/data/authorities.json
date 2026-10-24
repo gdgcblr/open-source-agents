@@ -1,0 +1,80 @@
+{
+  "_meta": {
+    "description": "Authorities and the channels citizens can use to file or escalate complaints.",
+    "verified": false,
+    "verification_note": "Every channel 'value' must be checked against the authority's official website or app before use. Entries with value null are placeholders still to be researched. Set 'verified' to true and fill 'source' once confirmed.",
+    "last_reviewed": null
+  },
+  "emergency": {
+    "name": "National emergency response (ERSS)",
+    "value": "112",
+    "use_when": "Immediate danger to life or property, e.g. live wires, open manholes in traffic, fallen trees on vehicles.",
+    "verified": false,
+    "source": null
+  },
+  "authorities": [
+    {
+      "id": "city_corporation",
+      "name": "Bengaluru city corporation (Greater Bengaluru Authority, formerly BBMP)",
+      "name_kn": "ಬೆಂಗಳೂರು ನಗರ ಪಾಲಿಕೆ",
+      "handles": "Roads, garbage, streetlights, storm drains, trees, footpaths, public health, stray animals",
+      "channels": [
+        {"type": "helpline", "name": "Civic helpline", "value": "1533", "verified": false, "source": null},
+        {"type": "app_portal", "name": "Sahaaya grievance app / portal", "value": null, "verified": false, "source": null},
+        {"type": "social", "name": "Official X (Twitter) handle", "value": null, "verified": false, "source": null}
+      ],
+      "escalation": [
+        "Ward-level engineer / health inspector",
+        "Zonal joint commissioner",
+        "Corporation commissioner"
+      ]
+    },
+    {
+      "id": "bescom",
+      "name": "Bangalore Electricity Supply Company (BESCOM)",
+      "name_kn": "ಬೆಸ್ಕಾಂ",
+      "handles": "Power supply, electric poles, overhead lines, transformers",
+      "channels": [
+        {"type": "helpline", "name": "BESCOM helpline", "value": "1912", "verified": false, "source": null},
+        {"type": "app_portal", "name": "BESCOM Mitra app / website", "value": null, "verified": false, "source": null},
+        {"type": "social", "name": "Official X (Twitter) handle", "value": null, "verified": false, "source": null}
+      ],
+      "escalation": [
+        "Section officer (AE) of the local sub-division",
+        "Executive Engineer (EE) of the division",
+        "Consumer Grievance Redressal Forum"
+      ]
+    },
+    {
+      "id": "bwssb",
+      "name": "Bangalore Water Supply and Sewerage Board (BWSSB)",
+      "name_kn": "ಬೆಂಗಳೂರು ಜಲಮಂಡಳಿ",
+      "handles": "Drinking water supply, pipelines, sewage lines, sewer manholes",
+      "channels": [
+        {"type": "helpline", "name": "BWSSB helpline", "value": "1916", "verified": false, "source": null},
+        {"type": "app_portal", "name": "BWSSB complaint portal / WhatsApp", "value": null, "verified": false, "source": null},
+        {"type": "social", "name": "Official X (Twitter) handle", "value": null, "verified": false, "source": null}
+      ],
+      "escalation": [
+        "Assistant Executive Engineer of the service station",
+        "Executive Engineer of the division",
+        "Chief Engineer"
+      ]
+    },
+    {
+      "id": "traffic_police",
+      "name": "Bengaluru Traffic Police (BTP)",
+      "name_kn": "ಬೆಂಗಳೂರು ಸಂಚಾರ ಪೊಲೀಸ್",
+      "handles": "Traffic signals, parking violations, traffic obstructions",
+      "channels": [
+        {"type": "helpline", "name": "Traffic control room", "value": null, "verified": false, "source": null},
+        {"type": "app_portal", "name": "Official traffic police app / portal", "value": null, "verified": false, "source": null},
+        {"type": "social", "name": "Official X (Twitter) handle", "value": null, "verified": false, "source": null}
+      ],
+      "escalation": [
+        "Jurisdictional traffic police station",
+        "Deputy Commissioner of Police (Traffic) for the division"
+      ]
+    }
+  ]
+}
