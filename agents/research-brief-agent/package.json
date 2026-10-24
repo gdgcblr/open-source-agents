@@ -9,7 +9,9 @@
     "tool:list-sources": "agent-sdk tool call list-bundled-sources --dir . --input \"{}\" --json",
     "tool:read-fixture": "agent-sdk tool call read-bundled-source --dir . --input \"{\\\"filename\\\":\\\"healthcare-edge.md\\\"}\" --json",
     "fixture:save": "python scripts/save_fixture.py",
-    "smoke": "python scripts/smoke_test.py --fixture-json .agent-serve/fixture.json"
+    "smoke": "python scripts/smoke_test.py --fixture-json .agent-serve/fixture.json",
+    "demo": "python scripts/generate_report.py --topic \"Edge Computing in Healthcare\"",
+    "demo:url": "python scripts/generate_report.py --topic \"AI Agents in Drug Discovery\" --url \"https://en.wikipedia.org/wiki/Drug_discovery\""
   },
   "dependencies": {
     "@grok/agent-sdk": "^0.2.29",
