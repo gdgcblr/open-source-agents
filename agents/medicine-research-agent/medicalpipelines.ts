@@ -12,18 +12,27 @@ const EMERGENCY_KEYWORDS = [
   'overdose', 'unconscious', 'severe bleeding'
 ];
 
-// Regex for SSNs (XXX-XX-XXXX) and 10-digit phone numbers
 const PII_SSN_REGEX = /\b\d{3}-\d{2}-\d{4}\b/;
 const PII_PHONE_REGEX = /\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/;
 
 const triageAndPiiGuardrailTool = new FunctionTool({
   name: 'triageAndPiiGuardrail',
-  description: 'Pre-flight check for acute emergencies and sensitive PII (SSN, Phone Numbers).',
+  description: 'Pre-flight check for acute medical emergencies and sensitive PII in user text.',
   parameters: z.object({
-    userInputText: z.string().describe('User input text'),
+    userInputText: z
+      .string()
+      .optional()
+      .default('')
+      .describe('User text message. Pass empty string if only an image was attached.'),
   }),
-  execute: async ({ userInputText }) => {
-    // 1. Emergency Check
+  execute: async ({ userInputText = '' }) => {
+    if (!userInputText || userInputText.trim() === '') {
+      return { 
+        status: 'SAFE_TO_PROCEED', 
+        message: 'No text provided (direct prescription image upload). Cleared for OCR.' 
+      };
+    }
+
     const lower = userInputText.toLowerCase();
     for (const keyword of EMERGENCY_KEYWORDS) {
       if (lower.includes(keyword)) {
@@ -34,17 +43,16 @@ const triageAndPiiGuardrailTool = new FunctionTool({
       }
     }
 
-    // 2. PII Detection Check
     const hasSSN = PII_SSN_REGEX.test(userInputText);
     const hasPhone = PII_PHONE_REGEX.test(userInputText);
     if (hasSSN || hasPhone) {
       return {
         status: 'PII_WARNING',
-        message: '⚠️ PRIVACY NOTICE: Sensitive identifiers (SSN or contact numbers) detected and flagged for masking under HIPAA/GDPR best practices.',
+        message: '⚠️ PRIVACY NOTICE: Sensitive identifiers detected and flagged for masking.',
       };
     }
 
-    return { status: 'SAFE_TO_PROCEED', message: 'No acute emergency or exposed high-risk identifiers detected.' };
+    return { status: 'SAFE_TO_PROCEED', message: 'No emergency detected. Cleared to process prescription.' };
   },
 });
 
@@ -56,9 +64,8 @@ const MAX_DAILY_DOSES_MG: Record<string, number> = {
   aspirin: 4000, metformin: 2550, lisinopril: 80, amoxicillin: 3000,
 };
 
-// Known absolute teratogens / FDA pregnancy category X or D contraindications
 const KNOWN_TERATOGENS = [
-  'lisinopril', 'losartan', 'enalapril', 'valsartan', // ACEi / ARBs
+  'lisinopril', 'losartan', 'enalapril', 'valsartan',
   'isotretinoin', 'methotrexate', 'warfarin', 'valproate', 'finasteride'
 ];
 
@@ -74,7 +81,7 @@ const deterministicClinicalValidatorTool = new FunctionTool({
     const key = drugName.toLowerCase().trim();
     const violations: string[] = [];
 
-    // 1. Teratogen Guardrail
+    // Teratogen Guardrail
     if (isPregnant) {
       const isContraindicated = KNOWN_TERATOGENS.some(t => key.includes(t));
       if (isContraindicated) {
@@ -82,7 +89,7 @@ const deterministicClinicalValidatorTool = new FunctionTool({
       }
     }
 
-    // 2. Dosage Ceiling Guardrail
+    // Dosage Ceiling Guardrail
     const maxAllowed = MAX_DAILY_DOSES_MG[key];
     if (maxAllowed && totalDailyMg && totalDailyMg > maxAllowed) {
       violations.push(`🔴 DOSAGE CEILING EXCEEDED: ${drugName} at ${totalDailyMg}mg/day exceeds the absolute clinical safe ceiling of ${maxAllowed}mg/day.`);
@@ -97,68 +104,86 @@ const deterministicClinicalValidatorTool = new FunctionTool({
 });
 
 // ========================================================
-// AGENTS SETUP
+// NODE 1: INTAKE & OCR EXTRACTOR (Direct Image Receiver)
 // ========================================================
-
-// 🛡️ AGENT 1: PRE-FLIGHT TRIAGE & PII GATEKEEPER
-export const triageAgent = new LlmAgent({
-  name: 'preflight_triage_agent',
-  model: MODEL_NAME,
-  tools: [triageAndPiiGuardrailTool],
-  instruction: `You are the Pre-Flight Emergency & Privacy Gatekeeper.
-1. Call "triageAndPiiGuardrail" on the user's input.
-2. If status is "EMERGENCY_HALT": Output ONLY the alert message prefixed with "[EMERGENCY_HALT]".
-3. Otherwise, pass forward: "[PROCEED_TO_EXTRACTION]".`,
-});
-
-// 🛡️ AGENT 2: OCR EXTRACTOR + ILLEGIBILITY / CONFIDENCE GUARDRAIL
 export const extractorAgent = new LlmAgent({
   name: 'extractor_agent',
   model: MODEL_NAME,
-  instruction: `You are an expert Medical OCR & Prescription Transcriber with an embedded ILLEGIBILITY GUARDRAIL.
-If the previous agent triggered "[EMERGENCY_HALT]", halt immediately and repeat the emergency alert.
+  tools: [triageAndPiiGuardrailTool],
+  instruction: `You are an expert Medical OCR & Clinical Intake Specialist.
 
-🛡️ GUARDRAIL 2: ILLEGIBILITY & CONFIDENCE CHECK:
-Evaluate the clarity of the prescription image or text.
-- If the prescription image is too blurry, handwriting is ambiguous, or drug name/dosage cannot be verified with >85% confidence:
-  Output ONLY:
-  "[ILLEGIBLE_HALT] ⚠️ PRESCRIPTION AMBIGUOUS / UNCLEAR: Handwriting or image resolution is insufficient to safely confirm drug names or dosages. To prevent medication errors, please have this prescription verified manually by a licensed pharmacist."
+YOUR TASKS IN ORDER:
+1. 🛡️ PRE-FLIGHT CHECK:
+   Call "triageAndPiiGuardrail" ONCE passing the user's text prompt (or "" if they only uploaded an image).
+   If the tool returns status "EMERGENCY_HALT":
+   Output ONLY: "[EMERGENCY_HALT] " followed by the alert message, and STOP immediately.
 
-Otherwise, output structured JSON:
-{
-  "confidenceScore": number (0-100),
-  "patientProfile": { "age": number | null, "conditions": string[], "pregnant": boolean, "allergies": string[] },
-  "extractedMedications": [{ "drugName": string, "dosage": string, "frequency": string, "dailyMg": number }]
-}`,
+2. 📷 MULTIMODAL PRESCRIPTION READING:
+   Examine the attached prescription image carefully.
+   Transcribe the doctor's handwriting, clinic details, patient info, drug names, strengths, dosages, and instructions.
+
+3. 🛡️ ILLEGIBILITY GUARDRAIL:
+   ONLY if the image is completely pitch black, corrupted, or not a prescription at all, output:
+   "[ILLEGIBLE_HALT] ⚠️ PRESCRIPTION AMBIGUOUS / UNCLEAR: Image resolution is insufficient. Please have this verified manually by a pharmacist."
+
+4. 📋 STRUCTURED OUTPUT:
+   If legible, output structured JSON with the extracted details:
+   \`\`\`json
+   {
+     "confidenceScore": 95,
+     "patientProfile": {
+       "age": number or null,
+       "conditions": string[],
+       "pregnant": boolean,
+       "allergies": string[]
+     },
+     "extractedMedications": [
+       { "drugName": string, "dosage": string, "frequency": string, "dailyMg": number }
+     ]
+   }
+   \`\`\`
+   Pass this structured JSON forward for clinical research.`,
 });
 
-// 🛡️ AGENT 3: PHARMACOLOGIST RESEARCHER (OpenFDA + Deterministic Validator)
+// ========================================================
+// NODE 2: CLINICAL PHARMACOLOGIST (OpenFDA + Guardrail 3)
+// ========================================================
 export const clinicalResearcherAgent = new LlmAgent({
   name: 'clinical_researcher_agent',
   model: MODEL_NAME,
   tools: [openFdaDrugSafetyTool, openFdaInteractionCheckerTool, deterministicClinicalValidatorTool],
   instruction: `You are a Clinical Pharmacologist Agent backed by OpenFDA and deterministic clinical safety filters.
-If "[EMERGENCY_HALT]" or "[ILLEGIBLE_HALT]" is active, halt and pass it forward.
+If "[EMERGENCY_HALT]" or "[ILLEGIBLE_HALT]" is in the previous output, pass it through and do NOT call any tools.
 
 Otherwise:
-1. For each medication, call "deterministicClinicalValidator" passing the drugName, dailyMg, and isPregnant.
-2. Call "openFdaDrugSafetyLookup" for each drug for Boxed Warnings and Contraindications.
-3. Call "openFdaInteractionChecker" for drug pairs.
-4. Synthesize all verified warnings.`,
+1. Look at the JSON extracted by the extractor_agent.
+2. For each medication:
+   - Call "deterministicClinicalValidator" passing the drugName, dailyMg, and isPregnant.
+   - Call "openFdaDrugSafetyLookup" for Boxed Warnings and Contraindications.
+3. Call "openFdaInteractionChecker" for medication pairs.
+4. Summarize all findings clearly with citations from OpenFDA and the clinical validator.`,
 });
 
-// AGENT 4: SAFETY REVIEWER & CRITIC
+// ========================================================
+// NODE 3: SAFETY REVIEWER & CRITIC
+// ========================================================
 export const safetyReviewerAgent = new LlmAgent({
   name: 'safety_reviewer_agent',
   model: MODEL_NAME,
   instruction: `You are the Lead Safety Reviewer and Medical Guardrail.
-If "[EMERGENCY_HALT]" or "[ILLEGIBLE_HALT]" is active, pass it forward.
+If "[EMERGENCY_HALT]" or "[ILLEGIBLE_HALT]" is active, pass it through.
 
-Enforce anti-hallucination: Only validate warnings that were confirmed by OpenFDA or the deterministic validator.
-Group alerts into 🔴 [CRITICAL ALERT: NOT RECOMMENDED], 🟡 [MODERATE WARNING], and 🟢 [CLEARED].`,
+Anti-Hallucination Guardrail:
+- Only validate warnings that were confirmed by OpenFDA or the deterministic validator tools.
+- Triage findings into:
+  - 🔴 [CRITICAL ALERT: NOT RECOMMENDED]
+  - 🟡 [MODERATE WARNING]
+  - 🟢 [CLEARED]`,
 });
 
-// 🛡️ AGENT 5: CARE PLANNER + LANGUAGE FILTER & DISCLAIMER
+// ========================================================
+// NODE 4: CARE PLANNER + 🛡️ STATUTORY DISCLAIMER
+// ========================================================
 export const carePlannerAgent = new LlmAgent({
   name: 'care_planner_agent',
   model: MODEL_NAME,
@@ -167,19 +192,18 @@ If an "[EMERGENCY_HALT]" or "[ILLEGIBLE_HALT]" is present, output only that halt
 
 Otherwise:
 1. Synthesize an actionable 24-hour schedule (Morning, Lunch, Dinner, Bedtime).
-2. Group medications into "✅ Cleared to Take" vs "❌ On Hold / Not Recommended".
+2. Group medications clearly into "✅ Cleared to Take" vs "❌ On Hold / Not Recommended".
+3. Use assistive language: "Hold this medication and review with your prescriber."
 
-🛡️ GUARDRAIL 4: PRESCRIPTIVE LANGUAGE & STATUTORY DISCLAIMER:
-- Do NOT prescribe or diagnose ("You have disease X" or "I order you to discontinue").
-- Use assistive language: "Hold this medication and review this potential contraindication with your prescribing physician."
-- You MUST append this verbatim disclaimer at the bottom:
+🛡️ MANDATORY LEGAL DISCLAIMER:
+You MUST append the following exact markdown block at the absolute end of your response, verbatim:
 
 ---
 ⚠️ **Medical Disclaimer:** This analysis is an AI synthesis grounded on OpenFDA regulatory data for educational and research support only. It does not constitute medical advice or a formal prescription review. Always consult your licensed physician or pharmacist before starting, changing, or discontinuing any medication.`,
 });
 
 // ========================================================
-// GRAPH WORKFLOW EXPORT
+// GRAPH WORKFLOW EXPORT (4-Stage Pipeline)
 // ========================================================
 export const prescriptionResearchWorkflow = new Workflow({
   name: 'prescription_research_workflow',
@@ -187,11 +211,10 @@ export const prescriptionResearchWorkflow = new Workflow({
   edges: [
     [
       'START',
-      triageAgent,              // 🛡️ Guardrail 1: Emergency & PII Triage
-      extractorAgent,           // 🛡️ Guardrail 2: OCR & Illegibility Check
-      clinicalResearcherAgent,  // 🛡️ Guardrail 3: Deterministic Dose & Teratogen Validator
-      safetyReviewerAgent,      // Auditor
-      carePlannerAgent,         // 🛡️ Guardrail 4: Assistive Language & Disclaimer
+      extractorAgent,           // 1. Receives file directly + Runs Guardrail 1 & 2
+      clinicalResearcherAgent,  // 2. Runs Guardrail 3 (Doses/Teratogens) + OpenFDA
+      safetyReviewerAgent,      // 3. Grounding critic
+      carePlannerAgent,         // 4. Care plan + Guardrail 4 (Disclaimer)
     ],
   ],
 });
