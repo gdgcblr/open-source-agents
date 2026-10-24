@@ -1,0 +1,468 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/gdgcblr/open-source-agents/agents/autodemo/scenes.schema.json",
+  "title": "autodemo configuration",
+  "type": "object",
+  "required": [
+    "app",
+    "scenes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "app": {
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 240,
+              "maximum": 7680
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 240,
+              "maximum": 4320
+            }
+          }
+        },
+        "chromePath": {
+          "type": "string"
+        },
+        "waitForSelector": {
+          "type": "string"
+        },
+        "headless": {
+          "type": "boolean"
+        },
+        "colorScheme": {
+          "enum": [
+            "light",
+            "dark",
+            "no-preference"
+          ]
+        }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "enum": [
+            "edge-tts",
+            "sapi",
+            "none"
+          ]
+        },
+        "voice": {
+          "type": "string"
+        },
+        "rate": {
+          "type": "string"
+        },
+        "tailMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "accent": {
+          "type": "string"
+        },
+        "font": {
+          "type": "string"
+        },
+        "position": {
+          "enum": [
+            "bottom",
+            "top"
+          ]
+        },
+        "eyebrow": {
+          "type": "string"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+$",
+          "description": "Bare filename only - no path separators, so output cannot escape output.dir"
+        },
+        "crf": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 51
+        },
+        "preset": {
+          "type": "string"
+        },
+        "thumbnail": {
+          "type": "boolean"
+        }
+      }
+    },
+    "outro": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "holdMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30000
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/scene"
+      }
+    }
+  },
+  "definitions": {
+    "scene": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "layout": {
+          "enum": [
+            "title",
+            "caption",
+            "none"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "narration": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/step"
+          }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": [
+        "do"
+      ],
+      "properties": {
+        "do": {
+          "enum": [
+            "click",
+            "navClick",
+            "toggle",
+            "type",
+            "press",
+            "hover",
+            "wait",
+            "waitForText",
+            "waitForSelector",
+            "wheel",
+            "drag",
+            "scrollPanel",
+            "screenshot",
+            "probeClick",
+            "js",
+            "goto"
+          ]
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "wait"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "ms"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "waitForText"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "text"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "waitForSelector"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "selector"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "type"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "text"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "press"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "key"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "navClick"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "toggle"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "scrollPanel"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "selector"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "probeClick"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "pattern",
+              "panel"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "js"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "code"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "goto"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "required": [
+              "url"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "click"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "required": [
+                  "selector"
+                ]
+              },
+              {
+                "required": [
+                  "text"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "do": {
+                "const": "screenshot"
+              }
+            },
+            "required": [
+              "do"
+            ]
+          },
+          "then": {
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]+$"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

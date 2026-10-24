@@ -1,0 +1,40 @@
+{
+  "name": "autodemo",
+  "version": "0.1.0",
+  "description": "Point it at a running web app, get back a narrated, captioned demo video. TTS + Playwright + ffmpeg, driven by a declarative scene file.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "autodemo": "./bin/autodemo.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples"
+  ],
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "preflight": "node bin/autodemo.mjs preflight",
+    "demo:todo": "node bin/autodemo.mjs render --config examples/todo-app/autodemo.config.yaml"
+  },
+  "keywords": [
+    "demo",
+    "video",
+    "screencast",
+    "playwright",
+    "ffmpeg",
+    "tts",
+    "narration",
+    "agent",
+    "claude-code"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "ajv": "^8.17.1",
+    "playwright": "^1.49.1",
+    "yaml": "^2.6.1"
+  }
+}
