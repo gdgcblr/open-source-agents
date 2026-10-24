@@ -1,0 +1,8 @@
+google-adk==2.13.0
+reportlab
+ragas
+datasets
+google-generativeai
+pytest
+pytest-asyncio
+playwright
