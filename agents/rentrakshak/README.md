@@ -1,12 +1,114 @@
+<div align="center">
+
+<img src="./assets/readme-banner.svg" width="100%" alt="RentRakshak banner" />
+
+<br/>
+
+[![Google ADK](https://img.shields.io/badge/Google-ADK-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://google.github.io/adk-docs/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](.)
+[![Tests](https://img.shields.io/badge/tests-32%2B%20offline-success?style=for-the-badge)](.)
+[![Docker](https://img.shields.io/badge/Docker-compose%20ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](DOCKER.md)
+[![Gemma](https://img.shields.io/badge/Local-Gemma%20(Ollama)-22C55E?style=for-the-badge)](USAGE_GUIDE.md)
+
+<br/>
+
+![Typing intro](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=3000&pause=1200&color=38BDF8&center=true&vCenter=true&multiline=true&repeat=true&width=620&lines=Rent+Rakshak+%E2%80%94+Bengaluru+Rental+Safety;Before+you+pay+a+deposit%2C+check+the+risks.;Google+ADK+%C2%B7+13+tools+%C2%B7+Evidence-based+red+flags)
+
+<br/>
+
+### Full interactive README (animations + live risk preview)
+
+GitHub **does not run JavaScript inside `README.md`** — that is why the rich UI lives in **`README.html`**.  
+On GitHub you still get typing text, animated SVG, Mermaid, and collapsible sections below.
+
+| Action | Link |
+|--------|------|
+| **Open interactive HTML in browser** | [**README.html**](README.html) (clone repo → double-click, or use preview below) |
+| **Preview in browser (no clone)** | [HTML Preview — interactive README](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gdgcblr/open-source-agents/main/agents/rentrakshak/README.html) |
+| **After merge / your fork** | Replace `gdgcblr` / branch in the preview URL if needed |
+
+```bash
+# Local: same folder as this file
+open README.html          # macOS
+xdg-open README.html      # Linux
+```
+
+</div>
+
 # RentRakshak
-
-> **Rent smarter. Stay safer. Help the next tenant.**
-
-**Interactive docs:** open **[README.html](README.html)** in your browser (animated overview, feature tabs, live preview).
 
 **RentRakshak** is a demo-ready, open-source **Bengaluru rental safety agent** combined with an **anonymous tenant community** and **vacating-room discovery board**. It is built for people who are about to pay a deposit—not after they have already been scammed.
 
 Hackathon submission for [GDG Cloud Bengaluru — open-source-agents](https://github.com/gdgcblr/open-source-agents). Product name is **RentRakshak** everywhere (UI, agent instructions, docs).
+
+---
+
+## Architecture (live diagram on GitHub)
+
+```mermaid
+flowchart LR
+  U[You] --> UI[Streamlit / CLI / ADK]
+  UI --> A[ADK root_agent]
+  A --> T[13 FunctionTools]
+  T --> R[Risk rules]
+  T --> E[Rent JSON]
+  T --> C[(SQLite community)]
+  A --> M[Gemini or Ollama Gemma]
+```
+
+---
+
+## Explore features (click to expand)
+
+<details open>
+<summary><strong>1. AI rental safety agent</strong> — listing + chat, rule IDs, evidence excerpts</summary>
+
+Paste a property listing and optional broker chat. Get **RF-001…** findings, risk tier, verification steps. **Low risk ≠ verified.**
+
+```bash
+python main.py --listing @tests/fixtures/suspicious_listing.txt
+```
+
+</details>
+
+<details>
+<summary><strong>2. Bengaluru rent estimator</strong> — transparent comparables, no hallucinated rent</summary>
+
+Whitefield, Koramangala, HSR, Bellandur, and more. Returns **insufficient data** instead of guessing.
+
+</details>
+
+<details>
+<summary><strong>3. Anonymous tenant community</strong> — moderated, PII redaction</summary>
+
+Share experiences without legal name. Search by locality and category.
+
+</details>
+
+<details>
+<summary><strong>4. Vacating / room board</strong> — active → filled / expired</summary>
+
+Tenant handover leads; private contact in MVP.
+
+</details>
+
+<details>
+<summary><strong>5. Karnataka checklist</strong> — sourced references, no fake deposit cap</summary>
+
+See `data/legal_sources.json` and checklist tools.
+
+</details>
+
+<details>
+<summary><strong>6. Docker + local Gemma</strong></summary>
+
+```bash
+docker compose run --rm test
+export RENTRAKSHAK_LLM_BACKEND=ollama RENTRAKSHAK_OLLAMA_MODEL=gemma3:4b
+adk web adk_agent
+```
+
+</details>
 
 ---
 
