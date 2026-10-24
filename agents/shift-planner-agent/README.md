@@ -1,175 +1,199 @@
-# [Project Name]
+# shift-planner-agent
 
-> [One-sentence summary of what this project does and the value it provides.]
-
----
+> A Google ADK agent that analyses a gig driver's past shifts and tells them, in simple Hinglish, when and where they earned the most.
 
 ## Overview
 
 ### Problem Statement & Intended Users
-- **Problem**: Explain what specific problem or challenge this project addresses.
-- **Intended Users**: Who is this tool or agent built for? (e.g., developers, researchers, operations engineers).
+
+Ola/Uber drivers and delivery partners work irregular shifts across different areas and times, but rarely see a clear picture of which slots actually paid best after fuel costs. This agent reads a driver's own shift history (a CSV file) and answers questions such as "Kal kab aur kahan nikalun?" (When and where should I go tomorrow?).
+
+Intended users: gig drivers and delivery partners, and developers who want a small example of an ADK agent that keeps all calculations in plain Python tools and uses the LLM only for tool selection and explanation.
 
 ### Key Features
-- Feature 1: Brief description of the capability.
-- Feature 2: Brief description of the capability.
-- Feature 3: Brief description of the capability.
 
----
+- **Calculations done by code, not the LLM.** All numbers come from three read-only Python tools.
+- **Net earnings per hour** (earnings minus fuel cost), grouped by area, time block or weekday.
+- **Best slots** (area + time block), with an optional weekday/weekend filter.
+- **Hinglish answers** that tell the user when the data is too thin to trust.
+- **Runs on bundled synthetic data**, so no real driver data is needed to try it.
 
 ## Technical Stack
 
-List the primary frameworks, languages, models, and external services used:
-- **Language & Runtime**: e.g., Python 3.11+ / Node.js 20+ / TypeScript
-- **Agent Framework / Core Library**: e.g., Google ADK / LangGraph / CrewAI / OpenAI Agents SDK / Model Context Protocol (MCP) / Vanilla script
-- **Models**: e.g., Gemini 2.5 Flash / GPT-4o / Claude 3.5 Sonnet / Local model (e.g., Ollama)
-- **External APIs / Tools**: e.g., Tavily Search / GitHub API / SQLite
-
----
+- Python 3.12
+- [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/) 2.13.0
+- Gemini via Vertex AI (default model `gemini-3.8-flash`) or a Gemini API key
+- Python standard library only for the analysis tools (`csv`, `datetime`, `collections`)
 
 ## Architecture & Data Flow
 
-Provide a brief explanation or diagram showing how components interact (e.g., input -> agent reasoning -> tool execution -> output):
+```
+User question
+     |
+     v
+ADK root_agent (shift_planner_agent, Hinglish instructions)
+     |  chooses tools
+     v
+load_trips / earnings_summary / best_slots   (tools.py, plain Python)
+     |  reads
+     v
+sample_trips.csv  (or your own CSV inside this folder)
+     |  numbers returned to the agent
+     v
+Gemini explains the numbers in Hinglish  -->  Answer
+```
+
+Project layout:
 
 ```
-[User Input] --> [Agent / Runner] --> [LLM / Reasoning Loop]
-                         |
-                         +--> [Tool / External API / MCP Server]
-                         |
-[Structured Output] <-- [Agent Response]
+shift-planner-agent/
+├── shift_planner/
+│   ├── __init__.py
+│   ├── agent.py        # ADK root_agent and instructions
+│   └── tools.py        # read-only analysis tools
+├── sample_trips.csv    # SYNTHETIC data: 28 shifts, 4 Bengaluru areas
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
-*(Note: For simple scripts or single utilities, replace this diagram with a short paragraph describing the execution flow.)*
-
----
+| Tool | What it does |
+|---|---|
+| `load_trips` | Validates the CSV; reports shift count, areas and date range |
+| `earnings_summary` | Net earnings per hour grouped by `area`, `block` (morning/afternoon/evening/night) or `day` |
+| `best_slots` | Top area + time-block combinations; slots with fewer than 2 shifts are ignored |
 
 ## Prerequisites
 
-Before running this project, ensure you have:
-- [Language Runtime, e.g., Python 3.10+ or Node.js 18+]
-- [Package manager, e.g., pip / uv / npm / pnpm]
-- [Required API keys or service accounts]
-
----
+- Python 3.12 (other 3.x versions are untested)
+- One of:
+  - A Google Cloud project with the Vertex AI API enabled (this is the setup the author tested), or
+  - A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) (untested by the author)
 
 ## Installation & Setup
 
-1. **Navigate to the project directory:**
-   ```bash
-   cd agents/<project-slug>   # or tools/<project-slug>
-   ```
+```bash
+git clone https://github.com/gdgcblr/open-source-agents.git
+cd open-source-agents/agents/shift-planner-agent
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example shift_planner/.env
+```
 
-2. **Set up the virtual environment / install dependencies:**
-   - For Python:
-     ```bash
-     python -m venv .venv
-     # Windows:
-     .venv\Scripts\activate
-     # Linux/macOS:
-     source .venv/bin/activate
+Then edit `shift_planner/.env` (see the next section). ADK loads the `.env` file from the agent folder (`shift_planner/`). If you use Vertex AI, enable the API once:
 
-     pip install -r requirements.txt
-     ```
-   - For Node.js / TypeScript:
-     ```bash
-     npm install
-     ```
-
-3. **Configure Environment Variables:**
-   Copy the example environment file and fill in your keys:
-   ```bash
-   cp .env.example .env
-   ```
-
----
+```bash
+gcloud services enable aiplatform.googleapis.com
+```
 
 ## Configuration & Environment Variables
 
-| Variable Name | Required | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `API_KEY` | Yes | *None* | API key for the primary LLM provider |
-| `MODEL_NAME` | No | `gemini-2.5-flash` | Identifier for the LLM model to use |
-| `LOG_LEVEL` | No | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`) |
+| Variable | Required | Purpose |
+|---|---|---|
+| `GOOGLE_GENAI_USE_VERTEXAI` | yes | `TRUE` for Vertex AI, `FALSE` for an API key |
+| `GOOGLE_CLOUD_PROJECT` | Vertex only | Your Google Cloud project ID |
+| `GOOGLE_CLOUD_LOCATION` | Vertex only | Region, for example `global` |
+| `GOOGLE_API_KEY` | API key only | Gemini API key |
+| `SHIFT_AGENT_MODEL` | no | Overrides the default model `gemini-3.8-flash` |
 
-*(Add any additional variables your project requires. Never publish actual secrets or default private tokens here.)*
+Vertex AI example for `shift_planner/.env`:
 
----
+```
+GOOGLE_GENAI_USE_VERTEXAI=TRUE
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=global
+```
+
+Model names and availability change and differ by project and region. When the author first used `gemini-2.5-flash` in `us-central1`, Vertex returned `404 NOT_FOUND`. If you see that error, set `SHIFT_AGENT_MODEL` to a model available in your project.
 
 ## How to Run
 
-Provide the exact command(s) to run the agent or tool:
+Run from this folder (`agents/shift-planner-agent`) with the virtual environment active:
 
 ```bash
-# Example for Python:
-python main.py
-
-# Example with arguments:
-python main.py --query "Summarize the latest release notes"
-
-# Example for Node.js / TypeScript:
-npm start
+adk run shift_planner      # chat in the terminal
+adk web                    # browser dev UI
 ```
 
----
+To use your own data, place a CSV in this folder with the columns below and ask the agent to use that file name. The tools only read files inside this project folder.
+
+```
+date,start_time,end_time,area,earnings,km,fuel_cost
+2026-09-28,18:00,21:00,Koramangala,837,36.7,88
+```
+
+Money is in INR and times are 24-hour `HH:MM`.
 
 ## Example Input & Output
 
+Real run on `sample_trips.csv` using Vertex AI, ADK 2.13.0 and Python 3.12 on Google Cloud Shell, October 2026.
+
 ### Example Input
+
 ```
-"Analyze the repository structure of gdgcblr/open-source-agents and list the core directories."
+Kal kab aur kahan nikalun?
 ```
 
 ### Example Output
+
 ```
-Analysis completed:
-- agents/: Contains community AI agents.
-- tools/: Contains shared developer utilities and MCP servers.
-- template/: Standardized documentation and environment templates.
+Aapke purane data (28 shifts) ke hisaab se, yeh sabse acche time aur area hain:
+
+1. **Koramangala (Evening)**: lagbhag **₹240.5/ghanta** net kamai (4 shifts)
+2. **Indiranagar (Evening)**: lagbhag **₹170.7/ghanta** net kamai (3 shifts — *dhyan rahe yahan shifts kam hain, toh andaza pakka nahi hai*)
+3. **HSR Layout (Evening)**: lagbhag **₹153.5/ghanta** net kamai (7 shifts)
+
+Overall, **Evening (shaam)** ka time sabse best raha hai (average **₹181.5/ghanta** net).
+
+*(Note: Net kamai ka matlab hai kul kamai mein se petrol ka kharcha nikal kar per ghanta bachat. Yeh sirf purane data se andaza hai, future ki koi guarantee nahi hai.)*
 ```
 
----
+The wording is generated by the LLM and will vary between runs. The numbers come from the tools.
 
 ## How to Test
 
-Explain how another developer or reviewer can verify that the project functions as intended:
+There is no automated test suite. Manual verification, which needs **no API key and no LLM**, is to call the tools directly:
 
 ```bash
-# Example: Run automated test suite
-pytest
-
-# Or manual verification steps:
-# 1. Run python main.py --test-mode
-# 2. Verify that mock output returns successfully without API errors
+python3 -c "import importlib.util as u;s=u.spec_from_file_location('t','shift_planner/tools.py');t=u.module_from_spec(s);s.loader.exec_module(t);print(t.best_slots(3,'any')['slots'])"
 ```
 
----
+Expected output on the bundled sample data:
+
+```
+[{'name': 'Koramangala / evening', 'net_per_hour': 240.5, 'shifts': 4, 'hours': 12.0}, {'name': 'Indiranagar / evening', 'net_per_hour': 170.7, 'shifts': 3, 'hours': 11.0}, {'name': 'HSR Layout / evening', 'net_per_hour': 153.5, 'shifts': 7, 'hours': 21.0}]
+```
+
+To check the full agent, run `adk run shift_planner`, ask the question above, and confirm the figures match this output. The agent's numbers should always match the tool output.
 
 ## Known Limitations
 
-Be honest about constraints, edge cases, and failure modes:
-- e.g., Rate limits on free-tier APIs may cause retries to fail.
-- e.g., Currently only tested on text files smaller than 10MB.
-- e.g., Does not maintain conversation memory across separate process restarts.
-
----
+- **Needs a model API.** Each answer makes several model calls (typically `load_trips`, an analysis tool, then the final answer). Cost, quota and latency depend on your account and model; responses were noticeably slow in the author's testing.
+- **Synthetic sample data.** `sample_trips.csv` was generated for this demo and does not describe real drivers, earnings or demand.
+- **Past data only.** The agent reports historical averages. It does not account for traffic, surge pricing, weather, festivals or competition, and it does not predict future earnings.
+- **Small samples are noisy.** Some slots in the sample have only 2 to 4 shifts. The agent is told to mention this, but as an LLM it may not always do so.
+- **LLM output varies.** Wording, and sometimes which tools are called, can differ between runs.
+- **Simplified time blocks.** Shifts are bucketed by start time only (morning 06-11, afternoon 11-16, evening 16-21, otherwise night).
+- **Net earnings only subtract fuel.** Vehicle wear, insurance, platform fees and taxes are ignored.
+- **Limited testing.** Tested only on Google Cloud Shell (Linux) with Vertex AI. Windows, macOS and the API-key setup are untested.
+- **Not financial advice.** This is a demonstration project.
 
 ## Security & Privacy Considerations
 
-- **Secrets Handling**: How are credentials loaded and protected?
-- **Data Privacy**: Is any prompt or file data transmitted to external services or third parties?
-- **Safety**: Does the agent execute arbitrary shell commands or code? If so, what sandboxing or user confirmations are enforced?
-
----
+- No credentials are committed. `.env` files are git-ignored and `.env.example` contains placeholders only.
+- The tools are **read-only** and can only read files inside this project folder; paths that escape it are rejected.
+- The agent cannot run shell commands or modify files.
+- **Your shift data is sent to the model provider.** Tool results (areas, times, earnings) are passed to Gemini to write the answer. Do not use data you are not allowed to share, and review your provider's data terms before using real driver data.
+- The bundled data is synthetic and contains no personal information.
 
 ## Future Improvements
 
-- [ ] Add caching for external API responses.
-- [ ] Support local models via Ollama.
-- [ ] Add streaming responses.
-
----
+- Expose the tools through an MCP server so other agents and clients can reuse them.
+- Add automated tests for the tool functions.
+- Add optional inputs such as day-specific filters, weather and event data.
+- Support multiple currencies and more time-block settings.
+- Add a confidence indicator based on the number of shifts behind each recommendation.
 
 ## License
 
-Specify the license for this subproject if different from the parent repository, or state:
-*This project is contributed under the repository's open-source license.*
+MIT, same as the parent repository.

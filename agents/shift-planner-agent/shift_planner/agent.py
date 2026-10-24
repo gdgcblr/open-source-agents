@@ -5,7 +5,7 @@ from google.adk.agents import Agent
 
 from .tools import best_slots, earnings_summary, load_trips
 
-MODEL = os.getenv("SHIFT_AGENT_MODEL", "gemini-2.5-flash")
+MODEL = os.getenv("SHIFT_AGENT_MODEL", "gemini-3.8-flash")
 
 root_agent = Agent(
     name="shift_planner_agent",
