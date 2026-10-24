@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77.0.3,<83"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "first-run-doctor"
+version = "0.1.0"
+description = "Verify that a local Python example creates the output it promises."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Testing",
+]
+
+[project.optional-dependencies]
+jev = ["requests>=2.32.5,<3", "python-dotenv>=1.1.1,<2"]
+
+[project.scripts]
+first-run-doctor = "first_run_doctor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+first_run_doctor = ["fixtures/*/*.py", "fixtures/*/*.json"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]

@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "tool_version": "0.1.0",
+  "run_id": "5a0dd295c2934e74afd0df7ac39a5d4c",
+  "created_at": "2026-10-24T07:43:39.211149+00:00",
+  "project": "false-success",
+  "verification": "failed",
+  "contract_sha256": "74669b9e2cdd5062dc1576fd77dbe9ae0d0825089db31cd469510f3ff44c5515",
+  "command": [
+    "<selected-python>",
+    "main.py"
+  ],
+  "interpreter": {
+    "path": "<selected-python>",
+    "version": "Python 3.11.1"
+  },
+  "execution": {
+    "status": "completed",
+    "returncode": 0,
+    "duration_seconds": 0.011608,
+    "stdout": "Report created successfully\n",
+    "stderr": "",
+    "logs_truncated": false
+  },
+  "checks": [
+    {
+      "id": "ENTRY",
+      "label": "Declared Python entrypoint",
+      "status": "pass",
+      "detail": "main.py"
+    },
+    {
+      "id": "INPUT1",
+      "label": "Declared input",
+      "status": "pass",
+      "detail": "main.py"
+    },
+    {
+      "id": "MANIFEST",
+      "label": "Dependency manifest",
+      "status": "info",
+      "detail": "None found; stdlib-only examples may not need one"
+    },
+    {
+      "id": "EXEC",
+      "label": "Command exit status",
+      "status": "pass",
+      "detail": "0"
+    },
+    {
+      "id": "A1",
+      "label": "Fresh report.json",
+      "status": "fail",
+      "detail": "Expected artifact missing"
+    },
+    {
+      "id": "A1.1",
+      "label": "status",
+      "status": "skipped",
+      "detail": "Artifact missing"
+    },
+    {
+      "id": "A1.2",
+      "label": "items",
+      "status": "skipped",
+      "detail": "Artifact missing"
+    }
+  ],
+  "workspace_strategy": "fresh copy excluding declared generated files; not an OS sandbox",
+  "source": {
+    "sha256": "be91711d910a5dad373424bf02626232ac70e5f427a4d4ab92169090995e7cd3",
+    "copied_files": 2,
+    "copied_bytes": 487
+  },
+  "diagnosis": {
+    "source": "rule",
+    "category": "output_contract_failure",
+    "evidence_ids": [
+      "A1"
+    ],
+    "next_step": "Check the code that creates the declared output and its required fields, then rerun."
+  }
+}

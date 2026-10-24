@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "tool_version": "0.1.0",
+  "run_id": "6fa3cd1064d74f31829f0ecb1b9e9654",
+  "created_at": "2026-10-24T07:43:39.257770+00:00",
+  "project": "working",
+  "verification": "verified",
+  "contract_sha256": "74669b9e2cdd5062dc1576fd77dbe9ae0d0825089db31cd469510f3ff44c5515",
+  "command": [
+    "<selected-python>",
+    "main.py"
+  ],
+  "interpreter": {
+    "path": "<selected-python>",
+    "version": "Python 3.11.1"
+  },
+  "execution": {
+    "status": "completed",
+    "returncode": 0,
+    "duration_seconds": 0.016398,
+    "stdout": "Report created successfully\n",
+    "stderr": "",
+    "logs_truncated": false
+  },
+  "checks": [
+    {
+      "id": "ENTRY",
+      "label": "Declared Python entrypoint",
+      "status": "pass",
+      "detail": "main.py"
+    },
+    {
+      "id": "INPUT1",
+      "label": "Declared input",
+      "status": "pass",
+      "detail": "main.py"
+    },
+    {
+      "id": "MANIFEST",
+      "label": "Dependency manifest",
+      "status": "info",
+      "detail": "None found; stdlib-only examples may not need one"
+    },
+    {
+      "id": "EXEC",
+      "label": "Command exit status",
+      "status": "pass",
+      "detail": "0"
+    },
+    {
+      "id": "A1",
+      "label": "Fresh report.json",
+      "status": "pass",
+      "detail": "sha256:b6d4edd734e34098894bcf5a8af47cfcdc92a5f017cc6d48061bb4ea3c85791f"
+    },
+    {
+      "id": "A1.1",
+      "label": "report.json: status",
+      "status": "pass",
+      "detail": "Declared assertion satisfied"
+    },
+    {
+      "id": "A1.2",
+      "label": "report.json: items",
+      "status": "pass",
+      "detail": "Declared assertion satisfied"
+    }
+  ],
+  "workspace_strategy": "fresh copy excluding declared generated files; not an OS sandbox",
+  "source": {
+    "sha256": "ea262b79341dc885c67d574d8a7defe61a03b61c22f43e4cae589f4911c1d40c",
+    "copied_files": 2,
+    "copied_bytes": 614
+  },
+  "diagnosis": {
+    "source": "rule",
+    "category": "unknown",
+    "evidence_ids": [],
+    "next_step": "No fix suggested; declared checks passed."
+  }
+}

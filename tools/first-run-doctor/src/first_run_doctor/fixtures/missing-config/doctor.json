@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "command": [
+    "{python}",
+    "main.py"
+  ],
+  "inputs": [
+    "main.py"
+  ],
+  "timeout_seconds": 5,
+  "required_env": [
+    "APP_MODE"
+  ],
+  "artifacts": [
+    {
+      "path": "report.json",
+      "format": "json",
+      "checks": [
+        {
+          "field": "status",
+          "equals": "complete"
+        },
+        {
+          "field": "items",
+          "type": "list",
+          "nonempty": true
+        }
+      ]
+    }
+  ]
+}
