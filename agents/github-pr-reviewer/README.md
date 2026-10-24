@@ -119,7 +119,13 @@ Run the agent on the bundled sample patch containing intentional security vulner
 python main.py --sample --offline
 ```
 
-### 2. Autonomous Auto-Fix & Test Synthesis
+### 2. Autonomous Self-Healing Verification Loop
+Simulate applying the remediation patch and compare **Before vs After** health scorecards:
+```bash
+python main.py --sample --offline --verify-healing
+```
+
+### 3. Autonomous Auto-Fix & Test Synthesis
 Generate a remediation patch and unit test suite:
 ```bash
 python main.py --sample --offline --auto-fix --generate-tests generated_tests.py
@@ -129,15 +135,31 @@ To apply the generated fixes to your local branch:
 git apply remediation.patch
 ```
 
-### 3. Export Interactive HTML Dashboard
-Export a standalone, dark-mode HTML dashboard:
+### 4. Zero-Dependency Local Web Server UI
+Launch an interactive dark-mode web dashboard in your browser:
+```bash
+python main.py --serve 8080
+# Open http://localhost:8080 in your browser!
+```
+
+### 5. Install Git Pre-Push Hook
+Automatically prevent anyone on the team from pushing code with hardcoded secrets or SQL injections:
+```bash
+python main.py --install-hook
+```
+
+### 6. Export Interactive HTML Dashboard
+Export a standalone, dark-mode HTML dashboard file:
 ```bash
 python main.py --sample --offline --html pr_dashboard.html
 ```
 
-### 4. Review a Live Public GitHub Pull Request
+### 7. Review a Live Public GitHub Pull Request
 ```bash
 python main.py --pr https://github.com/torvalds/linux/pull/42 --offline
+# Or post review directly as a PR comment:
+python main.py --pr https://github.com/owner/repo/pull/123 --comment
+```
 # Or with Gemini LLM enabled:
 python main.py --pr https://github.com/facebook/react/pull/28000
 ```

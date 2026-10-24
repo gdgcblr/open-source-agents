@@ -114,6 +114,20 @@ class TestPRReviewerCouncil(unittest.TestCase):
         self.assertGreaterEqual(report.health_score, 70)
         self.assertEqual(report.triage.pr_type, "Bug Fix")
 
+    def test_self_healing_verification(self):
+        from pr_agent.self_healing import SelfHealingEngine
+        diff_text, _ = load_diff_from_file(self.sample_diff_path)
+        agent = PRReviewerAgent(offline=True)
+        report = agent.analyze(diff_text, "Vulnerable PR")
+
+        # Verify initial is BLOCKED
+        self.assertEqual(report.verdict, "BLOCKED")
+
+        orig_diffs = parse_unified_diff(diff_text)
+        healed_diffs = SelfHealingEngine.apply_patch_to_diffs(orig_diffs, report.remediation_patch)
+        sec_healed = agent.security_agent.evaluate(healed_diffs)
+        self.assertGreater(sec_healed.score, 50)
+
 
 if __name__ == "__main__":
     unittest.main()
