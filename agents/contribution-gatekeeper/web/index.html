@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gatekeeper Console</title>
+<meta name="description" content="Review open-source contributions against the repository's own CONTRIBUTING.md.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z' fill='%234f46e5'/%3E%3Cpath d='m11 16 3.5 3.5L21 13' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f6f9;--panel:#ffffff;--panel-2:#f1f1f6;--ink:#16161d;--ink-2:#4a4a5a;--mute:#7a7a8c;--line:#e3e3ec;
+  --brand:#4f46e5;--brand-ink:#ffffff;--brand-soft:#eceafe;
+  --ok:#15803d;--ok-soft:#e5f6ea;--warn:#b45309;--warn-soft:#fdf1df;--bad:#c62828;--bad-soft:#fdeaea;--info:#2563eb;--info-soft:#e7efff;
+  --ai:#9333ea;--ai-soft:#f4e9fe;
+  --radius:14px;--shadow:0 1px 2px rgba(20,20,40,.05),0 8px 24px rgba(20,20,40,.06);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d0d14;--panel:#16161f;--panel-2:#1d1d29;--ink:#ececf4;--ink-2:#b6b6c8;--mute:#80809a;--line:#2a2a3a;
+  --brand:#8b84ff;--brand-ink:#0d0d14;--brand-soft:#23214a;
+  --ok:#4ade80;--ok-soft:#10301d;--warn:#fbbf24;--warn-soft:#352707;--bad:#f87171;--bad-soft:#3a1517;--info:#7aa7ff;--info-soft:#152446;
+  --ai:#c084fc;--ai-soft:#2c1842;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0d14;--panel:#16161f;--panel-2:#1d1d29;--ink:#ececf4;--ink-2:#b6b6c8;--mute:#80809a;--line:#2a2a3a;
+  --brand:#8b84ff;--brand-ink:#0d0d14;--brand-soft:#23214a;
+  --ok:#4ade80;--ok-soft:#10301d;--warn:#fbbf24;--warn-soft:#352707;--bad:#f87171;--bad-soft:#3a1517;--info:#7aa7ff;--info-soft:#152446;
+  --ai:#c084fc;--ai-soft:#2c1842;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+button,input,select{font:inherit;color:inherit}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:18px;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.logo svg{width:26px;height:26px}
+.logo small{font-weight:500;color:var(--mute)}
+nav{display:flex;gap:4px;margin-left:12px}
+nav button{background:none;border:0;padding:8px 12px;border-radius:9px;color:var(--ink-2);cursor:pointer;font-weight:550}
+nav button:hover{background:var(--panel-2)}
+nav button[aria-selected="true"]{background:var(--brand-soft);color:var(--brand)}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:var(--panel);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mute)}
+.pill.live .dot{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+.pill.offline .dot{background:var(--warn)}
+.icon-btn{background:var(--panel);border:1px solid var(--line);border-radius:9px;width:34px;height:34px;cursor:pointer;display:grid;place-items:center}
+
+/* hero */
+.hero{padding:44px 0 26px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:12.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--brand)}
+h1{font-size:clamp(28px,4.2vw,44px);line-height:1.1;letter-spacing:-.025em;margin:10px 0 10px;max-width:22ch}
+.lede{color:var(--ink-2);font-size:17px;max-width:62ch;margin:0 0 24px}
+.form{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;display:grid;gap:12px}
+.form-row{display:flex;gap:10px}
+.form input[type=text]{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:14px;outline:none}
+.form input[type=text]:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.btn{border:0;border-radius:10px;padding:12px 18px;font-weight:650;cursor:pointer;background:var(--brand);color:var(--brand-ink);white-space:nowrap}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:var(--panel-2);color:var(--ink)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--ink-2)}
+.opts label{display:flex;gap:7px;align-items:center;cursor:pointer}
+.opts input{accent-color:var(--brand);width:16px;height:16px}
+.hint{font-size:13px;color:var(--mute)}
+.demos{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:7px 13px;cursor:pointer;font-size:13.5px;font-weight:550}
+.chip:hover{border-color:var(--brand)}
+.chip .dot{width:9px;height:9px}
+.v-ready{--v:var(--ok);--v-soft:var(--ok-soft)}
+.v-changes_requested{--v:var(--warn);--v-soft:var(--warn-soft)}
+.v-blocked,.v-error{--v:var(--bad);--v-soft:var(--bad-soft)}
+.chip.v-ready .dot,.chip.v-changes_requested .dot,.chip.v-blocked .dot{background:var(--v)}
+
+/* pipeline */
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:22px 0}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 13px;position:relative}
+.step b{display:block;font-size:13.5px;padding-right:62px}
+.step span{font-size:12.5px;color:var(--mute)}
+.step .tag{position:absolute;top:10px;right:10px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:99px}
+.tag.det{background:var(--info-soft);color:var(--info)}
+.tag.llm{background:var(--ai-soft);color:var(--ai)}
+.step.running{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.step.done::after{content:"✓";position:absolute;bottom:9px;right:12px;color:var(--ok);font-weight:800}
+.step.skipped{opacity:.45}
+.step.skipped::after{content:"skipped";position:absolute;bottom:9px;right:12px;font-size:11px;color:var(--mute)}
+.parallel{display:grid;gap:6px}
+.parallel .step{padding:8px 11px}
+
+/* report */
+#report{padding-bottom:60px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.summary{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;padding:22px;border-left:6px solid var(--v)}
+.ring{width:108px;height:108px;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1}
+.ring .num small{display:block;font-size:11px;font-weight:600;color:var(--mute);letter-spacing:0}
+.verdict{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:var(--v-soft);color:var(--v);font-weight:750;font-size:14px}
+.summary h2{margin:8px 0 4px;font-size:22px;letter-spacing:-.015em;font-family:var(--mono);font-weight:650;word-break:break-all}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--mute);font-size:13.5px}
+.meta b{color:var(--ink-2);font-weight:600}
+.badges{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.criteria{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.crit{padding:14px 16px}
+.crit .row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--ink-2);font-weight:600}
+.crit .row b{font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar{height:7px;border-radius:99px;background:var(--panel-2);overflow:hidden;margin-top:9px}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.crit .counts{font-size:12px;color:var(--mute);margin-top:7px}
+.note{font-size:13px;color:var(--ink-2);background:var(--panel-2);border-radius:10px;padding:10px 12px;margin:0 0 14px}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:22px 0 14px;overflow-x:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font-weight:600;color:var(--mute);cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--brand)}
+.tabs .count{font-size:11.5px;background:var(--panel-2);padding:1px 7px;border-radius:99px;margin-left:5px}
+
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.filters button{border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer;font-weight:550}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.finding{border:1px solid var(--line);background:var(--panel);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.finding summary{list-style:none;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 15px;cursor:pointer}
+.finding summary::-webkit-details-marker{display:none}
+.sev{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px;white-space:nowrap;margin-top:1px}
+.sev.blocker{background:var(--bad);color:#fff}
+.sev.major{background:var(--bad-soft);color:var(--bad)}
+.sev.minor{background:var(--warn-soft);color:var(--warn)}
+.sev.info{background:var(--info-soft);color:var(--info)}
+.finding .msg{font-weight:550}
+.finding .sub{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--mute);margin-top:4px}
+.src{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:99px}
+.src.deterministic{background:var(--info-soft);color:var(--info)}
+.src.llm{background:var(--ai-soft);color:var(--ai)}
+.chev{color:var(--mute);transition:transform .2s}
+.finding[open] .chev{transform:rotate(90deg)}
+.finding .body{padding:0 15px 14px 15px;display:grid;gap:10px}
+.fix{display:flex;gap:8px;align-items:stretch}
+.fix pre{flex:1;margin:0;background:var(--panel-2);border-radius:9px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px;white-space:pre-wrap;word-break:break-word}
+.copy{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:0 11px;cursor:pointer;font-size:12.5px;font-weight:600}
+.rule{border-left:3px solid var(--brand);padding:6px 12px;color:var(--ink-2);font-size:13.5px;background:var(--brand-soft);border-radius:0 9px 9px 0}
+.rule .label,.fixlabel{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);display:block;margin-bottom:3px}
+.rule .label{color:var(--brand)}
+.empty{text-align:center;padding:36px;color:var(--mute)}
+.empty .big{font-size:40px}
+
+.md{padding:22px 26px;overflow-x:auto}
+.md h2{font-size:19px;margin:.2em 0 .6em}.md h3{font-size:16px;margin:1.2em 0 .5em}
+.md table{border-collapse:collapse;margin:8px 0 14px;font-size:14px}.md td,.md th{border:1px solid var(--line);padding:5px 10px}
+.md code{background:var(--panel-2);padding:1px 5px;border-radius:5px}
+.md ul{padding-left:22px}.md li{margin:3px 0}.md hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.md sub{color:var(--mute);font-size:12px;line-height:1.5}
+.md pre{background:var(--panel-2);padding:10px;border-radius:8px;overflow-x:auto}
+.mdhead{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mute)}
+.json{margin:0;padding:18px;font-family:var(--mono);font-size:12.5px;overflow:auto;max-height:640px;white-space:pre}
+.files{list-style:none;margin:0;padding:8px 0}
+.files li{display:flex;justify-content:space-between;gap:10px;padding:7px 16px;font-family:var(--mono);font-size:13px;border-bottom:1px solid var(--line)}
+.files li:last-child{border:0}
+.files .flag{font-family:system-ui;font-size:11.5px;font-weight:700;color:var(--bad)}
+
+/* board */
+.board-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;padding:40px 0 18px}
+.board-head h1{margin:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{padding:14px 16px;cursor:pointer;text-align:left;border:1px solid var(--line)}
+.stat b{display:block;font-size:30px;letter-spacing:-.03em;color:var(--v,var(--ink))}
+.stat span{font-size:13px;color:var(--mute);font-weight:600}
+.stat[aria-pressed="true"]{outline:2px solid var(--brand)}
+table.board{width:100%;border-collapse:collapse}
+table.board th{text-align:left;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);padding:12px 16px;border-bottom:1px solid var(--line)}
+table.board td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+table.board tr:last-child td{border:0}
+table.board tbody tr{cursor:pointer}
+table.board tbody tr:hover{background:var(--panel-2)}
+.vtag{display:inline-block;padding:3px 9px;border-radius:99px;background:var(--v-soft);color:var(--v);font-weight:700;font-size:12.5px;white-space:nowrap}
+.top-issues{margin:0;padding-left:16px;font-size:13.5px;color:var(--ink-2)}
+.tbl-wrap{overflow-x:auto}
+
+/* how */
+.how{padding:40px 0 70px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.trust{padding:20px 22px}
+.trust h3{margin:0 0 10px;font-size:16px}
+.trust ol,.trust ul{margin:0;padding-left:20px;color:var(--ink-2)}
+.trust li{margin:7px 0}
+.rules{list-style:none;margin:0;padding:0}
+.rules li{padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.rules li:last-child{border:0}
+.rules code{color:var(--brand)}
+.rules .cite{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+
+.drop{position:fixed;inset:0;background:color-mix(in srgb,var(--brand) 18%,transparent);border:3px dashed var(--brand);display:none;place-items:center;font-size:22px;font-weight:700;color:var(--brand);z-index:50}
+.drop.on{display:grid}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.error{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:12px 14px;font-size:14px;margin-top:12px;font-family:var(--mono);white-space:pre-wrap}
+[hidden]{display:none!important}
+footer{border-top:1px solid var(--line);padding:22px 0;color:var(--mute);font-size:13px}
+
+@media (max-width:860px){
+  .pipeline{grid-template-columns:1fr 1fr}
+  .criteria,.stats{grid-template-columns:1fr 1fr}
+  .summary{grid-template-columns:auto 1fr}
+  .badges{grid-column:1/-1;align-items:flex-start;flex-direction:row;flex-wrap:wrap}
+  .grid2{grid-template-columns:1fr}
+  nav{margin-left:0}
+  .logo small{display:none}
+}
+@media (max-width:560px){
+  .wrap{padding:0 16px}
+  .top .wrap{gap:8px}
+  nav button{padding:7px 8px;font-size:14px}
+  .form-row{flex-direction:column}
+  .pipeline{grid-template-columns:1fr}
+  .summary{grid-template-columns:1fr;gap:14px}
+  .ring{width:92px;height:92px}
+  .logo span.name{display:none}
+  .pill .txt{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="logo">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7z" fill="var(--brand)"/><path d="m11 16 3.5 3.5L21 13" stroke="var(--brand-ink)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="name">Contribution Gatekeeper</span> <small>console</small>
+    </div>
+    <nav role="tablist">
+      <button role="tab" data-view="review" aria-selected="true">Review</button>
+      <button role="tab" data-view="board" aria-selected="false">Triage board</button>
+      <button role="tab" data-view="how" aria-selected="false">How it works</button>
+    </nav>
+    <div class="spacer"></div>
+    <span id="status" class="pill" title=""><span class="dot"></span><span class="txt">Connecting…</span></span>
+    <button class="icon-btn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button>
+  </div>
+</header>
+
+<main>
+<!-- REVIEW -->
+<section id="view-review" class="wrap">
+  <div class="hero">
+    <span class="eyebrow">Fork · Build · Merge</span>
+    <h1>Every pull request reviewed against your own CONTRIBUTING.md.</h1>
+    <p class="lede">Deterministic checks find leaked keys, scope creep and broken setup steps. Gemini reviewers judge what rules can't. Each finding cites the sentence of the guide it enforces, and AI can never overrule a hard check.</p>
+    <form class="form" id="form">
+      <div class="form-row">
+        <input type="text" id="target" placeholder="https://github.com/gdgcblr/open-source-agents/pull/12  or  ../my-fork/agents/my-agent" autocomplete="off" spellcheck="false" aria-label="Pull request URL or local path">
+        <button class="btn" id="go" type="submit">Review</button>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="opt-llm" checked> Gemini reviewers</label>
+        <label><input type="checkbox" id="opt-setup"> Fresh-install sandbox (Docker)</label>
+        <span class="spacer"></span>
+        <label class="hint" style="cursor:pointer"><input type="file" id="file" accept="application/json,.json" hidden> <u>Open a report .json</u></label>
+      </div>
+      <div class="hint" id="offline-hint" hidden>Live reviews need the local server: <code>python web/server.py</code>. Meanwhile, explore the demo reports below or drop a <code>--json</code> report anywhere.</div>
+    </form>
+    <div class="demos" id="demos"><span class="hint">Demo PRs:</span></div>
+    <div class="error" id="error" hidden></div>
+  </div>
+
+  <div id="progress" hidden>
+    <div class="pipeline" id="pipe-run"></div>
+  </div>
+
+  <div id="report" hidden></div>
+</section>
+
+<!-- BOARD -->
+<section id="view-board" class="wrap" hidden>
+  <div class="board-head">
+    <div><span class="eyebrow">Triage</span><h1>Review queue</h1></div>
+    <span class="hint" id="board-sub"></span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="card tbl-wrap"><table class="board"><thead><tr><th>PR</th><th>Project</th><th>Verdict</th><th>Score</th><th>Top issues</th></tr></thead><tbody id="board-rows"></tbody></table></div>
+  <p class="hint">Ready PRs first, so maintainers spend time where a merge is one click away. Generate a board for a real repo with <code>gatekeeper triage OWNER/REPO</code>, then open its <code>.json</code> here.</p>
+</section>
+
+<!-- HOW -->
+<section id="view-how" class="wrap how" hidden>
+  <span class="eyebrow">Architecture</span>
+  <h1>Hard rules first, judgement second, a human last.</h1>
+  <p class="lede">A Google ADK pipeline. Blue steps are deterministic code; purple steps call Gemini. The verdict is computed from findings by code, never by the model.</p>
+  <div class="pipeline" id="pipe-how"></div>
+  <div class="grid2">
+    <div class="card trust">
+      <h3>Trust rules</h3>
+      <ol>
+        <li><b>Rules come from the base branch.</b> A PR can't weaken the guide it is judged by.</li>
+        <li><b>PR code is never executed on the host.</b> Files are read from a <code>git archive</code> snapshot; installs run only in a locked-down container.</li>
+        <li><b>AI can add, never erase.</b> Gemini findings can't remove a deterministic finding, can't be <i>blocker</i>, and can't set the verdict.</li>
+        <li><b>Prove it or demote it.</b> Each AI finding must quote the submission. Quotes that aren't found become <i>info</i>.</li>
+        <li><b>Untrusted text stays data.</b> Instructions aimed at the reviewer are flagged as prompt injection for a human.</li>
+        <li><b>Secrets are masked.</b> A review comment never re-publishes the key it found.</li>
+      </ol>
+    </div>
+    <div class="card trust">
+      <h3>Rules compiled from this repo's guide</h3>
+      <ul class="rules" id="rules"><li class="hint">Open a report to see the policy it was judged by.</li></ul>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">contribution-gatekeeper · MIT · reviews are advisory; a maintainer makes the final call.</div></footer>
+<div class="drop" id="drop">Drop a gatekeeper report (.json)</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const VERDICT = {ready:"Ready for maintainer", changes_requested:"Changes requested", blocked:"Blocked", error:"Error"};
+const VICON = {ready:"✓", changes_requested:"↻", blocked:"⛔", error:"!"};
+const SEV = ["blocker","major","minor","info"];
+const CRITERIA = ["Reproducibility","Documentation","Security & Privacy","Focused Scope"];
+const STEPS = [
+  {id:"evidence_collector", name:"Evidence collector", desc:"Snapshot PR, compile policy, run 8 checks", kind:"det"},
+  {group:[
+    {id:"doc_reviewer", name:"Doc reviewer", desc:"README honest & runnable?", kind:"llm"},
+    {id:"policy_reviewer", name:"Policy reviewer", desc:"Judgement-based rules", kind:"llm"}]},
+  {id:"arbiter", name:"Arbiter", desc:"Ground quotes, merge, verdict", kind:"det"},
+  {id:"review_writer", name:"Review writer", desc:"Friendly summary", kind:"llm"},
+  {id:"renderer", name:"Renderer", desc:"PR comment + JSON", kind:"det"},
+];
+
+const state = {live:false, llm:false, docker:false, reports:[], current:null, sevFilter:new Set(), srcFilter:null, boardFilter:null, tab:"findings"};
+
+// ---------- theme ----------
+const root = document.documentElement;
+try { const t = localStorage.getItem("gk-theme"); if (t) root.dataset.theme = t; } catch {}
+$("#theme").onclick = () => {
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("gk-theme", root.dataset.theme); } catch {}
+};
+
+// ---------- views ----------
+function show(view) {
+  $$("nav button").forEach(b => b.setAttribute("aria-selected", b.dataset.view === view));
+  ["review","board","how"].forEach(v => $("#view-" + v).hidden = v !== view);
+  if (view === "board") renderBoard();
+  if (view === "how") renderPolicy();
+  window.scrollTo({top:0});
+}
+$$("nav button").forEach(b => b.onclick = () => show(b.dataset.view));
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 1800); }
+
+// ---------- pipeline ----------
+function stepHTML(s, status) {
+  return `<div class="step ${status(s) || ""}" data-step="${s.id}"><span class="tag ${s.kind}">${s.kind === "llm" ? "Gemini" : "Code"}</span><b>${esc(s.name)}</b><span>${esc(s.desc)}</span></div>`;
+}
+function renderPipeline(el, status = () => "") {
+  el.innerHTML = STEPS.map(s => s.group
+    ? `<div class="parallel">${s.group.map(g => stepHTML(g, status)).join("")}</div>`
+    : stepHTML(s, status)).join("");
+}
+renderPipeline($("#pipe-how"));
+
+// ---------- data loading ----------
+function addReport(r, select = true) {
+  const key = r.url || r.project || r.title;
+  state.reports = state.reports.filter(x => (x.url || x.project || x.title) !== key);
+  state.reports.push(r);
+  if (select) openReport(r);
+}
+function ingest(obj) {
+  const list = Array.isArray(obj) ? obj : [obj];
+  if (!list.length || !list[0] || !("verdict" in list[0])) throw new Error("Not a gatekeeper report (no verdict field).");
+  list.forEach((r, i) => addReport(r, i === list.length - 1 && list.length === 1));
+  if (list.length > 1) { show("board"); toast(`Loaded ${list.length} reports`); }
+}
+async function loadDemos() {
+  try {
+    const idx = await (await fetch("demo/index.json")).json();
+    for (const d of idx) {
+      const r = await (await fetch("demo/" + d.file)).json();
+      addReport(r, false);
+      const c = document.createElement("button");
+      c.className = `chip v-${r.verdict}`; c.type = "button";
+      c.innerHTML = `<span class="dot"></span>${esc(r.project)} <span class="hint">#${esc(r.number)}</span>`;
+      c.onclick = () => runDemo(r);
+      $("#demos").append(c);
+    }
+  } catch (e) { $("#demos").hidden = true; }
+}
+async function health() {
+  const st = $("#status");
+  try {
+    const h = await (await fetch("api/health", {cache:"no-store"})).json();
+    Object.assign(state, {live:true, llm:!!h.llm, docker:!!h.docker});
+    st.className = "pill live";
+    $(".txt", st).textContent = "Live" + (h.llm ? " · Gemini" : " · rules only");
+    st.title = `Server connected. Gemini: ${h.llm ? "available" : "no API key"}. Docker: ${h.docker ? "available" : "not available"}.`;
+    $("#opt-llm").checked = h.llm; $("#opt-llm").disabled = !h.llm;
+    $("#opt-setup").disabled = !h.docker;
+  } catch {
+    st.className = "pill offline"; $(".txt", st).textContent = "Offline demo"; st.title = "No server: showing bundled demo reports.";
+    $("#offline-hint").hidden = false; $("#go").disabled = true; $("#target").disabled = true;
+    $("#opt-llm").disabled = $("#opt-setup").disabled = true; $("#opt-llm").checked = false;
+  }
+}
+
+// ---------- running ----------
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function flat() { return STEPS.flatMap(s => s.group || [s]); }
+async function animate(llm, until) {
+  // Steps light up in pipeline order while the request runs; the final state comes from the report.
+  $("#progress").hidden = false;
+  const order = flat().filter(s => llm || s.kind !== "llm").map(s => s.id);
+  const done = new Set();
+  let i = 0;
+  const draw = cur => renderPipeline($("#pipe-run"), s => done.has(s.id) ? "done" : (!llm && s.kind === "llm") ? "skipped" : cur.includes(s.id) ? "running" : "");
+  while (!until.done) {
+    const cur = order[i] === "doc_reviewer" ? ["doc_reviewer","policy_reviewer"] : [order[i]];
+    draw(cur);
+    await sleep(order[i] === "evidence_collector" ? 1400 : 1100);
+    if (i < order.length - 2) { cur.forEach(c => done.add(c)); i += cur.length; }
+  }
+}
+function finishPipeline(r) {
+  renderPipeline($("#pipe-run"), s => (!r.llm_used && s.kind === "llm") ? "skipped" : "done");
+}
+async function runDemo(r) {
+  $("#error").hidden = true;
+  $("#target").value = r.url || `demo: ${r.project}`;
+  const until = {done:false};
+  const anim = animate(false, until);
+  await sleep(1600); until.done = true; await anim;
+  finishPipeline(r); openReport(r);
+}
+$("#form").onsubmit = async e => {
+  e.preventDefault();
+  const target = $("#target").value.trim();
+  if (!target || !state.live) return;
+  $("#error").hidden = true; $("#go").disabled = true; $("#go").textContent = "Reviewing…";
+  const llm = $("#opt-llm").checked, until = {done:false};
+  const anim = animate(llm, until);
+  try {
+    const res = await fetch("api/review", {method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({target, llm, run_setup:$("#opt-setup").checked})});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    until.done = true; await anim; finishPipeline(data); addReport(data);
+  } catch (err) {
+    until.done = true; await anim; $("#progress").hidden = true;
+    const box = $("#error"); box.hidden = false; box.textContent = "Review failed: " + err.message;
+  } finally { $("#go").disabled = false; $("#go").textContent = "Review"; }
+};
+$("#file").onchange = async e => { const f = e.target.files[0]; if (f) readFile(f); e.target.value = ""; };
+async function readFile(f) {
+  try { ingest(JSON.parse(await f.text())); show(state.reports.length && !$("#view-board").hidden ? "board" : "review"); }
+  catch (err) { const b = $("#error"); b.hidden = false; b.textContent = `${f.name}: ${err.message}`; }
+}
+let dragDepth = 0;
+addEventListener("dragenter", e => { if (e.dataTransfer?.types?.includes("Files")) { dragDepth++; $("#drop").classList.add("on"); } });
+addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; $("#drop").classList.remove("on"); } });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", e => { e.preventDefault(); dragDepth = 0; $("#drop").classList.remove("on"); const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+
+// ---------- report ----------
+function ring(score, verdict) {
+  const r = 46, c = 2 * Math.PI * r, off = c * (1 - (score || 0) / 100);
+  return `<div class="ring"><svg viewBox="0 0 108 108" width="100%" height="100%"><circle cx="54" cy="54" r="${r}" fill="none" stroke="var(--panel-2)" stroke-width="10"/><circle cx="54" cy="54" r="${r}" fill="none" stroke="var(--v)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg><div class="num"><div>${esc(score ?? "–")}<small>/ 100</small></div></div></div>`;
+}
+function scoreColor(s) { return s >= 80 ? "var(--ok)" : s >= 50 ? "var(--warn)" : "var(--bad)"; }
+function openReport(r) {
+  state.current = r; state.sevFilter = new Set(); state.srcFilter = null; state.tab = "findings";
+  show("review");
+  const el = $("#report"); el.hidden = false;
+  const f = r.findings || [];
+  const counts = Object.fromEntries(SEV.map(s => [s, f.filter(x => x.severity === s).length]));
+  const sb = r.sandbox;
+  const mode = r.llm_used ? `<span class="pill"><span class="dot" style="background:var(--ai)"></span>Code + Gemini</span>` : `<span class="pill"><span class="dot" style="background:var(--info)"></span>Deterministic only</span>`;
+  const sandbox = sb ? `<span class="pill"><span class="dot" style="background:${sb.status === "passed" ? "var(--ok)" : sb.status === "failed" ? "var(--bad)" : "var(--mute)"}"></span>Sandbox ${esc(sb.status)}</span>` : "";
+  const demo = r.demo ? `<span class="pill" title="Synthetic PR used for demos">Demo fixture</span>` : "";
+  const scoreNote = r.verdict === "blocked" ? `<p class="note">The verdict is decided by the most severe finding: any <b>blocker</b> blocks the PR whatever the score. The score shows how far the rest of the contribution is from ready.</p>` : "";
+  el.innerHTML = `
+    <div class="card summary v-${esc(r.verdict)}">
+      ${ring(r.score, r.verdict)}
+      <div>
+        <span class="verdict">${VICON[r.verdict] || ""} ${esc(VERDICT[r.verdict] || r.verdict)}</span>
+        <h2>${esc(r.project || "unknown project")}</h2>
+        <div class="meta">
+          ${r.number ? `<span>PR <b>#${esc(r.number)}</b></span>` : `<span><b>Local pre-flight</b></span>`}
+          ${r.title ? `<span>${esc(r.title)}</span>` : ""}
+          ${r.author ? `<span>by <b>@${esc(r.author)}</b></span>` : ""}
+          ${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">Open on GitHub ↗</a>` : ""}
+        </div>
+      </div>
+      <div class="badges">${mode}${sandbox}${demo}</div>
+    </div>
+    <div class="criteria">${CRITERIA.map(c => {
+      const s = (r.scores || {})[c] ?? 100, n = f.filter(x => x.criterion === c && x.severity !== "info").length;
+      return `<div class="card crit"><div class="row">${esc(c)}<b>${s}</b></div><div class="bar"><i style="width:0;background:${scoreColor(s)}" data-w="${s}"></i></div><div class="counts">${n ? `${n} issue${n > 1 ? "s" : ""}` : "No issues"}</div></div>`;
+    }).join("")}</div>
+    ${scoreNote}
+    ${(r.notes || []).map(n => `<p class="note">ℹ️ ${esc(n)}</p>`).join("")}
+    <div class="tabs" role="tablist">
+      <button data-tab="findings" aria-selected="true">Findings<span class="count">${f.filter(x => x.severity !== "info").length}</span></button>
+      <button data-tab="comment" aria-selected="false">PR comment</button>
+      <button data-tab="files" aria-selected="false">Changed files${r.changed_files ? `<span class="count">${r.changed_files.length}</span>` : ""}</button>
+      <button data-tab="json" aria-selected="false">JSON</button>
+    </div>
+    <div id="tab-body"></div>`;
+  requestAnimationFrame(() => $$(".bar i", el).forEach(i => i.style.width = i.dataset.w + "%"));
+  $$(".tabs button", el).forEach(b => b.onclick = () => { state.tab = b.dataset.tab; $$(".tabs button", el).forEach(x => x.setAttribute("aria-selected", x === b)); renderTab(); });
+  renderTab(counts);
+  el.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function renderTab() {
+  const r = state.current, body = $("#tab-body");
+  if (state.tab === "findings") return renderFindings(body, r);
+  if (state.tab === "comment") {
+    body.innerHTML = r.review_markdown
+      ? `<div class="card"><div class="mdhead"><span>What the contributor sees on the PR</span><button class="copy" id="copy-md">Copy Markdown</button></div><div class="md">${md(r.review_markdown)}</div></div>`
+      : `<div class="card empty">This report has no rendered comment. Re-run with the server or <code>--json</code> from a newer CLI.</div>`;
+    const b = $("#copy-md"); if (b) b.onclick = () => copy(r.review_markdown);
+    return;
+  }
+  if (state.tab === "files") {
+    const files = r.changed_files || [];
+    const flagged = new Set((r.findings || []).filter(f => f.severity === "blocker" || f.severity === "major").map(f => f.file));
+    const outside = p => r.project && !p.startsWith(r.project + "/");
+    body.innerHTML = files.length ? `<div class="card"><ul class="files">${files.map(p => `<li><span>${esc(p)}</span>${flagged.has(p) || outside(p) ? `<span class="flag">${outside(p) ? "outside project" : "has findings"}</span>` : ""}</li>`).join("")}</ul></div>`
+      : `<div class="card empty">No changed-file list in this report.</div>`;
+    return;
+  }
+  body.innerHTML = `<div class="card"><div class="mdhead"><span>Machine-readable report</span><button class="copy" id="copy-json">Copy JSON</button></div><pre class="json">${esc(JSON.stringify(r, null, 2))}</pre></div>`;
+  $("#copy-json").onclick = () => copy(JSON.stringify(r, null, 2));
+}
+function renderFindings(body, r) {
+  const all = [...(r.findings || [])].sort((a, b) => SEV.indexOf(a.severity) - SEV.indexOf(b.severity));
+  const hasLLM = all.some(f => f.source === "llm");
+  const list = all.filter(f => (!state.sevFilter.size || state.sevFilter.has(f.severity)) && (!state.srcFilter || f.source === state.srcFilter));
+  const sevBtns = SEV.map(s => { const n = all.filter(f => f.severity === s).length; return n ? `<button data-sev="${s}" aria-pressed="${state.sevFilter.has(s)}">${s} · ${n}</button>` : ""; }).join("");
+  const srcBtns = hasLLM ? ["deterministic","llm"].map(s => `<button data-src="${s}" aria-pressed="${state.srcFilter === s}">${s === "llm" ? "AI review" : "Deterministic"}</button>`).join("") : "";
+  body.innerHTML = all.length ? `
+    <div class="filters">${sevBtns}${srcBtns}</div>
+    ${list.map((f, i) => `
+      <details class="finding" ${i < 3 && f.severity !== "info" ? "open" : ""}>
+        <summary>
+          <span class="sev ${esc(f.severity)}">${esc(f.severity)}</span>
+          <div><div class="msg">${inline(f.message)}</div>
+            <div class="sub"><span>${esc(f.criterion)}</span>${f.file ? `<span class="mono">${esc(f.file)}${f.line ? ":" + esc(f.line) : ""}</span>` : ""}<span class="mono">${esc(f.check)}</span><span class="src ${esc(f.source || "deterministic")}">${f.source === "llm" ? "AI review" : "Deterministic"}</span></div>
+          </div>
+          <span class="chev">›</span>
+        </summary>
+        ${f.fix || f.rule ? `<div class="body">
+          ${f.fix ? `<div><span class="fixlabel">How to fix</span><div class="fix"><pre>${esc(f.fix)}</pre><button class="copy" data-copy="${esc(f.fix)}">Copy</button></div></div>` : ""}
+          ${f.rule ? `<div class="rule"><span class="label">Rule enforced</span>${esc(f.rule)}</div>` : ""}
+        </div>` : ""}
+      </details>`).join("") || `<div class="card empty">No findings match the filter.</div>`}`
+    : `<div class="card empty"><div class="big">🎉</div><b>Every automated check passed.</b><br>A maintainer can review this one straight away.</div>`;
+  $$("[data-sev]", body).forEach(b => b.onclick = () => { const s = b.dataset.sev; state.sevFilter.has(s) ? state.sevFilter.delete(s) : state.sevFilter.add(s); renderFindings(body, r); });
+  $$("[data-src]", body).forEach(b => b.onclick = () => { state.srcFilter = state.srcFilter === b.dataset.src ? null : b.dataset.src; renderFindings(body, r); });
+  $$("[data-copy]", body).forEach(b => b.onclick = e => { e.preventDefault(); copy(b.dataset.copy); });
+}
+function copy(text) { navigator.clipboard?.writeText(text).then(() => toast("Copied"), () => toast("Copy failed")); }
+
+// Inline markdown subset for finding messages: `code`, **bold**, fenced blocks.
+function inline(s) {
+  return esc(s).replace(/```([\s\S]*?)```/g, (_, c) => `<pre class="mono" style="margin:6px 0;white-space:pre-wrap">${c.trim()}</pre>`)
+    .replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+}
+// Markdown subset used by report.markdown(): headings, tables, lists, details, sub, hr.
+function md(src) {
+  const lines = src.replace(/<!--[\s\S]*?-->/g, "").split("\n");
+  let out = "", inList = 0, table = null, code = null;
+  const flushTable = () => { if (!table) return; out += "<table>" + table.map((row, i) => i === 1 ? "" : `<tr>${row.map(c => i === 0 ? `<th>${c}</th>` : `<td>${c}</td>`).join("")}</tr>`).join("") + "</table>"; table = null; };
+  const closeLists = () => { while (inList > 0) { out += "</ul>"; inList--; } };
+  const fmt = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])_([^_]+)_(?=[\s).,]|$)/g, "$1<i>$2</i>")
+    .replace(/&lt;(\/?)(sub|details|summary)&gt;/g, "<$1$2>");
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    if (code !== null) { if (line.trim().startsWith("```")) { out += `<pre>${esc(code)}</pre>`; code = null; } else code += line + "\n"; continue; }
+    if (line.trim().startsWith("```")) { code = ""; continue; }
+    if (/^\s*\|/.test(line)) { closeLists(); (table ||= []).push(line.trim().replace(/^\||\|$/g, "").split("|").map(c => fmt(c.trim()))); continue; }
+    flushTable();
+    let m;
+    if ((m = line.match(/^(#{2,4})\s+(.*)/))) { closeLists(); out += `<h${m[1].length}>${fmt(m[2])}</h${m[1].length}>`; continue; }
+    if (/^---+$/.test(line)) { closeLists(); out += "<hr>"; continue; }
+    if ((m = line.match(/^(\s*)-\s+(.*)/))) {
+      const depth = Math.floor(m[1].length / 2) + 1;
+      while (inList < depth) { out += "<ul>"; inList++; }
+      while (inList > depth) { out += "</ul>"; inList--; }
+      out += `<li>${fmt(m[2])}</li>`; continue;
+    }
+    if (inList && /^\s{2,}\S/.test(line)) { out = out.replace(/<\/li>$/, `<br>${fmt(line.trim())}</li>`); continue; }
+    closeLists();
+    if (line.trim()) out += `<p>${fmt(line)}</p>`;
+  }
+  flushTable(); closeLists();
+  return out;
+}
+
+// ---------- board ----------
+function renderBoard() {
+  const rank = {ready:0, changes_requested:1, blocked:2, error:3};
+  const all = [...state.reports].sort((a, b) => (rank[a.verdict] ?? 9) - (rank[b.verdict] ?? 9) || (b.score || 0) - (a.score || 0));
+  const counts = k => all.filter(r => r.verdict === k).length;
+  $("#board-sub").textContent = `${all.length} pull request${all.length === 1 ? "" : "s"} loaded`;
+  $("#stats").innerHTML = [["ready","Ready"],["changes_requested","Changes requested"],["blocked","Blocked"],[null,"All"]].map(([k, l]) =>
+    `<button class="card stat ${k ? "v-" + k : ""}" data-k="${k ?? ""}" aria-pressed="${state.boardFilter === k}"><b>${k ? counts(k) : all.length}</b><span>${l}</span></button>`).join("");
+  $$("#stats .stat").forEach(b => b.onclick = () => { state.boardFilter = b.dataset.k || null; renderBoard(); });
+  const rows = all.filter(r => !state.boardFilter || r.verdict === state.boardFilter);
+  $("#board-rows").innerHTML = rows.map((r, i) => {
+    const top = (r.findings || []).filter(f => f.severity === "blocker" || f.severity === "major").slice(0, 3);
+    return `<tr data-i="${state.reports.indexOf(r)}" class="v-${esc(r.verdict)}">
+      <td class="mono">${r.number ? "#" + esc(r.number) : "local"}</td>
+      <td><b class="mono">${esc(r.project || "–")}</b><br><span class="hint">${esc(r.title || "")}${r.author ? " · @" + esc(r.author) : ""}</span></td>
+      <td><span class="vtag">${esc(VERDICT[r.verdict] || r.verdict)}</span></td>
+      <td><b>${esc(r.score ?? "–")}</b></td>
+      <td>${top.length ? `<ul class="top-issues">${top.map(f => `<li>${inline((f.message || "").slice(0, 140))}</li>`).join("")}</ul>` : `<span class="hint">No blocking issues</span>`}</td></tr>`;
+  }).join("") || `<tr><td colspan="5" class="empty">Nothing here yet. Run a review or open a triage .json.</td></tr>`;
+  $$("#board-rows tr[data-i]").forEach(tr => tr.onclick = () => openReport(state.reports[+tr.dataset.i]));
+}
+
+// ---------- policy ----------
+function renderPolicy() {
+  const p = (state.current || state.reports.find(r => r.policy) || {}).policy;
+  if (!p) return;
+  const rules = Object.entries(p.rules || {});
+  $("#rules").innerHTML = rules.map(([k, v]) => { const m = v.match(/^(.*)\s\(([^)]+)\)$/); return `<li><code>${esc(k)}</code><span class="cite">${esc(m ? m[1] : v)} <b>${esc(m ? m[2] : "")}</b></span></li>`; }).join("")
+    + (p.soft_rules || []).map(v => `<li><code>judged by Gemini</code><span class="cite">${esc(v)}</span></li>`).join("");
+}
+
+health();
+loadDemos();
+})();
+</script>
+</body>
+</html>

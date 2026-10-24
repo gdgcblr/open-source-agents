@@ -1,0 +1,211 @@
+{
+  "url": null,
+  "number": 157,
+  "title": "Add PR summarizer",
+  "author": "rahul-k",
+  "project": "agents/pr-summarizer-agent",
+  "verdict": "changes_requested",
+  "score": 50,
+  "scores": {
+    "Reproducibility": 0,
+    "Documentation": 0,
+    "Security & Privacy": 100,
+    "Focused Scope": 100
+  },
+  "llm_used": false,
+  "sandbox": null,
+  "findings": [
+    {
+      "check": "structure.manifest",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.",
+      "file": null,
+      "line": null,
+      "fix": "pip freeze > requirements.txt  # or list only your direct dependencies",
+      "rule": "Dependency Tracking: Always include a dependency manifest (requirements.txt, package.json, etc.). Do not assume global package installations. (CONTRIBUTING.md:140)",
+      "source": "deterministic"
+    },
+    {
+      "check": "readme.sections",
+      "severity": "major",
+      "criterion": "Documentation",
+      "message": "README is missing template sections: How to Test, Known Limitations, Future Improvements.",
+      "file": "agents/pr-summarizer-agent/README.md",
+      "line": null,
+      "fix": "Add each section from template/README.md; write `N/A` plus a reason if one doesn't apply.",
+      "rule": "Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)",
+      "source": "deterministic"
+    },
+    {
+      "check": "readme.examples",
+      "severity": "major",
+      "criterion": "Documentation",
+      "message": "The example input/output is copied unchanged from the template, not a genuine run.",
+      "file": "agents/pr-summarizer-agent/README.md",
+      "line": null,
+      "fix": null,
+      "rule": "Honest Documentation: Example inputs and outputs must reflect genuine runs. State any model assumptions, token consumption, or third-party paid API requirements clearly. (CONTRIBUTING.md:142)",
+      "source": "deterministic"
+    },
+    {
+      "check": "setup.broken-command",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "README setup command will fail on a fresh clone: `pip install -r requirements.txt` (requirements.txt does not exist).",
+      "file": "agents/pr-summarizer-agent/README.md",
+      "line": null,
+      "fix": null,
+      "rule": "Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)",
+      "source": "deterministic"
+    },
+    {
+      "check": "setup.broken-command",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "README setup command will fail on a fresh clone: `python app.py --pr 12` (app.py does not exist).",
+      "file": "agents/pr-summarizer-agent/README.md",
+      "line": null,
+      "fix": null,
+      "rule": "Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)",
+      "source": "deterministic"
+    },
+    {
+      "check": "env.undocumented",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "`GITHUB_TOKEN` is read by the code but documented in neither .env.example nor the README.",
+      "file": "agents/pr-summarizer-agent/summarize.py",
+      "line": null,
+      "fix": "Add `GITHUB_TOKEN=` with a placeholder to .env.example and a row to the README config table.",
+      "rule": "If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)",
+      "source": "deterministic"
+    },
+    {
+      "check": "env.undocumented",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "`SUMMARY_MODEL` is read by the code but documented in neither .env.example nor the README.",
+      "file": "agents/pr-summarizer-agent/summarize.py",
+      "line": null,
+      "fix": "Add `SUMMARY_MODEL=` with a placeholder to .env.example and a row to the README config table.",
+      "rule": "If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)",
+      "source": "deterministic"
+    },
+    {
+      "check": "checklist.contradicted",
+      "severity": "major",
+      "criterion": "Documentation",
+      "message": "Checklist claims \"documentation\" but 1 finding(s) contradict it (e.g. README is missing template sections: How to Test, Known Limitations, Future Improvements.)",
+      "file": null,
+      "line": null,
+      "fix": null,
+      "rule": null,
+      "source": "deterministic"
+    },
+    {
+      "check": "checklist.contradicted",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "Checklist claims \"reproducible setup\" but 5 finding(s) contradict it (e.g. No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.)",
+      "file": null,
+      "line": null,
+      "fix": null,
+      "rule": null,
+      "source": "deterministic"
+    },
+    {
+      "check": "checklist.contradicted",
+      "severity": "major",
+      "criterion": "Documentation",
+      "message": "Checklist claims \"example usage\" but 1 finding(s) contradict it (e.g. The example input/output is copied unchanged from the template, not a genuine run.)",
+      "file": null,
+      "line": null,
+      "fix": null,
+      "rule": null,
+      "source": "deterministic"
+    },
+    {
+      "check": "checklist.contradicted",
+      "severity": "major",
+      "criterion": "Reproducibility",
+      "message": "Checklist claims \"dependencies declared\" but 1 finding(s) contradict it (e.g. No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.)",
+      "file": null,
+      "line": null,
+      "fix": null,
+      "rule": null,
+      "source": "deterministic"
+    }
+  ],
+  "demo": true,
+  "notes": [
+    "Demo fixture: synthetic PR, deterministic checks only (no Gemini, no sandbox)."
+  ],
+  "review_markdown": "\u003c!-- contribution-gatekeeper -->\n## Contribution Gatekeeper review: `agents/pr-summarizer-agent`\n\n\ud83d\udee0\ufe0f **Changes requested** \u00b7 score **50/100**\n\n| Criterion | Score | |\n| :--- | ---: | :--- |\n| Reproducibility | 0 | `\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591` |\n| Documentation | 0 | `\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591` |\n| Security & Privacy | 100 | `\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588` |\n| Focused Scope | 100 | `\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588` |\n\n### What to fix (11)\n\n- \ud83d\udd34 **major** \u00b7 Documentation \u00b7 `agents/pr-summarizer-agent/README.md`  \n  README is missing template sections: How to Test, Known Limitations, Future Improvements.\n  - **Fix:** Add each section from template/README.md; write `N/A` plus a reason if one doesn't apply.\n  - **Rule:** _Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)_\n- \ud83d\udd34 **major** \u00b7 Documentation \u00b7 `agents/pr-summarizer-agent/README.md`  \n  The example input/output is copied unchanged from the template, not a genuine run.\n  - **Rule:** _Honest Documentation: Example inputs and outputs must reflect genuine runs. State any model assumptions, token consumption, or third-party paid API requirements clearly. (CONTRIBUTING.md:142)_\n- \ud83d\udd34 **major** \u00b7 Documentation  \n  Checklist claims \"documentation\" but 1 finding(s) contradict it (e.g. README is missing template sections: How to Test, Known Limitations, Future Improvements.)\n- \ud83d\udd34 **major** \u00b7 Documentation  \n  Checklist claims \"example usage\" but 1 finding(s) contradict it (e.g. The example input/output is copied unchanged from the template, not a genuine run.)\n- \ud83d\udd34 **major** \u00b7 Reproducibility  \n  No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.\n  - **Fix:** pip freeze > requirements.txt  # or list only your direct dependencies\n  - **Rule:** _Dependency Tracking: Always include a dependency manifest (requirements.txt, package.json, etc.). Do not assume global package installations. (CONTRIBUTING.md:140)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/README.md`  \n  README setup command will fail on a fresh clone: `pip install -r requirements.txt` (requirements.txt does not exist).\n  - **Rule:** _Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/README.md`  \n  README setup command will fail on a fresh clone: `python app.py --pr 12` (app.py does not exist).\n  - **Rule:** _Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/summarize.py`  \n  `GITHUB_TOKEN` is read by the code but documented in neither .env.example nor the README.\n  - **Fix:** Add `GITHUB_TOKEN=` with a placeholder to .env.example and a row to the README config table.\n  - **Rule:** _If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/summarize.py`  \n  `SUMMARY_MODEL` is read by the code but documented in neither .env.example nor the README.\n  - **Fix:** Add `SUMMARY_MODEL=` with a placeholder to .env.example and a row to the README config table.\n  - **Rule:** _If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility  \n  Checklist claims \"reproducible setup\" but 5 finding(s) contradict it (e.g. No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.)\n- \ud83d\udd34 **major** \u00b7 Reproducibility  \n  Checklist claims \"dependencies declared\" but 1 finding(s) contradict it (e.g. No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.)\n\n---\n<sub>\ud83e\udd16 Generated by contribution-gatekeeper (deterministic checks only). Rules are read from the base branch's CONTRIBUTING.md; AI findings must quote the submission and can never override or clear a deterministic check. A human maintainer makes the final decision.</sub>",
+  "changed_files": [
+    "agents/pr-summarizer-agent/.env.example",
+    "agents/pr-summarizer-agent/.gitignore",
+    "agents/pr-summarizer-agent/README.md",
+    "agents/pr-summarizer-agent/summarize.py"
+  ],
+  "policy": {
+    "project_roots": [
+      "agents",
+      "tools"
+    ],
+    "required_files": [
+      "README.md",
+      ".gitignore",
+      ".env.example"
+    ],
+    "readme_sections": [
+      "Overview",
+      "Technical Stack",
+      "Architecture & Data Flow",
+      "Prerequisites",
+      "Installation & Setup",
+      "Configuration & Environment Variables",
+      "How to Run",
+      "Example Input & Output",
+      "How to Test",
+      "Known Limitations",
+      "Security & Privacy Considerations",
+      "Future Improvements",
+      "License"
+    ],
+    "checklist_items": [
+      "Directory & Naming",
+      "Documentation",
+      "Reproducible Setup",
+      "Core Functionality Tested",
+      "Example Usage",
+      "Dependencies Declared",
+      "Secrets & Security",
+      "Scope Limitation"
+    ],
+    "rules": {
+      "scope.outside-project": "Keep changes isolated: Your PR should modify only files within your agents/<project-slug>/ or tools/<project-slug>/ directory (and optionally add one row to the index table in agents/README.md or tools/README.md). (CONTRIBUTING.md:129)",
+      "scope.multiple-projects": "5. Isolation: Keep all project code, manifests, and documentation inside your own folder. Do not put multiple unrelated projects in one folder. (CONTRIBUTING.md:121)",
+      "scope.root-deps": "Do not modify root build files: Do not add dependencies to the repository root. (CONTRIBUTING.md:130)",
+      "naming.kebab-case": "2. Naming Convention: Directory names must be lowercase kebab-case (e.g., meeting-summarizer, prompt-evaluator). (CONTRIBUTING.md:118)",
+      "naming.generic": "3. Descriptive Names: Choose a name that clearly identifies what your project does. Avoid generic names like my-agent, final-project, test, or demo. (CONTRIBUTING.md:119)",
+      "structure.required-file": "Copy the shared template files into your project folder: (CONTRIBUTING.md:53)",
+      "structure.manifest": "Dependency Tracking: Always include a dependency manifest (requirements.txt, package.json, etc.). Do not assume global package installations. (CONTRIBUTING.md:140)",
+      "secrets.leaked": "Zero Secrets Policy: Never commit .env files, API keys, access tokens, service account credentials, private SSH keys, or private datasets. Any PR containing secrets will be closed immediately. (CONTRIBUTING.md:141)",
+      "secrets.env-file": "Zero Secrets Policy: Never commit .env files, API keys, access tokens, service account credentials, private SSH keys, or private datasets. Any PR containing secrets will be closed immediately. (CONTRIBUTING.md:141)",
+      "hygiene.tracked-junk": "3. Validate that no real API keys, credentials, local databases, or virtual environments are tracked by Git. (CONTRIBUTING.md:82)",
+      "readme.sections": "Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)",
+      "readme.examples": "Honest Documentation: Example inputs and outputs must reflect genuine runs. State any model assumptions, token consumption, or third-party paid API requirements clearly. (CONTRIBUTING.md:142)",
+      "readme.limitations": "Known Limitations: Disclose known failure modes, rate-limit sensitivities, or platform restrictions (e.g., \"Tested on Linux and macOS; Windows support untested\"). (CONTRIBUTING.md:143)",
+      "env.undocumented": "If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)",
+      "safety.loops": "Safety & Respect: Do not contribute harmful, malicious, or deceptive code (e.g., unauthorized scraping, credential dumping, or uncontained execution loops). (CONTRIBUTING.md:144)"
+    },
+    "soft_rules": [
+      "Honest Documentation: Example inputs and outputs must reflect genuine runs. State any model assumptions, token consumption, or third-party paid API requirements clearly. (CONTRIBUTING.md:142)",
+      "Known Limitations: Disclose known failure modes, rate-limit sensitivities, or platform restrictions (e.g., \"Tested on Linux and macOS; Windows support untested\"). (CONTRIBUTING.md:143)",
+      "Safety & Respect: Do not contribute harmful, malicious, or deceptive code (e.g., unauthorized scraping, credential dumping, or uncontained execution loops). (CONTRIBUTING.md:144)",
+      "Licensing & Attribution: If you adapt open-source code from third parties, retain proper copyright notices and ensure license compatibility. (CONTRIBUTING.md:145)",
+      "Reproducibility: Setup steps must work on another developer's machine with clear prerequisites. (CONTRIBUTING.md:139)"
+    ]
+  }
+}
