@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-24",
+  "setup": "Clean copied source, no .env or virtual environment, Python -S (site packages disabled)",
+  "tests": "----------------------------------------------------------------------\nRan 137 tests in 0.483s\n\nOK (skipped=7)",
+  "offline_demo_decision": "ESCALATE",
+  "offline_demo_mode": "offline_deterministic",
+  "platform": "Windows 11 / Python 3.12.10"
+}

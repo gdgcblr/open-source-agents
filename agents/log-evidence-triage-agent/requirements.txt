@@ -1,0 +1,3 @@
+# Required for the interactive Google ADK agent. Offline CLI/tests use Python stdlib.
+google-adk==2.13.0
+python-dotenv==1.2.4

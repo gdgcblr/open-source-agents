@@ -1,0 +1,10 @@
+2026-10-24 11:20:01.100 INFO  [orders-api] Application started on port 8080
+2026-10-24 11:20:03.240 INFO  [orders-api] GET /health status=200
+2026-10-24 11:20:04.500 WARN  [orders-api] HikariPool-1 - Pool stats (total=10, active=10, idle=0, waiting=8)
+2026-10-24 11:20:05.007 ERROR [orders-api] HikariPool-1 - Connection is not available, request timed out after 30000ms
+2026-10-24 11:20:05.010 ERROR [orders-api] SQLException: connection pool exhausted for JDBC connection
+2026-10-24 11:20:05.014 WARN  [orders-api] Read timed out calling inventory-api /reservations
+2026-10-24 11:20:06.098 ERROR [orders-api] GET /orders failed: 503 Service Unavailable
+2026-10-24 11:20:07.112 ERROR [orders-api] HikariPool-1 - Connection is not available, request timed out after 30000ms
+2026-10-24 11:20:08.007 WARN  [orders-api] status=503 requestId=demo-4
+2026-10-24 11:20:09.005 INFO  [orders-api] Diagnostic configuration password=demo-not-a-real-secret api_key=sample-not-real-key

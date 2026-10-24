@@ -1,0 +1,13 @@
+{
+  "mode": "ai_assisted_validated",
+  "decision": "PASS",
+  "credibility": {
+    "valid": true,
+    "rejected_claims": 0
+  },
+  "date": "2026-10-24",
+  "model": "gemini-3.5-flash-lite",
+  "input": "samples/node-patched.log",
+  "note": "One live synthetic smoke run, not an accuracy benchmark; cost and token usage not measured.",
+  "fallback_reason": null
+}

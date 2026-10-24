@@ -1,0 +1,989 @@
+{
+  "suite": "TraceGuard AI offline golden and regression evaluations",
+  "python": "3.12.10",
+  "platform": "Windows",
+  "dependencies": {
+    "google-adk": "2.13.0",
+    "python-dotenv": "1.2.4"
+  },
+  "fixture_date": "2026-10-24",
+  "total": 176,
+  "passed": 176,
+  "failed": 0,
+  "skipped": 0,
+  "metrics": {
+    "adk_offline_integration": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "regression_and_safety": {
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    "advisory_coverage_safety": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "citation_validity": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "critical_escalation_recall": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "decision_accuracy": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "deterministic_consistency": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "no_unsupported_compromise": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "overall_security_unknown": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "version_match": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "indicator_detection": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "secret_redaction": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "fallback_correctness": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "unsupported_claim_rejection": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "test_adk.AdkTests.test_concurrent_sessions_do_not_share_evidence",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_adk.AdkTests.test_public_agent_holds_invalid_request_without_leaking",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_adk.AdkTests.test_public_agent_missing_key_uses_offline_report",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_adk.AdkTests.test_real_runner_api_failure_falls_back",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_adk.AdkTests.test_real_runner_calls_tool_and_returns_grounded_selection",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_adk.AdkTests.test_real_runner_fabrication_rejected",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_adk.AdkTests.test_real_runner_requires_tool_call",
+      "metric": "adk_offline_integration",
+      "status": "passed"
+    },
+    {
+      "id": "test_cli.CliTests.test_high_severity_internal_exposure_still_escalates",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_cli.CliTests.test_invalid_input_has_no_traceback",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_cli.CliTests.test_missing_file_actionable_error",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_cli.CliTests.test_original_sample_command_preserves_operational_diagnosis",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_cli.CliTests.test_security_escalation_without_runtime_flags",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_ai_selection_cannot_remove_coverage_warning",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_blanket_secure_model_claim_rejected_despite_real_citations",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_freshness_boundary_is_explicit",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_newer_notice_is_separate_from_fixed_cves",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_partial_branch_coverage_cannot_hide_unevaluated_advisory",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_guard_against_path_traversal",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_max_size",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_pool_exhaustion_is_ranked_above_symptoms",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_redact_secrets",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_runbook_is_safe",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_sample_file_tool",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_timeline_is_ordered_by_log_line",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_engine.TriageEngineTests.test_unknown_log_does_not_fabricate_root_cause",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_exfiltration_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_evidence_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_evidence_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_evidence_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_evidence_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_evidence_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_evidence_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_prompt_injection_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_secret_redaction",
+      "metric": "secret_redaction",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_indicator_detection",
+      "metric": "indicator_detection",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_branch_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_branch_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_branch_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_branch_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_branch_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_branch_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.FallbackTests.test_actual_timeout_cancels_request",
+      "metric": "fallback_correctness",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.FallbackTests.test_invalid_ai_configuration",
+      "metric": "fallback_correctness",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.FallbackTests.test_missing_and_placeholder_key",
+      "metric": "fallback_correctness",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.FallbackTests.test_missing_model_configuration",
+      "metric": "fallback_correctness",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.FallbackTests.test_optional_dependencies_missing",
+      "metric": "fallback_correctness",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.FallbackTests.test_provider_errors_do_not_leak_or_downgrade",
+      "metric": "fallback_correctness",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_bad_freshness_configuration_safe",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_evidence_isolation",
+      "metric": "unsupported_claim_rejection",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_fabricated_citation_rejected",
+      "metric": "unsupported_claim_rejection",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_file_errors_and_formats",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_future_snapshot_invalid",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_injection_and_secrets_excluded_from_model_bundle",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_input_bounds_and_types",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_invalid_versions",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_late_critical_indicator_not_lost_to_excerpt_cap",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_malformed_catalogs",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_malformed_model_outputs_fail_closed",
+      "metric": "unsupported_claim_rejection",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_no_downgrade_mandatory_escalation",
+      "metric": "unsupported_claim_rejection",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_numeric_ordering_and_branch_isolation",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_private_key_at_end_of_input_preserves_lines",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_redaction_before_excerpt_truncation_and_multiline_keys",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_request_validation_and_containment",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_secret_formats",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_stale_snapshot_cannot_clear_runtime",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_unsupported_claim_with_real_citation_rejected",
+      "metric": "unsupported_claim_rejection",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_valid_ai_selection_retains_all_deterministic_findings",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_security.SecurityTests.test_version_boundaries",
+      "metric": "regression_and_safety",
+      "status": "passed"
+    }
+  ],
+  "coverage_limitations": [
+    "Synthetic fixtures; no production incident ground truth.",
+    "Curated advisory subset; no guarantee of complete vulnerability coverage.",
+    "ADK integration uses a fake model and real tools/runner; it is not a live Gemini evaluation.",
+    "Redaction and incident indicators are heuristics, not complete DLP or intrusion detection.",
+    "Only Windows/Python 3.12 tested; Linux, macOS, and Docker are untested."
+  ]
+}
