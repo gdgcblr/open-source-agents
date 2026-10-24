@@ -1,19 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import type { Fixture, FixtureMode } from '../types.js';
+import { GITHUB_API_HOST, GITHUB_API_VERSION, GITHUB_DEFAULT_RETRY_WAIT_SEC, GITHUB_MAX_RETRY_WAIT_SEC, GITHUB_MIN_RETRY_WAIT_SEC, GITHUB_TIMEOUT_MS, USER_AGENT } from '../constants.js';
 
-const API_HOST = 'api.github.com';
-const TIMEOUT_MS = 15_000;
-const MAX_RETRY_WAIT_SEC = 90;
-
-/** Recorded responses used by --demo (replay) and --record. */
-export interface Fixture {
-  recordedAt: string;
-  /** The one search the recording covers; demo mode refuses anything else. */
-  meta?: { language: string; level: string; repo?: string; repos?: string[] };
-  github: Record<string, unknown>;
-  gemini: Record<string, unknown>;
-}
-
-export type FixtureMode = 'live' | 'record' | 'replay';
 
 export function loadFixture(file: string): Fixture {
   if (!existsSync(file)) throw new Error(`Demo data not found at ${file}. Run "npm run record-demo" first.`);
@@ -68,6 +56,8 @@ export class GitHubClient {
     private token: string | undefined,
     private mode: FixtureMode = 'live',
     private fixture?: Fixture,
+    /** Injectable so tests do not really wait out a rate limit. */
+    private sleep: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   ) {}
 
   /** Called when the client pauses for a rate limit, so callers can tell the user. */
@@ -87,9 +77,9 @@ export class GitHubClient {
   }
 
   private async get(path: string, params: Record<string, string | number>, raw: boolean): Promise<unknown> {
-    const url = new URL(path, `https://${API_HOST}`);
-    if (url.protocol !== 'https:' || url.host !== API_HOST) {
-      throw new Error(`Blocked request to ${url.host}: only ${API_HOST} is allowed`);
+    const url = new URL(path, `https://${GITHUB_API_HOST}`);
+    if (url.protocol !== 'https:' || url.host !== GITHUB_API_HOST) {
+      throw new Error(`Blocked request to ${url.host}: only ${GITHUB_API_HOST} is allowed`);
     }
     for (const [key, value] of Object.entries(params)) url.searchParams.set(key, String(value));
     const cacheKey = `${raw ? 'RAW ' : ''}${url.pathname}${url.search}`;
@@ -109,14 +99,14 @@ export class GitHubClient {
 
     const headers: Record<string, string> = {
       Accept: raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'merge-mentor',
+      'X-GitHub-Api-Version': GITHUB_API_VERSION,
+      'User-Agent': USER_AGENT,
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
 
     let res: Response;
     for (let attempt = 1; ; attempt++) {
-      res = await fetch(url, { method: 'GET', headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
+      res = await fetch(url, { method: 'GET', headers, signal: AbortSignal.timeout(GITHUB_TIMEOUT_MS) });
       if (res.ok) break;
 
       const body = (await res.text().catch(() => '')).slice(0, 300);
@@ -125,10 +115,10 @@ export class GitHubClient {
       const secondary = limited && !primaryExhausted && (/secondary rate limit/i.test(body) || res.headers.has('retry-after'));
       if (secondary) {
         // GitHub asks clients to slow down briefly after a burst; wait once and retry instead of failing.
-        const waitSec = Math.max(5, Number(res.headers.get('retry-after')) || 60);
-        if (attempt === 1 && waitSec <= MAX_RETRY_WAIT_SEC) {
+        const waitSec = Math.max(GITHUB_MIN_RETRY_WAIT_SEC, Number(res.headers.get('retry-after')) || GITHUB_DEFAULT_RETRY_WAIT_SEC);
+        if (attempt === 1 && waitSec <= GITHUB_MAX_RETRY_WAIT_SEC) {
           this.onWait?.(`GitHub asked us to slow down; waiting ${waitSec}s…`);
-          await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
+          await this.sleep(waitSec * 1000);
           continue;
         }
         throw new Error(`GitHub is rate limiting requests. Wait about ${waitSec} seconds and try again.`);

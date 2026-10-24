@@ -1,35 +1,6 @@
-import { GitHubClient } from './github.js';
-import { Issue, Repository } from './finder.js';
-
-export type ClaimStatus = 'Available' | 'Claimed' | 'Taken';
-
-export interface ClaimResult {
-  status: ClaimStatus;
-  reason?: string;
-}
-
-export interface RepoHealth {
-  closedPRs: number;
-  mergedPRs: number;
-  outsideMerged: number;
-  medianDaysToMerge: number | null;
-}
-
-export interface ScoreResult extends ClaimResult {
-  score: number;
-  health: RepoHealth;
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-const MAINTAINER_ROLES = ['OWNER', 'MEMBER', 'COLLABORATOR'];
-
-const CLAIM_PATTERNS = [
-  /\b(can|could|may) i (please )?(work|take|pick|try|handle|fix|attempt)\b/i,
-  /\bi('d| would)? (like|love|want) to (work|take|pick|try|handle|fix|contribute|attempt)\b/i,
-  /\b(please )?assign (it |this |this issue )?(to )?me\b/i,
-  /\bi('ll| will|'m| am) (work|working|take|taking|pick|picking|fix|fixing)\b/i,
-  /\bworking on (it|this)\b/i,
-];
+import { GitHubClient } from './client.js';
+import type { ClaimResult, Issue, RepoHealth, Repository, ScoreResult } from '../types.js';
+import { CLAIM_PATTERNS, CLAIM_WINDOW_DAYS, CLOSED_PRS_SAMPLE, DAY_MS, MAINTAINER_ROLES, MAX_TIMELINE_PAGES, MERGE_CHANCE, TIMELINE_PAGE_SIZE } from '../constants.js';
 
 export function isClaimComment(body: string): boolean {
   return CLAIM_PATTERNS.some((p) => p.test(body));
@@ -47,7 +18,7 @@ export function detectClaim(timeline: any[], now: number, repoFullName: string):
     }
     const login: string = event.user?.login ?? event.actor?.login ?? '';
     const isBot = login.endsWith('[bot]') || event.user?.type === 'Bot';
-    const recent = now - new Date(event.created_at).getTime() <= 30 * DAY_MS;
+    const recent = now - new Date(event.created_at).getTime() <= CLAIM_WINDOW_DAYS * DAY_MS;
     if (event.event === 'commented' && !isBot && recent && isClaimComment(event.body ?? '')) {
       const days = Math.floor((now - new Date(event.created_at).getTime()) / DAY_MS);
       claim = { status: 'Claimed', reason: `@${login} asked ${days === 0 ? 'today' : `${days}d ago`}` };
@@ -73,38 +44,40 @@ export function computeRepoHealth(allClosedPulls: any[]): RepoHealth {
   };
 }
 
-/** Merge Chance 0-100. Weights are documented in the README. */
+/** Points from the first band the value fits in (bands run from best to worst). */
+function bandPoints<T extends { points: number }>(bands: readonly T[], fits: (band: T) => boolean): number {
+  return bands.find(fits)?.points ?? 0;
+}
+
+/** Merge Chance 0-100. The weights and bands live in MERGE_CHANCE (constants.ts). */
 export function scoreMergeChance(health: RepoHealth, repoPushedAt: string, issueComments: number, claim: ClaimResult, now: number): number {
+  const W = MERGE_CHANCE;
   let score = 0;
-  if (health.mergedPRs > 0) score += (health.outsideMerged / health.mergedPRs) * 30;
-  if (health.closedPRs > 0) score += (health.mergedPRs / health.closedPRs) * 20;
+  if (health.mergedPRs > 0) score += (health.outsideMerged / health.mergedPRs) * W.outsideContributorPoints;
+  if (health.closedPRs > 0) score += (health.mergedPRs / health.closedPRs) * W.mergeRatePoints;
 
   const median = health.medianDaysToMerge;
-  if (median !== null) score += median <= 3 ? 20 : median <= 14 ? 12 : median <= 45 ? 6 : 0;
+  if (median !== null) score += bandPoints(W.mergeSpeedBands, (b) => median <= b.maxDays);
 
   const daysSincePush = (now - new Date(repoPushedAt).getTime()) / DAY_MS;
-  score += daysSincePush <= 7 ? 15 : daysSincePush <= 30 ? 8 : 0;
+  score += bandPoints(W.repoActivityBands, (b) => daysSincePush <= b.maxDays);
+  score += bandPoints(W.quietIssueBands, (b) => issueComments <= b.maxComments);
 
-  score += issueComments <= 3 ? 15 : issueComments <= 8 ? 8 : 0;
-
-  if (claim.status === 'Taken') score = Math.min(score, 15);
-  if (claim.status === 'Claimed') score -= 30;
+  if (claim.status === 'Taken') score = Math.min(score, W.takenCap);
+  if (claim.status === 'Claimed') score -= W.claimedPenalty;
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 export function scoreBand(score: number): 'High' | 'Medium' | 'Low' {
-  return score >= 70 ? 'High' : score >= 45 ? 'Medium' : 'Low';
+  return score >= MERGE_CHANCE.bandHigh ? 'High' : score >= MERGE_CHANCE.bandMedium ? 'Medium' : 'Low';
 }
-
-const TIMELINE_PAGE = 100;
-const MAX_TIMELINE_PAGES = 5;
 
 /** Reads the whole timeline (up to 500 events) so a claim or PR deep in a long thread is not missed. */
 async function fetchTimeline(gh: GitHubClient, repoFullName: string, issueNumber: number): Promise<any[]> {
   const path = `/repos/${repoFullName}/issues/${issueNumber}/timeline`;
-  let events: any[] = await gh.getJson<any[]>(path, { per_page: TIMELINE_PAGE });
-  for (let page = 2; events.length === TIMELINE_PAGE * (page - 1) && page <= MAX_TIMELINE_PAGES; page++) {
-    events = events.concat(await gh.getJson<any[]>(path, { per_page: TIMELINE_PAGE, page }));
+  let events: any[] = await gh.getJson<any[]>(path, { per_page: TIMELINE_PAGE_SIZE });
+  for (let page = 2; events.length === TIMELINE_PAGE_SIZE * (page - 1) && page <= MAX_TIMELINE_PAGES; page++) {
+    events = events.concat(await gh.getJson<any[]>(path, { per_page: TIMELINE_PAGE_SIZE, page }));
   }
   return events;
 }
@@ -121,7 +94,7 @@ export async function getMergeChance(
     healthCache.set(
       repo.full_name,
       gh
-        .getJson(`/repos/${repo.full_name}/pulls`, { state: 'closed', sort: 'updated', direction: 'desc', per_page: 50 })
+        .getJson(`/repos/${repo.full_name}/pulls`, { state: 'closed', sort: 'updated', direction: 'desc', per_page: CLOSED_PRS_SAMPLE })
         .then(computeRepoHealth),
     );
   }

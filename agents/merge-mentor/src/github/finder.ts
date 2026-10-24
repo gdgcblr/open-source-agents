@@ -1,39 +1,14 @@
-import { GitHubClient } from './github.js';
-import { LEVEL_PROFILES, Level } from './config.js';
-
-export interface Repository {
-  full_name: string;
-  stargazers_count: number;
-  pushed_at: string;
-  default_branch: string;
-  language: string | null;
-  description?: string | null;
-  html_url?: string;
-}
-
-export interface Issue {
-  number: number;
-  title: string;
-  html_url: string;
-  body: string | null;
-  comments: number;
-  created_at: string;
-  updated_at: string;
-  labels: { name: string }[];
-  repo_full_name: string;
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { GitHubClient } from './client.js';
+import type { Issue, Level, Repository } from '../types.js';
+import { ACTIVE_WITHIN_DAYS, DAY_MS, ISSUES_PER_PROJECT_MIXED, ISSUES_PER_PROJECT_OPEN, ISSUE_PAGE_SIZE, LEVEL_PROFILES, MAX_STARS, MIN_STARS, REPO_PAGE_SIZE, REPO_REF } from '../constants.js';
 
 /** Active, well-starred repos whose main language matches and that have issues for this level. */
-export const REPO_PAGE_SIZE = 10;
-
 export async function findRepos(gh: GitHubClient, language: string, level: Level, now: number, page = 1): Promise<Repository[]> {
-  const since = new Date(now - 30 * DAY_MS).toISOString().slice(0, 10);
+  const since = new Date(now - ACTIVE_WITHIN_DAYS * DAY_MS).toISOString().slice(0, 10);
   const q = [
     `language:${language}`,
     // Mid-size repos: giants like excalidraw are the most contested, small ones merge outside PRs sooner.
-    'stars:300..15000',
+    `stars:${MIN_STARS}..${MAX_STARS}`,
     'archived:false',
     `pushed:>${since}`,
     LEVEL_PROFILES[level].repoQualifier,
@@ -41,8 +16,6 @@ export async function findRepos(gh: GitHubClient, language: string, level: Level
   const result = await gh.getJson('/search/repositories', { q, sort: 'stars', order: 'desc', per_page: REPO_PAGE_SIZE, page });
   return result.items ?? [];
 }
-
-export const ISSUE_PAGE_SIZE = 30;
 
 /**
  * Open, unassigned issues with level labels and no linked pull request, quietest first.
@@ -65,7 +38,7 @@ export async function findIssues(
   const items: any[] = result.items ?? [];
 
   // Browsing one project shows its issues (up to 20); across many projects, 3 each keeps the list varied.
-  const cap = repos.length === 1 ? 20 : 3;
+  const cap = repos.length === 1 ? ISSUES_PER_PROJECT_OPEN : ISSUES_PER_PROJECT_MIXED;
   const allowed = new Set(repos.map((r) => r.full_name.toLowerCase()));
   const perRepo = new Map<string, number>();
   const issues: Issue[] = [];
@@ -81,9 +54,6 @@ export async function findIssues(
   }
   return { issues, hasMore: items.length >= ISSUE_PAGE_SIZE };
 }
-
-/** owner/name, never with "." or ".." segments. Used for every repo name that comes from outside the program. */
-export const REPO_REF = /^(?!\.{1,2}\/)[\w.-]+\/(?!\.{1,2}$)[\w.-]+$/;
 
 /** Parse "owner/repo#123" or a GitHub issue URL. */
 export function parseIssueRef(ref: string): { repo: string; number: number } | null {

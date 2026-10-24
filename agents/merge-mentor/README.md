@@ -67,7 +67,7 @@ flowchart TD
     J --> K["You review, apply the fix, and open the PR"]
 ```
 
-**Merge Chance (0-100)** combines: share of merged PRs from outside contributors (30), merge rate (20), time to merge (20), recent repo activity (15), and how crowded the issue is (15). An open linked PR marks the issue 🔴 **Taken**; a recent claim comment marks it 🟡 **Claimed**.
+**Merge Chance (0-100)** (weights and bands live in `MERGE_CHANCE` in `src/constants.ts`) combines: share of merged PRs from outside contributors (30), merge rate (20), time to merge (20), recent repo activity (15), and how crowded the issue is (15). An open linked PR marks the issue 🔴 **Taken**; a recent claim comment marks it 🟡 **Claimed**.
 
 **The mentor's explanation (CLI and web UI) has 8 sections:**
 
@@ -79,6 +79,38 @@ flowchart TD
 6. **Suggested fix**: a code diff for you to review and apply yourself (never applied automatically)
 7. **How to test it**: steps to verify the fix
 8. **Raise the PR**: branch name, commit message, PR title and description, and a comment to claim the issue
+
+---
+
+## Project structure
+
+```
+agents/merge-mentor/
+├── src/
+│   ├── cli.ts             command-line entry point
+│   ├── server.ts          local web UI server (the page itself is web/index.html)
+│   ├── record-demo.ts     re-records the offline demo data
+│   ├── pipeline.ts        the flow: find, score, rate, explain
+│   ├── config.ts          .env loading, paths, level and language helpers
+│   ├── constants.ts       every limit, weight, timeout, pattern and prompt in one place
+│   ├── types.ts           every shared type in one place
+│   ├── render.ts          terminal table and Markdown export
+│   ├── github/
+│   │   ├── client.ts      read-only GitHub client (GET only, rate-limit aware, record/replay)
+│   │   ├── finder.ts      finds projects and their issues
+│   │   └── signals.ts     claim check and Merge Chance
+│   └── ai/
+│       ├── gemini.ts      Gemini wrapper (fallback models, timeouts, call budget)
+│       ├── difficulty.ts  difficulty rating
+│       ├── mentor.ts      the agent loop and its read-only tools
+│       └── guardrails.ts  automatic checks on the AI's answer
+├── web/index.html         the web UI (one file, no build step)
+├── test/                  56 tests, no network or keys needed
+├── fixtures/demo.json     recorded data for offline demo mode
+└── docs/                  screenshots
+```
+
+Want to tune behaviour? Open `src/constants.ts`: scoring weights, limits, timeouts, guardrail patterns and the mentor's prompt are all there.
 
 ---
 
@@ -183,7 +215,7 @@ In this run the first draft guessed a file it had never opened; the automatic ch
 ## How to Test
 
 ```bash
-npm test       # 29 tests, no network and no API keys
+npm test       # 56 tests, no network and no API keys
 npm run demo   # end-to-end run on recorded data
 ```
 
@@ -194,6 +226,9 @@ What the tests cover:
 | **Scoring** | claim detection (open PR, recent claim, bots, PRs from other repos), Merge Chance weights, repo health, bot PRs ignored |
 | **Guardrails** | citations must point at lines the agent was shown; diffs are compared with the real file; risky additions; prompt-injection phrases; problems sent back for repair |
 | **Security** | path traversal blocked, search qualifiers stripped, repo names validated, only `api.github.com` reachable, secrets masked |
+| **Mentor loop** | a fake Gemini drives the real agent loop: a good answer is accepted at once; a vague one is repaired exactly once; hostile tool arguments (path traversal, unknown tools, junk line numbers) only produce errors; cancelling stops further model calls |
+| **GitHub client** | GET only and only `api.github.com` (including look-alike hosts); waits and retries once on a secondary rate limit, never loops; tokens never appear in URLs or errors |
+| **Web server (real HTTP)** | wrong Host, cross-site and foreign-origin requests refused; POST refused; parameters validated; CSP nonce changes per response and the page cannot be framed; a runaway client is rate limited |
 | **End to end (offline)** | the real pipeline replayed on recorded data: project search, one project scored and ranked, the recorded explanation has all 8 sections and no warnings, other languages refused with a clear message, no secrets in the recording |
 
 `npm run record-demo` re-records the demo from live GitHub and Gemini (about 1 Gemini call for ratings plus one explanation); `npm run record-demo:mentor` refreshes only the explanation.

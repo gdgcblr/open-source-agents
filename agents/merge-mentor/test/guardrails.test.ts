@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildChecksSection, checkCitations, checkDiffs, extractCitations, scanForInjection, scanRiskyAdditions, ReadLog } from '../src/guardrails.js';
+import { buildChecksSection, checkCitations, checkDiffs, extractCitations, scanForInjection, scanRiskyAdditions } from '../src/ai/guardrails.js';
 
 const FILE = ['import a from "a";', 'export function run() {', '  const x = compute();', '  return x;', '}'].join('\n');
 const reads = (ranges: [number, number][]): ReadLog => new Map([['src/run.ts', { text: FILE, ranges }]]);
@@ -52,7 +52,8 @@ test('buildChecksSection summarises everything and always carries the disclaimer
   assert.match(report, /cannot prove the fix is correct/);
 });
 
-import { findProblems } from '../src/guardrails.js';
+import { findProblems } from '../src/ai/guardrails.js';
+import type { ReadLog } from '../src/types.js';
 
 test('findProblems lists what the model can fix, and is empty for a well-grounded answer', () => {
   const grounded = `Bug at \`src/run.ts:2-3\`.\n${goodDiff}`;

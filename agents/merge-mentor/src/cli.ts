@@ -3,16 +3,17 @@ import { parseArgs } from 'node:util';
 import path from 'node:path';
 import readline from 'node:readline/promises';
 import pc from 'picocolors';
-import { LEVELS, Level, PROJECT_ROOT, isValidLevel, loadConfig, normalizeLanguage } from './config.js';
-import { Fixture, FixtureMode, GitHubClient, assertDemoSupports, loadFixture, saveFixture } from './github.js';
-import { Issue, REPO_REF, Repository, fetchIssue, fetchRepo, findRepos, parseIssueRef } from './finder.js';
-import { DifficultyResult, issueKey } from './difficulty.js';
+import { FIXTURE_FILE, isValidLevel, loadConfig, normalizeLanguage } from './config.js';
+import { GitHubClient, assertDemoSupports, loadFixture, saveFixture } from './github/client.js';
+import { fetchIssue, fetchRepo, findRepos, parseIssueRef } from './github/finder.js';
+import { issueKey } from './ai/difficulty.js';
 import { explainIssue, rankIssues } from './pipeline.js';
-import { Gemini } from './gemini.js';
-import { maskSecrets } from './mentor.js';
+import { Gemini } from './ai/gemini.js';
+import { maskSecrets } from './ai/mentor.js';
 import { renderMentor, renderTable, saveMarkdown } from './render.js';
+import type { DifficultyResult, Fixture, FixtureMode, Issue, Level, Repository } from './types.js';
+import { CLI_DEFAULT_LIMIT, CLI_MAX_LIMIT, LEVELS, REPO_REF } from './constants.js';
 
-const FIXTURE_FILE = path.join(PROJECT_ROOT, 'fixtures', 'demo.json');
 
 const HELP = `merge-mentor: from "I know TypeScript" to your first merged PR
 
@@ -25,7 +26,7 @@ Options:
   --level <level>    beginner (default), intermediate, advanced
   --repo <owner/name> Only list issues of this project
   --issue <ref>      Explain one issue directly (owner/repo#123 or an issue URL)
-  --limit <n>        Candidate issues to check (default 10)
+  --limit <n>        Candidate issues to check (default ${CLI_DEFAULT_LIMIT})
   --show-taken       Also list issues that already have an open PR
   --pick <n>         Choose result n without the prompt
   --save             Save the explanation as Markdown
@@ -46,7 +47,7 @@ async function main() {
       level: { type: 'string', default: 'beginner' },
       issue: { type: 'string' },
       repo: { type: 'string' },
-      limit: { type: 'string', default: '10' },
+      limit: { type: 'string', default: String(CLI_DEFAULT_LIMIT) },
       'show-taken': { type: 'boolean', default: false },
       pick: { type: 'string' },
       save: { type: 'boolean', default: false },
@@ -60,7 +61,7 @@ async function main() {
 
   const level = values.level!;
   if (!isValidLevel(level)) fail(`--level must be one of: ${LEVELS.join(', ')}`);
-  const limit = Math.max(1, Math.min(10, Number(values.limit) || 10));
+  const limit = Math.max(1, Math.min(CLI_MAX_LIMIT, Number(values.limit) || CLI_DEFAULT_LIMIT));
 
   const config = loadConfig();
   const mode: FixtureMode = values.demo ? 'replay' : values.record ? 'record' : 'live';

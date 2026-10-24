@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { maskSecrets, numberLines, safeRepoPath } from '../src/mentor.js';
-import { GitHubClient } from '../src/github.js';
+import { maskSecrets, numberLines, safeRepoPath } from '../src/ai/mentor.js';
+import { GitHubClient } from '../src/github/client.js';
 import { normalizeLanguage } from '../src/config.js';
-import { parseIssueRef } from '../src/finder.js';
+import { parseIssueRef } from '../src/github/finder.js';
 
 test('safeRepoPath blocks traversal and normalises slashes', () => {
   assert.equal(safeRepoPath('/src/utils/'), 'src/utils');
@@ -42,8 +42,8 @@ test('normalizeLanguage and parseIssueRef', () => {
   assert.equal(parseIssueRef('nonsense'), null);
 });
 
-import { sanitizeSearchQuery } from '../src/mentor.js';
-import { REPO_REF } from '../src/finder.js';
+import { sanitizeSearchQuery } from '../src/ai/mentor.js';
+import { REPO_REF } from '../src/constants.js';
 
 test('sanitizeSearchQuery strips qualifiers so code search stays inside the chosen repo', () => {
   assert.equal(sanitizeSearchQuery('password repo:someone/private'), 'password');

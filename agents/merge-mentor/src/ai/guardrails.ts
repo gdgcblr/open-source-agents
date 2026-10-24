@@ -1,30 +1,13 @@
+import type { Citation, CitationCheck, DiffCheck, ReadLog, ReadRecord } from '../types.js';
+import { CODE_EXT, INJECTION_PATTERNS, RISKY_ADDITIONS } from '../constants.js';
 /**
  * Deterministic checks run on the mentor's answer after the model has finished.
  * They never call a model: they compare what the answer claims with what the agent actually read.
  */
 
-export interface ReadRecord {
-  /** Full text of the file. */
-  text: string;
-  /** Line ranges that were actually shown to the model (1-based, inclusive). */
-  ranges: [number, number][];
-}
-
-/** path -> what the agent read from it during one mentor run. */
-export type ReadLog = Map<string, ReadRecord>;
-
 const norm = (line: string) => line.trim().replace(/\s+/g, ' ');
 
 // ---- prompt-injection signals in text written by strangers (issue body, comments) --------------------------
-
-const INJECTION_PATTERNS: [RegExp, string][] = [
-  [/ignore\s+(all\s+|any\s+|the\s+)?(previous|prior|above|earlier)\s+(instructions?|prompts?|rules?)/i, 'tells the AI to ignore its instructions'],
-  [/disregard\s+(the\s+)?(system|previous|above)/i, 'tells the AI to disregard its instructions'],
-  [/(reveal|print|show|repeat|leak|output)\b.{0,40}\b(system\s+prompt|your\s+instructions|api[\s_-]?key|secret|token|password)/i, 'asks the AI to reveal secrets or its prompt'],
-  [/you\s+are\s+now\s+(a|an|in)\b/i, 'tries to reassign the AI\'s role'],
-  [/<\/?\s*(system|assistant|instructions?)\s*>/i, 'contains fake system-prompt tags'],
-  [/\bnew\s+instructions?\s*:/i, 'announces "new instructions"'],
-];
 
 /** Returns a short description for each injection-looking phrase found. */
 export function scanForInjection(text: string): string[] {
@@ -33,13 +16,6 @@ export function scanForInjection(text: string): string[] {
 
 // ---- citations ---------------------------------------------------------------------------------------------
 
-export interface Citation {
-  path: string;
-  from: number;
-  to: number;
-}
-
-const CODE_EXT = 'ts|tsx|js|jsx|mjs|cjs|py|go|rs|java|kt|rb|php|c|h|cc|cpp|hpp|cs|swift|vue|svelte|md|json|ya?ml|toml|css|scss|html|sh|sql';
 const CITATION_RE = new RegExp(`([\\w@.\\-/]+\\.(?:${CODE_EXT})):(\\d+)(?:\\s*[-–]\\s*(\\d+))?`, 'gi');
 
 const PATH_RE = new RegExp(`[\\w@.\\-/]+\\.(?:${CODE_EXT})\\b`, 'gi');
@@ -83,12 +59,6 @@ function findRead(reads: ReadLog, path: string): [string, ReadRecord] | undefine
 
 const covered = (ranges: [number, number][], line: number) => ranges.some(([a, b]) => line >= a && line <= b);
 
-export interface CitationCheck {
-  total: number;
-  verified: number;
-  problems: string[];
-}
-
 export function checkCitations(markdown: string, reads: ReadLog, repoFiles: Set<string>): CitationCheck {
   const citations = extractCitations(markdown);
   const problems: string[] = [];
@@ -109,13 +79,6 @@ export function checkCitations(markdown: string, reads: ReadLog, repoFiles: Set<
 }
 
 // ---- suggested diff ----------------------------------------------------------------------------------------
-
-export interface DiffCheck {
-  file: string;
-  matched: number;
-  total: number;
-  note?: string;
-}
 
 function diffBlocks(markdown: string): string[] {
   return [...markdown.matchAll(/```diff\s*\n([\s\S]*?)```/g)].map((m) => m[1]);
@@ -147,15 +110,6 @@ export function checkDiffs(markdown: string, reads: ReadLog): DiffCheck[] {
 }
 
 // ---- risky additions ---------------------------------------------------------------------------------------
-
-const RISKY_ADDITIONS: [RegExp, string][] = [
-  [/curl[^|\n]*\|\s*(ba|z)?sh/i, 'pipes a download into a shell'],
-  [/\beval\s*\(|new Function\s*\(/, 'uses eval / new Function'],
-  [/child_process|\bexecSync?\s*\(|\bspawn\s*\(|os\.system\s*\(|subprocess\./, 'runs shell commands'],
-  [/rm\s+-rf/, 'deletes files recursively'],
-  [/process\.env\.\w*(KEY|TOKEN|SECRET|PASSWORD)\w*/i, 'reads a secret from the environment'],
-  [/https?:\/\/(?!github\.com|localhost|127\.0\.0\.1|example\.(com|org))[\w.-]+/i, 'adds a link or network call to an external host'],
-];
 
 /** Scans only the lines a diff ADDS. */
 export function scanRiskyAdditions(markdown: string): string[] {

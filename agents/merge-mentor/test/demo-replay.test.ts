@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { GitHubClient, assertDemoSupports, loadFixture } from '../src/github.js';
-import { findRepos } from '../src/finder.js';
+import { GitHubClient, assertDemoSupports, loadFixture } from '../src/github/client.js';
+import { findRepos } from '../src/github/finder.js';
 import { explainIssue, rankIssues } from '../src/pipeline.js';
 
 /** End-to-end run of the real pipeline on the recorded demo: no network, no API keys. */

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRepoHealth, detectClaim, isClaimComment, scoreBand, scoreMergeChance } from '../src/signals.js';
+import { computeRepoHealth, detectClaim, isClaimComment, scoreBand, scoreMergeChance } from '../src/github/signals.js';
 
 const NOW = new Date('2026-10-24T00:00:00Z').getTime();
 const daysAgo = (d: number) => new Date(NOW - d * 86_400_000).toISOString();

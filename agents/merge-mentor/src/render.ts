@@ -1,30 +1,23 @@
 import pc from 'picocolors';
 import { writeFileSync } from 'node:fs';
-import { Issue, Repository } from './finder.js';
-import { ScoreResult, scoreBand } from './signals.js';
-import { DifficultyResult } from './difficulty.js';
-
-export interface Row {
-  issue: Issue;
-  repo: Repository;
-  score: ScoreResult;
-  difficulty?: DifficultyResult;
-}
+import { scoreBand } from './github/signals.js';
+import type { Issue, Row } from './types.js';
+import { DIFFICULTY_MAX, MERGE_CHANCE, TABLE } from './constants.js';
 
 // Always leaves at least one trailing space so neighbouring columns never touch.
 const clip = (text: string, width: number) => (text.length > width - 1 ? text.slice(0, width - 2) + '… ' : text.padEnd(width));
 
 export function renderTable(rows: Row[]): void {
-  console.log(`\n${pc.bold(' #  ' + clip('Issue', 58) + clip('Merge Chance', 15) + clip('Difficulty', 12) + 'Status')}`);
+  console.log(`\n${pc.bold(' #  ' + clip('Issue', TABLE.issueWidth) + clip('Merge Chance', TABLE.mergeWidth) + clip('Difficulty', TABLE.difficultyWidth) + 'Status')}`);
   rows.forEach(({ issue, score, difficulty }, i) => {
-    const color = score.score >= 70 ? pc.green : score.score >= 45 ? pc.yellow : pc.red;
-    const dots = difficulty ? '●'.repeat(difficulty.difficulty) + '○'.repeat(5 - difficulty.difficulty) : '-';
+    const color = score.score >= MERGE_CHANCE.bandHigh ? pc.green : score.score >= MERGE_CHANCE.bandMedium ? pc.yellow : pc.red;
+    const dots = difficulty ? '●'.repeat(difficulty.difficulty) + '○'.repeat(DIFFICULTY_MAX - difficulty.difficulty) : '-';
     const status =
       score.status === 'Available' ? pc.green('🟢 Available') :
       score.status === 'Claimed' ? pc.yellow(`🟡 Claimed (${score.reason})`) :
       pc.red(`🔴 Taken (${score.reason})`);
     const label = `${issue.repo_full_name}#${issue.number} ${issue.title}`;
-    console.log(`${String(i + 1).padStart(2)}  ${clip(label, 58)}${color(clip(`${score.score} ${scoreBand(score.score)}`, 15))}${clip(dots, 12)}${status}`);
+    console.log(`${String(i + 1).padStart(2)}  ${clip(label, TABLE.issueWidth)}${color(clip(`${score.score} ${scoreBand(score.score)}`, TABLE.mergeWidth))}${clip(dots, TABLE.difficultyWidth)}${status}`);
   });
   console.log('');
 }

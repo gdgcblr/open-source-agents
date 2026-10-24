@@ -1,12 +1,7 @@
 import { ThinkingLevel } from '@google/genai';
 import { Gemini } from './gemini.js';
-import { LEVEL_PROFILES, Level } from './config.js';
-import { Issue } from './finder.js';
-
-export interface DifficultyResult {
-  difficulty: number; // 1 (trivial) - 5 (hard)
-  reason: string;
-}
+import type { DifficultyResult, Issue, Level } from '../types.js';
+import { DIFFICULTY_BODY_CHARS, DIFFICULTY_MAX, DIFFICULTY_MIN, DIFFICULTY_PENALTY_PER_STEP, LEVEL_PROFILES } from '../constants.js';
 
 export const issueKey = (issue: Issue) => `${issue.repo_full_name}#${issue.number}`;
 
@@ -17,7 +12,7 @@ export async function rateDifficulties(
   level: Level,
 ): Promise<Record<string, DifficultyResult>> {
   const list = issues
-    .map((i) => `<issue key="${issueKey(i)}">\nTitle: ${i.title}\nLabels: ${i.labels.map((l) => l.name).join(', ')}\n${(i.body ?? '').slice(0, 1200)}\n</issue>`)
+    .map((i) => `<issue key="${issueKey(i)}">\nTitle: ${i.title}\nLabels: ${i.labels.map((l) => l.name).join(', ')}\n${(i.body ?? '').slice(0, DIFFICULTY_BODY_CHARS)}\n</issue>`)
     .join('\n');
 
   const response = await gemini.generate({
@@ -34,7 +29,7 @@ export async function rateDifficulties(
           type: 'object',
           properties: {
             key: { type: 'string' },
-            difficulty: { type: 'integer', minimum: 1, maximum: 5 },
+            difficulty: { type: 'integer', minimum: DIFFICULTY_MIN, maximum: DIFFICULTY_MAX },
             reason: { type: 'string', description: 'One short sentence' },
           },
           required: ['key', 'difficulty', 'reason'],
@@ -45,7 +40,7 @@ export async function rateDifficulties(
 
   const ratings: Record<string, DifficultyResult> = {};
   for (const r of JSON.parse(response.text ?? '[]') as { key: string; difficulty: number; reason: string }[]) {
-    ratings[r.key] = { difficulty: Math.max(1, Math.min(5, Math.round(r.difficulty))), reason: r.reason };
+    ratings[r.key] = { difficulty: Math.max(DIFFICULTY_MIN, Math.min(DIFFICULTY_MAX, Math.round(r.difficulty))), reason: r.reason };
   }
   return ratings;
 }
@@ -53,5 +48,5 @@ export async function rateDifficulties(
 /** Ranking score: Merge Chance minus 8 points per step away from the level's target difficulty. */
 export function adjustScoreForDifficulty(score: number, difficulty: number | undefined, level: Level): number {
   if (difficulty === undefined) return score;
-  return score - Math.abs(difficulty - LEVEL_PROFILES[level].targetDifficulty) * 8;
+  return score - Math.abs(difficulty - LEVEL_PROFILES[level].targetDifficulty) * DIFFICULTY_PENALTY_PER_STEP;
 }
