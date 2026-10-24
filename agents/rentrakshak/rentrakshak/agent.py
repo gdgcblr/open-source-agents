@@ -3,9 +3,16 @@ from __future__ import annotations
 from google.adk.agents import Agent
 from google.adk.tools.function_tool import FunctionTool
 
-from rentrakshak.agent_callbacks import after_tool_callback, before_tool_callback
-from rentrakshak.llm import resolve_agent_model
+from rentrakshak.agent_callbacks import (
+    after_tool_callback,
+    before_agent_callback,
+    before_tool_callback,
+)
+from rentrakshak.llm import resolve_backend, resolve_agent_model
 from rentrakshak.tools.registry import ALL_TOOL_FUNCTIONS
+
+# Gemma via Ollama often loops on analyze_rental_listing; full analysis is in safety report.
+_OLLAMA_OMIT_TOOLS = frozenset({"analyze_rental_listing"})
 
 INSTRUCTION = """
 You are RentRakshak — Bengaluru Rental Safety Agent & Anonymous Tenant Community.
@@ -37,17 +44,27 @@ TOOL DISCIPLINE (required — local models loop without this):
 - Never call the same tool twice in one user turn.
 - After any tool returns, prefer a final text answer to the user instead of another tool call.
 - Maximum ~5 tool calls per user message, then stop and summarize.
+- For greetings (hi, hey, hello): reply briefly in text only — no tools.
 
 Be concise, empathetic, and practical for tenants in Bengaluru.
 """
 
-tools = [FunctionTool(fn) for fn in ALL_TOOL_FUNCTIONS]
+
+def _agent_tool_functions():
+    fns = list(ALL_TOOL_FUNCTIONS)
+    if resolve_backend() == "ollama":
+        fns = [f for f in fns if f.__name__ not in _OLLAMA_OMIT_TOOLS]
+    return fns
+
+
+tools = [FunctionTool(fn) for fn in _agent_tool_functions()]
 
 root_agent = Agent(
     name="rentrakshak",
     model=resolve_agent_model(),
     instruction=INSTRUCTION,
     tools=tools,
+    before_agent_callback=before_agent_callback,
     before_tool_callback=before_tool_callback,
     after_tool_callback=after_tool_callback,
 )

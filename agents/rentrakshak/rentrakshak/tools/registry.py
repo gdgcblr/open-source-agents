@@ -46,6 +46,8 @@ def analyze_rental_listing(
     )
     contradictions = find_contradictions(listing_text, chat_text or None, prop)
     return {
+        "status": "complete",
+        "agent_note": "Listing parsed — summarize for the user; do not call analyze_rental_listing again.",
         "property": prop.model_dump(),
         "contradictions": contradictions,
     }
