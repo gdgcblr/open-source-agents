@@ -24,7 +24,7 @@ flowchart TB
     subgraph MCP["3. Python FastMCP Server Engine (build_doctor_mcp.server)"]
         FastMCP["FastMCP Registry & Session Manager"]
         
-        subgraph Tools["10 Specialized Read-Only Tools"]
+        subgraph Tools["11 Specialized Read-Only Tools"]
             T1["analyze_failure"]
             T2["inspect_project"]
             T3["inspect_test_reports"]
@@ -35,6 +35,7 @@ flowchart TB
             T8["compare_diagnoses"]
             T9["verify_alert_signature"]
             T10["verify_resolution"]
+            T11["format_incident_email<br>(Google MCP / Gmail Dispatch)"]
         end
     end
 
@@ -117,10 +118,10 @@ sequenceDiagram
 - **Zero Configuration:** Automatically locates `.venv/bin/python` or reads `BUILD_DOCTOR_PYTHON`.
 - **Environment Isolation:** Configures `PYTHONPATH` dynamically to mount MCP server sources.
 
-### Layer 3: The 10 MCP Diagnostic Tools
+### Layer 3: The 11 MCP Diagnostic Tools
 | Tool Name | Responsibility | Safety Guarantee |
 |---|---|---|
-| `analyze_failure` | Scores deterministic failure signals from raw logs | Pure text analysis, no side effects |
+| `analyze_failure` | Scores deterministic failure signals from raw logs or cURL outputs | Pure text analysis, no side effects |
 | `inspect_project` | Extracts root manifests (Maven, Gradle, npm, PyPI, Cargo, Go) | Only allowlisted root manifests; no recursion |
 | `inspect_test_reports` | Extracts test suite failures, counts, and error messages | Parsed with `defusedxml`; symlink directories blocked |
 | `summarize_diagnosis` | Combines failure analysis, project manifests, and test health | Unified response; aggregate output capped |
@@ -130,6 +131,7 @@ sequenceDiagram
 | `compare_diagnoses` | Compares pre/post structured diagnosis without retaining raw logs | Zero raw log storage; private comparison |
 | `verify_alert_signature` | Validates HMAC-SHA256 signatures before webhook processing | Fails closed if webhook secret is unset |
 | `verify_resolution` | Compares before/after logs to confirm resolution | **Refuses** to mark verified without success proof |
+| `format_incident_email` | Generates Google Workspace / Gmail MCP dispatch envelopes | Email formatting only; zero unauthorized network calls |
 
 ### Layer 4: The 11 Failure Signal Engines
 1. **Compilation (`compilation`)**: Syntax, type mismatches, missing symbols, TypeScript/Rust/javac errors.
