@@ -1,0 +1,31 @@
+# Python Environment
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment Variables & Secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Test & Coverage Outputs
+.pytest_cache/
+.coverage
+htmlcov/
+junit*.xml
+
+# Generated Artifacts
+migration-output/
+dist/
+build/
+*.egg-info/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

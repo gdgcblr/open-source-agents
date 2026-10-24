@@ -1,0 +1,117 @@
+name: "CI/CD Production Build and Deploy"
+
+on:
+  push:
+    branches:
+      - main
+      - release/*
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  CI: "true"
+  ENVIRONMENT: "production"
+
+jobs:
+  build-and-test:
+    name: "Build and Test Pipeline"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: "Setup Python Runtime"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: "Cache Pip Dependencies"
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: "Setup Node.js Environment"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: "Install Dependencies"
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: "Run Test Suite"
+        run: |
+          pytest --cov=. --junitxml=junit-report.xml
+
+      - name: "Upload Test Artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report-${{ matrix.python-version }}
+          path: junit-report.xml
+
+  package-and-deploy:
+    name: "Package Container and Deploy IaC"
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Download Test Results"
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-report-3.11
+          path: ./reports
+
+      - name: "Authenticate to Container Registry"
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: "Build and Push Container Image"
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ghcr.io/org/repo:latest
+
+      - name: "Setup Terraform Tooling"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      - name: "Validate and Plan Terraform"
+        run: |
+          cd terraform
+          terraform init
+          terraform plan -out=tfplan
+
+      - name: "Post Deployment Status"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Deployment successfully planned.'
+            })

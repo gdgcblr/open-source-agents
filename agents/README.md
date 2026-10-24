@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`devops-migration-agent`](devops-migration-agent/README.md) | Google ADK AI agent migrating GitHub Actions workflows to Azure DevOps Pipelines | Google ADK, Gemini 2.5 Flash, Python, Pydantic | [@pavan731](https://github.com/pavan731) |
