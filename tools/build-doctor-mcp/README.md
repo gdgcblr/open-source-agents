@@ -197,7 +197,7 @@ python -m unittest discover -s tests -v
 PYTHONPATH=src:. python evaluation/run.py
 ```
 
-The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs five public cross-language cases and exits non-zero if any expected signal or classification changes.
+The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs nine public cases across Python, TypeScript, Maven, Gradle, Rust, APIs, timeouts, and ambiguous evidence; it exits non-zero if any expected signal or classification changes.
 
 ## Known Limitations
 
