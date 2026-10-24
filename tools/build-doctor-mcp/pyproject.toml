@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "build-doctor-mcp"
+version = "0.1.0"
+description = "Read-only MCP tools for evidence-based build and runtime diagnosis"
+requires-python = ">=3.10"
+dependencies = ["mcp>=1.6,<2"]
+
+[project.scripts]
+build-doctor-mcp = "build_doctor_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
