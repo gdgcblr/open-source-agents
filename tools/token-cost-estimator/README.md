@@ -1,23 +1,37 @@
 # token-cost-estimator
 
-> A CLI tool that counts tokens and estimates the API cost of a prompt across Gemini models before you make a single API call — no surprise bills.
+> A CLI tool that counts tokens and estimates the API cost of any prompt across Gemini models — before you make a single API call. No surprise bills.
 
 ---
 
 ## Overview
 
 ### Problem Statement & Intended Users
-- **Problem**: Before sending a prompt to the Gemini API, developers have no way to know how many tokens it will consume or how much it will cost. The bill only shows up after the call completes — which is especially painful for long prompts like video generation scripts, research documents, or large context windows.
-- **Intended Users**: Developers and AI engineers building with the Google Gemini API who want to estimate token usage and cost during development.
+
+When building with the Gemini API, developers have no way to know how many tokens a prompt will consume or how much it will cost until after the API call completes. This is painful for:
+
+- Long prompts (research documents, code files, video generation scripts)
+- Batch jobs running hundreds of prompts
+- Teams working within a fixed API budget
+
+By the time you see the bill, the tokens are already spent.
+
+**token-cost-estimator** solves this by checking the cost of any prompt *before* sending it. It uses Google's `count_tokens` endpoint — completely free, no generation, no charges — to give an exact input token count and a projected total cost.
+
+**Intended Users**: Developers and AI engineers building with the Google Gemini API who want visibility into token usage and cost during development.
 
 ### Key Features
-- Accurate token counting using Google's `count_tokens` API endpoint (free, no generation)
-- Cost estimation for both input and output tokens across current Gemini models
-- Supports prompt input via CLI argument, file path, or stdin
-- `--all-models` flag to compare cost across every supported model at once
-- `--list-models` flag to view current pricing and token counting support at a glance
-- `--json` flag for machine-readable output — pipe into scripts or save to file
-- `--budget` flag to warn when estimated cost exceeds a set limit
+
+| Feature | Flag | Description |
+|---|---|---|
+| Token count + cost estimate | *(default)* | Exact input tokens via Gemini API + projected output cost |
+| Multi-model comparison | `--all-models` | Run the same prompt across all models side by side |
+| Pricing table | `--list-models` | View all models, prices, and token count API support |
+| JSON output | `--json` | Machine-readable output for scripting or CI pipelines |
+| Budget guard | `--budget` | Warn and exit with code 1 when cost exceeds your limit |
+| File input | `--file` | Read prompt from any text file |
+| Batch mode | `--batch` | Process all `.txt` files in a folder, show per-file + total cost |
+| Token breakdown | *(auto)* | For prompts over 1000 tokens, shows character/word/token breakdown |
 
 ---
 
@@ -25,27 +39,35 @@
 
 - **Language & Runtime**: Python 3.10+
 - **Core Library**: `google-genai` (official Google Gemini Python SDK)
-- **Models Supported**: gemini-3.8-flash, gemini-3.8-flash-lite
-- **External APIs**: Google Gemini `count_tokens` endpoint (no generation — no output tokens billed)
+- **Models Supported**: `gemini-3.8-flash`, `gemini-3.8-flash-lite`
+- **External APIs**: Google Gemini `count_tokens` endpoint — free, no generation, no output tokens billed
 
 ---
 
 ## Architecture & Data Flow
 
 ```
-[User Input (CLI / file / stdin)]
+[User Input]
+  CLI argument / --file / --batch folder / stdin
         |
         v
-[main.py argument parser]
+[Argument Parser]
+  validates flags, loads prompt(s)
         |
         v
-[Google Gemini count_tokens API] --> returns exact input token count
+[count_tokens API call]
+  Google Gemini endpoint — returns exact input token count
+  (if prompt >= 1000 tokens, breakdown is added automatically)
         |
         v
-[Cost calculator] --> applies per-model pricing
+[Cost Calculator]
+  applies per-model pricing (input + estimated output)
+  batch mode: aggregates total across all files
         |
         v
-[Formatted report or JSON printed to stdout]
+[Output]
+  formatted report  OR  JSON (--json)
+  budget check triggered if --budget is set
 ```
 
 ---
@@ -96,32 +118,38 @@
 ## How to Run
 
 ```bash
-# Estimate cost for an inline prompt (default model: gemini-3.8-flash)
+# Basic estimate — inline prompt, default model (gemini-3.8-flash)
 python main.py "Summarize the French Revolution in 3 bullet points"
 
 # Use a specific model
 python main.py "Explain quantum entanglement" --model gemini-3.8-flash-lite
 
-# Estimate with a custom expected output token count
+# Set a custom estimated output token count (default is 500)
 python main.py "Write a 500-word blog post about AI" --output-tokens 700
 
 # Read prompt from a file
 python main.py --file my_prompt.txt
 
-# Compare cost across ALL models at once
+# Compare cost across ALL supported models at once
 python main.py "Translate this paragraph to Spanish" --all-models
 
-# List all supported models and their pricing
+# List all models with pricing and token count API support
 python main.py --list-models
 
-# Output results as JSON (great for scripting)
+# Output as JSON — for scripts, CI pipelines, or saving to file
 python main.py "Explain what a neural network is" --json
 
-# Warn if estimated cost exceeds a budget (in USD)
+# Set a budget — warns and exits with code 1 if cost exceeds it
 python main.py "Explain what a neural network is" --budget 0.01
 
-# Combine: all models + budget check
-python main.py "Explain what a neural network is" --all-models --budget 0.001
+# Batch mode — estimate cost for all .txt files in a folder
+python main.py --batch prompts/
+
+# Batch with budget guard
+python main.py --batch prompts/ --budget 0.05
+
+# Batch as JSON
+python main.py --batch prompts/ --json
 ```
 
 ---
@@ -143,7 +171,69 @@ Total cost     : $0.000201
 --------------------------------------------------
 ```
 
-### With `--json`
+### Token breakdown (auto-triggered for prompts over 1000 tokens)
+```bash
+python main.py --file large_prompt.txt
+```
+```
+Model    : gemini-3.8-flash
+--------------------------------------------------
+  Prompt breakdown (large prompt detected):
+    Characters : 8,794
+    Words      : 1,305
+    Tokens     : 2,448
+Input tokens   : 2,448
+Output tokens  : 500 (estimated)
+Input cost     : $0.000245
+Output cost    : $0.000200
+Total cost     : $0.000445
+--------------------------------------------------
+```
+
+### Batch mode
+```bash
+python main.py --batch prompts/
+```
+```
+Batch mode — processing 3 file(s) from 'prompts/'
+
+File: prompt1.txt
+Model    : gemini-3.8-flash
+--------------------------------------------------
+Input tokens   : 9,  Total cost : $0.000201
+--------------------------------------------------
+
+File: prompt2.txt
+...
+
+==================================================
+BATCH SUMMARY
+==================================================
+Files processed   : 3
+Total input tokens: 32
+Total est. cost   : $0.000603
+==================================================
+```
+
+### Batch as JSON
+```bash
+python main.py --batch prompts/ --json
+```
+```json
+{
+  "model": "gemini-3.8-flash",
+  "files_processed": 3,
+  "total_input_tokens": 32,
+  "total_estimated_cost": 0.000603,
+  "results": [
+    { "file": "prompt1.txt", "input_tokens": 9, "total_cost": 0.000201 },
+    { "file": "prompt2.txt", "input_tokens": 10, "total_cost": 0.000201 },
+    { "file": "prompt3.txt", "input_tokens": 13, "total_cost": 0.000201 }
+  ]
+}
+```
+
+### `--json` output
 ```bash
 python main.py "Explain what a neural network is" --json
 ```
@@ -158,39 +248,16 @@ python main.py "Explain what a neural network is" --json
 }
 ```
 
-### With `--budget`
+### `--budget` guard
 ```bash
 python main.py "Explain what a neural network is" --budget 1.0
-```
-```
-Total cost     : $0.000201
-OK: Estimated cost is within budget of $1.000000
-```
-```bash
+# OK: Estimated cost is within budget of $1.000000
+
 python main.py "Explain what a neural network is" --budget 0.000001
-```
-```
-Total cost     : $0.000201
-WARNING: Estimated cost $0.000201 exceeds budget of $0.000001
+# WARNING: Estimated cost $0.000201 exceeds budget of $0.000001
 ```
 
-### With `--all-models`
-```bash
-python main.py "Explain what a neural network is" --all-models
-```
-```
-Model    : gemini-3.8-flash
---------------------------------------------------
-Input tokens   : 7, Total cost : $0.000201
---------------------------------------------------
-
-Model    : gemini-3.8-flash-lite
---------------------------------------------------
-Input tokens   : 7, Total cost : $0.000151
---------------------------------------------------
-```
-
-### `--list-models` output
+### `--list-models`
 ```
 Supported models and pricing (per 1M tokens):
 
@@ -205,53 +272,65 @@ gemini-3.8-flash-lite          $   0.075 $   0.300  via gemini-3.8-flash
 ## How to Test
 
 ```bash
-# 1. List models (no API call made)
+# 1. List models — no API key needed
 python main.py --list-models
 
-# 2. Test basic estimate
-python main.py "Hello world" --model gemini-3.8-flash
+# 2. Basic estimate
+python main.py "Hello world"
 
-# 3. Test JSON output and verify it is valid
+# 3. JSON output — verify it is valid
 python main.py "Explain what a neural network is" --json | python3 -m json.tool
 
-# 4. Test budget pass
+# 4. Budget pass
 python main.py "Explain what a neural network is" --budget 1.0
 
-# 5. Test budget warning
+# 5. Budget warning
 python main.py "Explain what a neural network is" --budget 0.000001
 
-# 6. Test all models
+# 6. All models
 python main.py "Explain what a neural network is" --all-models
 
-# 7. Test file input
-echo "Explain machine learning in simple terms." > test_prompt.txt
-python main.py --file test_prompt.txt
+# 7. Token breakdown — use a large file (e.g. README.md itself)
+python main.py --file README.md
+
+# 8. Batch mode
+mkdir test_prompts
+echo "Explain what a neural network is." > test_prompts/p1.txt
+echo "Summarize the history of AI." > test_prompts/p2.txt
+echo "What is supervised learning?" > test_prompts/p3.txt
+python main.py --batch test_prompts/
+python main.py --batch test_prompts/ --budget 0.01
+python main.py --batch test_prompts/ --json
+rm -rf test_prompts/
 ```
 
 ---
 
 ## Known Limitations
 
-- Output token count is an estimate provided by the user via `--output-tokens` (default 500). The tool cannot predict actual output length — only input tokens are counted precisely.
-- `gemini-3.8-flash-lite` does not natively support the `count_tokens` endpoint; token count is approximated using `gemini-3.8-flash` (tokenizers are compatible).
-- Pricing data is hardcoded based on Google's published rates and may drift if Google updates pricing. Check https://ai.google.dev/gemini-api/docs/pricing for the latest.
-- Tested on macOS (Apple Silicon, Python 3.14). Windows support via `.venv\Scripts\activate` should work but is not fully verified.
+- Output token count is an estimate supplied by the user via `--output-tokens` (default 500). Only input tokens are counted exactly.
+- `gemini-3.8-flash-lite` does not natively support `count_tokens`; token count is approximated using `gemini-3.8-flash` (tokenizers are compatible).
+- Batch mode only reads `.txt` files. Other formats (`.md`, `.pdf`) are not supported yet.
+- Pricing is hardcoded. Check https://ai.google.dev/gemini-api/docs/pricing if rates have changed.
+- Tested on macOS (Apple Silicon, Python 3.14). Windows support should work but is not fully verified.
 
 ---
 
 ## Security & Privacy Considerations
 
-- **Secrets Handling**: API key is loaded from a `.env` file via `python-dotenv`. Never hardcode keys in source files.
-- **Data Privacy**: The prompt text is sent to Google's Gemini `count_tokens` API endpoint. Do not use this tool with confidential or sensitive prompt content in untrusted environments.
-- **Safety**: This tool is read-only — it calls only the token counting endpoint, not the generation endpoint, so no text is generated or stored.
+- **Secrets Handling**: API key loaded from `.env` via `python-dotenv`. Never hardcode keys in source files.
+- **Data Privacy**: Prompt text is sent to Google's `count_tokens` endpoint. Do not use with confidential content.
+- **Safety**: Read-only — calls only the token counting endpoint. No text is generated or stored.
 
 ---
 
 ## Future Improvements
 
 - [ ] Support Anthropic and OpenAI models
-- [ ] Cache pricing data from a remote source to stay current automatically
-- [ ] Add a `--budget` per-model breakdown when used with `--all-models`
+- [ ] Batch mode support for `.md` and `.pdf` files
+- [ ] Fetch live pricing from a remote source to stay current automatically
+- [ ] Per-model budget breakdown when used with `--all-models`
+- [ ] `--output-file` flag to save JSON results directly to disk
 
 ---
 
