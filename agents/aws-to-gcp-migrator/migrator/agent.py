@@ -167,14 +167,30 @@ Provide your architectural synthesis in structured Markdown format.
 """
 
         try:
+            import time
             from google import genai
             client = genai.Client(api_key=self.api_key)
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=prompt
-            )
-            if response and response.text:
-                return "*(Live Gemini Synthesis via `gemini-3.8-flash`)*\n\n" + response.text
+            # Resilient model failover pool with automatic backoff retry on 503/429 spikes
+            failover_models = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-3-flash-preview"]
+            last_err = None
+            
+            for model in failover_models:
+                for attempt in range(2):
+                    try:
+                        response = client.models.generate_content(
+                            model=model,
+                            contents=prompt
+                        )
+                        if response and response.text:
+                            return f"*(Live Gemini Synthesis via `{model}`)*\n\n" + response.text
+                    except Exception as inner_e:
+                        last_err = inner_e
+                        if "503" in str(inner_e) or "429" in str(inner_e) or "UNAVAILABLE" in str(inner_e):
+                            time.sleep(1.5)
+                            continue
+                        break
+            
+            raise RuntimeError(f"All Gemini models in pool were busy: {last_err}")
         except Exception as e:
             offline = self._offline_analysis(resources, target_project, target_region, finops)
             return f"*(Notice: Gemini API call returned: {str(e)}. Displaying verified offline analysis engine output.)*\n\n{offline}"

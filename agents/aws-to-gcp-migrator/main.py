@@ -10,7 +10,9 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load local environment variables if available
+# Load local environment variables from script directory or root
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 load_dotenv()
 
 from migrator.parser import TerraformParser
