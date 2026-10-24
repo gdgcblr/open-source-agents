@@ -62,6 +62,66 @@ def _build_diff_from_files(files: list[dict]) -> str:
     return "\n".join(parts)
 
 
+_SENSITIVE_FILE_PATTERNS = [
+    r"(?i)system.?prompt",
+    r"(?i)prompts?/",
+    r"(?i)\.env\.example",
+    r"(?i)settings\.(yaml|yml|toml)",
+    r"(?i)config\.(yaml|yml|toml|py)",
+    r"(?i)requirements.*\.txt",
+    r"(?i)pyproject\.toml",
+    r"(?i)package\.json$",
+    r"(?i)agents?/",
+    r"(?i)chains?/",
+]
+_SENSITIVE_COMPILED = [re.compile(p) for p in _SENSITIVE_FILE_PATTERNS]
+
+
+def fetch_sensitive_files(
+    owner: str,
+    repo: str,
+    headers: dict,
+    client: httpx.Client,
+    branch: str = "main",
+    max_files: int = 8,
+) -> str:
+    """Fetch content of security-sensitive files from repo tree."""
+    tree_url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
+    r = client.get(tree_url, headers=headers)
+    if r.status_code != 200:
+        return ""
+
+    tree = r.json().get("tree", [])
+    sensitive = []
+    for item in tree:
+        if item.get("type") != "blob":
+            continue
+        path = item.get("path", "")
+        if any(p.search(path) for p in _SENSITIVE_COMPILED):
+            sensitive.append(path)
+        if len(sensitive) >= max_files:
+            break
+
+    parts = []
+    for path in sensitive[:max_files]:
+        content_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={branch}"
+        rc = client.get(content_url, headers=headers)
+        if rc.status_code != 200:
+            continue
+        data = rc.json()
+        if data.get("encoding") == "base64":
+            import base64
+            try:
+                content = base64.b64decode(data["content"]).decode("utf-8", errors="ignore")
+                # Convert to diff-like format so existing agents work
+                diff_lines = "\n".join(f"+{line}" for line in content.splitlines()[:120])
+                parts.append(f"diff --git a/{path} b/{path}\n--- /dev/null\n+++ b/{path}\n{diff_lines}")
+            except Exception:
+                continue
+
+    return "\n\n".join(parts)
+
+
 def fetch_latest_commit_diff(
     repo_url: str,
     branch: str = "main",
@@ -75,7 +135,7 @@ def fetch_latest_commit_diff(
     if github_token:
         headers["Authorization"] = f"Bearer {github_token}"
 
-    with httpx.Client(timeout=30) as client:
+    with httpx.Client(timeout=30, follow_redirects=True) as client:
         commits_url = f"https://api.github.com/repos/{owner}/{repo}/commits"
         r = client.get(commits_url, headers=headers, params={"sha": branch, "per_page": num_commits})
         if r.status_code == 404:

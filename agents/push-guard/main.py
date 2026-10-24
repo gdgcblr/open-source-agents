@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from models import ScanRequest, ScanResult
 from orchestrator import run_parallel_scan
 from eval.scorer import calculate_risk_score, evaluate_findings, generate_compliance, build_summary
-from github_fetcher import fetch_latest_commit_diff, CommitInfo
+from github_fetcher import fetch_latest_commit_diff, fetch_sensitive_files, CommitInfo
 
 load_dotenv()
 
@@ -70,6 +70,30 @@ def scan(request: ScanRequest):
     )
 
 
+@app.post("/debug-fetch")
+def debug_fetch(request: RepoScanRequest):
+    """Returns raw diff + pre-filter hits for debugging."""
+    try:
+        fetched = fetch_latest_commit_diff(
+            repo_url=request.repo_url,
+            branch=request.branch or "main",
+            github_token=request.github_token or os.environ.get("GITHUB_TOKEN"),
+            num_commits=request.num_commits or 3,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    diff_lines = fetched.diff.splitlines()
+    plus_lines = [l for l in diff_lines if l.startswith("+") and not l.startswith("+++")]
+
+    return {
+        "total_lines": len(diff_lines),
+        "added_lines": len(plus_lines),
+        "diff_preview": fetched.diff[:3000],
+        "sample_plus_lines": plus_lines[:30],
+    }
+
+
 @app.post("/scan-repo", response_model=RepoScanResult)
 def scan_repo(request: RepoScanRequest):
     if not os.environ.get("GEMINI_API_KEY"):
@@ -90,7 +114,17 @@ def scan_repo(request: RepoScanRequest):
     if not fetched.diff.strip():
         raise HTTPException(status_code=422, detail="Latest commit has no diff to scan (binary files or empty commit)")
 
-    scan_request = ScanRequest(diff=fetched.diff, repo_name=f"{fetched.owner}/{fetched.repo}")
+    import httpx
+    token = request.github_token or os.environ.get("GITHUB_TOKEN")
+    headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    with httpx.Client(timeout=20, follow_redirects=True) as client:
+        sensitive_diff = fetch_sensitive_files(
+            fetched.owner, fetched.repo, headers, client, branch=request.branch or "main"
+        )
+    combined_diff = fetched.diff + ("\n\n" + sensitive_diff if sensitive_diff else "")
+    scan_request = ScanRequest(diff=combined_diff, repo_name=f"{fetched.owner}/{fetched.repo}")
     findings = run_parallel_scan(scan_request)
     risk_score = calculate_risk_score(findings)
 
