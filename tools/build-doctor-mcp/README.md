@@ -37,6 +37,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 
 - `analyze_failure`: classify common compilation, dependency, test, runtime, and API failure signals.
 - `inspect_project`: read bounded content from recognized project manifests without executing code.
+- `inspect_test_reports`: parse bounded JUnit, Surefire, and pytest-style XML reports into factual test evidence.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
 - `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
@@ -50,7 +51,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - **Protocol:** Model Context Protocol (MCP)
 - **SDK:** Official Python MCP SDK
 - **Transport:** stdio
-- **Dependencies:** `mcp>=1.6,<2`
+- **Dependencies:** `mcp>=1.6,<2`, `defusedxml>=0.7.1,<1`
 
 ## Architecture & Data Flow
 
@@ -141,6 +142,7 @@ set BUILD_DOCTOR_ALLOWED_ROOT=C:\\Users\\you\\workspace
 | --- | --- | --- | --- |
 | `BUILD_DOCTOR_MAX_FILE_BYTES` | No | `200000` | Maximum bytes read from each recognized manifest |
 | `BUILD_DOCTOR_MAX_LOG_CHARS` | No | `200000` | Maximum log characters analyzed |
+| `BUILD_DOCTOR_MAX_REPORTS` | No | `20` | Maximum XML reports inspected per project |
 | `BUILD_DOCTOR_ALLOWED_ROOT` | No | unset | If set, project paths must remain below this absolute workspace directory |
 
 ## How to Run
@@ -182,7 +184,7 @@ The response is JSON with this shape:
 }
 ```
 
-Classification is deterministic: matching rules emit stable signal IDs and weights, categories are ranked by total score, and confidence is capped when evidence is weak or categories tie. A probable cause requires multiple matching signals; root-cause status remains unconfirmed until a follow-up result. The model may explain the returned result, but it is not allowed to invent evidence or promote a pending verification to success.
+Classification is deterministic: matching rules emit stable signal IDs and weights, categories are ranked by total score, and confidence is capped when evidence is weak or categories tie. A probable cause requires multiple matching signals; root-cause status remains unconfirmed until a follow-up result. Structured test reports can corroborate test counts and failing test names. The model may explain the returned result, but it is not allowed to invent evidence or promote a pending verification to success.
 
 For an ADK client, an optional smaller explanation model can be configured with `MODEL_NAME=gemma-3-4b-it` when the selected provider exposes Gemma 3 4B. The MCP server itself does not call a model: deterministic tools remain the authority, while Gemini or Gemma only explain their returned evidence.
 
@@ -199,6 +201,7 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 - Failure classification uses transparent signatures; it is not a replacement for ecosystem-specific report parsers.
 - The server reads only a fixed list of root-level manifests and does not recursively scan repositories.
 - The server does not run builds, tests, network calls, or remediation commands.
+- XML reports are parsed with `defusedxml`; malformed or oversized reports are reported as unreadable or skipped.
 - Diagnostic output is redacted heuristically; do not treat redaction as a guarantee and review client permissions and supplied paths.
 
 ## Security & Privacy Considerations
