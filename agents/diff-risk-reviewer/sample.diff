@@ -1,0 +1,22 @@
+diff --git a/app/auth/login.py b/app/auth/login.py
+index 1a2b3c4..5d6e7f8 100644
+--- a/app/auth/login.py
++++ b/app/auth/login.py
+@@ -1,6 +1,12 @@
+ import hashlib
+ 
++API_KEY = "demo-placeholder-value-1234"
++
+ def check_password(user, password):
+-    return user.hash == hashlib.md5(password.encode()).hexdigest()
++    # TODO: switch to bcrypt
++    print("checking", user.name)
++    breakpoint()
++    return user.hash == hashlib.sha256(password.encode()).hexdigest()
+diff --git a/migrations/0007_add_last_login.sql b/migrations/0007_add_last_login.sql
+new file mode 100644
+--- /dev/null
++++ b/migrations/0007_add_last_login.sql
+@@ -0,0 +1,2 @@
++ALTER TABLE users ADD COLUMN last_login TIMESTAMP;
++UPDATE users SET last_login = NOW();
