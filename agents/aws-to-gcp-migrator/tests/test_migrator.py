@@ -136,3 +136,67 @@ def test_google_adk_agent():
     assert "topology" in res
     assert "finops" in res
     assert "terraform" in res
+
+
+def test_network_gravity_egress_toll():
+    res_s3 = AWSResource(
+        resource_type="aws_s3_bucket",
+        resource_name="data_bucket",
+        raw_block=""
+    )
+    finops_agent = FinOpsPredictorAgent()
+    report = finops_agent.predict_tco([res_s3])
+
+    assert hasattr(report, "network_gravity")
+    ng = report.network_gravity
+    assert ng.data_volume_gb == 500.0
+    assert ng.aws_exit_toll == 45.0  # 500 * $0.09
+    assert ng.gcp_ingress_cost == 0.0
+    assert ng.amortization_days > 0
+
+
+def test_architecture_paradox_resolver():
+    from migrator.paradox_resolver import ArchitectureParadoxResolver
+    res_vpc = AWSResource(resource_type="aws_vpc", resource_name="main", raw_block="")
+    res_lambda = AWSResource(resource_type="aws_lambda_function", resource_name="fn", raw_block="")
+    res_sqs = AWSResource(resource_type="aws_sqs_queue", resource_name="q", raw_block="")
+
+    resolver = ArchitectureParadoxResolver()
+    paradoxes = resolver.resolve_paradoxes([res_vpc, res_lambda, res_sqs])
+
+    assert len(paradoxes) == 3
+    ids = [p.paradox_id for p in paradoxes]
+    assert "regional_vpc_sprawl" in ids
+    assert "lambda_concurrency_starvation" in ids
+    assert "sqs_long_polling_worker_waste" in ids
+
+
+def test_terraform_hcl_validator():
+    from migrator.validator import TerraformHCLValidator
+    validator = TerraformHCLValidator()
+
+    valid_hcl = """
+    terraform {
+      required_providers {
+        google = {
+          source  = "hashicorp/google"
+          version = "~> 5.0"
+        }
+      }
+    }
+    resource "google_storage_bucket" "prod_data" {
+      name     = "my-bucket"
+      location = "US"
+    }
+    """
+    report = validator._validate_statically(valid_hcl)
+    assert report.is_valid is True
+    assert "100% Syntactically Valid" in report.badge_label
+
+    invalid_hcl = """
+    resource "google_storage_bucket" "prod_data" {
+      name = "unclosed"
+    """
+    report_inv = validator._validate_statically(invalid_hcl)
+    assert report_inv.is_valid is False
+    assert "Mismatched braces" in report_inv.details
