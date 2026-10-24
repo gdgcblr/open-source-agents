@@ -98,7 +98,19 @@
 
 ---
 
-## Slide 9: Code Quality & Monorepo Standards
+## Slide 9: 8 Things Google Maps CANNOT Do (The AI Copilot Superpowers)
+- **1. Calculates Exact Rupee Savings:** Shows ₹745+ saved with Namma Metro over surge cabs.
+- **2. Side-by-Side Multimodal Comparison:** Road cab vs Metro vs BMTC bus evaluated on one screen.
+- **3. Autonomous Golden Departure Window:** Tells you leaving at 4:00 PM cuts 63 mins off your commute.
+- **4. Proactive Underpass Flood Warnings:** Early warning for Kadubeesanahalli, Okalipuram, and Panathur.
+- **5. Hyper-Local Chokepoint Bypasses:** Madiwala market bypass for Silk Board, Purple Line for Tin Factory.
+- **6. Conversational AI Reasoning:** Natural language queries powered by Gemini 2.5 Flash.
+- **7. Public Transit Fare Tiers:** Ordinary BMTC (₹25) vs Vajra AC (₹45) vs Metro QR (₹57).
+- **8. 100% Open-Source & Reproducible:** Zero API key lock-in, runs locally out-of-the-box.
+
+---
+
+## Slide 10: Code Quality & Monorepo Standards
 - **10/10 Automated Tests:** Pytest test suite covering route calculations, chokepoints, metro alternatives, and agent intent parsing.
 - **GDG Monorepo Compliance:**
   - Isolated under `agents/namma-traffic-agent/`.
