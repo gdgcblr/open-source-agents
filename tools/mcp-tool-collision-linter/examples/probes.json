@@ -1,0 +1,12 @@
+[
+  { "prompt": "Find the note where I jotted down the wifi password for the cabin", "intended": "notes/search_notes" },
+  { "prompt": "Look through my stuff for anything about the Q3 budget", "intended": "drive/search_files" },
+  { "prompt": "Pull up the project proposal PDF Priya sent over", "intended": "drive/search_files" },
+  { "prompt": "Did I write anything down about that book recommendation?", "intended": "notes/search_notes" },
+  { "prompt": "Tell Rahul the deploy is done", "intended": "chat/send_message" },
+  { "prompt": "Drop a line in #frontend that staging is back up", "intended": "chat/send_message" },
+  { "prompt": "Write to the landlord at landlord@example.com about the leaking tap, subject 'Kitchen tap'", "intended": "mail/send_email" },
+  { "prompt": "Send my manager a formal note that I'll be on leave Friday", "intended": "mail/send_email" },
+  { "prompt": "Jot down: buy milk, call plumber", "intended": "notes/create_note" },
+  { "prompt": "Start a doc for the onboarding guide that I can share with the team", "intended": "drive/create_document" }
+]

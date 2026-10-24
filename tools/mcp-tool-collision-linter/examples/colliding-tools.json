@@ -1,0 +1,140 @@
+{
+  "servers": {
+    "notes": [
+      {
+        "name": "search_notes",
+        "description": "Search the user's notes by keyword and return matching notes with titles and snippets.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string", "description": "Keywords to search for" },
+            "limit": { "type": "number", "description": "Maximum results" }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "create_note",
+        "description": "Create a new note with a title and body text.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "body": { "type": "string", "description": "Markdown content of the note" }
+          },
+          "required": ["title", "body"]
+        }
+      },
+      {
+        "name": "get_note",
+        "description": "Read the full content of a note by its id.",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "note_id": { "type": "string" } },
+          "required": ["note_id"]
+        }
+      }
+    ],
+    "drive": [
+      {
+        "name": "search_files",
+        "description": "Search the user's documents and files by keyword. Returns matching documents with titles and snippets.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string", "description": "Search keywords" },
+            "max_results": { "type": "number" }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "create_document",
+        "description": "Create a new document with a title and text content.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "content": { "type": "string" }
+          },
+          "required": ["title", "content"]
+        }
+      },
+      {
+        "name": "share_file",
+        "description": "Share a file with another person by email address and set their access level.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": { "type": "string" },
+            "email": { "type": "string" },
+            "role": { "type": "string", "enum": ["reader", "commenter", "writer"] }
+          },
+          "required": ["file_id", "email"]
+        }
+      }
+    ],
+    "chat": [
+      {
+        "name": "send_message",
+        "description": "Send a message to a person or a channel.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "to": { "type": "string", "description": "Person or channel to message" },
+            "text": { "type": "string" }
+          },
+          "required": ["to", "text"]
+        }
+      },
+      {
+        "name": "search_messages",
+        "description": "Search past messages and conversations by keyword.",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "query": { "type": "string" } },
+          "required": ["query"]
+        }
+      }
+    ],
+    "mail": [
+      {
+        "name": "send_email",
+        "description": "Send an email message to a person.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "to": { "type": "string" },
+            "subject": { "type": "string" },
+            "body": { "type": "string" }
+          },
+          "required": ["to", "subject", "body"]
+        }
+      },
+      {
+        "name": "search_inbox",
+        "description": "Search the inbox for emails matching a keyword query.",
+        "inputSchema": {
+          "type": "object",
+          "properties": { "query": { "type": "string" } },
+          "required": ["query"]
+        }
+      }
+    ],
+    "calendar": [
+      {
+        "name": "create_event",
+        "description": "Create a calendar event with a title, start time and attendees.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "start": { "type": "string", "description": "ISO 8601 start time" },
+            "attendees": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["title", "start"]
+        }
+      }
+    ]
+  }
+}

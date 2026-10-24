@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "notes": { "command": "node", "args": ["--import", "tsx", "fixture-server.ts", "notes"] },
+    "drive": { "command": "node", "args": ["--import", "tsx", "fixture-server.ts", "drive"] },
+    "chat": { "command": "node", "args": ["--import", "tsx", "fixture-server.ts", "chat"] },
+    "mail": { "command": "node", "args": ["--import", "tsx", "fixture-server.ts", "mail"] },
+    "calendar": { "command": "node", "args": ["--import", "tsx", "fixture-server.ts", "calendar"] }
+  }
+}

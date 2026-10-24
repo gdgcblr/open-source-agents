@@ -1,0 +1,44 @@
+{
+  "name": "mcp-tool-collision-linter",
+  "version": "0.1.0",
+  "description": "Find MCP tools from different servers that a model is likely to confuse, measure the misrouting rate, and suggest description rewrites.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "mcp-collide": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "demo": "tsx src/cli.ts --tools examples/colliding-tools.json",
+    "demo:live": "tsx src/cli.ts --config examples/mcp-config.json",
+    "demo:offline": "tsx src/cli.ts --tools examples/colliding-tools.json --provider offline",
+    "demo:live:offline": "tsx src/cli.ts --config examples/mcp-config.json --provider offline"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "llm",
+    "evaluation",
+    "tool-calling",
+    "linter"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
