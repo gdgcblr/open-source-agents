@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`scenario-smith`](scenario-smith/README.md) | Generates requirement-linked developer guidance and test scenarios using optional public or private GitHub repository context. | TypeScript, Google ADK, GitHub REST API | Community |
