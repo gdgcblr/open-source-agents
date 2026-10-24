@@ -74,3 +74,66 @@ Manual Demo Steps (For Reviewers & Judges)Launch streamlit run app.py.Inspect th
 Demo:
 
 <img width="1912" height="1005" alt="image" src="https://github.com/user-attachments/assets/f553021b-762f-4d71-8802-60d0b2a6b484" />
+
+# 📖 The Illustrated Primer
+
+> **An epistemic, adaptive Socratic tutor inspired by Neal Stephenson’s *The Diamond Age*, featuring dynamic student modeling and real-time LLM-as-a-Jury pedagogical alignment.**
+
+[![Model: Gemini 3.8 Flash](https://img.shields.io/badge/Model-Gemini%203.8%20Flash-blue.svg)](https://ai.google.dev/)
+[![Framework: Google ADK](https://img.shields.io/badge/Framework-Google%20ADK-orange.svg)](https://adk.dev/)
+[![Evaluation: LLM--as--a--Jury](https://img.shields.io/badge/Evaluation-Socratic%20Jury-green.svg)](#-llm-as-a-jury-pedagogical-evaluator)
+
+---
+
+## 💡 Executive Summary & Philosophy
+
+In Neal Stephenson’s *The Diamond Age*, a child is given the *Illustrated Primer*—an interactive book that doesn't just drill answers, but actively reshapes itself around who the child is becoming. 
+
+Standard LLM chat applications fail fundamentally as educational tutors:
+- **The Homework Solver Trap:** They immediately blurt out answers ($5 + 3 = 8$) rather than cultivating reasoning.
+- **Statelessness:** They do not maintain a longitudinal model of the child's *Zone of Proximal Development (ZPD)* across sessions.
+- **Unbounded Hallucination:** They lack dedicated outer-loop evaluation nodes to verify child safety and pedagogical warmth.
+
+**The Illustrated Primer** solves this by implementing a **Dual-Loop Supervisor architecture**:
+1. **The Socratic Engine (Inner Loop):** Translates curricular milestones into interactive allegorical micro-stories.
+2. **Autonomous Epistemic Memory (State Mutation):** Uses function-calling tools to modify learning ledgers without human intervention.
+3. **The Socratic Jury (Outer Loop):** An independent judge model evaluating pedagogical rigor and student mastery on every interaction.
+
+---
+
+## 🏛️ System Architecture
+
+```text
+                             [ Child / Student Input ]
+                                        |
+                                        v
+                            +-----------------------+
+        Reads Profile       |  Socratic Supervisor  |
++=========================> |  (Gemini 3.8 Flash)   |
+|                           +-----------+-----------+
+|                                       |
+|               +-----------------------+-----------------------+
+|               |                                               |
+|               v                                               v
+|      [ Tool: update_ledger ]                         [ Story Weaver Agent ]
+|      (Detects Mastery & Modifies)                    (Generates Allegories)
+|               |                                               |
+|               +-----------------------+-----------------------+
+|                                       |
+|                                       v
+|                           [ Socratic Child Response ]
+|                                       |
+|                                       v
+|                       +-------------------------------+
+|                       |    LLM-as-a-Jury Evaluator    |
+|                       | (Validates Rigor & Warmth)    |
+|                       +---------------+---------------+
+|                                       |
++=======================================+  (Mutates Learner Profile on disk)
+                                        |
+                                        v
+                          [ Dynamic Streamlit UI Update ]
+
+
+✨ Core Engineering Innovations1. Persistent Epistemic Student ModelingUnlike generic agents that rely purely on context-window history, the Primer persists a structured cognitive profile (student_profile.json). It isolates:Active Struggles: Concepts currently in the student's frontier (e.g., "the 'th' blend", "subtraction from 10").Mastered Skills: Verified competencies systematically promoted out of the active struggle ledger.Narrative Anchors: Episodic interests used to contextualize abstract math/reading puzzles.2. Autonomous State Mutation via Function CallingWhen a child demonstrates comprehension, the Primer does not merely say "Good job." It autonomously invokes the update_learning_ledger tool:Dynamically moves concepts from struggles $\rightarrow$ mastered.Appends qualitative audit logs directly to the persistent store.3. ⚖️ LLM-as-a-Jury Pedagogical EvaluatorEvery conversational exchange is audited asynchronously by an isolated judge node (jury.py) using structured schema enforcement:Socratic Rigor (1–5): Verifies that the model guided through questions and sensory clues rather than revealing solutions.Pedagogical Warmth (1–5): Ensures patient, encouraging, age-appropriate prose.Mastery Verification (Boolean): Deterministically asserts whether the child solved the obstacle independently.
+
