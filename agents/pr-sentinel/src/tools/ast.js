@@ -47,6 +47,11 @@ export const CODE_INSPECTION_RULES = [
 export function analyzeCodeQuality(content, filePath = 'unknown') {
   if (!content || typeof content !== 'string') return [];
 
+  // Only scan actual executable code files, skip markdown docs and tests
+  const isCodeFile = /\.(?:js|mjs|cjs|ts|py|go|rs)$/i.test(filePath);
+  const isTestOrDoc = filePath.includes('test') || filePath.endsWith('.md');
+  if (!isCodeFile || isTestOrDoc) return [];
+
   const findings = [];
   const lines = content.split('\n');
 

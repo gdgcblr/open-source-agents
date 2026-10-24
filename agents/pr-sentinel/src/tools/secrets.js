@@ -63,10 +63,14 @@ export function scanContentForSecrets(content, filePath = 'unknown') {
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     const lineText = lines[lineIndex];
 
-    // Skip comment lines in template/example files or explicit tests if annotated
-    if (filePath.endsWith('.env.example') || filePath.includes('.test.') || filePath.includes('template/')) {
-      // Don't flag placeholders like your_api_key_here
-      if (/placeholder|your_.*_key|<your-.*>|sk-demo|AIzaSyDemo/i.test(lineText)) {
+    // Skip test fixtures, tests directory, and example files
+    if (
+      filePath.includes('/tests/') ||
+      filePath.includes('\\tests\\') ||
+      filePath.endsWith('.env.example') ||
+      filePath.includes('template/')
+    ) {
+      if (!filePath.endsWith('test.js')) {
         continue;
       }
     }
