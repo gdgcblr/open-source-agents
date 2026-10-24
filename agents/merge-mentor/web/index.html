@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>merge-mentor</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #e2e6eb;
+    --accent: #4f46e5; --accent-text: #ffffff; --green: #17803d; --green-bg: #e3f6e9;
+    --amber: #8a5a00; --amber-bg: #fdf1d6; --red: #b42318; --red-bg: #fde8e6;
+    --code-bg: #f0f2f5; --add: #e3f6e9; --del: #fde8e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101319; --card: #181c24; --text: #e8ebf0; --muted: #98a2b3; --line: #2a303b;
+      --accent: #8b87ff; --accent-text: #10131a; --green: #5fd38a; --green-bg: #12301f;
+      --amber: #f0c36b; --amber-bg: #38290c; --red: #ff8f85; --red-bg: #3b1714;
+      --code-bg: #0e1117; --add: #12301f; --del: #3b1714;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+  header h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--card); }
+  .chip.warn { color: var(--amber); background: var(--amber-bg); border-color: transparent; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .controls { margin-top: 20px; display: grid; gap: 14px; }
+  label.t { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pill { border: 1px solid var(--line); background: transparent; color: var(--text); padding: 6px 12px; border-radius: 999px; cursor: pointer; font: inherit; }
+  .pill:hover { border-color: var(--accent); }
+  .pill[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  input[type=text] { border: 1px solid var(--line); background: var(--bg); color: var(--text); padding: 6px 12px; border-radius: 999px; font: inherit; width: 160px; }
+  button.go { background: var(--accent); color: var(--accent-text); border: 0; padding: 10px 20px; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.go:disabled { opacity: .55; cursor: progress; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  main { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 16px; margin-top: 20px; align-items: start; }
+  @media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); } }
+  main > section, .panel, .step, .issue { min-width: 0; }
+  .issue .title, .step, .detail h2, .detail .sub, .notice { overflow-wrap: anywhere; }
+  h2.sec { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 10px; }
+  .issue { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; font: inherit; color: inherit; }
+  .issue:hover { border-color: var(--accent); }
+  .issue[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+  .issue .repo { font-size: 12px; color: var(--muted); }
+  .issue .title { font-weight: 600; margin: 2px 0 8px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); }
+  .badge { padding: 2px 8px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+  .b-ok { background: var(--green-bg); color: var(--green); }
+  .b-claimed { background: var(--amber-bg); color: var(--amber); }
+  .b-taken { background: var(--red-bg); color: var(--red); }
+  .bar { width: 64px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; display: inline-block; vertical-align: middle; }
+  .bar > i { display: block; height: 100%; background: var(--green); }
+  .bar.mid > i { background: #d99a00; } .bar.low > i { background: var(--red); }
+  .detail .panel > h2 { margin: 0 0 4px; font-size: 20px; letter-spacing: -0.01em; }
+  .detail .sub { color: var(--muted); margin-bottom: 14px; }
+  .detail .sub a { color: var(--accent); }
+  .notice { padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
+  .steps { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); margin: 8px 0 0; padding-left: 0; list-style: none; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: s .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } }
+  .step { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: var(--card); }
+  .step h3 { margin: 0 0 6px; font-size: 15px; display: flex; gap: 8px; align-items: center; }
+  .step h3 .n { background: var(--accent); color: var(--accent-text); width: 22px; height: 22px; border-radius: 50%; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .step p { margin: 6px 0; } .step ul, .step ol { margin: 6px 0; padding-left: 22px; }
+  .step blockquote { margin: 6px 0; padding: 4px 12px; border-left: 3px solid var(--accent); color: var(--muted); }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .code { position: relative; margin: 8px 0; }
+  .code pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 12px; overflow-x: auto; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .code pre code { background: none; padding: 0; font: inherit; }
+  .code .l { display: block; white-space: pre; } .code .add { background: var(--add); } .code .del { background: var(--del); } .code .hunk { color: var(--muted); }
+  .copy { position: absolute; top: 6px; right: 6px; font-size: 11px; border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+  .empty { color: var(--muted); text-align: center; padding: 36px 12px; }
+  .err { background: var(--red-bg); color: var(--red); padding: 12px; border-radius: 8px; }
+  footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>merge-mentor</h1>
+    <p>From "I know TypeScript" to your first merged PR. Pick your language and level, choose an issue, and get the explanation and fix plan.</p>
+    <div class="chips" id="status"></div>
+  </header>
+
+  <section class="panel controls" aria-label="Search">
+    <div>
+      <label class="t" id="lang-label">Language you are good at</label>
+      <div class="row" role="group" aria-labelledby="lang-label" id="langs"></div>
+    </div>
+    <div>
+      <label class="t" id="level-label">Your level</label>
+      <div class="row" role="group" aria-labelledby="level-label" id="levels"></div>
+    </div>
+    <div class="row"><button class="go" id="find" type="button">Find issues</button><span id="find-status" role="status" aria-live="polite" class="chip" hidden></span></div>
+  </section>
+
+  <main>
+    <section aria-label="Issues">
+      <h2 class="sec">Issues</h2>
+      <div id="list"><div class="panel empty">Choose a language and level, then press <strong>Find issues</strong>.</div></div>
+    </section>
+    <section aria-label="Explanation" class="detail" id="detail" aria-live="polite">
+      <h2 class="sec">Explanation</h2>
+      <div class="panel empty">Select an issue to see what it means, where it happens, and how to fix it.</div>
+    </section>
+  </main>
+
+  <footer>merge-mentor only reads public GitHub data. It never edits code or opens pull requests: you review the suggested fix and raise the PR yourself.</footer>
+</div>
+
+<script>
+const LANGS = ['typescript', 'javascript', 'python', 'go', 'rust', 'java', 'c++', 'ruby'];
+const LEVELS = ['beginner', 'intermediate', 'advanced'];
+const $ = (id) => document.getElementById(id);
+const state = { lang: 'typescript', level: 'beginner', issues: [], current: null, source: null, demo: false, page: 1, hasMore: false, hidden: 0 };
+
+function remember(key, value) { try { localStorage.setItem('mm.' + key, value); } catch {} }
+function recall(key) { try { return localStorage.getItem('mm.' + key); } catch { return null; } }
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+/* Tiny safe Markdown renderer: everything is escaped before any tag is added. */
+function renderBlocks(text) {
+  const lines = text.split('\n'); let html = ''; let list = null; let para = [];
+  const flushPara = () => { if (para.length) { html += '<p>' + inline(para.join(' ')) + '</p>'; para = []; } };
+  const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fence = line.match(/^\s*```(\w*)/);
+    if (fence) {
+      flushPara(); closeList();
+      const body = []; i++;
+      while (i < lines.length && !/^\s*```/.test(lines[i])) body.push(lines[i++]);
+      const isDiff = fence[1] === 'diff';
+      const rows = body.map((l) => {
+        const cls = isDiff ? (l.startsWith('+') && !l.startsWith('+++') ? 'add' : l.startsWith('-') && !l.startsWith('---') ? 'del' : l.startsWith('@@') ? 'hunk' : '') : '';
+        return `<span class="l ${cls}">${esc(l) || ' '}</span>`;
+      }).join('');
+      html += `<div class="code"><button class="copy" type="button" data-copy>Copy</button><pre><code>${rows}</code></pre></div>`;
+      continue;
+    }
+    const bullet = line.match(/^\s*[-*]\s+(.*)/); const num = line.match(/^\s*\d+[.)]\s+(.*)/); const quote = line.match(/^\s*>\s?(.*)/);
+    if (bullet || num) {
+      flushPara(); const tag = bullet ? 'ul' : 'ol';
+      if (list !== tag) { closeList(); html += `<${tag}>`; list = tag; }
+      html += '<li>' + inline((bullet || num)[1]) + '</li>';
+    } else if (quote) { flushPara(); closeList(); html += '<blockquote>' + inline(quote[1]) + '</blockquote>'; }
+    else if (!line.trim()) { flushPara(); closeList(); }
+    else { closeList(); para.push(line.trim()); }
+  }
+  flushPara(); closeList(); return html;
+}
+
+function renderExplanation(markdown) {
+  const parts = markdown.split(/^##\s+/m).filter((p) => p.trim());
+  if (parts.length < 2) return `<div class="step">${renderBlocks(markdown)}</div>`;
+  return parts.map((part) => {
+    const nl = part.indexOf('\n'); const head = (nl < 0 ? part : part.slice(0, nl)).trim(); const body = nl < 0 ? '' : part.slice(nl + 1);
+    const m = head.match(/^(\d+)\.\s*(.*)/);
+    return `<div class="step"><h3>${m ? `<span class="n">${esc(m[1])}</span>` : ''}${esc(m ? m[2] : head)}</h3>${renderBlocks(body)}</div>`;
+  }).join('');
+}
+
+function buildControls() {
+  const langs = $('langs'); const levels = $('levels');
+  const known = LANGS.includes(state.lang);
+  langs.innerHTML = LANGS.map((l) => `<button class="pill" type="button" data-lang="${esc(l)}" aria-pressed="${l === state.lang}">${esc(l)}</button>`).join('')
+    + `<input type="text" id="other" placeholder="other…" aria-label="Other language" value="${known ? '' : esc(state.lang)}">`;
+  levels.innerHTML = LEVELS.map((l) => `<button class="pill" type="button" data-level="${l}" aria-pressed="${l === state.level}">${l}</button>`).join('');
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.lang) { state.lang = t.dataset.lang; $('other').value = ''; syncPressed('lang'); }
+  else if (t.dataset.level) { state.level = t.dataset.level; syncPressed('level'); }
+  else if (t.dataset.copy !== undefined) {
+    const text = [...t.parentElement.querySelectorAll('.l')].map((n) => n.textContent.replace(/^ $/, '')).join('\n');
+    navigator.clipboard?.writeText(text).then(() => { t.textContent = 'Copied'; setTimeout(() => (t.textContent = 'Copy'), 1200); });
+  } else if (t.id === 'more') loadMore();
+  else if (t.dataset.key) openIssue(t.dataset.key);
+});
+function syncPressed(kind) {
+  document.querySelectorAll(`[data-${kind}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[kind] === state[kind])));
+}
+document.addEventListener('input', (e) => {
+  if (e.target.id !== 'other') return;
+  const v = e.target.value.trim();
+  if (v) { state.lang = v; document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', 'false')); }
+});
+
+function dots(n) { return n ? '●'.repeat(n) + '○'.repeat(5 - n) : '–'; }
+function card(i) {
+  const cls = i.status === 'Available' ? 'b-ok' : i.status === 'Claimed' ? 'b-claimed' : 'b-taken';
+  const label = i.status === 'Available' ? '🟢 Available' : i.status === 'Claimed' ? '🟡 Claimed' : '🔴 Taken';
+  const bar = i.score >= 70 ? '' : i.score >= 45 ? 'mid' : 'low';
+  return `<button class="issue" type="button" data-key="${esc(i.key)}" aria-current="${state.current === i.key}">
+    <div class="repo">${esc(i.repo)} #${i.number} · ★ ${i.stars.toLocaleString()}</div>
+    <div class="title">${esc(i.title)}</div>
+    <div class="meta">
+      <span class="badge ${cls}">${label}</span>
+      <span title="Merge Chance">Merge chance <span class="bar ${bar}"><i style="width:${i.score}%"></i></span> ${i.score}</span>
+      <span title="${esc(i.difficultyReason || 'Difficulty')}">Difficulty ${dots(i.difficulty)}</span>
+    </div></button>`;
+}
+function renderList() {
+  const head = state.issues.length
+    ? `<div class="chip" style="margin-bottom:10px">${state.issues.length} free issue${state.issues.length === 1 ? '' : 's'}${state.hidden ? ` · ${state.hidden} hidden (already have an open PR)` : ''}</div>`
+    : '';
+  const empty = '<div class="panel empty">No free issues on this page. ' + (state.hasMore ? 'Try loading more.' : 'Try another level.') + '</div>';
+  const more = state.hasMore ? '<button class="pill" type="button" id="more" style="width:100%;margin-top:4px;padding:10px">Load more issues</button>' : '';
+  $('list').innerHTML = head + (state.issues.length ? state.issues.map(card).join('') : empty) + more;
+}
+
+async function fetchPage(page) {
+  const res = await fetch(`/api/issues?lang=${encodeURIComponent(state.lang)}&level=${state.level}&page=${page}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function findIssues() {
+  const btn = $('find'); const st = $('find-status');
+  closeStream(); state.current = null; state.issues = []; state.page = 1; state.hidden = 0; state.hasMore = false;
+  btn.disabled = true; st.hidden = false; st.innerHTML = '<span class="spin"></span>Searching GitHub, checking claims and merge history… (about 10-20s)';
+  $('list').innerHTML = ''; $('detail').innerHTML = '<h2 class="sec">Explanation</h2><div class="panel empty">Select an issue to see what it means, where it happens, and how to fix it.</div>';
+  try {
+    const data = await fetchPage(1);
+    state.issues = data.issues; state.hidden = data.hiddenTaken || 0; state.hasMore = Boolean(data.hasMore); renderList();
+    remember('lang', state.lang); remember('level', state.level);
+    st.textContent = `${data.issues.length} free issues found`;
+  } catch (err) {
+    $('list').innerHTML = `<div class="err">${esc(err.message)}</div>`; st.hidden = true;
+  } finally { btn.disabled = false; }
+}
+
+async function loadMore() {
+  const btn = $('more'); if (!btn) return;
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Loading…';
+  try {
+    const data = await fetchPage(state.page + 1);
+    state.page += 1; state.hidden += data.hiddenTaken || 0; state.hasMore = Boolean(data.hasMore);
+    const have = new Set(state.issues.map((i) => i.key));
+    state.issues = state.issues.concat(data.issues.filter((i) => !have.has(i.key)));
+    renderList();
+  } catch (err) { btn.disabled = false; btn.textContent = 'Load more issues'; btn.insertAdjacentHTML('afterend', `<div class="err" style="margin-top:8px">${esc(err.message)}</div>`); }
+}
+
+function closeStream() { if (state.source) { state.source.close(); state.source = null; } }
+
+function openIssue(key) {
+  const issue = state.issues.find((i) => i.key === key); if (!issue) return;
+  closeStream(); state.current = key; renderList();
+  const notice = issue.status === 'Taken'
+    ? `<div class="notice b-taken">Someone already has an open pull request for this issue (${esc(issue.reason || '')}). Consider picking another one.</div>`
+    : issue.status === 'Claimed' ? `<div class="notice b-claimed">Someone recently asked to work on this (${esc(issue.reason || '')}). Check the thread before you start.</div>` : '';
+  const head = `<h2 class="sec">Explanation</h2><div class="panel"><h2>${esc(issue.title)}</h2>
+    <div class="sub">${esc(issue.repo)} #${issue.number} · <a href="${esc(issue.url)}" target="_blank" rel="noopener noreferrer">open on GitHub</a></div>${notice}<div id="out">
+    <div><span class="spin"></span>Mentor is reading the code…</div><ul class="steps" id="steps"></ul></div></div>`;
+  $('detail').innerHTML = head;
+  if (window.innerWidth <= 860) $('detail').scrollIntoView({ behavior: 'smooth' });
+
+  const es = new EventSource(`/api/explain?repo=${encodeURIComponent(issue.repo)}&number=${issue.number}`);
+  state.source = es;
+  es.addEventListener('step', (e) => { const li = document.createElement('li'); li.textContent = '→ ' + JSON.parse(e.data); $('steps')?.appendChild(li); });
+  es.addEventListener('done', (e) => {
+    const { markdown, ai } = JSON.parse(e.data); es.close();
+    $('out').innerHTML = (ai ? '' : '<div class="notice b-claimed">No Gemini key is set, so this is a basic pointer only.</div>') + renderExplanation(markdown);
+  });
+  es.addEventListener('error', (e) => {
+    if (e.data) { $('out').innerHTML = `<div class="err">${esc(JSON.parse(e.data).message)}</div>`; }
+    else if (es.readyState === EventSource.CLOSED || es.readyState === EventSource.CONNECTING) { if ($('steps')) $('out').innerHTML = '<div class="err">Connection lost. Please try again.</div>'; }
+    es.close();
+  });
+}
+
+async function init() {
+  state.lang = recall('lang') || 'typescript'; state.level = recall('level') || 'beginner';
+  if (!LEVELS.includes(state.level)) state.level = 'beginner';
+  try {
+    const s = await (await fetch('/api/status')).json();
+    state.demo = s.demo;
+    const chips = [];
+    if (s.demo) { chips.push('<span class="chip warn">Demo mode: recorded data (typescript · beginner)</span>'); state.lang = 'typescript'; state.level = 'beginner'; }
+    chips.push(s.ai ? `<span class="chip">AI mentor on</span>` : '<span class="chip warn">No Gemini key: scores only</span>');
+    if (!s.demo && !s.githubToken) chips.push('<span class="chip warn">No GitHub token: 60 requests/hour</span>');
+    $('status').innerHTML = chips.join('');
+  } catch {}
+  buildControls();
+  if (state.demo) {
+    // Demo mode replays one recorded search, so lock the other choices instead of letting them fail.
+    document.querySelectorAll('[data-lang]:not([data-lang="typescript"]), [data-level]:not([data-level="beginner"])').forEach((b) => { b.disabled = true; b.title = 'Not available in demo mode'; b.style.opacity = '.45'; b.style.cursor = 'not-allowed'; });
+    $('other').disabled = true; $('other').placeholder = 'live mode only';
+  }
+  $('find').addEventListener('click', findIssues);
+}
+init();
+</script>
+</body>
+</html>
