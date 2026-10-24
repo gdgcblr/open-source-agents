@@ -1,0 +1,19 @@
+# Enable or disable checks here. First ESCALATE stops the run.
+# How to add your own: see README → “Customize gates and evals”.
+
+gates:
+  - required_slots
+  - known_places
+  - vague_place
+  - accessibility
+  - peak_hour          # enable after dropping extensions/peak_hour.py
+
+evals:
+  - tool_available
+  - tool_faithfulness
+  - memory_consistency
+  - goal_alignment
+
+# Extra folders of *.py plugins (each class needs name, kind, run).
+extensions:
+  - extensions

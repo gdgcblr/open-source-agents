@@ -1,0 +1,4 @@
+# Core agent uses the standard library plus optional extras.
+python-dotenv>=1.0.0
+# Optional Hugging Face adapter:
+# datasets>=2.20.0
