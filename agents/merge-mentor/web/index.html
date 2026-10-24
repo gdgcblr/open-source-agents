@@ -132,7 +132,8 @@ const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\
 /* Tiny safe Markdown renderer: everything is escaped before any tag is added. */
 function renderBlocks(text) {
   const lines = text.split('\n'); let html = ''; let list = null; let para = [];
-  const flushPara = () => { if (para.length) { html += '<p>' + inline(para.join(' ')) + '</p>'; para = []; } };
+  // A paragraph wrapped in _underscores_ is italic (anchored to the whole paragraph, so snake_case names are safe).
+  const flushPara = () => { if (para.length) { const t = para.join(' '); html += '<p>' + (/^_[^_].*[^_]_$/.test(t) ? '<em>' + inline(t.slice(1, -1)) + '</em>' : inline(t)) + '</p>'; para = []; } };
   const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -342,7 +343,7 @@ async function init() {
     const s = await (await fetch('/api/status')).json();
     state.demo = s.demo;
     const chips = [];
-    if (s.demo) { chips.push('<span class="chip warn">Demo mode: recorded data (one typescript project)</span>'); state.lang = 'typescript'; state.level = 'beginner'; }
+    if (s.demo) { chips.push('<span class="chip warn">Demo mode: recorded data (first 5 typescript projects)</span>'); state.lang = 'typescript'; state.level = 'beginner'; }
     chips.push(s.ai ? `<span class="chip">AI mentor on</span>` : '<span class="chip warn">No Gemini key: scores only</span>');
     if (!s.demo && !s.githubToken) chips.push('<span class="chip warn">No GitHub token: 60 requests/hour</span>');
     $('status').innerHTML = chips.join('');
