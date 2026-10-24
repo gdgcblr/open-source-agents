@@ -65,5 +65,47 @@
     "log": "FAILED tests/test_checkout.py::test_declines_expired_card - AssertionError: assert 200 == 401",
     "expected_failure_type": "test-failure",
     "required_signals": ["assertion-mismatch"]
+  },
+  {
+    "id": "missing-configuration",
+    "log": "ConfigurationError: environment variable PAYMENTS_URL not set",
+    "expected_failure_type": "configuration",
+    "required_signals": ["configuration-missing-or-invalid"]
+  },
+  {
+    "id": "permission-denied",
+    "log": "EACCES: permission denied, open '/workspace/output/report.json'",
+    "expected_failure_type": "permissions-or-access",
+    "required_signals": ["permission-denied"]
+  },
+  {
+    "id": "tls-network-failure",
+    "log": "SSL certificate verify failed while connecting to api.example.test",
+    "expected_failure_type": "network-or-tls",
+    "required_signals": ["network-resolution-or-tls"]
+  },
+  {
+    "id": "resource-exhaustion",
+    "log": "Container terminated: OOMKilled; memory limit exceeded",
+    "expected_failure_type": "resource-exhaustion",
+    "required_signals": ["resource-limit"]
+  },
+  {
+    "id": "schema-validation-failure",
+    "log": "ValidationError: schema validation failed for request payload",
+    "expected_failure_type": "data-or-schema",
+    "required_signals": ["data-validation-or-migration"]
+  },
+  {
+    "id": "ci-runner-failure",
+    "log": "CI job failed: runner lost while container exited with code 137",
+    "expected_failure_type": "container-or-ci",
+    "required_signals": ["container-or-runner-failure"]
+  },
+  {
+    "id": "concurrency-failure",
+    "log": "Deadlock detected while waiting for database lock",
+    "expected_failure_type": "concurrency-or-state",
+    "required_signals": ["deadlock-or-race"]
   }
 ]

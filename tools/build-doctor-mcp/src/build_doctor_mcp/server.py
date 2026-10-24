@@ -6,7 +6,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from defusedxml import ElementTree as SafeElementTree
 from mcp.server.fastmcp import FastMCP
@@ -98,6 +98,69 @@ _RULES: tuple[dict[str, Any], ...] = (
         "cause": "The output contains an exception or runtime termination signal.",
         "remediation": "Inspect the first causal stack-trace frame and the inputs immediately before it.",
         "missing": "The complete stack trace and runtime inputs are incomplete.",
+    },
+    {
+        "failure_type": "configuration",
+        "signal_id": "configuration-missing-or-invalid",
+        "pattern": re.compile(r"missing configuration|invalid configuration|environment variable .* (?:not set|missing)|keyerror|config(?:uration)?error", re.I),
+        "weight": 4,
+        "cause": "A required configuration value is missing or invalid.",
+        "remediation": "Compare the required configuration with the sanitized environment template and validate formats without exposing secrets.",
+        "missing": "The required variable name, expected format, and sanitized runtime configuration are incomplete.",
+    },
+    {
+        "failure_type": "permissions-or-access",
+        "signal_id": "permission-denied",
+        "pattern": re.compile(r"permission denied|access denied|eacces|operation not permitted|forbidden", re.I),
+        "weight": 4,
+        "cause": "The process or identity lacks access to a requested file, resource, or service.",
+        "remediation": "Identify the exact resource and effective identity, then review the minimum required permission without disabling security controls.",
+        "missing": "The resource path, effective identity, and policy decision are not present.",
+    },
+    {
+        "failure_type": "network-or-tls",
+        "signal_id": "network-resolution-or-tls",
+        "pattern": re.compile(r"dns|name resolution|network unreachable|connection reset|ssl(?:error| certificate)|certificate verify failed|tls handshake", re.I),
+        "weight": 4,
+        "cause": "A network, DNS, TLS, or certificate validation problem may be blocking communication.",
+        "remediation": "Check the sanitized endpoint, DNS result, certificate chain, proxy, and connectivity from the same runtime environment.",
+        "missing": "The endpoint, network environment, certificate details, and correlation context are incomplete.",
+    },
+    {
+        "failure_type": "resource-exhaustion",
+        "signal_id": "resource-limit",
+        "pattern": re.compile(r"out of memory|oomkilled|disk full|no space left|too many open files|quota exceeded|resource exhausted", re.I),
+        "weight": 4,
+        "cause": "The process or environment reached a memory, storage, file, or service quota limit.",
+        "remediation": "Measure the affected resource and usage trend, then reduce scope or adjust an approved limit after review.",
+        "missing": "The resource limit, current usage, process size, and host/container context are incomplete.",
+    },
+    {
+        "failure_type": "data-or-schema",
+        "signal_id": "data-validation-or-migration",
+        "pattern": re.compile(r"json(?:decode|parse)|schema validation|validationerror|deserialization|migration failed|invalid (?:input|payload|format)", re.I),
+        "weight": 4,
+        "cause": "The input data, serialized shape, schema, or migration state is incompatible with the consumer.",
+        "remediation": "Compare the sanitized payload and schema versions, then validate the smallest failing fixture or migration step.",
+        "missing": "The schema version, sanitized payload, migration state, and expected shape are incomplete.",
+    },
+    {
+        "failure_type": "container-or-ci",
+        "signal_id": "container-or-runner-failure",
+        "pattern": re.compile(r"docker build failed|image pull failed|container exited|runner lost|workspace cleanup failed|ci job failed", re.I),
+        "weight": 4,
+        "cause": "The container, CI runner, workspace, or image lifecycle failed before the intended task completed.",
+        "remediation": "Inspect the first runner/container error, image digest, workspace limits, and the exact CI step that failed.",
+        "missing": "The runner image, CI step metadata, environment, and first container error are incomplete.",
+    },
+    {
+        "failure_type": "concurrency-or-state",
+        "signal_id": "deadlock-or-race",
+        "pattern": re.compile(r"deadlock|race condition|data race|lock timeout|concurrent modification|optimistic lock", re.I),
+        "weight": 4,
+        "cause": "The failure indicates conflicting concurrent access or an invalid state transition.",
+        "remediation": "Capture the involved operation order and state transition, then isolate the smallest reproducible concurrent case.",
+        "missing": "The thread/task timeline, shared resource, and state transition history are incomplete.",
     },
 )
 
