@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tool-schema-lint"
+version = "0.1.0"
+description = "Lint LLM tool / function definitions (MCP, OpenAI, Gemini, Anthropic) for errors and provider incompatibilities."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []  # standard library only
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+tool-schema-lint = "tool_schema_lint.cli:main"
+
+[tool.setuptools]
+packages = ["tool_schema_lint", "tool_schema_lint.rules"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
