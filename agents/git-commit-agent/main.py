@@ -594,9 +594,10 @@ def uninstall_git_hook() -> bool:
 # Git Execution Helpers
 # ---------------------------------------------------------------------------
 
-def is_git_repository() -> bool:
-    """Checks whether the current working directory is inside a git working tree."""
-    res = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True)
+def is_git_repository(cwd: Optional[str] = None) -> bool:
+    """Checks whether the specified directory (or current working directory) is inside a git working tree."""
+    cmd = ["git", "rev-parse", "--is-inside-work-tree"]
+    res = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
     return res.returncode == 0 and res.stdout.strip() == "true"
 
 

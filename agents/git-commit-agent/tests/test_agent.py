@@ -46,8 +46,12 @@ class TestGitCommitAgent(unittest.TestCase):
         self.assertIn("=" * 64, box)
 
     def test_is_git_repository(self):
-        # Current workspace is a git repository
-        self.assertTrue(main.is_git_repository())
+        # 1. Directory of this test file is guaranteed to be inside the git repository
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        self.assertTrue(main.is_git_repository(repo_dir))
+
+        # 2. System root directory is not a git repository
+        self.assertFalse(main.is_git_repository("/"))
 
     def test_conventional_commit_syntax(self):
         conv_regex = r"^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\([a-zA-Z0-9_\-\./]+\))?!?: [^\n\r]+(?:\n\n.*)?$"
