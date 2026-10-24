@@ -1,0 +1,4 @@
+# Evaluation-only deps. Install in a separate venv: ragas 0.4.x imports
+# langchain_community.chat_models.vertexai, which is incompatible with the
+# langchain-core 1.x that langgraph requires in requirements.txt.
+ragas>=0.2.0
