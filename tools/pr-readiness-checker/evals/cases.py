@@ -61,7 +61,7 @@ CASES: list[Case] = [
     Case("template-leftovers", "README still has template filler.", {"D3": "warn"},
          files=lambda rng: {"README.md": fx.GOOD_README.replace("## Technical Stack\n",
                                                                 "## Technical Stack\n" + TEMPLATE_LEFTOVER)}),
-    Case("unfilled-template", "README is the untouched template.", {"D3": "warn"},
+    Case("unfilled-template", "README is the untouched template: blocking (PR #49).", {"D3": "fail"},
          files=lambda rng: {"README.md": fx.template_readme()}),
     Case("placeholder-quoted-in-code", "Quoting template text inside a code block (e.g. sample output) is fine.",
          {}, files=lambda rng: {"README.md": fx.GOOD_README.replace(
@@ -89,6 +89,10 @@ CASES: list[Case] = [
          files=lambda rng: {"README.md": fx.GOOD_README.replace(
              "## Known Limitations\n",
              "## Known Limitations\nIt expects projects at `agents/<project-slug>/` or `tools/<project-slug>/`.\n")}),
+    Case("pr-slug-in-sample-output", "Sample output in a code block may quote `agents/<project-slug>/` (PR #7).",
+         {}, files=lambda rng: {"README.md": fx.GOOD_README.replace(
+             "Decisions: ship v2 on Friday.",
+             "- ERROR Move the project to `agents/<project-slug>/` or `tools/<project-slug>/`.")}),
     Case("pr-quick-start-heading", "'Quick Start' is an installation section (PRs #1, #18).", {},
          files=lambda rng: {"README.md": fx.GOOD_README.replace("## Installation & Setup", "## 🚀 Quick Start")}),
     Case("pr-quickstart-guide-heading", "'Quickstart Guide' is an installation section (PR #18).", {},

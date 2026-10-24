@@ -1,11 +1,12 @@
 # Evals
 
-Three suites, from cheapest to most expensive. Run them from the `tools/pr-readiness-checker` folder.
+Four suites, from cheapest to most expensive. Run them from the `tools/pr-readiness-checker` folder.
 
 | Suite | Command | Needs | What it measures | Target |
 | :--- | :--- | :--- | :--- | :--- |
 | Rule checks | `python -m evals.run_checks_eval` | nothing | Each labelled case in `cases.py` gets exactly the expected statuses; precision/recall per check | every case correct |
 | Secret scanner | `python -m evals.run_secrets_eval` | nothing | Generated keys of every supported type in realistic contexts, plus look-alike decoys (hashes, UUIDs, base64, placeholders) | recall 1.00 per provider, 0 error-level false positives, generic recall >= 0.90 |
+| Real PRs | `python -m evals.run_real_prs_eval` | git + network | Hand-checked PRs from the upstream repo, pinned to exact commits in `real_prs.toml`, re-fetched and re-checked | every pinned PR matches exactly |
 | AI README review | `python -m evals.run_ai_eval` | `GEMINI_API_KEY` | Agreement with labelled READMEs, consistency across repeated runs, schema-valid rate, prompt-injection resistance, latency and tokens | agreement >= 0.80, std dev <= 0.50, valid 1.00, injection resisted |
 
 The first two also run inside `pytest` (`tests/test_evals.py`), so they act as regression tests.
@@ -21,6 +22,24 @@ like `.env` or `.venv/` actually exist on disk where a test needs them.
 ## Adding a case
 When prcheck misfires on a real contribution, add a `Case` to `cases.py` that reproduces it, with the
 statuses you expect, and fix the check until `python -m evals.run_checks_eval` passes again.
+
+## Real-PR regression eval
+`real_prs.toml` pins PRs from gdgcblr/open-source-agents to exact commit SHAs, with the checks that should
+flag each project folder, the READY / NOT READY verdict, and why (from hand review). The runner fetches each
+commit into `refs/prcheck/pr/<n>`, checks it out in a temporary worktree, runs prcheck against the pinned
+base commit, and compares. It only reads; contributor code is never run. A commit that can no longer be
+fetched (e.g. after a force-push) is reported as unavailable, not as a failure.
+
+To add PRs, print draft entries, review each PR yourself, then paste the entry in with `reviewed` and `why`
+filled in:
+
+```bash
+python -m evals.run_real_prs_eval --capture 80 81
+```
+
+`tests/test_real_prs.py` checks the manifest offline (valid SHAs, known check ids, `ready` consistent with
+`expect`, a reason for every entry). Clean up the fetched refs with
+`git for-each-ref --format="delete %(refname)" refs/prcheck | git update-ref --stdin`.
 
 ## AI labels
 `readme_golden/labels.toml` currently holds **seed labels** written while building the tool. They make the

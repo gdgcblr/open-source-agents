@@ -152,14 +152,15 @@ FAIL S2 Folder name is lowercase kebab-case
        - 'My_Agent' is not lowercase kebab-case; try 'my-agent'.
 FAIL S3 Folder name is descriptive, not generic
        - 'My_Agent' is too generic; pick a name that says what the project does.
+FAIL D3 No leftover template text
+       - README is still mostly the template. 32 line(s) still contain template text: line 1: "# [Project
+Name]"; ... (README.md:1)
 FAIL M1 Dependencies are declared in a manifest
        - No dependency manifest found (requirements.txt, pyproject.toml, package.json, go.mod, ...).
 FAIL X1 No secret or credential files
        - '.env' must not be committed; delete it or add it to .gitignore. (.env)
 FAIL X2 No API keys or tokens in file contents
        - Google API key found (AIza...LOz). Revoke it and load it from an environment variable. (config.py:1)
-WARN D3 No leftover template text
-       - 39 line(s) still contain template text: line 1: "# [Project Name]"; ... (README.md:1)
 SKIP M2 Dependency versions are pinned
        No manifest to inspect (see M1).
 SKIP G1 Changes stay inside the project folder
@@ -167,7 +168,7 @@ SKIP G1 Changes stay inside the project folder
 ...
 PASS 7 check(s): S1, S4, D1, D2, D4, X3, X4
 
-Result: NOT READY | 5 error(s), 1 warning(s), 0 note(s) | 40 ms
+Result: NOT READY | 6 error(s), 0 warning(s), 0 note(s) | 67 ms
 ```
 
 With `--ai` the report adds an advisory block, scored 1-5 per criterion with a short reason each, the top
@@ -178,9 +179,10 @@ fixes, token counts and latency. If X1/X2 find anything, the AI step is skipped 
 ## How to Test
 
 ```bash
-pytest                                   # 32 tests, offline, about 20 s
-python -m evals.run_checks_eval          # 56 labelled cases, precision/recall per check
+pytest                                   # 35 tests, offline, about 20 s
+python -m evals.run_checks_eval          # 57 labelled cases, precision/recall per check
 python -m evals.run_secrets_eval         # generated keys vs look-alike decoys
+python -m evals.run_real_prs_eval        # 29 real PR folders pinned to commits (needs network)
 python -m evals.run_ai_eval --provider static   # AI eval harness, offline
 python -m evals.run_ai_eval              # live Gemini eval (needs GEMINI_API_KEY)
 ```
@@ -189,8 +191,9 @@ Latest results (2026-10-24):
 
 | Suite | Result |
 | :--- | :--- |
-| Unit tests | 32 passed |
-| Rule-check eval | 56/56 cases correct (15 of them reproduce false alarms seen on real PRs); precision and recall 1.00 for all 17 checks |
+| Unit tests | 35 passed |
+| Rule-check eval | 57/57 cases correct (16 of them reproduce problems seen on real PRs); precision and recall 1.00 for all 17 checks |
+| Real-PR regression eval | 29/29 hand-checked PR folders (11 not ready, 18 ready, including this tool's own PR #76) match their pinned verdicts exactly; about 16 s |
 | Secret-scanner eval | 100% recall for every key type (300 per type, 4 seeds); 0 false positives on 3,900 decoy lines per seed, including fake test tokens and documentation example keys |
 | Real PRs on gdgcblr/open-source-agents | All 56 project folders in 53 open PRs, no crashes, 0.3-1 s each; details below |
 | AI review eval (live) | Not complete: a single pass over 3 of the 4 READMEs agreed with the seed labels (MAE 0.20) and resisted the injection README; the 4th hit a temporary 503 (retries were added), and the 3-run consistency test was stopped by the free-tier quota (HTTP 429) |
@@ -206,7 +209,12 @@ hand. The first pass exposed false alarms that each became an eval case before b
 template scaffolding lines reported as leftovers (16 of 20 folders), headings such as "Quick Start",
 "Safety Guardrails", "Roadmap" or "CLI" not recognised, AWS's published example key, obviously fake test
 tokens and private-key headers without key material reported as leaked secrets, and `<project-slug>` in
-prose. It also missed committed `.adk/` session folders, which is now X4.
+prose or sample output. It also missed committed `.adk/` session folders (now X4) and let an untouched
+template README through as a warning (now an error).
+
+29 of these folders, each reviewed by hand, are pinned to their exact commits in
+[evals/real_prs.toml](evals/real_prs.toml) with the verdict and the reason. `python -m evals.run_real_prs_eval`
+re-fetches and re-checks them, so any rule change that breaks a real-world verdict shows up at once.
 
 After the fixes, 37 of 56 folders are ready. The ones that are not have real problems found by hand
 review: a project outside `agents/`/`tools/` (S1), two projects in one PR (G1, 3 PRs), capitals or

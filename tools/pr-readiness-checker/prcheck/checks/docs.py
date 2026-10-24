@@ -13,13 +13,16 @@ GROUP = "docs"
 
 _STOPWORDS = {"and", "the", "how", "to", "of", "for", "with", "your"}
 # Bracket placeholders only count outside code blocks (sample output may quote them).
-# <project-slug> only counts inside code blocks: a leftover `cd tools/<project-slug>` command is a real
-# mistake, while prose that explains the folder rule (PR #7) is fine.
+# <project-slug> only counts on a command line inside a code block: a leftover `cd tools/<project-slug>`
+# is a real mistake, while prose or sample output that quotes the folder rule (PR #7) is fine.
 _PLACEHOLDERS_PROSE = re.compile(r"\[Project Name\]|\[One-sentence summary|\[Language Runtime|\[Package manager"
                                  r"|\[Required API keys")
-_PLACEHOLDERS_CODE = re.compile(r"<project-slug>")
+_PLACEHOLDERS_CODE = re.compile(
+    r"^\s*(?:[$>]\s*)?(?:cd|mkdir|cp|mv|copy-item|set-location|ls|dir|python|python3|pip|uv|npm|npx|node|go|"
+    r"cargo)\b.*<project-slug>", re.IGNORECASE)
 _BARE_NA = re.compile(r"^(n/?a|none|tbd|todo|coming soon)\W*$", re.IGNORECASE)
 _MAX_EXAMPLES = 5
+UNFILLED_SHARE = 0.5  # share of the template's filler lines still present that makes D3 blocking
 
 
 @check("D1", group=GROUP, title="README.md exists", severity=Severity.ERROR,
@@ -95,8 +98,11 @@ def template_leftovers(ctx: ProjectContext):
     if hits:
         shown = "; ".join(f'line {n}: "{t[:60]}"' for n, t in hits[:_MAX_EXAMPLES])
         more = f" (+{len(hits) - _MAX_EXAMPLES} more)" if len(hits) > _MAX_EXAMPLES else ""
-        yield finding("D3", f"{len(hits)} line(s) still contain template text: {shown}{more}.",
-                      file=ctx.readme_path, line=hits[0][0])
+        # A README that is mostly the untouched template blocks the PR (seen in PR #49).
+        unfilled = bool(prose) and len({t for _, t in hits} & prose) >= UNFILLED_SHARE * len(prose)
+        prefix = "README is still mostly the template. " if unfilled else ""
+        yield finding("D3", f"{prefix}{len(hits)} line(s) still contain template text: {shown}{more}.",
+                      file=ctx.readme_path, line=hits[0][0], severity=Severity.ERROR if unfilled else None)
 
 
 @check("D4", group=GROUP, title="Sections have content (N/A needs a reason)", severity=Severity.WARN,
