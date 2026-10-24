@@ -1,0 +1,6 @@
+{
+  "role": "Site Reliability Engineer",
+  "domain": "Kubernetes Cluster Management",
+  "documentation": "Standard cluster SLA requires <10s failover.",
+  "user_query": "How do I diagnose CrashLoopBackOff on pod-a1?"
+}

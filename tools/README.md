@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`prompt-context-linter`](./prompt-context-linter/) | Deterministic prompt template linter, smell detector, smart context truncator, and MCP server | Prompt Engineering / FastMCP | [@PavaS279](https://github.com/PavaS279) |
