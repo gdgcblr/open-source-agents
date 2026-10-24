@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`engineering-team`](engineering-team/) | **Monarch Team**: Architect, Junior and Senior engineer agents clone a repository and fix a bug (or build from a request) behind one CLI, handing off only through Monarch Memory (context-orchestration-engine), with role-scoped tools and guardrails in ADK callbacks. Offline mock included. | Google ADK (Python) + context-orchestration-engine | @VivanRajath |

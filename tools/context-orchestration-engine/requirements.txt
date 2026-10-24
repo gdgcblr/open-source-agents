@@ -1,0 +1,10 @@
+# Runtime
+pydantic>=2.7.0
+python-dotenv>=1.0.0
+
+# Tests
+pytest>=8.0.0
+pyflakes>=3.0.0
+
+# Optional: only for COE_GATEWAY=litellm
+# litellm>=1.63.0
