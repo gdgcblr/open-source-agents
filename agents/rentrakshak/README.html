@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RentRakshak — Bengaluru Rental Safety Agent</title>
+  <meta name="description" content="Rent smarter. Stay safer. Help the next tenant. Google ADK rental safety for Bengaluru." />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-card: #121a2b;
+      --bg-elevated: #1a2438;
+      --text: #e8eef7;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-2: #22d3ee;
+      --danger: #f87171;
+      --warn: #fbbf24;
+      --ok: #4ade80;
+      --border: rgba(148, 163, 184, 0.2);
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --radius: 14px;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Animated mesh background */
+    .mesh {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(59, 130, 246, 0.25), transparent 50%),
+        radial-gradient(ellipse 70% 50% at 80% 80%, rgba(34, 211, 238, 0.15), transparent 45%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(99, 102, 241, 0.08), transparent 60%);
+      animation: meshShift 18s ease-in-out infinite alternate;
+    }
+    @keyframes meshShift {
+      0% { filter: hue-rotate(0deg); transform: scale(1); }
+      100% { filter: hue-rotate(12deg); transform: scale(1.03); }
+    }
+    .grid-lines {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent);
+    }
+
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+
+    /* Nav */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(11, 18, 32, 0.85);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .logo span {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.7; }
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    nav a.nav-link {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a.nav-link:hover { color: var(--text); text-decoration: none; }
+
+    /* Hero */
+    header.hero {
+      padding: 4rem 0 3rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: var(--accent-2);
+      margin-bottom: 1.25rem;
+      animation: fadeUp 0.8s ease both;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 0.75rem;
+      animation: fadeUp 0.8s ease 0.1s both;
+    }
+    .tagline {
+      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+      color: var(--muted);
+      max-width: 36rem;
+      margin: 0 auto 2rem;
+      min-height: 1.5em;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+    .cursor-blink {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--accent-2);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s ease 0.35s both;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.35rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      color: white;
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+    }
+    .btn-ghost {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 2.5rem 0 3rem;
+    }
+    .stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      transform: translateY(-4px);
+    }
+    .stat .num {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent-2);
+    }
+    .stat .lbl { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+
+    section { margin: 3.5rem 0; scroll-margin-top: 5rem; }
+    section h2 {
+      font-size: 1.65rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    section .sub { color: var(--muted); margin-bottom: 1.5rem; max-width: 42rem; }
+
+    /* Feature tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .panel {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      animation: panelIn 0.35s ease;
+    }
+    .panel.active { display: block; }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .panel h3 { margin-bottom: 0.75rem; font-size: 1.15rem; }
+    .panel ul { margin-left: 1.25rem; color: var(--muted); }
+    .panel li { margin: 0.35rem 0; }
+
+    /* Live demo */
+    .demo-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .demo-box label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      margin-bottom: 1rem;
+    }
+    textarea:focus, input:focus {
+      outline: 2px solid rgba(59, 130, 246, 0.5);
+      border-color: var(--accent);
+    }
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--muted);
+      background: var(--bg-elevated);
+      display: none;
+    }
+    .result.show { display: block; animation: panelIn 0.4s ease; }
+    .result.critical { border-left-color: var(--danger); }
+    .result.low { border-left-color: var(--ok); }
+    .finding {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+    .finding code { color: var(--warn); font-size: 0.8rem; }
+
+    /* Command blocks */
+    .cmd-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    .cmd {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .cmd-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      background: var(--bg-elevated);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--accent-2);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .copy-btn:hover { background: rgba(34, 211, 238, 0.1); }
+    pre {
+      padding: 1rem;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    /* Architecture */
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1.5rem;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .flow-node {
+      padding: 0.65rem 1rem;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      animation: float 4s ease-in-out infinite;
+    }
+    .flow-node:nth-child(2) { animation-delay: 0.5s; }
+    .flow-node:nth-child(4) { animation-delay: 1s; }
+    .flow-arrow { color: var(--muted); font-size: 1.2rem; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="mesh" aria-hidden="true"></div>
+  <div class="grid-lines" aria-hidden="true"></div>
+
+  <nav>
+    <div class="inner">
+      <div class="logo"><span></span> RentRakshak</div>
+      <ul>
+        <li><a class="nav-link" href="#features">Features</a></li>
+        <li><a class="nav-link" href="#demo">Try it</a></li>
+        <li><a class="nav-link" href="#run">Run</a></li>
+        <li><a class="nav-link" href="#stack">Stack</a></li>
+        <li><a class="nav-link" href="README.md">Markdown README</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <header class="hero">
+      <div class="badge">Google ADK · Bengaluru · Hackathon</div>
+      <h1>Rent smarter. Stay safer.</h1>
+      <p class="tagline" id="typed-tagline"></p><span class="cursor-blink" id="cursor" style="display:none"></span>
+      <div class="cta-row">
+        <button class="btn btn-primary" type="button" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">
+          Try risk check
+        </button>
+        <button class="btn btn-ghost" type="button" onclick="document.getElementById('run').scrollIntoView({behavior:'smooth'})">
+          Run locally
+        </button>
+      </div>
+
+      <div class="stats reveal">
+        <div class="stat"><div class="num" data-count="13">0</div><div class="lbl">ADK tools</div></div>
+        <div class="stat"><div class="num" data-count="32">0</div><div class="lbl">Offline tests</div></div>
+        <div class="stat"><div class="num" data-count="8">0</div><div class="lbl">Localities</div></div>
+        <div class="stat"><div class="num">0</div><div class="lbl" id="stat-key">API key needed</div></div>
+      </div>
+    </header>
+
+    <section id="features" class="reveal">
+      <h2>What it does</h2>
+      <p class="sub">More than a chatbot — evidence-based checks, honest rent data, anonymous community, vacating board.</p>
+      <div class="tabs" role="tablist">
+        <button class="tab active" type="button" data-tab="safety">Safety agent</button>
+        <button class="tab" type="button" data-tab="rent">Rent estimate</button>
+        <button class="tab" type="button" data-tab="community">Community</button>
+        <button class="tab" type="button" data-tab="vacate">Vacating board</button>
+        <button class="tab" type="button" data-tab="legal">Karnataka checklist</button>
+      </div>
+      <div id="panel-safety" class="panel active" role="tabpanel">
+        <h3>AI rental safety (listing + chat)</h3>
+        <ul>
+          <li>Rule IDs (RF-001…) with <strong>evidence excerpts</strong> from your text</li>
+          <li>Risk tiers: low → critical — never “verified safe”</li>
+          <li>Deterministic engine; LLM optional for orchestration only</li>
+        </ul>
+      </div>
+      <div id="panel-rent" class="panel" role="tabpanel">
+        <h3>Transparent Bengaluru rent ranges</h3>
+        <ul>
+          <li>Whitefield, Koramangala, HSR, Bellandur, and more</li>
+          <li>Labels illustrative vs observed; <strong>no guess</strong> when data is thin</li>
+        </ul>
+      </div>
+      <div id="panel-community" class="panel" role="tabpanel">
+        <h3>Anonymous tenant experiences</h3>
+        <ul>
+          <li>Moderation, PII redaction, negative-but-fair reviews allowed</li>
+          <li>Secret edit tokens — not shown in public search</li>
+        </ul>
+      </div>
+      <div id="panel-vacate" class="panel" role="tabpanel">
+        <h3>Vacating / room availability</h3>
+        <ul>
+          <li>Active → filled / withdrawn / expired lifecycle</li>
+          <li>Private contact; lease-permission reminders</li>
+        </ul>
+      </div>
+      <div id="panel-legal" class="panel" role="tabpanel">
+        <h3>Agreement checklist</h3>
+        <ul>
+          <li>Source-backed references; no invented deposit cap</li>
+          <li>Law vs guidance vs practical steps clearly separated</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="demo" class="reveal">
+      <h2>Interactive preview</h2>
+      <p class="sub">Client-side demo mirrors common red flags. Full analysis runs in Python via <code>main.py</code> or Streamlit.</p>
+      <div class="demo-box">
+        <label for="listing-input">Paste a rental listing</label>
+        <textarea id="listing-input" rows="6" placeholder="e.g. URGENT pay token before viewing… send OTP…"></textarea>
+        <button class="btn btn-primary" type="button" id="analyze-btn">Analyze (preview)</button>
+        <button class="btn btn-ghost" type="button" id="load-scam">Load scam sample</button>
+        <button class="btn btn-ghost" type="button" id="load-clean">Load normal sample</button>
+        <div id="demo-result" class="result"></div>
+      </div>
+    </section>
+
+    <section id="stack" class="reveal">
+      <h2>Architecture</h2>
+      <p class="sub">Tools own truth; models route and explain.</p>
+      <div class="flow">
+        <span class="flow-node">You</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">ADK Agent</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">13 Tools</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">SQLite + JSON</span>
+      </div>
+      <p class="sub" style="margin-top:1rem">Gemini cloud · <strong>Gemma via Ollama</strong> (gemma3:4b) · Docker · Streamlit</p>
+    </section>
+
+    <section id="run" class="reveal">
+      <h2>Run it</h2>
+      <p class="sub">Copy commands — from <code>agents/rentrakshak/</code></p>
+      <div class="cmd-grid">
+        <div class="cmd">
+          <div class="cmd-head"><span>Docker smoke</span><button class="copy-btn" type="button" data-copy="docker compose build && docker compose run --rm test">Copy</button></div>
+          <pre>docker compose build
+docker compose run --rm test
+docker compose run --rm cli</pre>
+        </div>
+        <div class="cmd">
+          <div class="cmd-head"><span>CLI report (no API key)</span><button class="copy-btn" type="button" data-copy="python main.py --listing @tests/fixtures/suspicious_listing.txt">Copy</button></div>
+          <pre>python main.py --listing @tests/fixtures/suspicious_listing.txt</pre>
+        </div>
+        <div class="cmd">
+          <div class="cmd-head"><span>Local Gemma (Ollama)</span><button class="copy-btn" type="button" data-copy="export RENTRAKSHAK_LLM_BACKEND=ollama && export RENTRAKSHAK_OLLAMA_MODEL=gemma3:4b && adk web adk_agent">Copy</button></div>
+          <pre>pip install -r requirements-ollama.txt
+export RENTRAKSHAK_LLM_BACKEND=ollama
+export RENTRAKSHAK_OLLAMA_MODEL=gemma3:4b
+adk web adk_agent</pre>
+        </div>
+        <div class="cmd">
+          <div class="cmd-head"><span>Streamlit UI</span><button class="copy-btn" type="button" data-copy="streamlit run ui/streamlit_app.py">Copy</button></div>
+          <pre>streamlit run ui/streamlit_app.py</pre>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    RentRakshak · GDG Cloud Bengaluru open-source-agents · Not affiliated with Google or Karnataka government.<br />
+    <a href="FEATURE_VERIFICATION_GUIDE.md">QA guide</a> · <a href="DOCKER.md">Docker</a> · <a href="USAGE_GUIDE.md">Usage</a>
+  </footer>
+
+  <script>
+    const taglines = [
+      "Help the next tenant.",
+      "Before you pay a deposit, check the risks.",
+      "Evidence beats hype.",
+    ];
+    let ti = 0, ci = 0, deleting = false;
+    const el = document.getElementById("typed-tagline");
+    const cursor = document.getElementById("cursor");
+    cursor.style.display = "inline-block";
+
+    function typeLoop() {
+      const full = taglines[ti];
+      el.textContent = full.slice(0, ci);
+      if (!deleting && ci < full.length) {
+        ci++;
+        setTimeout(typeLoop, 45);
+      } else if (!deleting && ci === full.length) {
+        setTimeout(() => { deleting = true; typeLoop(); }, 2200);
+      } else if (deleting && ci > 0) {
+        ci--;
+        setTimeout(typeLoop, 28);
+      } else {
+        deleting = false;
+        ti = (ti + 1) % taglines.length;
+        setTimeout(typeLoop, 400);
+      }
+    }
+    typeLoop();
+
+    document.getElementById("stat-key").textContent = "For core demo";
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+      });
+    });
+
+    const SCAM = `2 BHK in Koramangala near forum mall. Rent Rs 15000 only!!!
+URGENT pay token today before viewing — transfer to my friend account.
+Send OTP for booking confirmation.`;
+
+    const CLEAN = `2 BHK semi-furnished apartment in HSR Layout. Rent Rs 38000, deposit 3 months.
+Maintenance Rs 3000. Owner prefers in-person viewing on weekends.
+Written agreement with clear refund terms for deposit.`;
+
+    const RULES = [
+      { id: "RF-002", re: /urgent.*(pay|token)|pay token today/i, msg: "Urgent payment pressure before viewing." },
+      { id: "RF-005", re: /\botp\b|password|pin/i, msg: "Request involving OTP or secrets." },
+      { id: "RF-003", re: /friend account|third party/i, msg: "Pay unrelated third party." },
+      { id: "RF-001", re: /pay.*before.*viewing|token before/i, msg: "Payment before adequate viewing." },
+    ];
+
+    function analyzePreview(text) {
+      const findings = [];
+      for (const r of RULES) {
+        const m = text.match(r.re);
+        if (m) {
+          const start = Math.max(0, m.index - 40);
+          const end = Math.min(text.length, m.index + m[0].length + 40);
+          findings.push({ id: r.id, msg: r.msg, excerpt: text.slice(start, end).replace(/\n/g, " ") });
+        }
+      }
+      const critical = findings.some((f) => f.id === "RF-005");
+      const level = critical || findings.length >= 2 ? "critical" : findings.length ? "warn" : "low";
+      return { findings, level };
+    }
+
+    function showResult(data) {
+      const box = document.getElementById("demo-result");
+      const labels = { critical: "Critical warning", warn: "Needs verification", low: "Low concern (preview)" };
+      box.className = "result show " + (data.level === "low" ? "low" : "critical");
+      let html = `<strong>${labels[data.level]}</strong><p style="color:var(--muted);margin-top:0.5rem;font-size:0.9rem">Browser preview only — run <code>main.py</code> for full report.</p>`;
+      if (!data.findings.length) {
+        html += "<p>No demo rules matched. Try the scam sample.</p>";
+      } else {
+        data.findings.forEach((f) => {
+          html += `<div class="finding"><code>${f.id}</code> ${f.msg}<br><small style="color:var(--muted)">"${f.excerpt}"</small></div>`;
+        });
+      }
+      box.innerHTML = html;
+    }
+
+    document.getElementById("analyze-btn").addEventListener("click", () => {
+      showResult(analyzePreview(document.getElementById("listing-input").value));
+    });
+    document.getElementById("load-scam").addEventListener("click", () => {
+      document.getElementById("listing-input").value = SCAM;
+      showResult(analyzePreview(SCAM));
+    });
+    document.getElementById("load-clean").addEventListener("click", () => {
+      document.getElementById("listing-input").value = CLEAN;
+      showResult(analyzePreview(CLEAN));
+    });
+
+    document.querySelectorAll(".copy-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+          const t = btn.textContent;
+          btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = t), 1500);
+        });
+      });
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("visible")),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+
+    document.querySelectorAll(".num[data-count]").forEach((el) => {
+      const target = +el.dataset.count;
+      let n = 0;
+      const step = () => {
+        n += Math.ceil(target / 25);
+        if (n >= target) {
+          el.textContent = target + (target === 32 ? "+" : "");
+          return;
+        }
+        el.textContent = n;
+        requestAnimationFrame(step);
+      };
+      const obs = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          step();
+          obs.disconnect();
+        }
+      });
+      obs.observe(el);
+    });
+  </script>
+</body>
+</html>

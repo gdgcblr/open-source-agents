@@ -2,6 +2,8 @@
 
 > **Rent smarter. Stay safer. Help the next tenant.**
 
+**Interactive docs:** open **[README.html](README.html)** in your browser (animated overview, feature tabs, live preview).
+
 **RentRakshak** is a demo-ready, open-source **Bengaluru rental safety agent** combined with an **anonymous tenant community** and **vacating-room discovery board**. It is built for people who are about to pay a deposit—not after they have already been scammed.
 
 Hackathon submission for [GDG Cloud Bengaluru — open-source-agents](https://github.com/gdgcblr/open-source-agents). Product name is **RentRakshak** everywhere (UI, agent instructions, docs).
