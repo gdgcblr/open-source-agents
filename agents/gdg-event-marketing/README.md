@@ -34,9 +34,8 @@ review and edit.
   one-day reminder, and post-event follow-up) and exports review reminders as
   an `.ics` calendar file.
 - Can publish the reviewed LinkedIn draft to the connected member's public
-  profile through LinkedIn OAuth. Every post requires a full-content preview
-  and a separate explicit confirmation; nothing is queued or published
-  automatically.
+  profile through LinkedIn OAuth. Connect once, review the visible draft, then
+  publish it with one click; nothing is queued or scheduled automatically.
 - Adds a Google Developer Groups bracket-mark header with a clear notice that
   this is an independent community project, not an official Google product.
 - Uses a Google-inspired light theme with familiar blue, red, yellow, and green
@@ -77,7 +76,7 @@ event facts into a complete campaign package.
 | Product area | This project |
 | :--- | :--- |
 | Platform-specific drafting and AI copy refinement | LinkedIn, X, and newsletter drafts with Gemini, editable by organizers. |
-| Publishing calendar and planning | Event-relative campaign plan plus local `.ics` reminders; reviewed LinkedIn posts can be published immediately after a separate confirmation. No queue or automatic scheduling. |
+| Publishing calendar and planning | Event-relative campaign plan plus local `.ics` reminders; reviewed LinkedIn drafts can be published immediately with one click. No queue or automatic scheduling. |
 | Content organization and repurposing | Event draft editing, channel variants, and a four-card downloadable visual carousel. |
 | Team collaboration and approvals | Human review is supported in the app; there are no accounts, shared workspace, or multi-user approval system. |
 | Community inbox and replies | Not included; this app does not connect to social accounts or access comments. |
@@ -124,8 +123,8 @@ chapter, filters out past events, and sends the upcoming event details to Gemini
 for selected channel drafts. The UI runs requests away from the main window
 thread and supports editing, copying, and explicit export. Event campaign plans
 and calendar reminders are generated locally. A separate LinkedIn OAuth flow
-can publish one reviewed member-profile post at a time after an explicit
-confirmation.
+connects a member profile and can publish the currently visible draft with one
+click.
 
 ```text
 Local chapter ID ──> GDG Community event API ──> nearest upcoming event
@@ -134,7 +133,7 @@ Local Gemini key ─────────────────────
                                                                     │
                                            UI drafts / visual carousel
 Event time + facts ──> local campaign timeline ──> optional .ics reminders
-Reviewed LinkedIn draft ──> OAuth member authorization ──> preview + confirm ──> public post
+Reviewed LinkedIn draft ──> OAuth member authorization ──> one-click publish ──> public post
 ```
 
 Offline demo mode bypasses both APIs and displays clearly labeled fictional
@@ -251,11 +250,11 @@ store access tokens.
 3. In the local `.env`, set `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, and
    `LINKEDIN_REDIRECT_URI` to your app values and the exact Render callback URL.
    Never put the client secret in Render, source control, or chat.
-4. Restart the desktop app. Click **Connect LinkedIn** or **Publish LinkedIn
-   draft…** while disconnected. A browser opens LinkedIn's login/consent page.
-   Approve it; the browser returns to the app automatically. No token copy/paste
-   is needed. If publishing was the action that started login, the app then
-   previews the exact post and asks for **Publish publicly** confirmation.
+4. Restart the desktop app and click **Connect LinkedIn**. A browser opens
+   LinkedIn's login/consent page. Approve it; the browser returns to the app
+   automatically and the authorized member appears as connected. Review the
+   draft in the LinkedIn tab, then click **Publish to LinkedIn** to post it.
+   No token copy/paste is needed.
 
 The desktop app exchanges the one-time authorization code directly with
 LinkedIn, verifies the member profile, and stores the access token in the
@@ -297,11 +296,11 @@ all drafts as Markdown/text. Click **Create visual carousel** after generating
 a LinkedIn draft to save and open a four-card local preview. Navigate the cards,
 download each as a PNG, or print the full carousel to PDF.
 
-To publish, use a non-demo event, connect LinkedIn, and click **Publish LinkedIn
-draft…**. The app blocks fictional demo content and drafts whose event details
-have changed since generation. Review the complete post in the preview window,
-then choose **Publish publicly** to submit it immediately to your personal
-LinkedIn profile. This is not a scheduled post and cannot be undone by the app.
+To publish, use a non-demo event, connect LinkedIn, review the visible draft,
+and click **Publish to LinkedIn**. The app blocks fictional demo content and
+drafts whose event details have changed since generation. The button submits
+the visible text immediately to your personal LinkedIn profile. This is not a
+scheduled post and cannot be undone by the app.
 The app does not publish to LinkedIn organization pages. X and newsletter
 drafts remain export-only; Mailchimp delivery is not yet integrated.
 
@@ -415,8 +414,8 @@ copy button without using network access or credentials.
   local app exchanges it for an access token. Do not include private attendee information in event data.
   Offline demo mode makes no network requests.
 - **Safety:** Publishing requires a connected member account, a non-demo event,
-  an unchanged event snapshot, a full-content preview, and a separate
-  confirmation. Posts are public and submitted immediately. The app does not
+  and an unchanged event snapshot. Review the visible draft before clicking
+  publish; posts are public and submitted immediately. The app does not
   execute model-generated code or store LinkedIn credentials in the repository.
 
 ---

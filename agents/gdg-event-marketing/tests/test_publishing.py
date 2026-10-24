@@ -230,17 +230,15 @@ class LinkedInPublishingTests(unittest.TestCase):
         app.output_widgets["linkedin"].get.return_value = "Reviewed draft"
         app._read_event = Mock(return_value=event)
         app.linkedin_draft_event = dict(event)
-        app.publish_after_linkedin_connect = False
         app.linkedin_account = Mock()
         app._connect_linkedin = Mock()
 
         with patch("ui.get_linkedin_connection", return_value=None):
             app._publish_linkedin()
 
-        self.assertTrue(app.publish_after_linkedin_connect)
         app._connect_linkedin.assert_called_once_with()
 
-    def test_successful_connection_resumes_review_before_publishing(self):
+    def test_successful_connection_waits_for_explicit_publish_button_click(self):
         app = EventMarketingApp.__new__(EventMarketingApp)
         app.closed = False
         app.results = queue.Queue()
@@ -248,15 +246,45 @@ class LinkedInPublishingTests(unittest.TestCase):
         app._set_busy = Mock()
         app.linkedin_account = Mock()
         app.status = Mock()
-        app.publish_after_linkedin_connect = True
         app._publish_linkedin = Mock()
         app.root = Mock()
 
         app._process_results()
 
         app.linkedin_account.set.assert_called_once_with("Connected as Test Member")
-        self.assertFalse(app.publish_after_linkedin_connect)
-        app._publish_linkedin.assert_called_once_with()
+        app.status.set.assert_called_once_with(
+            "LinkedIn connected. Review the draft, then click Publish to LinkedIn."
+        )
+        app._publish_linkedin.assert_not_called()
+
+    @patch("ui.get_linkedin_connection")
+    def test_publish_button_posts_visible_draft_without_an_extra_confirmation(
+        self, get_connection
+    ):
+        app = EventMarketingApp.__new__(EventMarketingApp)
+        event = {"chapter_id": "", "title": "Community event"}
+        app.busy = False
+        app.output_widgets = {"linkedin": Mock()}
+        app.output_widgets["linkedin"].get.return_value = "Reviewed draft"
+        app._read_event = Mock(return_value=event)
+        app.linkedin_draft_event = dict(event)
+        app._set_busy = Mock()
+        app._start_worker = Mock()
+        get_connection.return_value = LinkedInConnection(
+            access_token="test-token",
+            person_id="member-123",
+            name="Test Member",
+            expires_at=4_000_000_000,
+        )
+
+        app._publish_linkedin()
+
+        app._set_busy.assert_called_once_with(
+            True, "Publishing the visible LinkedIn draft…"
+        )
+        app._start_worker.assert_called_once_with(
+            "linkedin_publish", unittest.mock.ANY, "Reviewed draft", "202610"
+        )
 
     @patch("publishing.requests.post")
     @patch("publishing.get_linkedin_connection")

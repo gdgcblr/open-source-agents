@@ -140,7 +140,6 @@ class EventMarketingApp:
         self.campaign_text: Optional[ScrolledText] = None
         self.linkedin_draft_event: Optional[dict] = None
         self.linkedin_account = tk.StringVar(value="LinkedIn not connected")
-        self.publish_after_linkedin_connect = False
         self.busy = False
         self.closed = False
         self._load_configuration()
@@ -567,7 +566,7 @@ class EventMarketingApp:
                 self.linkedin_connect_button.pack(side=tk.RIGHT, padx=(6, 0))
                 self.publish_linkedin_button = ttk.Button(
                     linkedin_controls,
-                    text="Publish LinkedIn draft…",
+                    text="Publish to LinkedIn",
                     command=self._publish_linkedin,
                     state=tk.DISABLED,
                 )
@@ -804,7 +803,6 @@ class EventMarketingApp:
         client_secret = os.getenv("LINKEDIN_CLIENT_SECRET", "").strip()
         redirect_uri = os.getenv("LINKEDIN_REDIRECT_URI", "").strip()
         if not client_id or not client_secret or not redirect_uri:
-            self.publish_after_linkedin_connect = False
             messagebox.showerror(
                 "LinkedIn setup required",
                 "Set LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, and "
@@ -823,7 +821,6 @@ class EventMarketingApp:
             )
         except OSError as exc:
             self._set_busy(False)
-            self.publish_after_linkedin_connect = False
             messagebox.showerror("Could not start LinkedIn authorization", str(exc))
 
     def _disconnect_linkedin(self) -> None:
@@ -870,53 +867,11 @@ class EventMarketingApp:
             return
         if connection is None:
             self.linkedin_account.set("LinkedIn not connected")
-            self.publish_after_linkedin_connect = True
             self._connect_linkedin()
             return
-        if not self._confirm_linkedin_publish(event.get("title", "this event"), draft):
-            return
         api_version = os.getenv("LINKEDIN_API_VERSION", "202610").strip()
-        self._set_busy(True, "Publishing the reviewed post to LinkedIn…")
+        self._set_busy(True, "Publishing the visible LinkedIn draft…")
         self._start_worker("linkedin_publish", run_linkedin_publish, draft, api_version)
-
-    def _confirm_linkedin_publish(self, event_title: str, draft: str) -> bool:
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Review public LinkedIn post")
-        dialog.transient(self.root)
-        dialog.geometry("620x520")
-        dialog.minsize(480, 360)
-        dialog.columnconfigure(0, weight=1)
-        dialog.rowconfigure(1, weight=1)
-        ttk.Label(
-            dialog,
-            text=(
-                f"This will publish publicly to your LinkedIn profile for "
-                f"{event_title}. Review the exact post below."
-            ),
-            wraplength=580,
-        ).grid(row=0, column=0, sticky="ew", padx=12, pady=12)
-        preview = ScrolledText(dialog, wrap=tk.WORD, height=16)
-        preview.grid(row=1, column=0, sticky="nsew", padx=12)
-        preview.insert("1.0", draft)
-        preview.configure(state=tk.DISABLED)
-        confirmed = tk.BooleanVar(value=False)
-        buttons = ttk.Frame(dialog)
-        buttons.grid(row=2, column=0, sticky="e", padx=12, pady=12)
-        ttk.Button(buttons, text="Cancel", command=dialog.destroy).pack(
-            side=tk.RIGHT, padx=(8, 0)
-        )
-
-        def publish() -> None:
-            confirmed.set(True)
-            dialog.destroy()
-
-        ttk.Button(
-            buttons, text="Publish publicly", command=publish, style="Primary.TButton"
-        ).pack(side=tk.RIGHT)
-        dialog.protocol("WM_DELETE_WINDOW", dialog.destroy)
-        dialog.grab_set()
-        self.root.wait_window(dialog)
-        return confirmed.get()
 
     def _process_results(self) -> None:
         if self.closed:
@@ -929,8 +884,6 @@ class EventMarketingApp:
 
         self._set_busy(False)
         if result_type == "error":
-            if action == "linkedin_connect":
-                self.publish_after_linkedin_connect = False
             self.status.set("The request failed. Check the details and try again.")
             messagebox.showerror("Could not complete request", result)
         elif action == "events":
@@ -951,12 +904,8 @@ class EventMarketingApp:
         elif action == "linkedin_connect":
             self.linkedin_account.set(f"Connected as {result}")
             self.status.set(
-                "LinkedIn authorization saved in the operating system credential store."
+                "LinkedIn connected. Review the draft, then click Publish to LinkedIn."
             )
-            publish_after_connect = self.publish_after_linkedin_connect
-            self.publish_after_linkedin_connect = False
-            if publish_after_connect:
-                self._publish_linkedin()
         elif action == "linkedin_publish":
             self.status.set(f"LinkedIn post published. Post ID: {result}")
         else:
@@ -1177,7 +1126,7 @@ class EventMarketingApp:
             "LIVE CUSTOM EVENT: Enter your own event details and generate drafts.\n\n"
             "Edit drafts directly in their tabs. Copy one draft or save all drafts "
             "to a Markdown file. LinkedIn publishing is optional: connect your "
-            "account, review the exact public post, and confirm separately. "
+            "account, review the visible draft, then click Publish to LinkedIn. "
             "Demo content cannot be published.",
         )
 
