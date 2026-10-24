@@ -138,7 +138,20 @@ export function parseUnifiedDiff(rawDiff) {
  * @param {Array<string>} [ignoreList]
  * @returns {Array<{ path: string, content: string }>}
  */
-export function readDirectoryFiles(dir, ignoreList = ['node_modules', '.git', '.venv', 'dist', 'build']) {
+export function readDirectoryFiles(
+  dir,
+  ignoreList = [
+    'node_modules',
+    '.git',
+    '.venv',
+    'dist',
+    'build',
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+    '.env',
+  ]
+) {
   const results = [];
 
   function walk(currentDir) {

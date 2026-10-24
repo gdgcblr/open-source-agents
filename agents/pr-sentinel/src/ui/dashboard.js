@@ -53,6 +53,20 @@ export function startDashboardServer({ port = 3737, host = 'localhost', initialR
     res.end('Not Found');
   });
 
+  server.updateReport = (rep) => {
+    latestReport = rep;
+  };
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      const fallbackPort = port + 1;
+      console.warn(`  ⚠️ Port ${port} is in use, trying http://${host}:${fallbackPort}...`);
+      server.listen(fallbackPort, host);
+    } else {
+      console.error('  ❌ Dashboard server error:', err.message);
+    }
+  });
+
   server.listen(port, host, () => {
     console.log(`\n  🌐 PR Sentinel Web Dashboard is live at: http://${host}:${port}`);
     console.log(`  Hit Ctrl+C to stop the dashboard server.\n`);

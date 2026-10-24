@@ -42,10 +42,13 @@ export class QualityAgent {
   async audit(context) {
     if (config.isLiveApiAvailable()) {
       try {
-        const fileSnippets = (context.files || []).slice(0, 5).map(f => ({
-          path: f.path,
-          preview: f.content.slice(0, 1500),
-        }));
+        const fileSnippets = (context.files || [])
+          .filter(f => /\.(?:js|mjs|cjs|ts|py|go|rs)$/i.test(f.path))
+          .slice(0, 5)
+          .map(f => ({
+            path: f.path,
+            preview: f.content.slice(0, 1500),
+          }));
 
         const prompt = `Review the code quality and architecture of these files in this pull request:
 Files:

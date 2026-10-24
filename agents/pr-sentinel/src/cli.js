@@ -149,12 +149,23 @@ index 0000000..8a3f912
 +}`;
   }
 
+  let serverInstance = null;
+  if (isServe) {
+    const port = config.port;
+    serverInstance = startDashboardServer({ port, host: config.host, initialReport: null, targetDir });
+    console.log(`${colors.cyan}Running initial PR review in background...${colors.reset}\n`);
+  }
+
   const report = await orchestrator.runReview({
     targetDir,
     baseBranch,
     staged,
     rawDiff: demoDiff,
   });
+
+  if (serverInstance) {
+    serverInstance.updateReport(report);
+  }
 
   if (isJson) {
     console.log(JSON.stringify(report, null, 2));
@@ -174,8 +185,7 @@ index 0000000..8a3f912
   printReport(report);
 
   if (isServe) {
-    const port = config.port;
-    startDashboardServer({ port, host: config.host, initialReport: report, targetDir });
+    console.log(`\n  ✨ ${colors.brightGreen}Dashboard ready! Open http://${config.host}:${config.port} in your browser.${colors.reset}\n`);
   }
 }
 
