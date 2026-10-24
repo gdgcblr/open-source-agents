@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PushGuard — AI Security Scanner</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --accent: #238636;
+      --accent-fg: #3fb950;
+      --blue: #1f6feb;
+      --blue-fg: #58a6ff;
+      --critical: #da3633;
+      --critical-bg: rgba(218,54,51,0.1);
+      --high: #e09000;
+      --high-bg: rgba(224,144,0,0.1);
+      --medium: #1f6feb;
+      --medium-bg: rgba(31,111,235,0.1);
+      --low: #238636;
+      --low-bg: rgba(35,134,54,0.1);
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; min-height: 100vh; }
+
+    /* ── Header ── */
+    header { padding: 16px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .logo-text { font-size: 17px; font-weight: 600; }
+    .logo-text span { color: var(--accent-fg); }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .badge-pill { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); }
+
+    /* ── Layout ── */
+    main { max-width: 880px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Hero ── */
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero h1 { font-size: 28px; font-weight: 700; line-height: 1.3; margin-bottom: 10px; }
+    .hero h1 span { color: var(--accent-fg); }
+    .hero p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 560px; margin: 0 auto; }
+
+    /* ── Scan Card ── */
+    .scan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 32px; }
+    .scan-card label { font-size: 12px; font-weight: 500; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: .04em; text-transform: uppercase; }
+
+    .url-row { display: flex; gap: 10px; margin-bottom: 14px; }
+    .url-input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: 14px; }
+    .branch-input { width: 120px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: 14px; }
+    .depth-select { width: 150px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: 14px; cursor: pointer; }
+    input:focus { outline: 2px solid var(--accent-fg); border-color: transparent; }
+    input::placeholder { color: var(--muted); }
+
+    .scan-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .scan-btn:hover { background: #2ea043; }
+    .scan-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    .try-link { margin-top: 12px; text-align: center; font-size: 12px; color: var(--muted); }
+    .try-link a { color: var(--blue-fg); text-decoration: none; cursor: pointer; }
+    .try-link a:hover { text-decoration: underline; }
+
+    /* ── Agents progress ── */
+    .agents-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; display: none; }
+    .agents-title { font-size: 13px; font-weight: 600; margin-bottom: 16px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .agent-rows { display: flex; flex-direction: column; gap: 10px; }
+    .agent-row { display: flex; align-items: center; gap: 12px; }
+    .agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background .3s; }
+    .agent-dot.running { background: var(--high); animation: pulse 1s infinite; }
+    .agent-dot.done { background: var(--accent-fg); animation: none; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+    .agent-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .agent-status { font-size: 12px; color: var(--muted); }
+
+    /* ── Results ── */
+    #results { display: none; }
+
+    /* Commit card */
+    .commit-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 20px; }
+    .commit-left { flex: 1; }
+    .commit-repo { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .commit-repo a { color: var(--blue-fg); text-decoration: none; }
+    .commit-msg { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+    .commit-meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); }
+    .commit-meta span { display: flex; align-items: center; gap: 4px; }
+    .sha-badge { font-family: monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 11px; color: var(--blue-fg); }
+    .commit-right { text-align: right; }
+    .stat-row { display: flex; gap: 8px; justify-content: flex-end; }
+    .stat-add { color: var(--accent-fg); font-size: 13px; font-weight: 500; }
+    .stat-del { color: var(--critical); font-size: 13px; font-weight: 500; }
+
+    /* Risk score */
+    .risk-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .risk-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .risk-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .risk-num { font-size: 44px; font-weight: 700; line-height: 1; }
+    .risk-num.safe   { color: var(--accent-fg); }
+    .risk-num.warn   { color: var(--high); }
+    .risk-num.danger { color: var(--critical); }
+    .risk-verdict { font-size: 13px; margin-top: 4px; }
+    .risk-verdict.safe   { color: var(--accent-fg); }
+    .risk-verdict.warn   { color: var(--high); }
+    .risk-verdict.danger { color: var(--critical); }
+    .bar-bg { background: var(--surface2); border-radius: 6px; height: 10px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 6px; width: 0; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+    .bar-fill.safe   { background: var(--accent-fg); }
+    .bar-fill.warn   { background: var(--high); }
+    .bar-fill.danger { background: linear-gradient(90deg, var(--high), var(--critical)); }
+    .summary-text { margin-top: 14px; font-size: 13px; color: var(--muted); line-height: 1.6; padding: 12px 14px; background: var(--surface2); border-radius: 8px; }
+
+    /* Findings */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin: 28px 0 12px; }
+    .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .count-badge { font-size: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 10px; color: var(--muted); }
+
+    .finding { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 10px; border-left: 3px solid var(--border); }
+    .finding.CRITICAL { border-left-color: var(--critical); }
+    .finding.HIGH     { border-left-color: var(--high); }
+    .finding.MEDIUM   { border-left-color: var(--medium); }
+    .finding.LOW      { border-left-color: var(--low); }
+
+    .finding-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .sev-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; letter-spacing: .05em; }
+    .sev-badge.CRITICAL { background: var(--critical-bg); color: var(--critical); }
+    .sev-badge.HIGH     { background: var(--high-bg);     color: var(--high); }
+    .sev-badge.MEDIUM   { background: var(--medium-bg);   color: var(--medium); }
+    .sev-badge.LOW      { background: var(--low-bg);      color: var(--low); }
+    .finding-title { font-size: 14px; font-weight: 500; }
+    .finding-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; display: flex; gap: 12px; }
+    .finding-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .conf-bar { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .conf-label { font-size: 11px; color: var(--muted); width: 70px; }
+    .conf-bg { flex: 1; background: var(--surface2); border-radius: 4px; height: 4px; }
+    .conf-fill { height: 4px; border-radius: 4px; background: var(--accent-fg); }
+
+    .no-findings { text-align: center; padding: 48px 0; }
+    .no-findings-icon { font-size: 48px; margin-bottom: 12px; }
+    .no-findings-title { font-size: 16px; font-weight: 600; color: var(--accent-fg); margin-bottom: 6px; }
+    .no-findings-sub { font-size: 13px; color: var(--muted); }
+
+    /* Compliance */
+    .compliance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .comp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .comp-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+    .comp-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .comp-dot.pass { background: var(--accent-fg); }
+    .comp-dot.warn { background: var(--high); }
+    .comp-dot.fail { background: var(--critical); }
+    .comp-text { font-size: 12px; line-height: 1.5; color: var(--muted); }
+
+    /* Eval */
+    .eval-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 10px; }
+    .eval-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .eval-num { font-size: 28px; font-weight: 700; color: var(--accent-fg); }
+    .eval-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .eval-notes { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* Error */
+    .error-box { background: var(--critical-bg); border: 1px solid var(--critical); border-radius: 10px; padding: 14px 16px; color: var(--critical); font-size: 13px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    <div class="logo-text">Push<span>Guard</span></div>
+  </div>
+  <div class="header-right">
+    <span class="badge-pill">Gemini 2.5 Flash</span>
+    <span class="badge-pill">Multi-agent</span>
+    <span class="badge-pill">LLM Evals</span>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>Scan any repo before a breach <span>happens</span></h1>
+    <p>PushGuard runs 3 AI agents in parallel against your latest commit — detecting hardcoded secrets, prompt injection payloads, and supply chain attacks before they leave your machine.</p>
+  </div>
+
+  <div class="scan-card">
+    <label>GitHub Repository URL</label>
+    <div class="url-row">
+      <input class="url-input" id="repoUrl" type="text" placeholder="https://github.com/owner/repo" />
+      <input class="branch-input" id="branch" type="text" placeholder="main" value="main" />
+      <select class="depth-select" id="numCommits">
+        <option value="1">Last 1 commit</option>
+        <option value="3" selected>Last 3 commits</option>
+        <option value="5">Last 5 commits</option>
+      </select>
+    </div>
+    <button class="scan-btn" id="scanBtn" onclick="runScan()">
+      <span id="btnIcon">⚡</span>
+      <span id="btnText">Scan latest commit</span>
+    </button>
+    <div class="try-link">
+      Try with: <a onclick="loadExample('trufflesecurity/trufflehog')">trufflehog</a> ·
+      <a onclick="loadExample('OWASP/www-project-top-10')">OWASP Top 10</a> ·
+      <a onclick="loadExample('krishajoshi14/gdg-open-source-agents')">this repo</a>
+    </div>
+  </div>
+
+  <!-- Agent progress -->
+  <div class="agents-panel" id="agentsPanel">
+    <div class="agents-title">Running agents</div>
+    <div class="agent-rows">
+      <div class="agent-row">
+        <div class="agent-dot" id="dot-secrets"></div>
+        <div class="agent-name">SecretsAgent</div>
+        <div class="agent-status" id="status-secrets">Waiting...</div>
+      </div>
+      <div class="agent-row">
+        <div class="agent-dot" id="dot-injection"></div>
+        <div class="agent-name">PromptInjectionAgent</div>
+        <div class="agent-status" id="status-injection">Waiting...</div>
+      </div>
+      <div class="agent-row">
+        <div class="agent-dot" id="dot-supply"></div>
+        <div class="agent-name">SupplyChainAgent</div>
+        <div class="agent-status" id="status-supply">Waiting...</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorBox"></div>
+  <div id="results"></div>
+</main>
+
+<script>
+function loadExample(repo) {
+  document.getElementById('repoUrl').value = 'https://github.com/' + repo;
+  document.getElementById('branch').value = 'main';
+}
+
+function getRiskClass(score) {
+  if (score >= 50) return 'danger';
+  if (score >= 20) return 'warn';
+  return 'safe';
+}
+
+function getRiskVerdict(score) {
+  if (score >= 50) return '🚫 Push blocked — critical issues found';
+  if (score >= 20) return '⚠️ Review required before pushing';
+  return '✅ Safe to push';
+}
+
+function getCompClass(text) {
+  if (text.startsWith('PASS')) return 'pass';
+  if (text.startsWith('WARN')) return 'warn';
+  return 'fail';
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function startAgentAnimation() {
+  const agents = ['secrets', 'injection', 'supply'];
+  const labels = { secrets: 'Scanning for hardcoded secrets...', injection: 'Checking for prompt injection...', supply: 'Analysing dependencies...' };
+  agents.forEach(a => {
+    document.getElementById('dot-' + a).className = 'agent-dot running';
+    document.getElementById('status-' + a).textContent = labels[a];
+  });
+}
+
+function finishAgentAnimation(findings) {
+  const agentMap = { secrets: 'SecretsAgent', injection: 'PromptInjectionAgent', supply: 'SupplyChainAgent' };
+  const countMap = {};
+  (findings || []).forEach(f => { countMap[f.agent] = (countMap[f.agent] || 0) + 1; });
+
+  Object.entries(agentMap).forEach(([key, agentName]) => {
+    const dot = document.getElementById('dot-' + key);
+    const status = document.getElementById('status-' + key);
+    dot.className = 'agent-dot done';
+    const count = countMap[agentName] || 0;
+    status.textContent = count > 0 ? `${count} finding${count > 1 ? 's' : ''}` : 'Clean';
+  });
+}
+
+async function runScan() {
+  const repoUrl = document.getElementById('repoUrl').value.trim();
+  const branch = document.getElementById('branch').value.trim() || 'main';
+  if (!repoUrl) { alert('Please enter a GitHub repository URL.'); return; }
+
+  const btn = document.getElementById('scanBtn');
+  const errorBox = document.getElementById('errorBox');
+  errorBox.innerHTML = '';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('results').style.display = 'none';
+
+  btn.disabled = true;
+  document.getElementById('btnIcon').textContent = '⏳';
+  document.getElementById('btnText').textContent = 'Fetching latest commit...';
+
+  document.getElementById('agentsPanel').style.display = 'block';
+  startAgentAnimation();
+
+  try {
+    document.getElementById('btnText').textContent = 'Running agents...';
+
+    const res = await fetch('/scan-repo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo_url: repoUrl, branch, num_commits: parseInt(document.getElementById('numCommits').value) })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Scan failed');
+    }
+
+    const data = await res.json();
+    finishAgentAnimation(data.findings);
+    renderResults(data);
+    document.getElementById('results').style.display = 'block';
+
+  } catch (e) {
+    document.getElementById('agentsPanel').style.display = 'none';
+    errorBox.innerHTML = `<div class="error-box">⚠️ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btnIcon').textContent = '⚡';
+    document.getElementById('btnText').textContent = 'Scan latest commit';
+  }
+}
+
+function renderResults(data) {
+  const cls = getRiskClass(data.risk_score);
+  const verdict = getRiskVerdict(data.risk_score);
+  const c = data.commit;
+
+  let html = '';
+
+  // Commit card
+  if (c) {
+    html += `
+    <div class="commit-card">
+      <div class="commit-left">
+        <div class="commit-repo">
+          <a href="https://github.com/${data.repo_name}" target="_blank">${data.repo_name}</a>
+        </div>
+        <div class="commit-msg">${escHtml(c.message)}</div>
+        <div class="commit-meta">
+          <span><a href="${c.url}" target="_blank" class="sha-badge">${c.short_sha}</a></span>
+          <span>👤 ${escHtml(c.author)}</span>
+          <span>🕐 ${formatDate(c.date)}</span>
+          <span>📄 ${c.files_changed} file${c.files_changed !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div class="commit-right">
+        <div class="stat-row">
+          <span class="stat-add">+${c.additions}</span>
+          <span class="stat-del">−${c.deletions}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Risk score
+  html += `
+  <div class="risk-section">
+    <div class="risk-top">
+      <div>
+        <div class="risk-label">Risk Score</div>
+        <div class="risk-num ${cls}">${data.risk_score}<span style="font-size:20px;font-weight:400">/100</span></div>
+        <div class="risk-verdict ${cls}">${verdict}</div>
+      </div>
+    </div>
+    <div class="bar-bg"><div class="bar-fill ${cls}" id="riskBar"></div></div>
+    <div class="summary-text">${escHtml(data.summary)}</div>
+  </div>`;
+
+  // Findings
+  html += `<div class="section-header">
+    <span class="section-title">Security Findings</span>
+    <span class="count-badge">${data.findings.length} total</span>
+  </div>`;
+
+  if (data.findings.length === 0) {
+    html += `<div class="no-findings">
+      <div class="no-findings-icon">✅</div>
+      <div class="no-findings-title">No vulnerabilities detected</div>
+      <div class="no-findings-sub">This commit looks safe to push.</div>
+    </div>`;
+  } else {
+    data.findings.forEach(f => {
+      html += `
+      <div class="finding ${f.severity}">
+        <div class="finding-top">
+          <span class="sev-badge ${f.severity}">${f.severity}</span>
+          <span class="finding-title">${escHtml(f.title)}</span>
+        </div>
+        <div class="finding-meta">
+          <span>${f.agent}</span>
+          ${f.line_ref ? `<span>${f.line_ref}</span>` : ''}
+        </div>
+        <div class="finding-desc">${escHtml(f.description)}</div>
+        <div class="conf-bar">
+          <span class="conf-label">Confidence</span>
+          <div class="conf-bg"><div class="conf-fill" style="width:${(f.confidence*100).toFixed(0)}%"></div></div>
+          <span style="font-size:11px;color:var(--muted);width:32px;text-align:right">${(f.confidence*100).toFixed(0)}%</span>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Compliance
+  html += `<div class="section-header" style="margin-top:32px">
+    <span class="section-title">Compliance Report</span>
+  </div>
+  <div class="compliance-grid">
+    ${compCard('EU Cyber Resilience Act', data.compliance.eu_cra)}
+    ${compCard('NIST SSDF', data.compliance.nist_ssdf)}
+    ${compCard('OWASP LLM Top 10', data.compliance.owasp_llm)}
+  </div>`;
+
+  // Eval
+  html += `<div class="section-header">
+    <span class="section-title">LLM Eval Score</span>
+  </div>
+  <div class="eval-grid">
+    <div class="eval-card"><div class="eval-num">${pct(data.eval_score.precision)}</div><div class="eval-lbl">Precision</div></div>
+    <div class="eval-card"><div class="eval-num">${pct(data.eval_score.recall_estimate)}</div><div class="eval-lbl">Recall (est.)</div></div>
+    <div class="eval-card"><div class="eval-num">${pct(data.eval_score.overall)}</div><div class="eval-lbl">Overall</div></div>
+  </div>
+  <div class="eval-notes">${escHtml(data.eval_score.notes)}</div>`;
+
+  document.getElementById('results').innerHTML = html;
+
+  setTimeout(() => {
+    const bar = document.getElementById('riskBar');
+    if (bar) bar.style.width = data.risk_score + '%';
+  }, 100);
+}
+
+function compCard(label, text) {
+  const cls = getCompClass(text);
+  return `<div class="comp-card">
+    <div class="comp-label">${label}</div>
+    <div class="comp-text"><span class="comp-dot ${cls}"></span>${escHtml(text)}</div>
+  </div>`;
+}
+
+function pct(v) { return (v * 100).toFixed(0) + '%'; }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
