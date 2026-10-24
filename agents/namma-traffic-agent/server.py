@@ -16,7 +16,9 @@ from agent.tools import (
     check_chokepoints,
     get_metro_alternative,
     get_weather_waterlogging_alerts,
-    calculate_best_departure_window
+    calculate_best_departure_window,
+    get_bmtc_bus_details,
+    get_bengaluru_live_weather
 )
 from agent.knowledge import BENGALURU_HUBS, CHOKEPOINTS
 
@@ -107,6 +109,18 @@ async def get_metro(origin: str, destination: str):
 async def get_alerts():
     """Monsoon rain and waterlogging alerts."""
     return get_weather_waterlogging_alerts()
+
+
+@app.get("/api/bus")
+async def get_bus(origin: str, destination: str):
+    """Returns BMTC bus routes, fares (Ordinary/Vajra AC), and schedules."""
+    return get_bmtc_bus_details(origin, destination)
+
+
+@app.get("/api/weather")
+async def get_weather():
+    """Returns current Bengaluru weather, rainfall, and transit impact."""
+    return get_bengaluru_live_weather()
 
 
 @app.get("/api/optimize-departure")

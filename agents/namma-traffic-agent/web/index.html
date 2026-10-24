@@ -546,6 +546,12 @@
         <div style="font-size: 0.8rem; color: #5f6368;">Bengaluru</div>
       </div>
 
+      <!-- Live Bengaluru Weather Ribbon -->
+      <div id="weatherRibbon" style="background: #e8f0fe; border-radius: 8px; padding: 6px 12px; margin-bottom: 10px; font-size: 0.82rem; color: #1a73e8; display: flex; align-items: center; justify-content: space-between;">
+        <span>⛅ 26.5°C Bengaluru • 🌧️ Showers (Yellow Alert)</span>
+        <span style="font-weight: 600;">💧 82% Hum</span>
+      </div>
+
       <!-- Route Search Inputs -->
       <div class="route-inputs">
         <div class="input-line">
@@ -848,14 +854,31 @@
       try {
         // Fetch AI Agent route analysis & multimodal metro savings
         const queryPrompt = `How is traffic from ${origin} to ${destination} at ${hour}:00 hrs?`;
-        const res = await fetch('/api/ask', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ prompt: queryPrompt, is_raining: isRaining, hour: hour })
-        });
+        const [res, busRes, weatherRes] = await Promise.all([
+          fetch('/api/ask', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ prompt: queryPrompt, is_raining: isRaining, hour: hour })
+          }),
+          fetch(`/api/bus?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`),
+          fetch('/api/weather')
+        ]);
+
         const data = await res.json();
-        renderSidebarResults(data, origin, destination);
-        drawRouteOnMap(origin, destination);
+        const busData = await busRes.json();
+        const weatherData = await weatherRes.json();
+
+        // Update Weather Ribbon
+        if (weatherData && weatherData.weather) {
+          const w = weatherData.weather;
+          document.getElementById('weatherRibbon').innerHTML = `
+            <span>⛅ ${w.temperature_c}°C BLR • 🌧️ ${w.condition}</span>
+            <span style="font-weight: 600;">💧 ${w.humidity_pct}% Hum</span>
+          `;
+        }
+
+        renderSidebarResults(data, busData, origin, destination);
+        drawRouteOnMap(origin, destination, busData);
       } catch (err) {
         content.innerHTML = `<div style="color:red; padding:12px;">Failed to fetch route data: ${err.message}</div>`;
       } finally {
@@ -863,7 +886,7 @@
       }
     }
 
-    function drawRouteOnMap(origName, destName) {
+    function drawRouteOnMap(origName, destName, busData) {
       routeLayerGroup.clearLayers();
       const c1 = getCoords(origName);
       const c2 = getCoords(destName);
@@ -873,15 +896,21 @@
       // Add Destination Marker
       L.marker(c2).addTo(routeLayerGroup).bindPopup(`<b>Destination: ${destName}</b>`);
 
-      // Road Route Polyline (Red / Heavy Congestion)
-      const roadPath = [c1, [(c1[0] + c2[0])/2 + 0.01, (c1[1] + c2[1])/2 - 0.01], c2];
+      // 1. Road Cab Polyline (Red / Heavy Congestion)
+      const roadPath = [c1, [(c1[0] + c2[0])/2 + 0.012, (c1[1] + c2[1])/2 - 0.012], c2];
       L.polyline(roadPath, { color: '#ea4335', weight: 6, opacity: 0.85 })
         .addTo(routeLayerGroup)
         .bindTooltip("🚖 Road Cab Route (Slow, Choked)", { sticky: true });
 
-      // Multimodal Metro Path (Purple / Green)
+      // 2. BMTC Bus Route Polyline (Cyan/Blue)
+      const busPath = [c1, [(c1[0] + c2[0])/2 + 0.006, (c1[1] + c2[1])/2 + 0.008], c2];
+      L.polyline(busPath, { color: '#0284c7', weight: 5, dashArray: '4, 4', opacity: 0.9 })
+        .addTo(routeLayerGroup)
+        .bindTooltip(`🚌 BMTC Bus Route (${busData?.primary_bus?.route_no || '500-D'})`, { sticky: true });
+
+      // 3. Multimodal Metro Path (Purple / Green)
       const metroPath = [c1, [(c1[0] + c2[0])/2, (c1[1] + c2[1])/2], c2];
-      L.polyline(metroPath, { color: '#9333ea', weight: 4, dashArray: '6, 6', opacity: 0.9 })
+      L.polyline(metroPath, { color: '#9333ea', weight: 5, dashArray: '8, 6', opacity: 0.95 })
         .addTo(routeLayerGroup)
         .bindTooltip("🚇 Namma Metro Alternate Track", { sticky: true });
 
@@ -890,7 +919,7 @@
       map.fitBounds(bounds, { padding: [80, 80] });
     }
 
-    function renderSidebarResults(data, origin, destination) {
+    function renderSidebarResults(data, busData, origin, destination) {
       const content = document.getElementById('sidebarContent');
       let html = '';
 
@@ -909,7 +938,11 @@
       const roadTime = trafficData ? trafficData.current_travel_time_mins : 120;
       const roadFare = trafficData ? trafficData.cost_estimates.cab_uber_ola_inr : 800;
       const metroTime = metroData ? metroData.breakdown.total_multimodal_time_mins : 75;
-      const metroFare = metroData ? metroData.total_transit_cost_inr : 80;
+      const metroFare = metroData ? (metroData.metro_qr_smartcard_fare_inr || 57) : 57;
+
+      const busFareOrd = busData?.fare_ordinary_inr || 25;
+      const busFareAc = busData?.fare_ac_vajra_inr || 45;
+      const busTime = busData?.estimated_travel_time_mins || 65;
 
       const timeSaved = Math.max(0, roadTime - metroTime);
       const moneySaved = Math.max(0, roadFare - metroFare);
@@ -950,13 +983,41 @@
           <div class="route-details">
             • <b>Boarding:</b> ${metroData?.origin_boarding_station || 'Nearest Metro Station'}<br>
             • <b>Deboarding:</b> ${metroData?.destination_deboarding_station || 'Dest. Station'}<br>
-            • <b>Door-to-door:</b> First-mile auto + train + last-mile auto.<br>
+            • <b>Fare Breakdown:</b> QR/Smartcard: <b>₹${metroData?.metro_qr_smartcard_fare_inr || 57}</b> | Token: ₹${metroData?.metro_token_fare_inr || 60}<br>
+            • <b>Headway:</b> ${metroData?.train_frequency || 'Every 4-5 mins'}<br>
             <span style="color: #137333; font-weight: 700;">💰 Saves ₹${moneySaved} vs surge cab!</span>
           </div>
         </div>
       `;
 
-      // 3. Route Option: Road Cab (GRIDLOCKED)
+      // 3. Route Option: BMTC Bus Details (BUDGET FRIENDLY)
+      if (busData && busData.status === 'success') {
+        const b = busData.primary_bus;
+        const busMoneySaved = Math.max(0, roadFare - busFareAc);
+        html += `
+          <div class="route-card" style="border-left: 4px solid #0284c7;">
+            <div class="route-card-header">
+              <div class="route-mode-badge" style="color: #0284c7;">
+                <span>🚌 BMTC Bus: Route ${b.route_no}</span>
+              </div>
+              <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">High Frequency</span>
+            </div>
+            <div class="route-duration-row">
+              <span class="route-duration">${busTime} mins</span>
+              <span class="route-fare" style="color: #0284c7;">₹${busFareOrd} (Ord) / ₹${busFareAc} (AC)</span>
+            </div>
+            <div class="route-details">
+              • <b>Boarding Stop:</b> ${busData.boarding_bus_stop}<br>
+              • <b>Deboarding Stop:</b> ${busData.deboarding_bus_stop}<br>
+              • <b>Service:</b> ${b.service_type} (${busData.frequency})<br>
+              • <b>Alternative Routes:</b> ${busData.available_bus_numbers.join(', ')}<br>
+              <span style="color: #0284c7; font-weight: 700;">💰 Saves ₹${busMoneySaved} vs cab!</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 4. Route Option: Road Cab (GRIDLOCKED)
       html += `
         <div class="route-card" onclick="highlightRoute('road')">
           <div class="route-card-header">
@@ -978,7 +1039,7 @@
         </div>
       `;
 
-      // 4. Golden Departure Window Option
+      // 5. Golden Departure Window Option
       if (departureData) {
         html += `
           <div class="route-card" style="border-left: 4px solid #ca8a04;">
@@ -998,11 +1059,11 @@
         `;
       }
 
-      // 5. AI Copilot Advice
+      // 6. AI Copilot Advice
       html += `
         <div class="copilot-advice-card">
           <h4>🤖 Namma Copilot Advice</h4>
-          <p>${data.response || 'Avoid Outer Ring Road between 5:30 PM and 8:30 PM. Namma Metro Purple Line offers guaranteed travel time regardless of surface road gridlock.'}</p>
+          <p>${data.response || 'Avoid Outer Ring Road between 5:30 PM and 8:30 PM. Namma Metro Purple Line or BMTC 500-D Vajra AC offers reliable transit at a fraction of the cost of surge cabs.'}</p>
         </div>
       `;
 

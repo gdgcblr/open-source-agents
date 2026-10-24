@@ -1,6 +1,6 @@
 """
 bengaluru_knowledge.py - Bengaluru Transit & Traffic Knowledge Base
-Curated geospatial and transit dataset for Bengaluru (Bangalore) traffic intelligence.
+Curated geospatial, BMTC bus, Namma Metro, and weather dataset for Bengaluru (Bangalore).
 """
 
 from typing import Dict, List, Any
@@ -12,6 +12,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "South-East",
         "coords": (12.9352, 77.6245),
         "nearest_metro": ("South End Circle" , "Green", 4.5),
+        "bus_stop": "Sony World Junction / Koramangala TTMC",
         "corridors": ["Hosur Road", "Intermediate Ring Road", "Sarjapur Road"],
         "tech_parks": ["Prestige Technostar", "Sony Signal Hub"]
     },
@@ -20,6 +21,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "East",
         "coords": (12.9719, 77.6412),
         "nearest_metro": ("Indiranagar", "Purple", 0.0),
+        "bus_stop": "CMH Road / Indiranagar 100ft Road",
         "corridors": ["100 Feet Road", "Old Airport Road", "CMH Road"],
         "tech_parks": ["Bagmane Tech Park"]
     },
@@ -28,6 +30,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "East Suburb",
         "coords": (12.9698, 77.7500),
         "nearest_metro": ("Whitefield (Kadugodi)", "Purple", 0.0),
+        "bus_stop": "ITPL / Hope Farm Channasandra",
         "corridors": ["ITPL Main Road", "Varthur Road", "Whitefield Main Road"],
         "tech_parks": ["ITPL", "EPIP Zone", "Prestige Shantiniketan"]
     },
@@ -36,6 +39,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "South-East",
         "coords": (12.9121, 77.6446),
         "nearest_metro": ("Central Silk Board", "Yellow", 1.8),
+        "bus_stop": "HSR BDA Complex / Silk Board",
         "corridors": ["Outer Ring Road", "Hosur Road", "27th Main"],
         "tech_parks": ["HSR Sector 1 Startups Hub"]
     },
@@ -44,6 +48,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "Outer Ring Road East",
         "coords": (12.9304, 77.6784),
         "nearest_metro": ("Baiyappanahalli", "Purple", 7.5),
+        "bus_stop": "Ecospace Bus Stop / Bellandur Gate",
         "corridors": ["Outer Ring Road (ORR)", "Sarjapur Road"],
         "tech_parks": ["Ecospace", "EcoWorld", "Cessna Business Park"]
     },
@@ -52,6 +57,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "East",
         "coords": (12.9591, 77.6974),
         "nearest_metro": ("KR Puram", "Purple", 4.2),
+        "bus_stop": "Marathahalli Bridge / Multiplex",
         "corridors": ["Outer Ring Road", "Old Airport Road", "Varthur Road"],
         "tech_parks": ["Prestige Tech Park", "Kalyani Tech Park"]
     },
@@ -60,6 +66,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "South Suburb",
         "coords": (12.8452, 77.6602),
         "nearest_metro": ("Electronic City", "Yellow", 0.0),
+        "bus_stop": "Infosys Toll Gate / Wipro Gate 1",
         "corridors": ["Hosur Road", "NICE Road", "Electronic City Elevated Expressway"],
         "tech_parks": ["Infosys Campus", "Wipro Campus", "Cyber Park"]
     },
@@ -68,6 +75,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "North",
         "coords": (13.0358, 77.5970),
         "nearest_metro": ("Yeshwantpur", "Green", 5.0),
+        "bus_stop": "Hebbal Flyover Bus Stop",
         "corridors": ["Bellary Road (NH 44)", "Outer Ring Road"],
         "tech_parks": ["Manyata Tech Park", "Kirloskar Tech Park"]
     },
@@ -76,6 +84,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "North-East",
         "coords": (13.0450, 77.6200),
         "nearest_metro": ("Baiyappanahalli", "Purple", 7.0),
+        "bus_stop": "Manyata Tech Park Gate 1 / 2",
         "corridors": ["Outer Ring Road (North)", "Thanisandra Main Road"],
         "tech_parks": ["Manyata Embassy Business Park"]
     },
@@ -84,6 +93,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "Central",
         "coords": (12.9774, 77.5708),
         "nearest_metro": ("Nadaprabhu Kempegowda Majestic", "Interchange (Purple/Green)", 0.0),
+        "bus_stop": "Kempegowda Bus Station (BMTC Platform 1-30)",
         "corridors": ["Subhash Nagar", "KG Road", "Dhanvantri Road"],
         "tech_parks": ["City Railway Station", "KSRTC / BMTC Central Terminus"]
     },
@@ -92,6 +102,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "Central",
         "coords": (12.9756, 77.6066),
         "nearest_metro": ("MG Road", "Purple", 0.0),
+        "bus_stop": "Anil Kumble Circle / Brigade Road",
         "corridors": ["MG Road", "Brigade Road", "Residency Road"],
         "tech_parks": ["UB City", "Raheja Towers"]
     },
@@ -100,6 +111,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "Far North",
         "coords": (13.1986, 77.7066),
         "nearest_metro": ("Yeshwantpur", "Green", 28.0),
+        "bus_stop": "Terminal 1 & Terminal 2 Vayu Vajra Bay",
         "corridors": ["Bellary Road / Airport Expressway (NH 44)", "SH 104 (Bagalur)"],
         "tech_parks": ["KIA Logistics Park", "Aerotropolis"]
     },
@@ -108,6 +120,7 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "South",
         "coords": (12.9063, 77.5857),
         "nearest_metro": ("JP Nagar", "Green", 0.0),
+        "bus_stop": "JP Nagar 6th Phase / Banashankari TTMC",
         "corridors": ["Bannerghatta Road", "Outer Ring Road (South)", "Kanakapura Road"],
         "tech_parks": ["Kalyani Magnum"]
     },
@@ -116,9 +129,103 @@ BENGALURU_HUBS: Dict[str, Dict[str, Any]] = {
         "zone": "South-West",
         "coords": (12.9255, 77.5468),
         "nearest_metro": ("Banashankari", "Green", 0.0),
+        "bus_stop": "Banashankari TTMC",
         "corridors": ["Outer Ring Road", "Kanakapura Road"],
         "tech_parks": ["South Bengaluru Commercial Hub"]
     }
+}
+
+# BMTC Bus Network & Schedules
+BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
+    {
+        "route_no": "500-D",
+        "route_name": "Hebbal ⇄ Central Silk Board (via ORR)",
+        "service_type": "AC Vajra Volvo & Ordinary",
+        "corridor": "Outer Ring Road (ORR)",
+        "connects": ["hebbal", "manyata", "marathahalli", "bellandur", "hsr_layout", "koramangala"],
+        "frequency_minutes": 5,
+        "fare_ordinary_inr": 25,
+        "fare_ac_vajra_inr": 45,
+        "highlights": "Dedicated ORR bus lane; runs every 5 mins during peak hours."
+    },
+    {
+        "route_no": "500-CA",
+        "route_name": "Banashankari ⇄ ITPL / Whitefield (via Silk Board & ORR)",
+        "service_type": "AC Vajra Volvo & Ordinary",
+        "corridor": "Outer Ring Road to Whitefield",
+        "connects": ["banashankari", "jp_nagar", "hsr_layout", "bellandur", "marathahalli", "whitefield"],
+        "frequency_minutes": 7,
+        "fare_ordinary_inr": 30,
+        "fare_ac_vajra_inr": 50,
+        "highlights": "Direct tech connection from South Bangalore to ITPL."
+    },
+    {
+        "route_no": "KIA-9",
+        "route_name": "Kempegowda Bus Station (Majestic) ⇄ BLR Airport",
+        "service_type": "Vayu Vajra Premium AC",
+        "corridor": "Bellary Road Expressway",
+        "connects": ["majestic", "hebbal", "airport"],
+        "frequency_minutes": 15,
+        "fare_ordinary_inr": 120,
+        "fare_ac_vajra_inr": 260,
+        "highlights": "Luggage assistance, free Wi-Fi, air-conditioned airport express."
+    },
+    {
+        "route_no": "KIA-8",
+        "route_name": "Electronic City ⇄ BLR Airport (via Silk Board & Hebbal)",
+        "service_type": "Vayu Vajra Premium AC",
+        "corridor": "Hosur Road to Airport Expressway",
+        "connects": ["electronic_city", "hsr_layout", "marathahalli", "hebbal", "airport"],
+        "frequency_minutes": 25,
+        "fare_ordinary_inr": 150,
+        "fare_ac_vajra_inr": 310,
+        "highlights": "Direct airport connector from South tech campuses."
+    },
+    {
+        "route_no": "335-E",
+        "route_name": "Kempegowda Bus Station (Majestic) ⇄ Kadugodi / Whitefield",
+        "service_type": "AC Vajra Volvo",
+        "corridor": "Old Airport Road & Varthur",
+        "connects": ["majestic", "mg_road", "indiranagar", "marathahalli", "whitefield"],
+        "frequency_minutes": 10,
+        "fare_ordinary_inr": 25,
+        "fare_ac_vajra_inr": 45,
+        "highlights": "Connects CBD to Indiranagar and Whitefield via Old Airport Road."
+    },
+    {
+        "route_no": "356-C",
+        "route_name": "Kempegowda Bus Station (Majestic) ⇄ Electronic City Wipro Gate",
+        "service_type": "AC Vajra Volvo & Ordinary",
+        "corridor": "Hosur Road Elevated Tollway",
+        "connects": ["majestic", "koramangala", "hsr_layout", "electronic_city"],
+        "frequency_minutes": 8,
+        "fare_ordinary_inr": 25,
+        "fare_ac_vajra_inr": 40,
+        "highlights": "Takes Electronic City elevated tollway to skip Silk Board crawl."
+    },
+    {
+        "route_no": "G-4",
+        "route_name": "Brigade Road / MG Road ⇄ Bannerghatta National Park (Big10)",
+        "service_type": "Suvarna Ordinary & AC",
+        "corridor": "Bannerghatta Road",
+        "connects": ["mg_road", "koramangala", "jp_nagar"],
+        "frequency_minutes": 10,
+        "fare_ordinary_inr": 20,
+        "fare_ac_vajra_inr": 35,
+        "highlights": "Big10 arterial bus service with high frequency."
+    }
+]
+
+# Real-time Bengaluru Weather Status
+BENGALURU_WEATHER_CURRENT = {
+    "temperature_c": 26.5,
+    "condition": "Cloudy with Intermittent Thunderstorms",
+    "rainfall_mm": 18.2,
+    "humidity_pct": 82,
+    "wind_speed_kmh": 16,
+    "monsoon_risk_level": "MODERATE TO HIGH (Yellow Alert)",
+    "waterlogging_advisory": "Waterlogging active along ORR underpasses (Kadubeesanahalli) and Hebbal down-ramp.",
+    "transit_impact": "Cab surge 1.6x-2.1x active; surface road speeds reduced by 35-45%; Namma Metro 100% unaffected."
 }
 
 # Notorious Bengaluru Bottlenecks & Choke Points
@@ -126,7 +233,7 @@ CHOKEPOINTS: Dict[str, Dict[str, Any]] = {
     "silk_board": {
         "name": "Central Silk Board Junction",
         "base_delay_minutes": 35,
-        "peak_congestion_index": 9.6,  # out of 10
+        "peak_congestion_index": 9.6,
         "affected_routes": [("koramangala", "electronic_city"), ("hsr_layout", "electronic_city"), ("koramangala", "bellandur"), ("hsr_layout", "bellandur")],
         "reason": "Epicenter connecting ORR, Hosur Road, BTM, and HSR; heavy construction for metro interchange.",
         "best_workaround": "Use Madiwala market internal bypass or BTM 29th Main for South Bengaluru; take Yellow Line metro once accessible."
@@ -215,9 +322,15 @@ MONSOON_WATERLOGGING_ZONES: List[Dict[str, Any]] = [
     }
 ]
 
-# Namma Metro Line Station Lists and Direct Travel Times (minutes between adjacent stations ~ 2.0 min)
+# Namma Metro Lines & Detailed Fare System
 METRO_LINES = {
     "Purple": {
+        "name": "Purple Line (East-West Corridor)",
+        "color": "#9333ea",
+        "fare_token_min": 10,
+        "fare_token_max": 60,
+        "smart_card_discount": 0.05,  # 5% discount on WhatsApp QR / Namma Metro Card
+        "peak_headway_minutes": 4,
         "stations": [
             "Whitefield (Kadugodi)", "Channasandra", "Kadugodi Tree Park", "Hopefarm Channasandra",
             "Hoodi", "Garudachar Palya", "Singayyanapalya", "KR Puram", "Benniganahalli",
@@ -227,10 +340,15 @@ METRO_LINES = {
             "Vijayanagar", "Attiguppe", "Deepanjali Nagar", "Mysuru Road", "Pantharapalya",
             "Nayandahalli", "Rajarajeshwari Nagar", "Jnanabharathi", "Pattanagere", "Kengeri Bus Terminal",
             "Kengeri", "Challaghatta"
-        ],
-        "fare_max": 60
+        ]
     },
     "Green": {
+        "name": "Green Line (North-South Corridor)",
+        "color": "#16a34a",
+        "fare_token_min": 10,
+        "fare_token_max": 60,
+        "smart_card_discount": 0.05,
+        "peak_headway_minutes": 5,
         "stations": [
             "Madavara", "Chikkabidarakallu", "Manjunathanagar", "Nagasandra", "Dasarahalli",
             "Jalahalli", "Peenya Industry", "Peenya", "Goraguntepalya", "Yeshwantpur",
@@ -239,16 +357,20 @@ METRO_LINES = {
             "National College", "Lalbagh", "South End Circle", "Jayanagar", "Rashtreeya Vidyalaya Road",
             "Banashankari", "Jaya Prakash Nagar", "Yelachenahalli", "Konanakunte Cross",
             "Doddakallasandra", "Vajarahalli", "Thalaghattapura", "Silk Institute"
-        ],
-        "fare_max": 60
+        ]
     },
     "Yellow": {
+        "name": "Yellow Line (RV Road to Bommasandra)",
+        "color": "#ca8a04",
+        "fare_token_min": 10,
+        "fare_token_max": 50,
+        "smart_card_discount": 0.05,
+        "peak_headway_minutes": 6,
         "stations": [
             "Rashtreeya Vidyalaya Road", "Ragigudda", "Jayadeva Hospital", "BTM Layout",
             "Central Silk Board", "Bommanahalli", "Hongasandra", "Kudlu Gate", "Singasandra",
             "Hosa Road", "Beratena Agrahara", "Electronic City", "Infosys Foundation Konappana Agrahara",
             "Huskur Road", "Hebbagodi", "Bommasandra"
-        ],
-        "fare_max": 50
+        ]
     }
 }
