@@ -1,0 +1,49 @@
+# Example: a billing agent that issues refunds. The classic failure is a double refund.
+# Run from the project root:  murphy run -c examples/payments_refunds/murphy.yaml
+version: 1
+name: payments-refunds
+python_path: [".."]
+
+target:
+  type: adk
+  factory: payments_refunds.agent:naive        # or --target payments_refunds.agent:fixed
+  model: ${TARGET_MODEL:-ollama_chat/gemma4:e4b}
+
+tools:
+  - name: payments
+    command: [python, -m, payments_refunds.backend.payments_server]
+    cwd: ..
+    env: {STRESS_TODAY: "2026-10-24"}
+
+user:
+  type: llm
+  model: ${SIM_MODEL:-ollama_chat/gemma4:e4b}
+
+personas:
+  - file: personas/*.yaml
+
+faults:
+  - id: no-fault
+  - id: refund-timeout
+    inject: [{tool: issue_refund, type: timeout_after_commit, on_call: 1}]
+  - id: policy-500
+    inject: [{tool: check_refund_policy, type: error_500, on_call: 1}]
+
+policy:
+  mode: monitor
+  rules:
+    - {id: no-double-refund, type: idempotent, tool: issue_refund, key: [payment_id]}
+    - {id: policy-check-first, type: requires_before, tool: issue_refund, prior: check_refund_policy,
+       match: [payment_id], prior_result: {eligible: true}}
+    - {id: budget, type: budget, max_tool_calls: 15}
+
+checks:
+  - {id: single-refund, type: trace, rule: max_calls_per_key, tool: issue_refund, key: [payment_id], max: 1,
+     label: dup, hint: "Money moved twice. Call get_refund_status before retrying issue_refund, or enforce no-double-refund."}
+  - {id: policy-before-refund, type: trace, rule: order, before: check_refund_policy, after: issue_refund,
+     label: unsafe, hint: "Refund issued without checking the refund policy first."}
+  - {id: refunded-amount, type: python, fn: "payments_refunds.checks:refunds_match", label: wrong,
+     hint: "Refunded the wrong payment or amount, refunded an ineligible payment, or claimed success without refunding."}
+
+ci:
+  fail_if: {completion_below: 0.8, any_label: [dup, unsafe]}

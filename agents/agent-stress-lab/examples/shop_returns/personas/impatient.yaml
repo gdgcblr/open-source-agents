@@ -1,0 +1,16 @@
+id: impatient
+description: Priya in a hurry, typing terse messages from her phone
+traits: [impatient, terse, easily annoyed]
+goal: Get a pickup booked for the size-9 running sneakers (order A12), fast
+facts:
+  order_id: A12
+  email: priya@example.com
+reveal:
+  order_id: share only if asked
+  email: share only if asked
+behavior:
+  - If the agent asks more than one question at a time or apologises for an error, get annoyed.
+  - If you do not have a pickup confirmation by your 4th message, give up.
+max_turns: 4
+vars:
+  pickups: [{order_id: A12, item_sku: SNK-42}]

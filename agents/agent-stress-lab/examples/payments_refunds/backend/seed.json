@@ -1,0 +1,11 @@
+{
+  "customers": {
+    "dev@example.com": {"name": "Dev"},
+    "asha@example.com": {"name": "Asha"}
+  },
+  "payments": {
+    "PAY-100": {"email": "dev@example.com", "item": "Annual Pro plan", "amount": 1200, "currency": "INR", "paid_on": "2026-10-10"},
+    "PAY-101": {"email": "dev@example.com", "item": "Extra storage add-on", "amount": 300, "currency": "INR", "paid_on": "2026-10-20"},
+    "PAY-200": {"email": "asha@example.com", "item": "Monthly plan", "amount": 499, "currency": "INR", "paid_on": "2026-08-01"}
+  }
+}

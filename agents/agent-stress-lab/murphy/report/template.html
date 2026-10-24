@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Murphy report</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #16181d; --muted: #5f6672; --faint: #8b919c; --line: #e4e7ec; --soft: #f1f3f6;
+  --pass: #137a46; --pass-bg: #e2f5ea; --fail: #b4232a; --fail-bg: #fde8e7;
+  --warn: #9a5b00; --warn-bg: #fff3d6; --block: #5b37b0; --block-bg: #efe8fd; --info: #1f5bd6; --info-bg: #e7efff;
+  --user: #eaf1ff; --agent: #f3f4f6; --radius: 12px;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115; --panel: #171a20; --ink: #e9ebef; --muted: #a2a8b3; --faint: #737a86; --line: #262a32; --soft: #1d2128;
+    --pass: #4fd08b; --pass-bg: #12301f; --fail: #ff8077; --fail-bg: #3a1716;
+    --warn: #ffbd52; --warn-bg: #362710; --block: #b99cff; --block-bg: #261d3c; --info: #86a8ff; --info-bg: #17223d;
+    --user: #19253d; --agent: #20242c;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); }
+button { font: inherit; color: inherit; }
+a { color: var(--info); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 48px; }
+
+/* top bar */
+.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 12px; padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: -.01em; }
+.brand span { color: var(--faint); font-weight: 500; }
+.meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 12px; color: var(--muted); background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.spacer { flex: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12.5px; padding: 3px 12px; border-radius: 999px; white-space: nowrap; }
+.pill.pass { background: var(--pass-bg); color: var(--pass); }
+.pill.fail { background: var(--fail-bg); color: var(--fail); }
+.pill.neutral { background: var(--soft); color: var(--muted); }
+
+/* headline */
+.headline { margin: 28px 0 6px; font-size: 22px; line-height: 1.3; font-weight: 650; letter-spacing: -.015em; }
+.subline { color: var(--muted); margin: 0 0 20px; }
+
+/* cards */
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+.kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.kpi .value { font-size: 26px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.kpi .note { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.bar { height: 6px; background: var(--fail-bg); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+.bar > i { display: block; height: 100%; background: var(--pass); border-radius: 99px; }
+section { margin-top: 24px; }
+.sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.sec-head h2 { font-size: 15px; margin: 0; }
+.sec-head .hint { color: var(--faint); font-size: 12.5px; }
+
+/* matrix */
+.matrix { overflow-x: auto; }
+table.heat { border-collapse: separate; border-spacing: 0 8px; width: 100%; min-width: 520px; }
+table.heat thead th { text-align: left; padding: 0 6px 2px; vertical-align: bottom; }
+.colname { font-weight: 650; font-size: 13px; }
+.coldesc { font-size: 11.5px; color: var(--faint); font-family: var(--mono); font-weight: 400; }
+table.heat tbody th { text-align: left; padding: 0 14px 0 0; width: 26%; vertical-align: middle; }
+.rowname { font-weight: 650; }
+.rowdesc { font-size: 12px; color: var(--faint); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+table.heat td { padding: 0 6px; }
+.cell { width: 100%; border: 1px solid transparent; border-radius: 10px; padding: 12px 10px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; font-weight: 650; }
+.cell.pass { background: var(--pass-bg); color: var(--pass); }
+.cell.fail { background: var(--fail-bg); color: var(--fail); }
+.cell:hover, .cell:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
+.cell .sub { font-weight: 500; font-size: 12px; opacity: .85; margin-left: auto; }
+.toggle { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12.5px; cursor: pointer; user-select: none; }
+.dim { opacity: .28; }
+
+/* guide */
+details.guide > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-weight: 650; }
+details.guide > summary::-webkit-details-marker { display: none; }
+details.guide > summary::before { content: "▸"; color: var(--faint); transition: transform .15s; }
+details.guide[open] > summary::before { transform: rotate(90deg); }
+.guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 14px; }
+.guide h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 8px; }
+.gl { display: grid; grid-template-columns: auto 1fr; gap: 8px 10px; align-items: start; font-size: 13px; }
+.gl .ex { color: var(--muted); font-size: 12.5px; }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.fail { background: var(--fail-bg); color: var(--fail); }
+.chip.pass { background: var(--pass-bg); color: var(--pass); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.block { background: var(--block-bg); color: var(--block); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.chip.neutral { background: var(--soft); color: var(--muted); border: 1px solid var(--line); }
+code, .mono { font-family: var(--mono); font-size: 12.5px; }
+pre.cmd { margin: 6px 0 0; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; overflow-x: auto; font-family: var(--mono); font-size: 12px; }
+
+/* config tables */
+table.kv { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.kv td { border-top: 1px solid var(--line); padding: 7px 8px; vertical-align: top; overflow-wrap: anywhere; }
+table.kv tr:first-child td { border-top: 0; }
+table.kv td:first-child { font-weight: 650; white-space: nowrap; width: 1%; }
+.cfg-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.4fr); gap: 12px; }
+.cfg-grid h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 6px; }
+
+/* detail */
+.crumbs { display: flex; align-items: center; gap: 8px; margin: 22px 0 6px; color: var(--muted); }
+.btn { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+.btn:hover { border-color: var(--faint); }
+.dtitle { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 4px; }
+.dtitle h1 { font-size: 22px; margin: 0; letter-spacing: -.015em; }
+.goal { color: var(--muted); margin: 0 0 14px; }
+.callout { border-radius: var(--radius); padding: 14px 16px; border: 1px solid; margin-bottom: 14px; }
+.callout.fail { background: var(--fail-bg); border-color: color-mix(in srgb, var(--fail) 30%, transparent); }
+.callout.pass { background: var(--pass-bg); border-color: color-mix(in srgb, var(--pass) 30%, transparent); }
+.callout h3 { margin: 0 0 6px; font-size: 14px; }
+.callout ul { margin: 0; padding-left: 18px; }
+.callout .fix { margin-top: 8px; }
+.stats { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; margin-bottom: 14px; }
+.stats b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* timeline */
+.tl { list-style: none; margin: 0; padding: 0; position: relative; }
+.tl::before { content: ""; position: absolute; left: 15px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.step { position: relative; display: grid; grid-template-columns: 32px 1fr; gap: 12px; padding: 6px 0; }
+.dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; z-index: 1; border: 2px solid var(--panel); }
+.dot.user { background: var(--user); color: var(--info); }
+.dot.agent { background: var(--agent); color: var(--muted); }
+.dot.tool { background: var(--soft); color: var(--muted); font-family: var(--mono); }
+.dot.tool.bad { background: var(--fail-bg); color: var(--fail); }
+.dot.tool.hit { background: var(--warn-bg); color: var(--warn); }
+.dot.tool.blk { background: var(--block-bg); color: var(--block); }
+.who { font-size: 11.5px; color: var(--faint); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .05em; }
+.bubble { padding: 9px 13px; border-radius: 12px; white-space: pre-wrap; word-wrap: break-word; max-width: 760px; }
+.bubble.user { background: var(--user); }
+.bubble.agent { background: var(--agent); }
+.toolcall { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 9px 12px; max-width: 760px; }
+.toolcall.bad { border-color: color-mix(in srgb, var(--fail) 45%, var(--line)); }
+.toolcall .sig { font-family: var(--mono); font-size: 12.5px; word-break: break-word; }
+.toolcall .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.toolcall details { margin-top: 6px; }
+.toolcall summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.toolcall pre { margin: 6px 0 0; white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.end { color: var(--muted); font-size: 12.5px; padding-top: 6px; }
+
+table.checks { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.checks th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+table.checks td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.checks tr:last-child td { border-bottom: 0; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.seq { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.seq .arrow { color: var(--faint); }
+.cmds { display: grid; gap: 8px; }
+.cmdrow { display: flex; gap: 8px; align-items: center; }
+.cmdrow code { flex: 1; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; overflow-x: auto; white-space: nowrap; }
+.cmdrow .label { width: 150px; color: var(--muted); font-size: 12.5px; flex-shrink: 0; }
+.hidden { display: none !important; }
+.foot { color: var(--faint); font-size: 12px; margin-top: 32px; }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guide-grid, .cfg-grid, .compare { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .top { position: static; }
+  .wrap { padding: 0 16px 40px; }
+  .grid { grid-template-columns: 1fr; }
+  .cmdrow { flex-direction: column; align-items: stretch; }
+  .cmdrow .label { width: auto; }
+}
+@media print { .top { position: static; } .btn, .toggle { display: none; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">Murphy <span id="pname"></span></div>
+  <div class="meta" id="meta"></div>
+  <div class="spacer"></div>
+  <div id="ci"></div>
+</div></header>
+
+<main class="wrap">
+  <div id="overview">
+    <h1 class="headline" id="headline"></h1>
+    <p class="subline" id="subline"></p>
+    <div class="grid" id="kpis"></div>
+
+    <section>
+      <div class="sec-head"><h2>Personas × faults</h2><span class="hint">Each cell is one full conversation. Click to see exactly what happened.</span>
+        <label class="toggle"><input type="checkbox" id="onlyfail"> failures only</label></div>
+      <div class="card matrix"><table class="heat" id="heat"></table></div>
+    </section>
+
+    <section>
+      <details class="card guide" id="guide">
+        <summary>How to read this report</summary>
+        <div class="guide-grid">
+          <div><h3>Failure labels</h3><div class="gl" id="g-labels"></div></div>
+          <div><h3>Injected faults</h3><div class="gl" id="g-faults"></div></div>
+          <div><h3>Policies &amp; replay</h3><div class="gl" id="g-policy"></div></div>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>What was tested</h2><span class="hint">From murphy.yaml</span></div>
+      <div class="cfg-grid" id="config"></div>
+    </section>
+  </div>
+
+  <div id="detail" class="hidden"></div>
+  <p class="foot" id="foot"></p>
+</main>
+
+<script type="application/json" id="data">__MURPHY_DATA__</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("data").textContent);
+const P = DATA.project || {};
+const $ = (id) => document.getElementById(id);
+
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const c of kids.flat(Infinity)) {
+    if (c === null || c === undefined || c === false) continue;
+    n.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return n;
+}
+const chip = (cls, text, title) => el("span", { class: `chip ${cls}`, title }, text);
+const json = (v) => JSON.stringify(v, null, 2);
+const short = (v, n = 90) => { const s = typeof v === "string" ? v : JSON.stringify(v); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
+
+/* ---------- vocabulary (also used by the in-page guide) ---------- */
+const LABELS = {
+  dup: ["A side effect happened twice.", "Booking timed out after it committed; the agent retried and created a second pickup."],
+  wrong: ["The final state is not what the user wanted.", "Refunded the wrong amount, or told the user “done” without doing it."],
+  unsafe: ["A required step was skipped.", "Issued a refund before checking the refund policy."],
+  quit: ["The simulated user gave up.", "Agent asked the same question three times; the impatient persona left."],
+  stuck: ["The run hit a hard limit.", "Agent looped on a failing tool until the tool-call budget ran out."],
+  error: ["Something crashed.", "The agent raised an exception or a tool server failed to start."],
+};
+const FAULTS = {
+  timeout_after_commit: ["Call succeeds upstream, agent is told it timed out.", "The classic cause of duplicate side effects."],
+  error_500: ["Call is rejected with a 500 before it reaches the tool.", "Tests recovery and honest error messages."],
+  slow: ["Call is delayed, then succeeds.", "Tests patience and timeouts."],
+  malformed: ["Call succeeds but a field is missing from the result.", "Tests robustness to bad data."],
+};
+const MODES = {
+  off: "No policy checks.",
+  monitor: "Violations are recorded and reported; calls still go through.",
+  enforce: "Violating calls are blocked before they reach the tool.",
+};
+
+const IDEMPOTENT = ((P.policy || {}).rules || []).filter((r) => r.type === "idempotent");
+const glob = (p, s) => new RegExp("^" + p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".") + "$").test(s);
+const personaInfo = (id) => (P.personas || []).find((p) => (typeof p === "object" ? p.id : p) === id);
+const faultInfo = (id) => (P.faults || []).find((f) => f.id === id);
+const faultDesc = (f) => !f || !(f.inject || []).length ? "no faults" :
+  f.inject.map((i) => `${i.type} → ${i.tool}` + (i.rate != null ? ` @${i.rate}` : i.on_call > 1 ? ` #${i.on_call}` : "")).join(", ");
+
+const runs = [];
+for (const p of DATA.personas) for (const f of DATA.faults) {
+  const r = DATA.runs.find((x) => x.result.persona === p && x.result.fault === f);
+  if (r) runs.push(r);
+}
+let current = -1;
+
+/* ---------- header + overview ---------- */
+function header() {
+  const name = P.name || DATA.matrix;
+  document.title = `Murphy · ${name}`;
+  $("pname").textContent = `· ${name}`;
+  $("meta").replaceChildren(
+    el("span", { class: "tag", title: "agent under test" }, `target ${DATA.target}`),
+    el("span", { class: "tag", title: MODES[DATA.policy_mode] || "" }, `policy ${DATA.policy_mode}`),
+    el("span", { class: "tag" }, `seed ${DATA.seed}`));
+  const ci = DATA.ci || {};
+  $("ci").replaceChildren(!ci.configured ? el("span", { class: "pill neutral" }, "CI gate not configured")
+    : ci.tripped.length ? el("span", { class: "pill fail", title: ci.tripped.join("\n") }, "✕ CI gate failed")
+    : el("span", { class: "pill pass" }, "✓ CI gate passed"));
+  $("foot").textContent = `${DATA.matrix} · report schema v${DATA.schema_version} · generated by Murphy`;
+
+  const t = DATA.totals;
+  const failed = t.runs - t.passed;
+  const labels = Object.entries(t.labels).sort((a, b) => b[1] - a[1]);
+  $("headline").textContent = failed === 0
+    ? `All ${t.runs} conversations finished correctly.`
+    : `${t.passed} of ${t.runs} conversations finished correctly. ${failed} failed.`;
+  $("subline").textContent = labels.length
+    ? "Most common problem: " + labels.map(([k, v]) => `${(LABELS[k] || [k])[0].replace(/\.$/, "").toLowerCase()} (${v})`).join(", ") + "."
+    : "No failures under any injected fault.";
+  if (ci.tripped && ci.tripped.length) $("subline").textContent += ` CI: ${ci.tripped.join("; ")}.`;
+
+  const pct = Math.round(t.completion * 100);
+  $("kpis").replaceChildren(
+    el("div", { class: "card kpi" }, el("div", { class: "label" }, "Completion"), el("div", { class: "value" }, `${pct}%`),
+      el("div", { class: "note" }, `${t.passed} of ${t.runs} runs passed all checks`), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` }))),
+    el("div", { class: "card kpi" }, el("div", { class: "label" }, "Failures"), el("div", { class: "value" }, failed),
+      el("div", { class: "note" }, labels.length ? labels.map(([k, v]) => chip("fail", `${k} ${v}`, (LABELS[k] || [""])[0])) : "none")),
+    el("div", { class: "card kpi" }, el("div", { class: "label" }, "Policy"), el("div", { class: "value" }, `${t.policy_violations} / ${t.policy_blocks}`),
+      el("div", { class: "note" }, "violations / blocked")),
+    el("div", { class: "card kpi" }, el("div", { class: "label" }, "Cost"),
+      el("div", { class: "value" }, t.cost_per_success != null ? `$${t.cost_per_success}` : t.agent_tokens_per_success != null ? t.agent_tokens_per_success.toLocaleString() : "–"),
+      el("div", { class: "note" }, t.cost_per_success != null ? "per successful task" : "agent tokens per successful task")));
+}
+
+function heatmap() {
+  const onlyFail = $("onlyfail").checked;
+  const head = el("thead", {}, el("tr", {}, el("th"), DATA.faults.map((f) =>
+    el("th", {}, el("div", { class: "colname" }, f), el("div", { class: "coldesc" }, faultDesc(faultInfo(f)))))));
+  const body = el("tbody", {}, DATA.personas.map((p) => {
+    const info = personaInfo(p);
+    return el("tr", {}, el("th", { scope: "row" }, el("div", { class: "rowname" }, p),
+        info && info.goal ? el("div", { class: "rowdesc", title: info.goal }, info.goal) : null),
+      DATA.faults.map((f) => {
+        const i = runs.findIndex((r) => r.result.persona === p && r.result.fault === f);
+        if (i < 0) return el("td", {}, "–");
+        const r = runs[i].result;
+        const txt = r.passed ? "PASS" : `FAIL · ${r.labels.join(", ")}`;
+        return el("td", {}, el("button", { class: `cell ${r.passed ? "pass" : "fail"}${onlyFail && r.passed ? " dim" : ""}`,
+          onclick: () => show(i), "aria-label": `${p} under ${f}: ${txt}` },
+          el("span", { "aria-hidden": "true" }, r.passed ? "✓" : "✕"), el("span", {}, r.passed ? "PASS" : r.labels.join(", ")),
+          el("span", { class: "sub" }, `${r.turns} turns`)));
+      }));
+  }));
+  $("heat").replaceChildren(head, body);
+}
+
+function guide() {
+  const used = new Set(Object.keys(DATA.totals.labels));
+  const custom = (P.checks || []).filter((c) => !LABELS[c.label]).map((c) => [c.label, [c.hint || `Check “${c.id}” failed.`, ""]]);
+  const labelRows = [...Object.entries(LABELS), ...custom]
+    .filter(([k]) => used.has(k) || ["dup", "wrong", "quit"].includes(k));
+  $("g-labels").replaceChildren(...labelRows.flatMap(([k, [what, ex]]) =>
+    [chip("fail", k), el("div", {}, what, ex ? el("div", { class: "ex" }, "e.g. " + ex) : null)]));
+  $("g-faults").replaceChildren(...Object.entries(FAULTS).flatMap(([k, [what, why]]) =>
+    [el("code", {}, k), el("div", {}, what, el("div", { class: "ex" }, why))]));
+  const cell = runs.find((r) => !r.result.passed) || runs[0];
+  const path = cell ? `runs/${DATA.matrix}/${cell.cell}` : "runs/<matrix>/<cell>";
+  $("g-policy").replaceChildren(
+    ...Object.entries(MODES).flatMap(([k, v]) => [chip(k === DATA.policy_mode ? "info" : "neutral", k), el("div", {}, v)]),
+    el("div", { style: "grid-column: 1 / -1" }, el("div", { class: "ex" }, "Replay a failure with the same user turns and faults:"),
+      el("pre", { class: "cmd" }, `murphy replay ${path} --target <fixed agent>\nmurphy replay ${path} --policy enforce`)));
+}
+
+function configTables() {
+  const rules = ((P.policy || {}).rules || []);
+  const val = (v) => Array.isArray(v) ? v.map(val).join(", ") : v && typeof v === "object"
+    ? Object.entries(v).map(([k, x]) => `${k}=${val(x)}`).join(", ") : String(v);
+  const fmt = (o, skip) => Object.entries(o).filter(([k, v]) => !skip.includes(k) && v !== null && v !== "")
+    .map(([k, v]) => el("div", {}, el("span", { class: "coldesc" }, `${k} `), short(val(v), 70)));
+  const card = (title, rows) => el("div", { class: "card" }, el("h3", {}, title),
+    rows.length ? el("table", { class: "kv" }, rows) : el("div", { class: "ex" }, "none"));
+  $("config").replaceChildren(
+    card("Faults", (P.faults || []).map((f) => el("tr", {}, el("td", {}, f.id), el("td", { class: "mono" }, faultDesc(f))))),
+    card(`Policies · ${(P.policy || {}).mode || DATA.policy_mode}`, rules.map((r) => el("tr", {}, el("td", {}, r.id), el("td", {}, fmt(r, ["id"]))))),
+    card("Checks (all must pass)", (P.checks || []).map((c) => el("tr", {}, el("td", {}, c.id), el("td", {}, fmt(c, ["id", "hint"]))))));
+}
+
+/* ---------- run detail ---------- */
+function toolStep(e, seen, n) {
+  const pol = e.policy || {};
+  const chips = [];
+  let dot = "", bad = false;
+  if (pol.blocked) { chips.push(chip("block", `⛔ blocked by ${pol.violations.join(", ")}`)); dot = "blk"; }
+  else if (pol.violations && pol.violations.length) chips.push(chip("warn", `⚠ policy: ${pol.violations.join(", ")}`));
+  if (e.fault === "timeout_after_commit") { chips.push(chip("warn", "⚡ timeout injected · call committed")); dot = dot || "hit"; }
+  else if (e.fault) { chips.push(chip("warn", `⚡ ${e.fault} injected`)); dot = dot || "hit"; }
+  if (e.upstream_called && (e.ok || e.fault === "timeout_after_commit")) {
+    for (const rule of IDEMPOTENT.filter((r) => glob(r.tool, e.tool))) {
+      const key = rule.id + "|" + rule.key.map((k) => String((e.args || {})[k] ?? "").trim().toUpperCase()).join("|");
+      if (seen.has(key)) { chips.push(chip("fail", "DUPLICATE side effect")); dot = "bad"; bad = true; }
+      seen.add(key);
+    }
+  }
+  if (!pol.blocked && !e.fault && !bad) chips.push(e.ok ? chip("pass", "ok") : chip("fail", "error"));
+  chips.push(el("span", { class: "chip neutral" }, `${e.latency_ms ?? "?"} ms`));
+  const args = Object.entries(e.args || {}).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ");
+  const out = e.error ? `error: ${e.error}` + (e.result ? `\n\n(what really happened upstream)\n${json(e.result)}` : "") : json(e.result);
+  return el("li", { class: "step" }, el("div", { class: `dot tool ${dot}`, title: "tool call" }, "ƒ"),
+    el("div", {}, el("div", { class: "who" }, `tool call ${n}`),
+      el("div", { class: `toolcall${bad ? " bad" : ""}` }, el("div", { class: "sig" }, `${e.tool}(${args})`),
+        el("div", { class: "chips" }, chips),
+        el("details", {}, el("summary", {}, e.error ? "error / result" : "result"), el("pre", {}, out)))));
+}
+
+function timeline(trace) {
+  const seen = new Set();
+  let n = 0, turn = 0;
+  const items = [];
+  for (const e of trace) {
+    if (e.kind === "tool") { items.push(toolStep(e, seen, ++n)); continue; }
+    if (e.kind === "user" && !e.text) {
+      items.push(el("li", { class: "end" }, `Simulated user ended the conversation: ${e.status}`));
+      continue;
+    }
+    if (e.kind === "user") turn++;
+    const end = e.kind === "user" && e.status && e.status !== "continue" ? ` · ${e.status}` : "";
+    items.push(el("li", { class: "step" },
+      el("div", { class: `dot ${e.kind}` }, e.kind === "user" ? `U${turn}` : "A"),
+      el("div", {}, el("div", { class: "who" }, (e.kind === "user" ? "simulated user" : "agent under test") + end),
+        el("div", { class: `bubble ${e.kind}` }, e.text))));
+  }
+  return el("ol", { class: "tl" }, items);
+}
+
+function toolSeq(trace) {
+  const calls = trace.filter((e) => e.kind === "tool");
+  if (!calls.length) return el("span", { class: "ex" }, "no tool calls");
+  return el("div", { class: "seq" }, calls.flatMap((e, i) => [
+    i ? el("span", { class: "arrow" }, "→") : null,
+    chip(e.policy && e.policy.blocked ? "block" : e.fault ? "warn" : e.ok ? "neutral" : "fail",
+      e.tool + (e.policy && e.policy.blocked ? " ⛔" : e.fault ? " ⚡" : ""))]));
+}
+
+function verdict(r) {
+  return el("span", { class: `pill ${r.passed ? "pass" : "fail"}` }, r.passed ? "✓ PASS" : `✕ FAIL · ${r.labels.join(", ")}`);
+}
+
+function copyRow(label, cmd) {
+  const code = el("code", {}, cmd);
+  const selectText = () => { const range = document.createRange(); range.selectNodeContents(code);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); btn.textContent = "selected · ⌘C"; };
+  const btn = el("button", { class: "btn", onclick: () => {
+    if (!navigator.clipboard) return selectText();
+    navigator.clipboard.writeText(cmd).then(() => { btn.textContent = "copied"; }, selectText);
+  } }, "copy");
+  return el("div", { class: "cmdrow" }, el("span", { class: "label" }, label), code, btn);
+}
+
+function show(i) {
+  current = i;
+  const run = runs[i], r = run.result;
+  const info = personaInfo(r.persona);
+  const failed = r.checks.filter((c) => !c.passed);
+  const path = `runs/${DATA.matrix}/${run.cell}`;
+  const callout = r.passed
+    ? el("div", { class: "callout pass" }, el("h3", {}, `All ${r.checks.length} checks passed`),
+        el("div", {}, `The user's goal was met under “${r.fault}”.`))
+    : el("div", { class: "callout fail" }, el("h3", {}, "What went wrong"),
+        el("ul", {}, failed.map((c) => el("li", {}, el("b", {}, c.id), ` (${c.label}): ${c.message}`)),
+          r.labels.filter((l) => ["quit", "stuck", "error"].includes(l)).map((l) => el("li", {}, el("b", {}, l), `: conversation ended with “${r.end_reason}”`))),
+        r.hint ? el("div", { class: "fix" }, el("b", {}, "How to fix: "), r.hint) : null);
+  const replays = run.replays.map((rep) => el("div", { class: "card" },
+    el("div", { class: "compare" },
+      el("div", {}, el("div", { class: "who" }, `before · ${r.target} · policy ${r.policy_mode}`), verdict(r), toolSeq(run.trace)),
+      el("div", {}, el("div", { class: "who" }, `after · ${rep.result.target} · policy ${rep.result.policy_mode}${rep.result.replay_diverged ? " · diverged" : ""}`),
+        verdict(rep.result), toolSeq(rep.trace)))));
+
+  $("detail").replaceChildren(
+    el("div", { class: "crumbs" },
+      el("button", { class: "btn", onclick: back }, "← All runs"),
+      el("span", { class: "spacer" }),
+      el("button", { class: "btn", onclick: () => show((current - 1 + runs.length) % runs.length), "aria-label": "previous run" }, "‹"),
+      el("span", {}, `${i + 1} / ${runs.length}`),
+      el("button", { class: "btn", onclick: () => show((current + 1) % runs.length), "aria-label": "next run" }, "›")),
+    el("div", { class: "dtitle" }, el("h1", {}, `${r.persona} × ${r.fault}`), verdict(r)),
+    el("p", { class: "goal" }, info && info.goal ? `Goal: ${info.goal}` : "", el("span", { class: "coldesc" }, `  ·  ${faultDesc(faultInfo(r.fault))}`)),
+    callout,
+    el("div", { class: "stats" },
+      el("span", {}, el("b", {}, r.turns), " user turns"), el("span", {}, el("b", {}, r.tool_calls), " tool calls"),
+      el("span", {}, el("b", {}, r.faults_fired), " faults"), el("span", {}, el("b", {}, `${r.policy_violations}/${r.policy_blocks}`), " policy viol./blocked"),
+      el("span", {}, el("b", {}, `${r.wall_s}s`), " wall"), el("span", {}, el("b", {}, r.target_tokens.toLocaleString()), " agent tokens"),
+      el("span", {}, "ended: ", el("b", {}, r.end_reason))),
+    el("section", {}, el("div", { class: "sec-head" }, el("h2", {}, "Conversation & tool calls"),
+      el("span", { class: "hint" }, "Every tool call passed through the Murphy proxy. Expand a call to see its result.")),
+      el("div", { class: "card" }, timeline(run.trace))),
+    el("section", {}, el("div", { class: "sec-head" }, el("h2", {}, "Checks")),
+      el("div", { class: "card" }, el("table", { class: "checks" },
+        el("tr", {}, el("th", {}, "check"), el("th", {}, "result"), el("th", {}, "label"), el("th", {}, "detail")),
+        r.checks.map((c) => el("tr", {}, el("td", { class: "mono" }, c.id), el("td", {}, chip(c.passed ? "pass" : "fail", c.passed ? "pass" : "fail")),
+          el("td", {}, c.label), el("td", {}, c.message)))))),
+    replays.length ? el("section", {}, el("div", { class: "sec-head" }, el("h2", {}, "Replay"),
+      el("span", { class: "hint" }, "Same user turns, same faults, same seed: the fix is proven on this exact conversation.")), replays) : null,
+    el("section", {}, el("div", { class: "sec-head" }, el("h2", {}, "Reproduce")),
+      el("div", { class: "card cmds" },
+        copyRow("Replay with a fix", `murphy replay ${path} --target <fixed agent>`),
+        copyRow("Replay with policy", `murphy replay ${path} --policy enforce`))));
+  $("overview").classList.add("hidden");
+  $("detail").classList.remove("hidden");
+  window.scrollTo(0, 0);
+  if (location.hash.slice(1) !== run.cell) history.replaceState(null, "", `#${run.cell}`);
+}
+
+function back() {
+  current = -1;
+  $("detail").classList.add("hidden");
+  $("overview").classList.remove("hidden");
+  history.replaceState(null, "", location.pathname);
+}
+
+document.addEventListener("keydown", (ev) => {
+  if (current < 0 || (ev.target instanceof Element && ev.target.closest("input, textarea"))) return;
+  if (ev.key === "Escape") back();
+  if (ev.key === "ArrowRight") show((current + 1) % runs.length);
+  if (ev.key === "ArrowLeft") show((current - 1 + runs.length) % runs.length);
+});
+$("onlyfail").addEventListener("change", heatmap);
+
+header(); heatmap(); guide(); configTables();
+if (DATA.totals.runs - DATA.totals.passed > 0) $("guide").open = false;
+function route() {
+  const i = runs.findIndex((r) => r.cell === decodeURIComponent(location.hash.slice(1)));
+  if (i >= 0 && i !== current) show(i);
+  else if (i < 0 && current >= 0) back();
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>

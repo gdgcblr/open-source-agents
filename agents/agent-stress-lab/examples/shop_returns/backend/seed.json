@@ -1,0 +1,34 @@
+{
+  "customers": {
+    "priya@example.com": {"name": "Priya"},
+    "rahul@example.com": {"name": "Rahul"},
+    "meera@example.com": {"name": "Meera"}
+  },
+  "orders": {
+    "A12": {
+      "email": "priya@example.com",
+      "delivered_on": "2026-10-17",
+      "items": [{"sku": "SNK-42", "name": "Running sneakers", "size": "9", "final_sale": false}]
+    },
+    "A07": {
+      "email": "priya@example.com",
+      "delivered_on": "2026-10-20",
+      "items": [{"sku": "JKT-11", "name": "Rain jacket", "size": "M", "final_sale": false}]
+    },
+    "B33": {
+      "email": "rahul@example.com",
+      "delivered_on": "2026-08-01",
+      "items": [{"sku": "HPH-09", "name": "Wireless headphones", "size": null, "final_sale": false}]
+    },
+    "C51": {
+      "email": "meera@example.com",
+      "delivered_on": "2026-10-15",
+      "items": [{"sku": "SWM-03", "name": "Swimsuit", "size": "S", "final_sale": true}]
+    },
+    "C52": {
+      "email": "meera@example.com",
+      "delivered_on": "2026-10-19",
+      "items": [{"sku": "SNK-77", "name": "Trail sneakers", "size": "7", "final_sale": false}]
+    }
+  }
+}

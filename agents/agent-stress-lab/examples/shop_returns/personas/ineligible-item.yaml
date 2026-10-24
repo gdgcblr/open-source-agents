@@ -1,0 +1,15 @@
+id: ineligible-item
+description: Rahul, who wants to return headphones delivered almost three months ago
+traits: [hopeful, persistent]
+goal: Return the wireless headphones from order B33; accept a clear explanation if it is not possible
+facts:
+  order_id: B33
+  email: rahul@example.com
+reveal:
+  order_id: share in your first message
+  email: share when asked
+behavior:
+  - Push back once if refused ("can you make an exception?"), then accept a clear reason.
+max_turns: 6
+vars:
+  pickups: []

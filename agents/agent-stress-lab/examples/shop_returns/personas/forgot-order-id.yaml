@@ -1,0 +1,13 @@
+id: forgot-order-id
+description: Priya, who wants to return sneakers but does not remember the order ID
+traits: [polite, vague]
+goal: Return the size-9 running sneakers bought last week because they are too small
+facts:
+  email: priya@example.com
+  item: running sneakers, size 9
+reveal:
+  email: only when asked for an email or account
+  order_id: you do not know it; say so if asked
+max_turns: 8
+vars:
+  pickups: [{order_id: A12, item_sku: SNK-42}]
