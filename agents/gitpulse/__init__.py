@@ -1,0 +1,1 @@
+"""GitPulse local pull request review assistant."""

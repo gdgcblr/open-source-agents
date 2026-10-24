@@ -1,0 +1,5 @@
+google-adk==2.13.0
+litellm==1.106.2
+python-dotenv==1.2.4
+pytest==9.1.1
+ruff==0.16.4
