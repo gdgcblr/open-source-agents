@@ -46,4 +46,5 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`financial-advisor-agent`](./financial-advisor-agent/) | Autonomous Portfolio & Rebalancing Advisor with real-time market data, deterministic drift math, and tax-aware recommendations for Indian investors | Google GenAI SDK (`gemini-2.5-flash`), `yfinance`, `pandas`, `tabulate` | [@TheCreatorGanesh](https://github.com/TheCreatorGanesh) |
+

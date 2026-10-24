@@ -1,0 +1,53 @@
+{
+  "investor_profile": {
+    "name": "Custom Investor",
+    "residence": "India",
+    "base_currency": "INR"
+  },
+  "current_holdings": [
+    {
+      "ticker": "RELIANCE.NS",
+      "name": "Reliance Industries Limited",
+      "shares": 100.0,
+      "asset_class": "Indian Equity",
+      "sector": "Energy & Conglomerate"
+    },
+    {
+      "ticker": "INFY.NS",
+      "name": "Infosys Limited",
+      "shares": 50.0,
+      "asset_class": "Indian Equity",
+      "sector": "Information Technology"
+    },
+    {
+      "ticker": "TCS.NS",
+      "name": "Tata Consultancy Services Ltd",
+      "shares": 10.0,
+      "asset_class": "Indian Equity",
+      "sector": "Information Technology"
+    }
+  ],
+  "target_allocation_models": {
+    "Aggressive Growth": {
+      "Indian Equity": 0.5,
+      "International Equity": 0.15,
+      "Fixed Income / Debt": 0.2,
+      "Gold / Commodities": 0.1,
+      "Cash & Equivalents": 0.05
+    },
+    "Moderate Balanced": {
+      "Indian Equity": 0.4,
+      "International Equity": 0.1,
+      "Fixed Income / Debt": 0.35,
+      "Gold / Commodities": 0.1,
+      "Cash & Equivalents": 0.05
+    },
+    "Conservative Preservation": {
+      "Indian Equity": 0.2,
+      "International Equity": 0.05,
+      "Fixed Income / Debt": 0.55,
+      "Gold / Commodities": 0.15,
+      "Cash & Equivalents": 0.05
+    }
+  }
+}

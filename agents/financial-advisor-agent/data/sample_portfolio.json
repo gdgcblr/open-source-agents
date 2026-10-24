@@ -1,0 +1,97 @@
+{
+  "investor_profile": {
+    "name": "Arjun Sharma",
+    "residence": "India",
+    "tax_status": "Resident Individual",
+    "risk_profile": "Moderate to Aggressive",
+    "base_currency": "INR"
+  },
+  "current_holdings": [
+    {
+      "ticker": "RELIANCE.NS",
+      "name": "Reliance Industries Limited",
+      "shares": 120,
+      "asset_class": "Indian Equity",
+      "sector": "Energy & Conglomerate"
+    },
+    {
+      "ticker": "TCS.NS",
+      "name": "Tata Consultancy Services Ltd",
+      "shares": 60,
+      "asset_class": "Indian Equity",
+      "sector": "Information Technology"
+    },
+    {
+      "ticker": "HDFCBANK.NS",
+      "name": "HDFC Bank Limited",
+      "shares": 150,
+      "asset_class": "Indian Equity",
+      "sector": "Financial Services"
+    },
+    {
+      "ticker": "NIFTYBEES.NS",
+      "name": "Nippon India ETF Nifty 50 BeES",
+      "shares": 1200,
+      "asset_class": "Indian Equity",
+      "sector": "Large Cap Index"
+    },
+    {
+      "ticker": "MON100.NS",
+      "name": "Motilal Oswal Nasdaq 100 ETF",
+      "shares": 1500,
+      "asset_class": "International Equity",
+      "sector": "US Tech / Global"
+    },
+    {
+      "ticker": "GOLDBEES.NS",
+      "name": "Nippon India ETF Gold BeES",
+      "shares": 1800,
+      "asset_class": "Gold / Commodities",
+      "sector": "Precious Metals"
+    },
+    {
+      "ticker": "LIQUIDBEES.NS",
+      "name": "Nippon India ETF Liquid BeES (Debt)",
+      "shares": 250,
+      "asset_class": "Fixed Income / Debt",
+      "sector": "Money Market / Overnight"
+    },
+    {
+      "ticker": "GOI_BONDS",
+      "name": "Government of India 7.18% GS 2033 Bond",
+      "shares": 200,
+      "asset_class": "Fixed Income / Debt",
+      "sector": "Sovereign Debt"
+    },
+    {
+      "ticker": "INR_CASH",
+      "name": "High Yield Bank Savings / Emergency Reserve",
+      "shares": 150000,
+      "asset_class": "Cash & Equivalents",
+      "sector": "Liquid Savings"
+    }
+  ],
+  "target_allocation_models": {
+    "Aggressive Growth": {
+      "Indian Equity": 0.50,
+      "International Equity": 0.15,
+      "Fixed Income / Debt": 0.20,
+      "Gold / Commodities": 0.10,
+      "Cash & Equivalents": 0.05
+    },
+    "Moderate Balanced": {
+      "Indian Equity": 0.40,
+      "International Equity": 0.10,
+      "Fixed Income / Debt": 0.35,
+      "Gold / Commodities": 0.10,
+      "Cash & Equivalents": 0.05
+    },
+    "Conservative Preservation": {
+      "Indian Equity": 0.20,
+      "International Equity": 0.05,
+      "Fixed Income / Debt": 0.55,
+      "Gold / Commodities": 0.15,
+      "Cash & Equivalents": 0.05
+    }
+  }
+}
