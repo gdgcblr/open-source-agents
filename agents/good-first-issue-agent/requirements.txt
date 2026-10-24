@@ -1,0 +1,8 @@
+# Runtime dependencies (versions verified with Python 3.13 on macOS).
+requests==2.34.2
+python-dotenv==1.2.4
+# Uses the operating system's certificate store (works behind TLS-inspecting proxies).
+truststore==0.10.4
+# Optional AI layer (--ai). The tool still works without a Gemini API key.
+# google-adk 2.13.0 requires Python 3.11+.
+google-adk==2.13.0

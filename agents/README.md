@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`good-first-issue-agent`](good-first-issue-agent/) | Ranks open GitHub (or Sentry/GlitchTip) issues by approachability with explainable scores and writes an investigation plan; read-only, with guardrails. | Python, Google ADK, Gemini, GitHub REST API | [@AbhiJeet9065](https://github.com/AbhiJeet9065) |

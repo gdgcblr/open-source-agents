@@ -1,0 +1,293 @@
+# Real runs recorded on 2026-10-24 07:39 UTC (Python 3.13, macOS).
+# GITHUB_TOKEN and GOOGLE_API_KEY were set.
+# GitHub data changes over time; your results will differ.
+
+$ python -m good_first_issue_agent --repo pandas-dev/pandas --limit 20 --top 3
+Good First Issue Agent - pandas-dev/pandas (GitHub)
+https://github.com/pandas-dev/pandas
+Fetched 20 open issue(s), excluded 78 pull request(s). Showing top 3.
+
+ 1. [ 45/100] #44957  BUG: resampling with origin='end_day' raises ValueError: Values falls before first bin
+      https://github.com/pandas-dev/pandas/issues/44957
+      labels: Bug, Resample, Needs Tests | comments: 5
+      + 8 actionable: Description states expected behaviour.
+      +12 reproducible: Includes reproduction steps, code or error output.
+      +10 limited scope: Looks small: label 'Needs Tests'; mentions 'docs', 'error message'.
+
+ 2. [ 45/100] #43941  BUG: Series.plot.hist segfault for timedelta64
+      https://github.com/pandas-dev/pandas/issues/43941
+      labels: Bug, Visualization, Needs Tests, Segfault | comments: 9
+      + 8 actionable: Description states expected behaviour.
+      +12 reproducible: Includes reproduction steps, code or error output.
+      +15 limited scope: Looks small: label 'Needs Tests'; points to 1 specific file(s).
+      - 5 possible complexity: Mentions 'Segfault' (inferred from wording).
+
+ 3. [ 35/100] #58866  BUG: pandas.read_json casts float column to int
+      https://github.com/pandas-dev/pandas/issues/58866
+      labels: Bug, Docs, IO JSON, Arrow | assigned: VashuTheGreat | comments: 14
+      + 8 actionable: Description states expected behaviour.
+      +12 reproducible: Includes reproduction steps, code or error output.
+      +10 limited scope: Looks small: label 'Docs'.
+      -10 already assigned: Assigned to VashuTheGreat.
+
+Investigation plan for #44957 (top-ranked issue, deterministic)
+  1. Read CONTRIBUTING.md, then comment on the issue to say you would like to work on it.
+  2. Read all 5 comment(s): decisions may have changed since the issue was opened.
+  3. Reproduce the problem locally using the steps in the issue before changing code.
+  4. The issue's code or traceback mentions IPython/core/interactiveshell.py, pandas/core/frame.py,
+    pandas/core/generic.py, pandas/core/resample.py. Some may be library files; find the ones that
+    belong to this project and start there.
+  5. Find the existing tests closest to the change and add or update one with your fix.
+  Files found in the issue text: IPython/core/interactiveshell.py, pandas/core/frame.py,
+    pandas/core/generic.py, pandas/core/resample.py, pandas/_libs/lib.pyx
+
+Note: scores are heuristics from labels and issue text, not a guarantee of difficulty. Nothing was changed on GitHub or the error tracker; this tool is read-only.
+[exit code 0]
+
+$ python -m good_first_issue_agent --repo pytest-dev/pytest --label 'good first issue'
+Good First Issue Agent - pytest-dev/pytest (GitHub)
+https://github.com/pytest-dev/pytest
+Fetched 1 open issue(s), excluded 0 pull request(s). Showing top 1.
+
+ 1. [ 34/100] #14853  Expose FixtureFunctionDefinition as part of the public API
+      https://github.com/pytest-dev/pytest/issues/14853
+      labels: good first issue, topic: fixtures | assigned: teddygood | comments: 19
+      +25 beginner label: Labelled 'good first issue' by the project (a signal, not proof).
+      + 4 reproducible: Includes code or error output.
+      -10 already assigned: Assigned to teddygood.
+
+Investigation plan for #14853 (top-ranked issue, deterministic)
+  1. Ask on the issue whether the assignee is still working on it before you start.
+  2. Read all 19 comment(s): decisions may have changed since the issue was opened.
+  3. Ask maintainers to confirm the expected behaviour or acceptance criteria.
+  4. Code location is unknown. Search the repository for keywords from the title, e.g. `Expose
+    FixtureFunctionDefinition part`.
+  5. Find the existing tests closest to the change and add or update one with your fix.
+  Open questions / uncertainty:
+    - Someone is assigned: ask before starting work.
+
+Note: scores are heuristics from labels and issue text, not a guarantee of difficulty. Nothing was changed on GitHub or the error tracker; this tool is read-only.
+[exit code 0]
+
+$ python -m good_first_issue_agent --repo https://github.com/pandas-dev/pandas/issues/44957 --ai
+Good First Issue Agent - pandas-dev/pandas (GitHub)
+https://github.com/pandas-dev/pandas
+
+ 1. [ 45/100] #44957  BUG: resampling with origin='end_day' raises ValueError: Values falls before first bin
+      https://github.com/pandas-dev/pandas/issues/44957
+      labels: Bug, Resample, Needs Tests | comments: 5
+      + 8 actionable: Description states expected behaviour.
+      +12 reproducible: Includes reproduction steps, code or error output.
+      +10 limited scope: Looks small: label 'Needs Tests'; mentions 'docs', 'error message'.
+
+Investigation plan for #44957 (selected issue, deterministic)
+  1. Read CONTRIBUTING.md, then comment on the issue to say you would like to work on it.
+  2. Read all 5 comment(s): decisions may have changed since the issue was opened.
+  3. Reproduce the problem locally using the steps in the issue before changing code.
+  4. The issue's code or traceback mentions IPython/core/interactiveshell.py, pandas/core/frame.py,
+    pandas/core/generic.py, pandas/core/resample.py. Some may be library files; find the ones that
+    belong to this project and start there.
+  5. Find the existing tests closest to the change and add or update one with your fix.
+  Files found in the issue text: IPython/core/interactiveshell.py, pandas/core/frame.py,
+    pandas/core/generic.py, pandas/core/resample.py, pandas/_libs/lib.pyx
+
+AI analysis (gemini-flash-lite-latest) - model-generated recommendation, verify before acting
+------------------------------------------------------------
+Summary: Issue #44957 reports a `ValueError: Values falls before first bin` when using `df.resample(rule='7d', origin='end_day')` because `end_day` sets `closed='right'` and `label='right'` by default, causing index values to fall outside the generated time bins range.
+
+Why it may be approachable:
+- Clear reproduction snippet provided in the issue description (#44957).
+- Additional discussion and analysis in the comments clarifying how `origin='end_day'` sets default `closed`/`label` parameters and interacts with bin generation.
+- Limited scope confined to time resampling and binner/bin generation logic.
+
+Missing information / questions to ask maintainers:
+- Should `origin='end_day'` adjust the start/first bin automatically to include all values in the index when `closed='right'` / `label='right'`, or should it raise an informative error?
+
+Investigation plan:
+1. Run the reproducible example from issue #44957 locally in python to inspect the exact traceback and behavior of `generate_bins_dt64`.
+2. Examine `pandas/core/resample.py` where `origin='end_day'` is handled and default `closed`/`label` parameters are assigned.
+3. Investigate `pandas/_libs/lib.pyx` (`generate_bins_dt64`) to see how bin boundaries and value checks are computed.
+4. Write a unit test replicating the bug to verify any proposed fix or documentation update.
+
+Where to look:
+- `pandas/core/resample.py`
+- `pandas/_libs/lib.pyx`
+- `pandas/tests/resample/` (for existing resample tests)
+
+Risks:
+- Changing how bins are generated for `origin='end_day'` or `closed='right'` could affect backwards compatibility with existing pandas resample behavior across various rules and timezones.
+------------------------------------------------------------
+  ! gemini-flash-latest was overloaded or too slow; this answer comes from gemini-flash-lite-latest.
+
+Note: scores are heuristics from labels and issue text, not a guarantee of difficulty. Nothing was changed on GitHub or the error tracker; this tool is read-only.
+[exit code 0]
+
+$ python -m good_first_issue_agent --repo pytest-dev/pytest --label 'good first issue' --format json
+{
+  "source": "github",
+  "target": "pytest-dev/pytest",
+  "target_url": "https://github.com/pytest-dev/pytest",
+  "fetched": 1,
+  "excluded_pull_requests": 0,
+  "ranked": [
+    {
+      "issue": {
+        "source": "github",
+        "id": "14853",
+        "display_id": "#14853",
+        "title": "Expose FixtureFunctionDefinition as part of the public API",
+        "url": "https://github.com/pytest-dev/pytest/issues/14853",
+        "body": "There doesn’t appear to be a public type that can be used to annotate the result of `pytest.fixture`.\n\nFor example, consider a factory which creates fixtures:\n\n```python\nfrom _pytest.fixtures import FixtureFunctionDefinition\n\ndef make_fixture(value: str) -> FixtureFunctionDefinition:\n    @pytest.fixture\n    def fixture() -> str:\n        return value\n    return fixture\n```",
+        "labels": [
+          "good first issue",
+          "topic: fixtures"
+        ],
+        "state": "open",
+        "assignees": [
+          "teddygood"
+        ],
+        "comments": 19,
+        "created_at": "2026-08-11T08:36:34Z",
+        "updated_at": "2026-10-18T03:22:41Z",
+        "locked": false,
+        "level": "",
+        "culprit": "",
+        "event_count": 0,
+        "user_count": 0,
+        "error_type": "",
+        "error_value": "",
+        "stack_files": []
+      },
+      "score": 34,
+      "reasons": [
+        {
+          "signal": "beginner label",
+          "points": 25,
+          "detail": "Labelled 'good first issue' by the project (a signal, not proof)."
+        },
+        {
+          "signal": "reproducible",
+          "points": 4,
+          "detail": "Includes code or error output."
+        },
+        {
+          "signal": "already assigned",
+          "points": -10,
+          "detail": "Assigned to teddygood."
+        }
+      ],
+      "uncertainties": [
+        "Someone is assigned: ask before starting work."
+      ],
+      "next_steps": [
+        "Ask on the issue whether the assignee is still working on it before you start.",
+        "Read all 19 comment(s): decisions may have changed since the issue was opened.",
+        "Ask maintainers to confirm the expected behaviour or acceptance criteria.",
+        "Code location is unknown. Search the repository for keywords from the title, e.g. `Expose FixtureFunctionDefinition part`.",
+        "Find the existing tests closest to the change and add or update one with your fix."
+      ],
+      "evidence_paths": [],
+      "flags": []
+    }
+  ],
+  "selected": {
+    "issue": {
+      "source": "github",
+      "id": "14853",
+      "display_id": "#14853",
+      "title": "Expose FixtureFunctionDefinition as part of the public API",
+      "url": "https://github.com/pytest-dev/pytest/issues/14853",
+      "body": "There doesn’t appear to be a public type that can be used to annotate the result of `pytest.fixture`.\n\nFor example, consider a factory which creates fixtures:\n\n```python\nfrom _pytest.fixtures import FixtureFunctionDefinition\n\ndef make_fixture(value: str) -> FixtureFunctionDefinition:\n    @pytest.fixture\n    def fixture() -> str:\n        return value\n    return fixture\n```",
+      "labels": [
+        "good first issue",
+        "topic: fixtures"
+      ],
+      "state": "open",
+      "assignees": [
+        "teddygood"
+      ],
+      "comments": 19,
+      "created_at": "2026-08-11T08:36:34Z",
+      "updated_at": "2026-10-18T03:22:41Z",
+      "locked": false,
+      "level": "",
+      "culprit": "",
+      "event_count": 0,
+      "user_count": 0,
+      "error_type": "",
+      "error_value": "",
+      "stack_files": []
+    },
+    "score": 34,
+    "reasons": [
+      {
+        "signal": "beginner label",
+        "points": 25,
+        "detail": "Labelled 'good first issue' by the project (a signal, not proof)."
+      },
+      {
+        "signal": "reproducible",
+        "points": 4,
+        "detail": "Includes code or error output."
+      },
+      {
+        "signal": "already assigned",
+        "points": -10,
+        "detail": "Assigned to teddygood."
+      }
+    ],
+    "uncertainties": [
+      "Someone is assigned: ask before starting work."
+    ],
+    "next_steps": [
+      "Ask on the issue whether the assignee is still working on it before you start.",
+      "Read all 19 comment(s): decisions may have changed since the issue was opened.",
+      "Ask maintainers to confirm the expected behaviour or acceptance criteria.",
+      "Code location is unknown. Search the repository for keywords from the title, e.g. `Expose FixtureFunctionDefinition part`.",
+      "Find the existing tests closest to the change and add or update one with your fix."
+    ],
+    "evidence_paths": [],
+    "flags": []
+  },
+  "ai": null,
+  "warnings": [],
+  "disclaimer": "Scores are heuristics based on issue text and labels, not a guarantee that an issue is beginner-friendly. AI analysis, when present, is a model-generated recommendation and may be wrong."
+}
+[exit code 0]
+
+# ---------------------------------------------------------------- failure handling
+
+$ python -m good_first_issue_agent --repo pandas-dev/pandas --label 'good first issue'
+Good First Issue Agent - pandas-dev/pandas (GitHub)
+https://github.com/pandas-dev/pandas
+
+No candidate issues found.
+
+Warnings:
+  - No open issues with label(s) good first issue were found in the most recent 3 page(s) of
+    results. Label names must match exactly; try without --label.
+
+Note: scores are heuristics from labels and issue text, not a guarantee of difficulty. Nothing was changed on GitHub or the error tracker; this tool is read-only.
+[exit code 0]
+
+$ python -m good_first_issue_agent --repo pallets/flask --issue 5918
+Error: #5918 in pallets/flask is a pull request, not an issue.
+[exit code 2]
+
+$ python -m good_first_issue_agent --repo pallets/this-repo-does-not-exist-xyz
+Error: Repository pallets/this-repo-does-not-exist-xyz was not found. Check the spelling.
+[exit code 1]
+
+$ python -m good_first_issue_agent --repo 'not a repo'
+Error: 'not a repo' is not a repository. Use the form owner/repo, e.g. pallets/flask.
+[exit code 2]
+
+$ python -m good_first_issue_agent --repo gitlab.com/foo/bar
+Error: Only github.com repositories are supported (got 'gitlab.com').
+[exit code 2]
+
+# Recorded earlier the same day, before GITHUB_TOKEN was set, after the shared
+# 60 requests/hour unauthenticated limit for this network was used up:
+$ python -m good_first_issue_agent --repo pallets/flask
+Error: GitHub rate limit reached. The limit resets at 07:40 UTC. Setting GITHUB_TOKEN raises the limit from 60 to 5,000 requests/hour.
+[exit code 1]
