@@ -320,13 +320,122 @@ function renderDashboardHtml(report) {
     }
 
     @media print {
-      body { background: #fff !important; color: #111 !important; }
-      header { border-bottom: 2px solid #ccc; background: #fff !important; position: static; }
-      .header-actions, .tabs, .copy-btn { display: none !important; }
-      .score-card, .summary-card, .finding-card, pre { background: #f8fafc !important; color: #111 !important; border: 1px solid #ddd !important; box-shadow: none !important; }
-      .finding-title, .score-num, .brand h1 { color: #000 !important; }
-      .tab-content { display: block !important; margin-bottom: 2rem; }
-      pre { white-space: pre-wrap; word-break: break-all; }
+      @page {
+        size: A4;
+        margin: 1.5cm;
+      }
+      body {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        font-size: 10pt;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      header {
+        border-bottom: 2px solid #0284c7 !important;
+        background: #ffffff !important;
+        position: static !important;
+        padding: 0 0 1rem 0 !important;
+        margin-bottom: 1.5rem !important;
+      }
+      .logo-badge {
+        background: #0284c7 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+      }
+      .header-actions, .tabs, .copy-btn, #tab-markdown {
+        display: none !important;
+      }
+      .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .hero-grid {
+        display: grid !important;
+        grid-template-columns: 220px 1fr !important;
+        gap: 1.25rem !important;
+        margin-bottom: 1.5rem !important;
+        page-break-inside: avoid !important;
+      }
+      .score-card, .summary-card {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        padding: 1.25rem !important;
+      }
+      .score-num {
+        color: #0f172a !important;
+        font-size: 2.25rem !important;
+      }
+      .badge-approved { background: #dcfce7 !important; color: #15803d !important; border: 1px solid #86efac !important; }
+      .badge-warn { background: #fef9c3 !important; color: #a16207 !important; border: 1px solid #fde047 !important; }
+      .badge-fail { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important; }
+
+      .agent-pill {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+      }
+      .agent-name { color: #0f172a !important; font-weight: 700 !important; }
+      .agent-score { color: #0369a1 !important; font-weight: 800 !important; }
+
+      .tab-content {
+        display: block !important;
+        margin-bottom: 2rem !important;
+      }
+      .tab-content::before {
+        display: block;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 1.5rem 0 0.75rem 0;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #cbd5e1;
+      }
+      #tab-findings::before { content: "1. Detailed Findings & Audit Observations"; }
+      #tab-patches::before { content: "2. Automated Remediation Patches (Unified Diffs)"; }
+      #tab-timeline::before { content: "3. Multi-Agent Audit Trail & Execution Timeline"; }
+
+      .finding-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 0.85rem !important;
+        padding: 1rem !important;
+      }
+      .finding-card.critical { border-left: 5px solid #dc2626 !important; background: #fff5f5 !important; }
+      .finding-card.high { border-left: 5px solid #ea580c !important; background: #fffaf0 !important; }
+      .finding-card.medium { border-left: 5px solid #ca8a04 !important; background: #fefce8 !important; }
+      .finding-card.info { border-left: 5px solid #0284c7 !important; background: #f0f9ff !important; }
+
+      .finding-title {
+        color: #0f172a !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+      }
+      .finding-desc {
+        color: #334155 !important;
+        font-size: 0.88rem !important;
+      }
+      .finding-rec {
+        background: #f0fdf4 !important;
+        border: 1px solid #86efac !important;
+        color: #166534 !important;
+        font-size: 0.85rem !important;
+        margin-top: 0.5rem !important;
+      }
+
+      pre {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        font-size: 8pt !important;
+        white-space: pre-wrap !important;
+        page-break-inside: avoid !important;
+      }
     }
   </style>
 </head>
