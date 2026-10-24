@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [sql-copilot-agent](sql-copilot-agent/) | Talk to your database in plain English — answers questions and makes guarded writes (confirm, atomic, no hard delete / no DDL) | Google ADK + Gemini + SQLAlchemy | Kannan |
