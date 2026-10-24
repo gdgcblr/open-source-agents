@@ -1,0 +1,3 @@
+# The repository ignores Python lib/ directories; these are frontend sources.
+!src/lib/
+!src/lib/**
