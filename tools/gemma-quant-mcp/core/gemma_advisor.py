@@ -13,12 +13,15 @@ from core.models import QuantTargets, GemmaThesis
 
 
 SUPPORTED_MODELS = {
-    "gemma": "gemma-2-9b-it",
-    "gemma-2-9b": "gemma-2-9b-it",
-    "gemma-2-27b": "gemma-2-27b-it",
-    "gemini": "gemini-2.5-flash",
     "gemini-2.5-flash": "gemini-2.5-flash",
+    "gemini-2.5-pro": "gemini-2.5-pro",
+    "gemini-2.5-flash-lite": "gemini-2.5-flash-lite",
     "gemini-1.5-flash": "gemini-1.5-flash",
+    "gemini-1.5-pro": "gemini-1.5-pro",
+    "gemma-2-9b-it": "gemma-2-9b-it",
+    "gemma-2-27b-it": "gemma-2-27b-it",
+    "gemma": "gemma-2-9b-it",
+    "gemini": "gemini-2.5-flash",
 }
 
 

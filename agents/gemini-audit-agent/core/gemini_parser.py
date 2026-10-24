@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple
 from .models import Member, Expense, SettlementRecord, SettlementStatus
 
 
-def parse_unstructured_ledger(text: str) -> Tuple[List[Member], List[Expense], List[SettlementRecord]]:
+def parse_unstructured_ledger(text: str, api_key: Optional[str] = None, model_choice: Optional[str] = None) -> Tuple[List[Member], List[Expense], List[SettlementRecord]]:
     """Dual-layer parser: tries Gemini if API key present, otherwise falls back to deterministic heuristic."""
     api_key = os.getenv("GEMINI_API_KEY")
     if api_key and api_key.strip():
@@ -24,7 +24,7 @@ def parse_unstructured_ledger(text: str) -> Tuple[List[Member], List[Expense], L
     return _parse_with_heuristics(text)
 
 
-def _parse_with_gemini(text: str, api_key: str) -> Tuple[List[Member], List[Expense], List[SettlementRecord]]:
+def _parse_with_gemini(text: str, api_key: str, model_choice: Optional[str] = None) -> Tuple[List[Member], List[Expense], List[SettlementRecord]]:
     """Parses text using Google Generative AI (Gemini 2.5/1.5 Flash) with structured JSON prompt."""
     import httpx
     prompt_str = f"""You are a double-entry financial parsing assistant. Extract all participants, expenses, and settlement records from the following text into strict JSON.
@@ -45,7 +45,8 @@ Format:
 Input Text:
 {text}
 """
-    for mod in ["gemini-2.5-flash", "gemini-1.5-flash"]:
+    models_to_try = [model_choice] if model_choice else ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash"]
+    for mod in models_to_try:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={api_key}"
         payload = {
             "contents": [{"parts": [{"text": prompt_str}]}],

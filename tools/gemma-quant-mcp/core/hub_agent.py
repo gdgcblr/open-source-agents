@@ -36,7 +36,8 @@ class ArthanitiMasterHub:
     def process_user_query(
         cls,
         query: str,
-        model_choice: str = "gemma-2-9b-it",
+        model_choice: str = "gemini-2.5-flash",
+        api_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         start_time = time.time()
         q_lower = query.lower()
@@ -127,7 +128,7 @@ class ArthanitiMasterHub:
             "message": f"Dispatching calculated pivot bounds to {GemmaAdvisorSpoke.name} ({model_choice}) for institutional thesis synthesis.",
             "agent": GemmaAdvisorSpoke.name,
         })
-        advisor_res = GemmaAdvisorSpoke.execute(feed_res["resolved_symbol"], model_choice=model_choice)
+        advisor_res = GemmaAdvisorSpoke.execute(feed_res["resolved_symbol"], model_choice=model_choice, api_key=api_key)
 
         return {
             "hub_urn": cls.urn,

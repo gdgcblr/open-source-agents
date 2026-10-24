@@ -44,12 +44,14 @@ class ReceiptOCRTool:
         image_bytes: bytes,
         mime_type: str = "image/jpeg",
         user_notes: Optional[str] = None,
+        api_key: Optional[str] = None,
+        model_choice: Optional[str] = None,
     ) -> ReceiptScanResult:
-        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
         if api_key:
             # Try Google Gemini Multimodal Vision
-            result = cls._call_gemini_vision(api_key, image_bytes, mime_type, user_notes)
+            result = cls._call_gemini_vision(key, image_bytes, mime_type, user_notes, model_choice=model_choice)
             if result:
                 return result
 
@@ -63,6 +65,7 @@ class ReceiptOCRTool:
         image_bytes: bytes,
         mime_type: str,
         user_notes: Optional[str],
+        model_choice: Optional[str] = None,
     ) -> Optional[ReceiptScanResult]:
         b64_data = base64.b64encode(image_bytes).decode("utf-8")
 
@@ -88,7 +91,8 @@ JSON Schema to return:
 }}
 Return ONLY valid JSON.
 """
-        for mod in ["gemini-2.5-flash", "gemini-1.5-flash"]:
+        models_to_try = [model_choice] if model_choice else ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash"]
+        for mod in models_to_try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={api_key}"
             payload = {
                 "contents": [

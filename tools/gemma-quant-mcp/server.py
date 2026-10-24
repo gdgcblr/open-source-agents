@@ -21,7 +21,8 @@ from pydantic import BaseModel
 
 class HubChatRequest(BaseModel):
     query: str
-    model: str = "gemma-2-9b-it"
+    model: str = "gemini-2.5-flash"
+    api_key: Optional[str] = None
 
 
 app = FastAPI(
@@ -55,7 +56,7 @@ def get_hub_spokes():
 
 @app.post("/api/hub/chat")
 def hub_chat_endpoint(req: HubChatRequest):
-    return ArthanitiMasterHub.process_user_query(req.query, model_choice=req.model)
+    return ArthanitiMasterHub.process_user_query(req.query, model_choice=req.model, api_key=req.api_key)
 
 
 @app.get("/api/market/live")
@@ -67,12 +68,13 @@ def get_live_quote(symbol: str = Query("HFCL", description="Ticker or company na
 @app.get("/api/quant/live-targets")
 def get_live_quant_analysis(
     symbol: str = Query("HFCL", description="Ticker or company name"),
-    model: str = Query("gemma-2-9b-it", description="AI Model: gemma-2-9b-it, gemini-2.5-flash, gemini-1.5-flash"),
+    model: str = Query("gemini-2.5-flash", description="AI Model: gemini-2.5-flash, gemini-2.5-pro, gemma-2-9b-it"),
+    api_key: Optional[str] = Query(None, description="Google Gemini API Key override"),
 ):
     resolved, method = resolve_smart_ticker(symbol)
     quote = fetch_live_quote(symbol)
     targets = calculate_quant_targets(quote)
-    thesis = generate_gemma_thesis(targets, model_choice=model)
+    thesis = generate_gemma_thesis(targets, model_choice=model, api_key=api_key)
     return {
         "query": symbol,
         "resolved_symbol": quote.symbol,
@@ -192,8 +194,28 @@ def dashboard():
       <div class="flex items-center gap-3 text-xs font-medium">
         <div class="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200">
           <span class="pulse-dot"></span>
-          <span>NSE/BSE Realtime Feed Live</span>
+          <span>NSE/BSE Live</span>
         </div>
+
+        <!-- GLOBAL MODEL SELECTOR -->
+        <div class="flex items-center gap-1.5 bg-slate-100 rounded-xl px-2.5 py-1 border border-slate-200">
+          <label for="globalModelSelect" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Model:</label>
+          <select id="globalModelSelect" onchange="onModelChange(this.value)" class="text-xs font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer">
+            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Recommended)</option>
+            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Fast)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (LTS)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (LTS)</option>
+            <option value="gemma-2-9b-it">Gemma-2-9B (Open Weights)</option>
+          </select>
+        </div>
+
+        <!-- API KEY CONFIG BUTTON -->
+        <button onclick="openApiKeyModal()" id="apiKeyStatusBtn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-200 flex items-center gap-1.5">
+          <span>🔑</span>
+          <span id="apiKeyBtnLabel">API Key</span>
+        </button>
+
         <a href="/docs" target="_blank" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition shadow-sm">
           Swagger Docs
         </a>
@@ -588,9 +610,100 @@ def dashboard():
       </div>
     </div>
 
+    <!-- GOOGLE GEMINI API KEY CONFIG MODAL -->
+    <div id="apiKeyModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full card-shadow space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🔑</span>
+            <h3 class="text-sm font-extrabold text-slate-900">Configure Google Gemini / Gemma API Key</h3>
+          </div>
+          <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">✕</button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <p class="text-slate-600 font-medium">
+            Enter your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 font-bold hover:underline">Google AI Studio ↗</a> to unlock live Gemini 2.5 Flash / Gemma-2 synthesis.
+          </p>
+          <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-900 text-[11px]">
+            <strong>💡 Zero-Key Resilient Mode:</strong> If no key is entered, Arthaniti operates in <em>Deterministic Fast-Path Mode</em> (zsh.00 cost, 100% offline-ready, mathematical certainty).
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Google AI Studio API Key</label>
+          <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-800 focus:bg-white text-slate-800 font-mono">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button onclick="clearApiKey()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-lg transition">
+            Clear Key
+          </button>
+          <button onclick="saveApiKey()" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition shadow-xs">
+            Save & Apply
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script>
+    // --- API KEY & MODEL PREFERENCE STORAGE ---
+    function getStoredApiKey() {
+      return localStorage.getItem('arthaniti_gemini_api_key') || '';
+    }
+
+    function openApiKeyModal() {
+      document.getElementById('geminiApiKeyInput').value = getStoredApiKey();
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('geminiApiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem('arthaniti_gemini_api_key', key);
+      } else {
+        localStorage.removeItem('arthaniti_gemini_api_key');
+      }
+      updateApiKeyStatusDisplay();
+      closeApiKeyModal();
+      loadTicker(currentSymbol);
+    }
+
+    function clearApiKey() {
+      localStorage.removeItem('arthaniti_gemini_api_key');
+      document.getElementById('geminiApiKeyInput').value = '';
+      updateApiKeyStatusDisplay();
+      closeApiKeyModal();
+      loadTicker(currentSymbol);
+    }
+
+    function updateApiKeyStatusDisplay() {
+      const key = getStoredApiKey();
+      const label = document.getElementById('apiKeyBtnLabel');
+      const btn = document.getElementById('apiKeyStatusBtn');
+      if (key) {
+        label.innerText = 'Key: Active';
+        btn.className = 'px-3 py-1.5 bg-emerald-50 text-emerald-800 font-bold rounded-xl transition border border-emerald-300 flex items-center gap-1.5';
+      } else {
+        label.innerText = 'API Key (Fast-Path)';
+        btn.className = 'px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-200 flex items-center gap-1.5';
+      }
+    }
+
+    function getSelectedModel() {
+      return document.getElementById('globalModelSelect') ? document.getElementById('globalModelSelect').value : 'gemini-2.5-flash';
+    }
+
+    function onModelChange(val) {
+      console.log('Arthaniti model changed to:', val);
+      loadTicker(currentSymbol);
+    }
+
     async function sendHubScenario(query) {
       document.getElementById('hubPromptInput').value = query;
       dispatchArthanitiHubPrompt();
@@ -608,11 +721,12 @@ def dashboard():
       logItems.innerHTML = '<div class="text-emerald-400 font-bold">Arthaniti Master Hub dispatching tasks to spokes...</div>';
 
       try {
-        const model = document.getElementById('modelSelect') ? document.getElementById('modelSelect').value : 'gemma-2-9b-it';
+        const model = getSelectedModel();
+        const apiKey = getStoredApiKey();
         const res = await fetch('/api/hub/chat', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({query: q, model: model})
+          body: JSON.stringify({query: q, model: model, api_key: apiKey})
         });
         const d = await res.json();
 
@@ -622,14 +736,29 @@ def dashboard():
         `).join('');
 
         // If stock quant result, sync with the main grid
-        if (d.spoke_results.quant) {
+        if (d.spoke_results && d.spoke_results.quant) {
           const sym = d.spoke_results.quant.symbol;
-          document.getElementById('customInput').value = sym;
-          loadStock(sym);
-        } else if (d.spoke_results.risk) {
+          const inp = document.getElementById('customInput');
+          if (inp) inp.value = sym;
+          loadTicker(sym);
+          switchTab('quant');
+        } else if (d.spoke_results && d.spoke_results.risk) {
           switchTab('invariants');
-        } else if (d.spoke_results.screener) {
+          const r = d.spoke_results.risk;
+          const box = document.getElementById('auditResultBox');
+          if (box && r) {
+            box.innerHTML = `
+              <div class="${r.concentration_breaches && r.concentration_breaches.length > 0 ? 'text-rose-600' : 'text-emerald-700'} font-bold text-sm">
+                GUARDRAIL STATUS: ${r.guardrail_status}
+              </div>
+              <div class="text-slate-700 font-semibold">&bull; Total Weight: ${r.total_weight_pct}%</div>
+              <div class="text-slate-700">&bull; Allocation Completeness: ${r.is_allocation_complete ? 'VERIFIED (100%)' : 'INCOMPLETE'}</div>
+              <div class="text-slate-700">&bull; Concentration Breaches (&gt;25%): ${r.concentration_breaches && r.concentration_breaches.length > 0 ? r.concentration_breaches.join(', ') : 'None (Compliant)'}</div>
+            `;
+          }
+        } else if (d.spoke_results && d.spoke_results.screener) {
           switchTab('screener');
+          loadScreenerPreset('momentum_breakout');
         }
       } catch (err) {
         logItems.innerHTML = `<div class="text-rose-400">Hub dispatch error: ${err.message}</div>`;
@@ -637,6 +766,8 @@ def dashboard():
     }
 
     let currentSymbol = 'HFCL';
+    const loadStock = function(q) { return loadTicker(q); };
+
 
     async function loadTicker(query) {
       currentSymbol = query;
@@ -653,7 +784,7 @@ def dashboard():
       }
 
       try {
-        const res = await fetch('/api/quant/live-targets?symbol=' + encodeURIComponent(query));
+        const res = await fetch('/api/quant/live-targets?symbol=' + encodeURIComponent(query) + '&model=' + encodeURIComponent(getSelectedModel()) + (getStoredApiKey() ? '&api_key=' + encodeURIComponent(getStoredApiKey()) : ''));
         const data = await res.json();
         const q = data.quote;
         const t = data.targets;
@@ -780,6 +911,7 @@ def dashboard():
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      updateApiKeyStatusDisplay();
       loadTicker('HFCL');
     });
   </script>

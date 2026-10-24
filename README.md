@@ -1,130 +1,136 @@
-# open-source-ai
+# Open Source AI Agents & Developer Tools Monorepo
 
-> **Build it. Document it. Open-source it.**
-
-A community-driven collection of practical, documented, and open-source AI agents and developer tools, built with diverse frameworks and technologies.
-
----
-
-## Introduction
-
-As AI systems evolve from single prompt-response interactions to multi-step reasoning, tool-using agents, and specialized developer utilities, the need for transparent, reproducible, and practical open-source implementations has never been greater.
-
-`open-source-ai` is a collaborative monorepo curated to showcase working, well-documented AI projects. The goal is to provide developers, researchers, and builders with a shared catalog of real-world patterns—ranging from autonomous task agents to Model Context Protocol (MCP) servers and evaluation harnesses.
-
-This repository is designed to be accessible, framework-agnostic, and easy to navigate whether you are looking for reference implementations or contributing your own creation.
+> **Road to DevFest 2026: Open Source Edition | GDG Cloud Bengaluru at Google Ananta, Bengaluru**  
+> Curated, production-grade AI agents, developer tooling, and Model Context Protocol (MCP) servers built with Google Agent Development Kit (ADK), Google Gemini 2.5 / Gemma 2, and deterministic financial invariant guardrails.
 
 ---
 
-## Acceptable Project Categories
+## 🏛️ Featured Projects Overview
 
-We welcome practical, working AI contributions across a variety of categories. These categories are illustrative rather than rigid constraints:
-
-- **AI Agents**: Autonomous, semi-autonomous, or task-oriented agents, conversational assistants, and multi-agent coordination systems.
-- **Model Context Protocol (MCP) Servers & Integrations**: Servers providing structured context, tools, and prompts to models from databases, filesystems, developer tools, or web services.
-- **AI Developer Utilities**: Command-line interfaces, prompt helpers, token trackers, context formatters, and workflow automations.
-- **AI-Powered Workflows & Automation**: Specialized pipelines for code generation, documentation review, PR triage, research synthesis, or data transformation.
-- **Evaluation, Testing & Safety Utilities**: Tools and harnesses to measure model accuracy, benchmark latency and cost, detect hallucinations, or test tool calls.
-- **Other Practical AI Tooling**: Reusable libraries, adapters, and connectors that help developers build AI applications.
-
----
-
-## Technology Flexibility
-
-This repository is **completely framework-agnostic and language-neutral**. Contributors are encouraged to select the stack best suited to their problem domain.
-
-Accepted technologies and ecosystems include, but are not limited to:
-- **Google Agent Development Kit (ADK)**
-- **OpenAI Agents SDK**
-- **LangGraph & LangChain**
-- **CrewAI**
-- **Model Context Protocol (MCP)**
-- **Python or TypeScript / JavaScript AI runtimes**
-- **Go, Rust, or other systems languages**
-- **Local / open-weights model runtimes** (e.g., Ollama, vLLM, llama.cpp)
-- **Hosted model APIs** (e.g., Gemini, OpenAI, Anthropic, Mistral)
-
-No single cloud provider, framework, or model vendor is mandated.
-
----
-
-## Repository Structure
-
-The repository is organized into distinct directories to keep projects isolated, modular, and easy to maintain:
+This repository houses two decoupled, production-grade Google AI projects:
 
 ```
-open-source-ai/
-├── README.md               # Repository overview, philosophy, and index
-├── CONTRIBUTING.md         # Detailed 12-step contributor guide and standards
-├── .gitignore              # Repository-wide ignores for secrets, virtual environments, and caches
-├── agents/                 # Directory for autonomous and task-oriented agents
-│   └── README.md           # Guidelines and index of agent projects
-├── tools/                  # Directory for developer tools, MCP servers, and utilities
-│   └── README.md           # Guidelines and index of tooling projects
-├── template/               # Starter files for new contributions
-│   ├── README.md           # Reusable project documentation template
-│   ├── .gitignore          # Recommended per-project .gitignore
-│   └── .env.example        # Sanitized environment variable template
-└── .github/
-    └── PULL_REQUEST_TEMPLATE.md  # Standard checklist for submitting pull requests
+                                  open-source-agents/
+                                           │
+         ┌─────────────────────────────────┴─────────────────────────────────┐
+         ▼                                                                   ▼
+┌────────────────────────────────────────┐         ┌────────────────────────────────────────┐
+│  agents/gemini-audit-agent             │         │  tools/gemma-quant-mcp                 │
+│  "Bharat Dues AI Audit Agent"          │         │  "Arthaniti Quant Hub & MCP"           │
+│  Port: 8000                            │         │  Port: 8002                            │
+│  Companion: https://bharat-dues.web.app│         │  Protocol: MCP JSON-RPC 2.0 / REST     │
+├────────────────────────────────────────┤         ├────────────────────────────────────────┤
+│ • Double-Entry Audit (∑Δ ≡ 0.00)       │         │ • Certified Camarilla & Classic Pivots │
+│ • Multimodal Gemini 2.5 Flash OCR      │         │ • SEBI Risk Concentration Cap (≤25%)   │
+│ • Smart Split (Zero Penny Drift)       │         │ • Gemma-2-9B Institutional Thesis      │
+│ • Conversational Financial Copilot     │         │ • High-Conviction Equity Screener      │
+│ • Greedy NPCI UPI Deep Links           │         │ • A2A Realtime Telemetry Dispatch      │
+│ • Material 3 Light Theme UI            │         │ • Model Context Protocol (MCP) Server  │
+└────────────────────────────────────────┘         └────────────────────────────────────────┘
 ```
 
-- **[`agents/`](agents/README.md)**: Contains end-to-end agents and multi-agent workflows. Each agent lives in its own dedicated subfolder (`agents/<project-slug>/`).
-- **[`tools/`](tools/README.md)**: Contains developer utilities, MCP servers, evaluation harnesses, and reusable components. Each tool lives in its own dedicated subfolder (`tools/<project-slug>/`).
-- **[`template/`](template/README.md)**: Provides a standardized documentation blueprint, environment template, and local `.gitignore` so contributors can document their work consistently.
+---
+
+## 🚀 Quick Start: Running the Projects
+
+### Single-Command Pre-Flight Verification
+Run all 15 automated test cases, check mathematical invariants, and verify service health across both ports:
+```bash
+./deploy_guardrails.sh
+```
 
 ---
 
-## Quick Start for Contributors
-
-Ready to contribute? Follow this straightforward fork-and-pull-request workflow:
-
-1. **Browse existing contributions**: Check [`agents/`](agents/README.md) and [`tools/`](tools/README.md) to explore existing work and choose a unique, descriptive project name.
-2. **Fork the repository**: Fork this repository to your personal GitHub account.
-3. **Clone your fork**:
+### Project 1: Bharat Dues AI Audit Agent (Port 8000)
+1. **Navigate & Install:**
    ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
+   cd agents/gemini-audit-agent
+   pip install -r requirements.txt
    ```
-4. **Create a branch**:
+2. **Start Server:**
    ```bash
-   git checkout -b feat/<your-project-slug>
+   python server.py
    ```
-5. **Add your project**: Create a dedicated directory under `agents/<project-slug>/` or `tools/<project-slug>/`. Copy `template/README.md`, `template/.gitignore`, and `template/.env.example` into your folder.
-6. **Implement and document**: Write your code, declare dependencies in a manifest (`requirements.txt`, `package.json`, etc.), and document setup, usage, and examples in your project's `README.md`.
-7. **Test thoroughly**: Verify that installation and execution work on a clean environment and that no credentials or virtual environments are tracked.
-8. **Commit and push**:
+3. **Open Web App:** Visit **`http://localhost:8000`** in your browser.
+   - Material 3 Light Theme matching production [https://bharat-dues.web.app](https://bharat-dues.web.app).
+   - 4 Workspace Tabs: AI Chat Copilot, Receipt OCR, Smart Split, Double-Entry Audit.
+   - Live Swagger Documentation: `http://localhost:8000/docs`.
+
+---
+
+### Project 2: Arthaniti Quant Hub & MCP Engine (Port 8002)
+1. **Navigate & Install:**
    ```bash
-   git add agents/<project-slug>/   # or tools/<project-slug>/
-   git commit -m "feat(agents): add <project-slug>"
-   git push -u origin feat/<your-project-slug>
+   cd tools/gemma-quant-mcp
+   pip install -r requirements.txt
    ```
-9. **Open a Pull Request**: Submit your PR against the upstream `main` branch, completing the [Pull Request Checklist](.github/PULL_REQUEST_TEMPLATE.md).
-
-For step-by-step guidance and detailed Git commands, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## Contribution Standards
-
-To maintain technical credibility and long-term utility, all contributions are reviewed against four core criteria:
-
-1. **Reproducibility**: Clear prerequisites, dependency specifications, and setup instructions that work out-of-the-box.
-2. **Documentation Quality**: Comprehensive documentation using the provided template, including realistic inputs/outputs and known limitations.
-3. **Security & Privacy**: Zero committed credentials, API keys, or private data. All configuration must use environment variables or sanitized configuration files.
-4. **Focused Scope**: Each contribution is isolated in its own directory and does not alter unrelated parts of the repository.
+2. **Start Server:**
+   ```bash
+   python server.py
+   ```
+3. **Open Web Terminal:** Visit **`http://localhost:8002`** in your browser.
+   - Live Swagger Documentation: `http://localhost:8002/docs`.
+4. **Run as Model Context Protocol (MCP) Server:**
+   ```bash
+   python main.py mcp
+   ```
+   Exposes standard JSON-RPC tools (`calculate_quant_targets`, `audit_invariants`, `screen_stocks`, `generate_gemma_thesis`) for Claude Desktop, Cursor, and Antigravity IDE.
 
 ---
 
-## Community Context
+## 🔑 How to Enter Gemini API Keys & Select Models
 
-This repository was established in collaboration with **GDG Cloud Bengaluru** as part of the **FORK. BUILD. MERGE.** initiative under **Road to DevFest 2026**.
+### 3 Flexible Ways to Enter Your API Key:
+1. **In-Browser UI Modal (Recommended for Live Demos)**:
+   - Click the **"🔑 Configure API Key"** button in the header of either web app (Port 8000 or Port 8002).
+   - Paste your free key from [Google AI Studio](https://aistudio.google.com/app/apikey) and click **"Save & Apply"**.
+   - Stored safely in browser `localStorage`. Status indicator turns green: **"Key: Active"**.
+2. **Environment File (`.env`)**:
+   - Copy `.env.example` to `.env` in the project folder and set `GEMINI_API_KEY=AIzaSy...`.
+3. **Terminal Environment Variable**:
+   - `export GEMINI_API_KEY="AIzaSy..."` before launching.
 
-While seeded during this community event, this repository is designed as an enduring, public open-source catalog. Contributions, maintenance, and community participation continue beyond the event.
+> **💡 Zero-Key Resilient Mode:** If no key is entered, **both agents operate in Deterministic Heuristic Fast-Path Mode** ($0.00 cost, 100% offline-ready, 0 crash risk during live stage presentations).
 
 ---
 
-## License
+## 🧠 Model Selection & Deprecation Matrix
 
-This project is licensed under the [MIT License](LICENSE) &copy; 2026 GDG Cloud Bengaluru Community.
+Both agents feature an interactive in-browser dropdown to select the active AI model:
 
+| Model Identifier | Model Family | Status | Best Use Case |
+| :--- | :--- | :--- | :--- |
+| **`gemini-2.5-flash`** | Google Gemini 2.5 | **Active (Recommended Default)** | Realtime multimodal receipt OCR, low-latency chat, fast thesis synthesis |
+| **`gemini-2.5-pro`** | Google Gemini 2.5 | **Active** | Complex multi-party dispute resolution, long balance sheet audits |
+| **`gemini-2.5-flash-lite`**| Google Gemini 2.5 | **Active** | Ultra low-latency, lightweight processing |
+| **`gemini-1.5-flash`** | Google Gemini 1.5 (LTS) | **Active (LTS)** | Production workhorse (1M token context) |
+| **`gemini-1.5-pro`** | Google Gemini 1.5 (LTS) | **Active (LTS)** | High-complexity reasoning (2M token context) |
+| **`gemma-2-9b-it`** | Google DeepMind (Open Weights)| **Active (Open Source)** | Local/edge inference, open-source institutional equity thesis |
+
+### ⚠️ Deprecated Models (Do NOT Use — Shut Down by Google):
+- ❌ `gemini-1.0-pro` / `gemini-pro`: Deprecated / discontinued.
+- ❌ `gemini-pro-vision` / `gemini-1.0-pro-vision`: Shut down (replaced by native multimodal `gemini-2.5-flash`).
+- ❌ `gemini-1.0-ultra`: Deprecated.
+
+---
+
+## 🧪 Testing & CI/CD Guardrails
+
+Execute tests locally:
+```bash
+# Test Bharat Dues Agent (8 tests)
+python3 -m pytest agents/gemini-audit-agent/tests
+
+# Test Arthaniti Quant Hub (7 tests)
+python3 -m pytest tools/gemma-quant-mcp/tests
+```
+
+Both test suites are automatically enforced in GitHub Actions (`.github/workflows/devfest-agent-ci.yml`) on every pull request to ensure that no balance drift or arithmetic violation ever reaches `main`.
+
+---
+
+## 📜 License & Acknowledgments
+
+- **License**: MIT License © 2026 GDG Cloud Bengaluru Community.
+- **Event**: Road to DevFest: Open Source Edition | GDG Cloud Bengaluru at Google Ananta, Bengaluru.
+- **Contributor**: Shikhar Agrawal ([@shikharagrawal17](https://github.com/shikharagrawal17))

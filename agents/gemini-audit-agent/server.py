@@ -22,6 +22,8 @@ from core.chat_tool import BharatDuesChatCopilot, ChatMessage, ChatResponse
 class ChatQueryRequest(BaseModel):
     query: str
     history: List[ChatMessage] = Field(default_factory=list)
+    model: Optional[str] = "gemini-2.5-flash"
+    api_key: Optional[str] = None
 
 
 class SmartSplitRequest(BaseModel):
@@ -85,7 +87,7 @@ def get_spokes():
 
 @app.post("/api/hub/chat")
 def hub_chat_endpoint(req: ChatQueryRequest):
-    return AutonomousHubAgent.process_user_query(req.query)
+    return AutonomousHubAgent.process_user_query(req.query, model_choice=req.model, api_key=req.api_key)
 
 
 @app.post("/api/chat", response_model=ChatResponse)
@@ -100,7 +102,8 @@ class OCRScanRequest(BaseModel):
     notes: Optional[str] = "swiggy"
     image_base64: Optional[str] = None
     mime_type: Optional[str] = "image/jpeg"
-
+    model: Optional[str] = "gemini-2.5-flash"
+    api_key: Optional[str] = None
 
 @app.post("/api/ocr/scan")
 def scan_receipt_endpoint(req: OCRScanRequest):
@@ -109,6 +112,8 @@ def scan_receipt_endpoint(req: OCRScanRequest):
         image_bytes=image_bytes or b"SAMPLE_RECEIPT",
         mime_type=req.mime_type or "image/jpeg",
         user_notes=req.notes or "Swiggy dinner order",
+        api_key=req.api_key,
+        model_choice=req.model,
     )
 
 
@@ -204,13 +209,28 @@ def dashboard():
         </div>
       </div>
 
-      <div class="flex items-center gap-3 text-xs font-semibold">
-        <div class="hidden md:flex items-center gap-2 bg-emerald-50 text-emerald-800 px-3.5 py-2 rounded-xl border border-emerald-200">
-          <span class="pulse-dot"></span>
-          <span>Zero-Sum Invariant Enforced (∑Δ ≡ 0.00)</span>
+      <div class="flex items-center gap-2.5 text-xs font-semibold">
+        <!-- MODEL SELECTOR DROPDOWN -->
+        <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-xl">
+          <span class="text-[11px] font-bold text-slate-500">AI Model:</span>
+          <select id="globalModelSelect" onchange="onModelChange(this.value)" class="bg-transparent text-xs font-bold text-[#002E6E] focus:outline-none cursor-pointer">
+            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Fast Multimodal)</option>
+            <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Reasoning)</option>
+            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Low Latency)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Stable LTS)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Analytical)</option>
+            <option value="gemma-2-9b-it">Gemma-2-9B (Open Weights)</option>
+          </select>
         </div>
-        <a href="https://bharat-dues.web.app" target="_blank" class="px-4 py-2 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold rounded-xl transition shadow-xs">
-          Launch App ↗
+
+        <!-- API KEY CONFIG MODAL BUTTON -->
+        <button onclick="openApiKeyModal()" id="apiKeyStatusBtn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-200 flex items-center gap-1.5">
+          <span>🔑</span>
+          <span id="apiKeyBtnLabel">Configure API Key</span>
+        </button>
+
+        <a href="https://bharat-dues.web.app" target="_blank" class="px-3.5 py-1.5 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold rounded-xl transition shadow-xs">
+          Live App ↗
         </a>
       </div>
     </div>
@@ -601,9 +621,98 @@ def dashboard():
 
     </div>
 
+    <!-- GOOGLE GEMINI API KEY CONFIG MODAL -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 max-w-md w-full card-shadow space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🔑</span>
+          <h3 class="text-sm font-extrabold text-[#002E6E]">Configure Google Gemini API Key</h3>
+        </div>
+        <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">✕</button>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <p class="text-slate-600 font-medium">
+          Enter your free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[#00B9F1] font-bold hover:underline">Google AI Studio ↗</a> to unlock live Gemini 2.5 Flash vision and conversational parsing.
+        </p>
+        <div class="p-2.5 rounded-lg bg-sky-50 border border-sky-100 text-sky-900 text-[11px]">
+          <strong>💡 Zero-Key Resilient Mode:</strong> If no key is entered, the agent runs in <em>Deterministic Heuristic Mode</em> ($0.00 cost, 100% offline-ready).
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Google AI Studio API Key</label>
+        <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#00B9F1] focus:bg-white text-slate-800 font-mono">
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="clearApiKey()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-lg transition">
+          Clear Key
+        </button>
+        <button onclick="saveApiKey()" class="px-4 py-1.5 bg-[#00B9F1] hover:bg-[#00a3d4] text-white font-bold text-xs rounded-lg transition shadow-xs">
+          Save & Apply
+        </button>
+      </div>
+    </div>
+  </div>
+
   </main>
 
   <script>
+    // --- API KEY & MODEL PREFERENCE STORAGE ---
+    function getStoredApiKey() {
+      return localStorage.getItem('bharat_dues_gemini_api_key') || '';
+    }
+
+    function openApiKeyModal() {
+      document.getElementById('geminiApiKeyInput').value = getStoredApiKey();
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('geminiApiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem('bharat_dues_gemini_api_key', key);
+      } else {
+        localStorage.removeItem('bharat_dues_gemini_api_key');
+      }
+      updateApiKeyStatusDisplay();
+      closeApiKeyModal();
+    }
+
+    function clearApiKey() {
+      localStorage.removeItem('bharat_dues_gemini_api_key');
+      document.getElementById('geminiApiKeyInput').value = '';
+      updateApiKeyStatusDisplay();
+      closeApiKeyModal();
+    }
+
+    function updateApiKeyStatusDisplay() {
+      const key = getStoredApiKey();
+      const label = document.getElementById('apiKeyBtnLabel');
+      const btn = document.getElementById('apiKeyStatusBtn');
+      if (key) {
+        label.innerText = 'Key: Active (AI Studio)';
+        btn.className = 'px-3 py-1.5 bg-emerald-50 text-emerald-800 font-bold rounded-xl transition border border-emerald-300 flex items-center gap-1.5';
+      } else {
+        label.innerText = 'API Key (Heuristic Mode)';
+        btn.className = 'px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition border border-slate-200 flex items-center gap-1.5';
+      }
+    }
+
+    function getSelectedModel() {
+      return document.getElementById('globalModelSelect').value || 'gemini-2.5-flash';
+    }
+
+    function onModelChange(val) {
+      console.log('Model switched to:', val);
+    }
+
     let lastAuditData = null;
     let activeTab = 'chat';
     let uploadedImageBase64 = null;
@@ -682,7 +791,7 @@ def dashboard():
           body: JSON.stringify({
             image_base64: uploadedImageBase64,
             mime_type: uploadedMimeType,
-            notes: 'Scanned receipt from user upload'
+            notes: 'Scanned receipt from user upload', model: getSelectedModel(), api_key: getStoredApiKey()
           })
         });
         const data = await res.json();
@@ -699,7 +808,7 @@ def dashboard():
       const res = await fetch('/api/ocr/scan', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({notes: type})
+        body: JSON.stringify({notes: type, model: getSelectedModel(), api_key: getStoredApiKey()})
       });
       const data = await res.json();
       renderOCRResult(data);
@@ -930,7 +1039,7 @@ def dashboard():
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({query: text})
+          body: JSON.stringify({query: text, model: getSelectedModel(), api_key: getStoredApiKey()})
         });
         const data = await res.json();
         const loadElem = document.getElementById(loadingId);
@@ -973,7 +1082,7 @@ def dashboard():
         const res = await fetch('/api/hub/chat', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({query: queryText})
+          body: JSON.stringify({query: queryText, model: getSelectedModel(), api_key: getStoredApiKey()})
         });
         const d = await res.json();
         lastAuditData = d;
@@ -1025,6 +1134,7 @@ def dashboard():
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      updateApiKeyStatusDisplay();
       renderMembers();
       recalcSplit();
     });
