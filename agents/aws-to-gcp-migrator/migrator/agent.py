@@ -169,7 +169,7 @@ Provide your architectural synthesis in structured Markdown format.
         try:
             from google import genai
             client = genai.Client(api_key=self.api_key)
-            candidate_models = [self.model_name, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+            candidate_models = ["gemini-3.8-flash", self.model_name, "gemini-flash-latest", "gemini-2.5-flash"]
             seen = set()
             models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
@@ -180,7 +180,7 @@ Provide your architectural synthesis in structured Markdown format.
                         contents=prompt
                     )
                     if response and response.text:
-                        return f"*(Live Gemini Analysis via `{model}`)*\n\n" + response.text
+                        return f"*(Live Gemini Synthesis via `{model}`)*\n\n" + response.text
                 except Exception:
                     continue
         except Exception as e:
