@@ -109,7 +109,7 @@ def fake_github_token() -> str:
 
 
 def fake_private_key_header() -> str:
-    return "-----BEGIN " + "RSA " + "PRIVATE KEY-----"
+    return "".join(["-----BEGIN ", "RSA ", "PRIVATE KEY-----"])  # join(): not merged by the scanner
 
 
 def high_entropy(n: int = 24, seed: int = 7) -> str:

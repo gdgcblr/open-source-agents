@@ -1,18 +1,18 @@
 """Turn a PR URL or a local checkout into a read-only Submission snapshot.
 
-PR code is never executed here: we `git archive` the PR head into a temp
-folder and read files from it. The policy is extracted from the *base* branch.
+PR code is never executed here. We copy the PR head's blobs out of git into a
+temp folder and read files from it. We deliberately don't use `git archive`,
+because it honours the PR's own `.gitattributes` (`export-ignore` would let a PR
+hide files from every check). The policy is extracted from the *base* branch.
 """
 
 from __future__ import annotations
 
-import io
 import json
 import os
 import re
 import shutil
 import subprocess
-import tarfile
 import tempfile
 import urllib.request
 from pathlib import Path
@@ -35,16 +35,81 @@ def _git(*args: str, cwd: Path | None = None, binary: bool = False):
     return r.stdout if binary else r.stdout.decode()
 
 
-def _extract(repo: Path, ref: str, dest: Path, paths: Optional[list[str]] = None) -> None:
-    """Write the tree at `ref` into `dest` without a checkout (no hooks, no filters)."""
-    if paths:
-        listed = _git("ls-tree", "--name-only", ref, cwd=repo).split()
-        paths = [p for p in paths if p.split("/")[0] in listed]
-        if not paths:
-            return
-    data = _git("archive", "--format=tar", ref, *(paths or []), cwd=repo, binary=True)
-    with tarfile.open(fileobj=io.BytesIO(data)) as tar:
-        tar.extractall(dest, filter="data")  # rejects absolute paths, links outside dest, etc.
+HISTORY_CAP = 5_000_000  # bytes of `git log -p` we are willing to scan
+
+
+def _extract(repo: Path, ref: str, dest: Path, paths: Optional[list[str]] = None) -> list[str]:
+    """Write every regular file of the tree at `ref` into `dest`, read straight
+    from the object store: no checkout, no hooks, no filters, no attributes.
+
+    Symlinks are skipped (they could point outside `dest`), and so is any path
+    that is absolute or contains `..`. Returns the submodule gitlinks found, since
+    their code is never in the snapshot.
+    """
+    listing = _git("ls-tree", "-r", "-z", "--full-tree", ref, "--", *(paths or []), cwd=repo, binary=True)
+    blobs: list[tuple[str, str]] = []
+    gitlinks: list[str] = []
+    for rec in listing.split(b"\0"):
+        if not rec:
+            continue
+        meta, raw_path = rec.split(b"\t", 1)
+        mode, kind, sha = meta.split()
+        path = raw_path.decode("utf-8", "replace")
+        if mode == b"160000":
+            gitlinks.append(path)
+            continue
+        parts = path.split("/")
+        if kind != b"blob" or mode == b"120000" or path.startswith("/") or ".." in parts or "" in parts:
+            continue
+        blobs.append((sha.decode(), path))
+    if not blobs:
+        return gitlinks
+    req = "".join(sha + "\n" for sha, _ in blobs).encode()
+    r = subprocess.run(["git", "cat-file", "--batch"], cwd=repo, input=req, capture_output=True, timeout=600)
+    if r.returncode != 0:
+        raise RuntimeError(f"git cat-file failed: {r.stderr.decode(errors='replace').strip()}")
+    data, pos = r.stdout, 0
+    root = dest.resolve()
+    for sha, path in blobs:
+        nl = data.index(b"\n", pos)
+        header = data[pos:nl].split()
+        if len(header) < 3 or header[1] != b"blob":  # "<sha> missing"
+            pos = nl + 1
+            continue
+        size = int(header[2])
+        content = data[nl + 1: nl + 1 + size]
+        pos = nl + 1 + size + 1  # content is followed by a newline
+        target = (dest / path).resolve()
+        if root not in target.parents:
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+    return gitlinks
+
+
+def _history(repo: Path, rev_range: str) -> tuple[Optional[list[tuple[str, str, str]]], Optional[str]]:
+    """Every line added in `rev_range`, so secrets committed then deleted are still found."""
+    try:
+        r = subprocess.run(["git", "log", "-p", "--no-color", "--no-ext-diff", "--no-textconv", "--format=commit %H",
+                            rev_range], cwd=repo, capture_output=True, timeout=300)
+    except subprocess.TimeoutExpired:
+        return None, "history scan timed out"
+    if r.returncode != 0:
+        return None, "history scan failed: " + r.stderr.decode(errors="replace").strip()[:200]
+    raw = r.stdout
+    note = None
+    if len(raw) > HISTORY_CAP:
+        raw, note = raw[:HISTORY_CAP], f"history scan truncated at {HISTORY_CAP // 1_000_000} MB"
+    added: list[tuple[str, str, str]] = []
+    commit, path = "", ""
+    for line in raw.decode("utf-8", "replace").splitlines():
+        if line.startswith("commit "):
+            commit = line[7:].strip()
+        elif line.startswith("+++ "):
+            path = line[6:] if line.startswith("+++ b/") else line[4:]
+        elif line.startswith("+") and not line.startswith("+++"):
+            added.append((commit, path, line[1:]))
+    return added, note
 
 
 def github_api(path: str) -> dict:
@@ -88,7 +153,8 @@ def load_pr(ref: str, workdir: Path) -> tuple[Submission, Policy]:
     base_dir.mkdir(parents=True)
     head_dir.mkdir(parents=True)
     _extract(mirror, "refs/gatekeeper/base", base_dir, POLICY_PATHS)
-    _extract(mirror, head, head_dir)
+    gitlinks = _extract(mirror, head, head_dir)
+    history, note = _history(mirror, f"{merge_base}..{head}")
     policy = compile_policy(base_dir)
     changed = [c for c in changed if c]
     dirs = project_dirs(changed, policy)
@@ -96,6 +162,7 @@ def load_pr(ref: str, workdir: Path) -> tuple[Submission, Policy]:
         root=head_dir, project_dir=dirs[0] if dirs else None, changed_files=changed,
         title=meta.get("title") or "", body=meta.get("body") or "", url=meta["html_url"],
         author=(meta.get("user") or {}).get("login"), number=num, base_root=base_dir,
+        gitlinks=gitlinks, history_added=history, history_note=note,
     )
     return sub, policy
 
@@ -128,8 +195,12 @@ def load_local(path: str, workdir: Path, project: Optional[str] = None) -> tuple
         if len(rel) >= 2 and rel[0] in policy.project_roots:
             project = "/".join(rel[:2])
     dirs = project_dirs(changed, policy)
+    history, note = _history(root, f"{merge_base}..HEAD")
+    gitlinks = [line.split("\t", 1)[1] for line in _git("ls-files", "-s", cwd=root).splitlines()
+                if line.startswith("160000 ")]
     sub = Submission(root=root, project_dir=project or (dirs[0] if dirs else None),
-                     changed_files=changed, tracked=tracked - {""}, base_root=base_dir)
+                     changed_files=changed, tracked=tracked - {""}, base_root=base_dir,
+                     gitlinks=gitlinks, history_added=history, history_note=note)
     return sub, policy
 
 

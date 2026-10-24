@@ -32,6 +32,7 @@ class Policy:
     banned_names: list[str] = field(default_factory=list)
     readme_sections: list[str] = field(default_factory=list)  # headings from template/README.md
     template_placeholders: list[str] = field(default_factory=list)
+    template_lines: dict[str, list[str]] = field(default_factory=dict)  # section -> template prose lines
     index_files: list[str] = field(default_factory=list)  # files a PR may touch outside its folder
     checklist_items: list[str] = field(default_factory=list)  # from the PR template
     soft_rules: list[Rule] = field(default_factory=list)  # judged by the LLM reviewer
@@ -96,6 +97,13 @@ def compile_policy(base_root: Path) -> Policy:
     if tpl.exists():
         tpl_text = tpl.read_text(encoding="utf-8")
         p.readme_sections = [h.strip() for h in re.findall(r"^##\s+(.+)$", tpl_text, re.M)]
+        parts = re.split(r"^##\s+(.+)$", tpl_text, flags=re.M)
+        for i in range(1, len(parts) - 1, 2):
+            body = re.sub(r"```.*?```", "", parts[i + 1], flags=re.S)
+            p.template_lines[parts[i].strip()] = [
+                l.strip() for l in body.splitlines()
+                if len(re.sub(r"[^A-Za-z]", "", l)) >= 25 and not l.strip().startswith(("|", "#"))
+            ]
         p.template_placeholders = [
             ph for ph in ["[Project Name]", "[One-sentence summary", "Feature 1: Brief description",
                           "[Language Runtime", "Explain what specific problem"]

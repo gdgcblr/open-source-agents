@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import difflib
+import re
+
 from ..models import Criterion, Finding, Severity, Submission
 from ..policy import Policy
 
@@ -41,7 +44,10 @@ def check(sub: Submission, policy: Policy) -> list[Finding]:
         ))
 
     for path in sub.changed_files:
-        if path.startswith(sub.project_dir + "/") or path in policy.index_files:
+        if path in policy.index_files:
+            out += _index_edit(sub, path, policy)
+            continue
+        if path.startswith(sub.project_dir + "/"):
             continue
         if any(path.startswith(o + "/") for o in others):
             continue
@@ -55,3 +61,33 @@ def check(sub: Submission, policy: Policy) -> list[Finding]:
             rule=policy.rule("scope.outside-project"),
         ))
     return out
+
+
+def _index_edit(sub: Submission, path: str, policy: Policy) -> list[Finding]:
+    """The index file may gain exactly one table row (and lose the "None yet" placeholder row)."""
+    head_p = sub.root / path
+    head = head_p.read_bytes().decode("utf-8", "replace") if head_p.is_file() else ""
+    problems = []
+    if not re.search(r"(?im)^#+\s*directory index", head) or not re.search(r"(?m)^\|\s*:?-{3,}", head):
+        problems.append("the Directory Index table is missing")
+    base_p = sub.base_root / path if sub.base_root else None
+    if base_p and base_p.is_file():
+        base = base_p.read_bytes().decode("utf-8", "replace").splitlines()
+        diff = list(difflib.ndiff(base, head.splitlines()))
+        removed = [l[2:] for l in diff if l.startswith("- ") and l[2:].strip() and "none yet" not in l.lower()]
+        added = [l[2:] for l in diff if l.startswith("+ ") and l[2:].strip()]
+        rows = [l for l in added if l.lstrip().startswith("|")]
+        if removed:
+            problems.append(f"{len(removed)} existing line(s) removed or changed")
+        if len(rows) > 1:
+            problems.append(f"{len(rows)} table rows added (only one is allowed)")
+        if len(added) > len(rows):
+            problems.append(f"{len(added) - len(rows)} non-table line(s) added")
+    if not problems:
+        return []
+    return [Finding(
+        "scope.index-edit", Severity.MAJOR, Criterion.SCOPE,
+        f"`{path}` may only gain one row in its Directory Index table, but {'; '.join(problems)}.",
+        file=path, fix=f"git checkout upstream/main -- {path}, then add just your one table row.",
+        rule=policy.rule("scope.outside-project"),
+    )]

@@ -3,6 +3,7 @@ reference files and scripts that actually exist in the submission?"""
 
 from __future__ import annotations
 
+import difflib
 import json
 import re
 
@@ -25,13 +26,45 @@ def _norm(s: str) -> str:
     return re.sub(r"[^a-z]", "", s.lower())
 
 
-def _find_section(secs: dict[str, str], want: str) -> str | None:
-    w = _norm(want)
-    for k, v in secs.items():
-        n = _norm(k)
-        if n == w or w in n or n in w or (w[:8] and n.startswith(w[:8])):
-            return v
-    return None
+# Sections where reusing the template's wording is fine (generic setup steps, license line).
+TEMPLATE_OK = {"installation & setup", "license"}
+
+
+def _match(heading: str, want: str) -> float:
+    """How well a README heading matches a required section name (0 = no match).
+
+    A heading must keep at least 4 letters after normalising, so `## 🚀` or
+    `## 1.` can't stand in for every section.
+    """
+    n, w = _norm(heading), _norm(want)
+    if len(n) < 4:
+        return 0.0
+    if n == w:
+        return 1.0
+    if len(w) >= 4 and w in n:  # "Installation & Setup Guide"
+        return 0.95
+    ratio = difflib.SequenceMatcher(None, n, w).ratio()
+    return ratio if ratio >= 0.75 else 0.0
+
+
+def _find_section(secs: dict[str, str], want: str, used: set[str] | None = None) -> str | None:
+    """Body of the best-matching heading. With `used`, each heading is claimed at most once."""
+    best, score = None, 0.0
+    for k in secs:
+        if used is not None and k in used:
+            continue
+        sc = _match(k, want)
+        if sc > score:
+            best, score = k, sc
+    if best is None:
+        return None
+    if used is not None:
+        used.add(best)
+    return secs[best]
+
+
+def _prose(line: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[*_`>#|]", "", line)).strip().lower()
 
 
 def check(sub: Submission, policy: Policy) -> list[Finding]:
@@ -44,13 +77,20 @@ def check(sub: Submission, policy: Policy) -> list[Finding]:
         return out  # structure check already reports the missing file
     secs = sections(md)
 
-    missing, empty = [], []
+    missing, empty, copied = [], [], []
+    used: set[str] = set()
     for want in policy.readme_sections:
-        body = _find_section(secs, want)
+        body = _find_section(secs, want, used)
         if body is None:
             missing.append(want)
-        elif len(re.sub(r"\s|-{3,}", "", body)) < 25 and "n/a" not in body.lower():
+            continue
+        if len(re.sub(r"\s|-{3,}", "", body)) < 25 and "n/a" not in body.lower():
             empty.append(want)
+        if want.lower() not in TEMPLATE_OK:
+            mine = {_prose(l) for l in body.splitlines()}
+            hit = next((t for t in policy.template_lines.get(want, []) if _prose(t) in mine), None)
+            if hit:
+                copied.append((want, hit))
     if missing:
         out.append(Finding(
             "readme.sections", Severity.MAJOR if len(missing) > 2 else Severity.MINOR, Criterion.DOCUMENTATION,
@@ -62,6 +102,17 @@ def check(sub: Submission, policy: Policy) -> list[Finding]:
         out.append(Finding(
             "readme.empty-sections", Severity.MINOR, Criterion.DOCUMENTATION,
             f"README sections with almost no content: {', '.join(empty)}.", file=rf,
+            rule=policy.rule("readme.sections"),
+        ))
+
+    for want, line in copied:
+        # Template example bullets ("- e.g., Rate limits...") pretend to be facts; an
+        # instruction sentence left in place is only untidy.
+        example = line.lstrip().startswith(("-", "*", "1.")) or "e.g" in line.lower()
+        out.append(Finding(
+            "readme.template-copied", Severity.MAJOR if example else Severity.MINOR, Criterion.DOCUMENTATION,
+            f"The '{want}' section still contains text copied from the template: \"{_prose(line)[:90]}\".",
+            file=rf, fix=f"Replace the template's example text in '{want}' with facts about your own project.",
             rule=policy.rule("readme.sections"),
         ))
 

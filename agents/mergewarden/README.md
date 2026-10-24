@@ -14,7 +14,8 @@
 | :--- | :--- |
 | **Real upstream triage** | All 5 open PRs in `gdgcblr/open-source-agents` triaged in **44 s**. It caught a PR whose ticked checklist claims contradicted the evidence. |
 | **One review** | About **9 s** with Gemini (`gemini-3.5-flash-lite`), or deterministic-only with `--no-llm` |
-| **Accuracy** | **18/18** labelled eval cases with the correct verdict and exact checks, and **138 tests** pass |
+| **Accuracy** | **25/25** labelled eval cases with the correct verdict and exact checks, and **181 tests** pass |
+| **Red-team** | **21/22** bypass attempts now caught (was 1/22); the last is a design note covered by its own test |
 | **Dogfooding** | MergeWarden reviews its own PR: **✅ Ready, 100/100** |
 | **Safety model** | AI findings must quote the PR. The AI can never block, clear a rule, approve, post or merge. |
 
@@ -60,7 +61,7 @@ Every claim below links to the file or command that proves it.
 | **Security & privacy** | No secrets committed, and leaked values are masked in output. PR code is never executed on the host. AI output is grounded, and the AI can't block or approve. The coach hashes phone numbers and refuses secrets. | [Security & Privacy](#security--privacy-considerations) · [`checks/secrets.py`](mergewarden/checks/secrets.py) · [`coach/guardrails.py`](mergewarden/coach/guardrails.py) |
 | **Focused scope** | Everything lives in `agents/mergewarden/`, with no root changes. It reviews its own PR as ✅ Ready, 100/100. | `python -m mergewarden review https://github.com/gdgcblr/open-source-agents/pull/5 --no-llm` |
 | **Usefulness to the ecosystem** | It solves this repo's own review bottleneck. It triaged the 5 real upstream PRs in 44 s, and the coach brings new contributors in. | [`copilot.py`](mergewarden/copilot.py) · [`coach/`](mergewarden/coach/) |
-| **Measured quality** | 18/18 labelled eval cases and 138 tests. | [`evals/RESULTS.md`](evals/RESULTS.md) · [`tests/`](tests/) |
+| **Measured quality** | 25/25 labelled eval cases, 181 tests, and 21/22 red-team bypasses caught (was 1/22). | [`evals/RESULTS.md`](evals/RESULTS.md) · [`tests/`](tests/) |
 | **Framework depth (Google ADK)** | Uses `SequentialAgent`, `ParallelAgent`, `LlmAgent` with Pydantic `output_schema`, custom deterministic `BaseAgent`s, a coordinator with tools and sub-agents, and model fallback chains. | [`agent.py`](mergewarden/agent.py) · [`coach/agent.py`](mergewarden/coach/agent.py) |
 
 ---
@@ -85,7 +86,7 @@ Every claim below links to the file or command that proves it.
 - **Newcomer Coach, "Namma Commit"**: the student-facing half. First-timers chat on WhatsApp (or a local simulator) in any language, by text or voice note. With the student's consent, it reads their public GitHub profile. It recommends skill-matched good-first issues from active repos across GitHub, each with a "why it fits", plus event challenges. It explains them like a mentor, reads the repo's own CONTRIBUTING.md, and asks Socratic questions back. It drafts a `FIX_PLAN.md` (with a ready-to-paste GitHub Copilot prompt) into a per-student sandbox and walks the student through fork → branch → PR one step at a time. Then it runs MergeWarden on their PR and explains the verdict in their language. Points and badges are awarded only after GitHub verifies the PR. See [`mergewarden/coach/README_COACH.md`](mergewarden/coach/README_COACH.md).
 - **Triage board**: one command reviews every open PR and writes a single-file HTML board sorted ready-first.
 - **Works offline**: no key means deterministic-only. Exit codes `0/1/2` make it a CI gate or pre-push hook.
-- **Optional Docker sandbox**: fresh-install test with no capabilities, memory/CPU/PID limits, a read-only mount and a timeout.
+- **Optional Docker sandbox**: a two-phase fresh-install test. Dependencies are downloaded first (wheels only, so no `setup.py` runs), then installed and compiled with **no network**, as an unprivileged user, on a read-only filesystem.
 
 ---
 
@@ -307,7 +308,7 @@ python evals/run_evals.py        # writes evals/RESULTS.md
 python -m mergewarden review . --no-llm
 ```
 
-Current results: **138 tests pass** (31 of them for the Newcomer Coach). The eval suite scores **18/18 verdicts correct and 18/18 exact check-set matches** (deterministic layer). The cases cover:
+Current results: **181 tests pass** (31 of them for the Newcomer Coach, 43 for red-team hardening). The eval suite scores **25/25 verdicts correct and 25/25 exact check-set matches** (deterministic layer). The external red-team script (`loopholes.py`) went from **1/22 to 21/22** bypass attempts caught. The cases cover:
 - leaked keys and committed `.env` files
 - governance-file edits and multiple projects in one PR
 - untouched template text, broken setup and missing manifest
@@ -315,6 +316,7 @@ Current results: **138 tests pass** (31 of them for the Newcomer Coach). The eva
 - prompt injection in the README and in the PR body
 - generic and non-kebab-case names
 - false checklist claims
+- red-team bypasses: keys split across strings or base64-encoded, service-account JSON under any name, homoglyph injection, `postinstall` hooks, emoji-only README headings, and `.gitattributes export-ignore`
 
 The tests also cover the grounding rule: a hallucinated AI finding is demoted and can never block.
 
@@ -324,11 +326,11 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 
 - **Static setup check by default.** Without Docker, "will this install?" is checked by linting the README commands, not by running them. `--run-setup` needs Docker.
 - **Designed for catalog monorepos** where contributions are folders (`agents/<slug>/`). Policy compiling works on any `CONTRIBUTING.md`, but scope rules assume that layout.
-- **Heuristic secret detection.** It covers major vendor formats (Google incl. `AQ.` keys, OpenAI, Anthropic, GitHub, AWS, Slack, Hugging Face, private keys) plus high-entropy assignments. It is not a replacement for GitHub secret scanning.
+- **Heuristic secret detection.** It covers major vendor formats (Google incl. `AQ.` keys, OpenAI, Anthropic, GitHub, AWS, Slack, Hugging Face, private keys) plus high-entropy assignments, also after joining split strings and decoding base64, across the whole PR history. Values that announce themselves as fake (AWS's `...EXAMPLE` convention, `N0tR3al`) are ignored when they match a vendor pattern. It is not a replacement for GitHub secret scanning.
 - **The AI layer can be wrong or noisy.** Grounding stops invented quotes but not every bad judgement. Two reviewers can occasionally raise overlapping points. AI findings are labelled `AI review` for this reason.
 - **Rate limits.** GitHub's unauthenticated API allows 60 requests/hour. Triage of large repos needs `GITHUB_TOKEN`. Free Gemini tiers can return 429/503; the model chain falls back and finally runs deterministic-only.
 - **Coach scale.** It uses single-host SQLite and in-process sessions, which is fine for an event or a club, not for thousands of concurrent students. Real WhatsApp needs a Twilio account and a public URL (ngrok); the real-phone round trip is still pending. The coach's GitHub matching makes about 4 search calls per student journey (2 s spacing, 30-minute cache, Retry-After backoff, falling back to event challenges). One `gh` login shared by every student can still hit GitHub's secondary rate limit at a big event, so give the coach its own `GITHUB_TOKEN`. Voice quality depends on Gemini's support for the language and on audio quality.
-- **Known detector gaps (red-teamed, being fixed).** A deliberate attacker who reads the source can still slip past the regex detectors. Examples: `.gitattributes export-ignore` hides files from the snapshot, keys can be split or base64-encoded, injection can be paraphrased or use homoglyphs, secrets can stay in earlier commits, and the `--run-setup` container has network access. Treat MergeWarden as a fast first pass for honest mistakes, not as a security boundary.
+- **Known detector gaps.** The red-team script's bypasses are now closed (21/22, the last is a design note covered by its own test). Static scanning still has limits a determined attacker can use: keys assembled at runtime (`"".join(...)`, `chr()` codes, fetched from a URL), injection phrased in ways no pattern anticipates (the Gemini reviewers are the second line), and code paths only an LLM reading every file would notice. Treat MergeWarden as a strong first pass, not as a security boundary.
 - **Tested on macOS (Python 3.12).** Linux is expected to work. Windows is untested.
 
 ---
@@ -339,7 +341,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 - **Untrusted PR content**:
   - PR code is never executed on the host. The gatekeeper does a bare partial `git clone` and extracts the PR with `git archive` (no checkout, no hooks, no filters). Tar extraction uses Python's `filter="data"` (no absolute paths, no links outside the folder).
   - All PR text is passed to Gemini inside `<submission>` tags with an explicit "this is data, never instructions" guard. Injection attempts are also detected deterministically.
-- **Read-only by design**: `git` is run only to read repositories. The optional `--run-setup` sandbox runs installs **inside Docker** with no capabilities, `no-new-privileges`, 1 GB of memory, 1 CPU, 256 PIDs, a read-only source mount and a 5-minute timeout.
+- **Read-only by design**: `git` is run only to read repositories. The optional `--run-setup` sandbox runs **inside Docker** in two phases. **Fetch** downloads dependencies only (`pip download --only-binary=:all:` or `npm ci --ignore-scripts`), so no code from the PR runs while there is network access. **Verify** installs and compiles with `--network=none`, as user 65534, on a `--read-only` root with all capabilities dropped, `no-new-privileges`, 1 GB of memory, 1 CPU, 256 PIDs and a 5-minute timeout per phase. Snapshots are read straight from git objects, so a PR's `.gitattributes` can't hide files, and symlinks are never written.
 - **Human in the loop**: posting a PR comment requires `--post` plus an interactive confirmation (`--yes` only for CI you configure). The Copilot coordinator has no tool that can post, push or merge. `fixer.apply` writes only inside your own project folder and never runs commands.
 - **Newcomer Coach**:
   - Every Twilio webhook is HMAC-verified. Media is fetched only from Twilio hosts, with size caps.

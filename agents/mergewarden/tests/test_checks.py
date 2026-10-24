@@ -454,7 +454,7 @@ def test_undisclosed_shell_execution(contrib):
     md = _readme().replace("No shell commands are executed.", "It is very safe.")
     sub, pol = contrib(good(**{"runner.py": code, "README.md": md}))
     [f] = only(safety.check(sub, pol), "safety.undisclosed-execution")
-    assert f.severity is Severity.MINOR
+    assert f.severity is Severity.MAJOR  # undisclosed execution is the riskiest thing a PR can ship
 
 
 def test_disclosed_shell_execution(contrib):

@@ -69,6 +69,11 @@ class Submission:
     tracked: Optional[set[str]] = None
     # Snapshot of the base branch (CONTRIBUTING.md, template/, existing agents/ and tools/).
     base_root: Optional[Path] = None
+    # Submodule gitlinks in the head tree: code that is never part of the snapshot.
+    gitlinks: list[str] = field(default_factory=list)
+    # Lines added anywhere in the PR's commits: (commit, path, text). None = history not scanned.
+    history_added: Optional[list[tuple[str, str, str]]] = None
+    history_note: Optional[str] = None  # why history could not be scanned, if it couldn't
 
     @property
     def project_path(self) -> Optional[Path]:
@@ -87,8 +92,8 @@ class Submission:
         """Read a project file (relative to the project folder), '' if absent."""
         p = self.project_path / name if self.project_path else None
         try:
-            return p.read_text(encoding="utf-8") if p and p.is_file() else ""
-        except (UnicodeDecodeError, OSError):
+            return p.read_bytes().decode("utf-8", "replace") if p and p.is_file() else ""
+        except OSError:
             return ""
 
 

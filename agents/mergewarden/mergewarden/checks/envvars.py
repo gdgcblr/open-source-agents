@@ -7,10 +7,13 @@ import re
 
 from ..models import Criterion, Finding, Severity, Submission
 from ..policy import Policy
+from ._files import is_test_file, read
 
 READS = [
-    r"""os\.(?:getenv|environ\.get)\(\s*["']([A-Z][A-Z0-9_]+)["']""",
-    r"""os\.environ\[\s*["']([A-Z][A-Z0-9_]+)["']\s*\]""",
+    # os.getenv / os.environ.get / os.environ[...], with or without the `os.` prefix
+    # (`from os import getenv, environ`).
+    r"""(?<![\w.])(?:os\.)?(?:getenv|environ\.get|environ\.setdefault)\(\s*["']([A-Z][A-Z0-9_]+)["']""",
+    r"""(?<![\w.])(?:os\.)?environ\[\s*["']([A-Z][A-Z0-9_]+)["']\s*\]""",
     r"""process\.env\.([A-Z][A-Z0-9_]+)""",
     r"""process\.env\[\s*["']([A-Z][A-Z0-9_]+)["']\s*\]""",
     r"""os\.Getenv\(\s*"([A-Z][A-Z0-9_]+)"\)""",
@@ -25,11 +28,11 @@ def check(sub: Submission, policy: Policy) -> list[Finding]:
         return []
     used: dict[str, str] = {}
     for f in sub.project_files():
-        if f.suffix not in CODE_EXT or "test" in f.name:
+        if f.suffix not in CODE_EXT or is_test_file(str(f.relative_to(sub.root))):
             continue
         try:
-            text = f.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+            text = read(f)
+        except OSError:
             continue
         for pat in READS:
             for m in re.finditer(pat, text):
