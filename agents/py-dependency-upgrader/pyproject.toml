@@ -1,0 +1,29 @@
+[project]
+name = "py-dependency-upgrader"
+version = "0.1.0"
+description = "AI agent for auditing Python dependencies, generating tests, and checking safe upgrade windows"
+readme = "README.md"
+authors = [
+    { name = "Bhola Kumar", email = "bholakumar123456@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk>=2.13.0,<2.14.0",
+    "packaging>=24.2",
+    "rich>=15.0.0,<16.0.0",
+    "requests>=2.32.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.17.1",
+    "pytest>=8.3.0",
+    "ruff>=0.16.7",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+# Allow lines to be as long as 120.
+line-length = 120
