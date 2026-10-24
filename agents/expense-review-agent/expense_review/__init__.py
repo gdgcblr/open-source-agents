@@ -1,0 +1,1 @@
+"""Local, review-first expense extraction and ledger."""

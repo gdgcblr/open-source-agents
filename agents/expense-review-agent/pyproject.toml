@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "expense-review-agent"
+version = "0.1.0"
+description = "Review-first expense extraction from Gmail and Google Keep using Gemini"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.11,<3",
+    "httpx>=0.28,<1",
+    "google-api-python-client>=2.160,<3",
+    "google-auth-oauthlib>=1.2,<2",
+]
+
+[project.scripts]
+expense-review = "expense_review.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["expense_review*"]
