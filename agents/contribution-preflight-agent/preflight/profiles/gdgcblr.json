@@ -1,0 +1,8 @@
+{
+  "name": "gdgcblr",
+  "kebab_case": true,
+  "forbidden_names": ["my-agent", "my-tool", "final-project", "test", "demo", "helper", "final-test"],
+  "required_files": ["README.md", ".gitignore", ".env.example"],
+  "manifest_any_of": ["requirements.txt", "pyproject.toml", "package.json", "Cargo.toml", "go.mod"],
+  "template_markers": ["[Project Name]", "[One-sentence summary", "[Language Runtime", "Feature 1: Brief"]
+}

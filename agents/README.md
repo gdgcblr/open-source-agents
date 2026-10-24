@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [contribution-preflight-agent](contribution-preflight-agent/README.md) | Hub-and-spoke ADK agent that checks any project folder against configurable contribution rules and reviews its README with a local Gemma model | Google ADK, Gemma via Ollama, Docker | [@PatakiSubodh](https://github.com/PatakiSubodh) |

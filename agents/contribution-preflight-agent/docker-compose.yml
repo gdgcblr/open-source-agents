@@ -1,0 +1,41 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  model-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["sh", "-c", "ollama show ${MODEL_NAME:-gemma3:4b} >/dev/null 2>&1 || ollama pull ${MODEL_NAME:-gemma3:4b}"]
+    restart: "no"
+
+  agent:
+    build: .
+    depends_on:
+      model-pull:
+        condition: service_completed_successfully
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      OLLAMA_API_BASE: http://ollama:11434
+      MODEL_NAME: ${MODEL_NAME:-gemma3:4b}
+      PREFLIGHT_PROFILE: ${PREFLIGHT_PROFILE:-}
+      PROJECT_NAME: ${PROJECT_NAME:-}
+      PREFLIGHT_VULN_SCAN: ${PREFLIGHT_VULN_SCAN:-}
+    volumes:
+      - ${TARGET_PROJECT:-.}:/project:ro
+      - ${REPORTS_DIR:-./reports}:/reports
+
+volumes:
+  ollama_models:

@@ -1,0 +1,8 @@
+{
+  "name": "generic",
+  "kebab_case": false,
+  "forbidden_names": [],
+  "required_files": ["README.md"],
+  "manifest_any_of": [],
+  "template_markers": ["[Project Name]", "[One-sentence summary", "Lorem ipsum"]
+}

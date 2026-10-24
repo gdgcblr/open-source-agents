@@ -1,0 +1,4 @@
+google-adk==2.13.0
+litellm==1.106.2
+fpdf2==2.8.9
+pytest==9.1.1
