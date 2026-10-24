@@ -1,11 +1,11 @@
-# MergeWarden · Maintainer Copilot
+# Namma Commit + MergeWarden
 
-> A Google ADK multi-agent that reviews every pull request against **the repository's own CONTRIBUTING.md**, with line-cited rules, quote-grounded Gemini findings and a triage board, so maintainers spend their time on code instead of checklists.
+> A Google ADK multi-agent that takes first-time contributors from "what is a fork?" to a merged PR on WhatsApp, in their own language, and reviews every pull request against **the repository's own CONTRIBUTING.md**, with line-cited rules and quote-grounded Gemini findings.
 
 
 **Two halves, one Google ADK system:**
-- 🛡️ **For maintainers**: MergeWarden reviews every PR against the repo's own rules and ranks the queue ready-first.
-- 🤝 **For first-timers**: the *Namma Commit* coach mentors students on WhatsApp, in any language, from "what is a fork?" to a merged PR.
+- 🤝 **For first-timers: Namma Commit**, a coach that mentors students on WhatsApp in any language, by text or voice. It matches them to issues that fit their skills, guides them from fork to PR, and explains MergeWarden's review of their PR in their language.
+- 🛡️ **For maintainers: MergeWarden**, which reviews every PR against the repo's own rules and ranks the queue ready-first.
 
 ### At a glance (all numbers from real runs on 2026-10-24)
 | | |
@@ -26,12 +26,27 @@ python -m mergewarden.coach serve        # newcomer coach simulator → http://1
 ```
 
 ### The Newcomer Coach in action (real conversation, in Kannada)
-Rendered from a live run of `mergewarden.coach` with Gemini on 2026-10-24. The text is exactly what the coach replied. Only the WhatsApp (iOS, dark) chat frame is added. The same chat runs on real WhatsApp through Twilio.
+Rendered from a live run of `mergewarden.coach` with Gemini on 2026-10-24. The text is exactly what the coach replied. Only the WhatsApp (iOS, dark) chat frame is added. **Verified end to end in the local simulator.** The Twilio WhatsApp adapter is ready: signed webhooks were tested through a public tunnel (valid signature → 200 with a TwiML reply, forged → 403). The real-phone round trip is pending.
 
 | ① Onboarding and skill-matched picks | ② Mentoring, and a secret refused |
 | :---: | :---: |
 | <img src="docs/screenshots/whatsapp-1.png" width="330" alt="Coach greets a Kannada-speaking student, gives a privacy note, asks about skills, then recommends three challenges that fit Python + docs"> | <img src="docs/screenshots/whatsapp-2.png" width="330" alt="Coach explains fork and pull request in simple Kannada, then refuses a pasted API key and tells the student to rotate it"> |
 | The student says hi in Kannada. The coach replies in Kannada with a privacy notice and asks about their skills. It recommends 3 event challenges that fit "Python + likes writing docs", each with a reason and the points it earns. | "What is a fork? How do I make a PR?" gets a photocopy analogy and a question back. When the student pastes an API key, the coach refuses **in 0.0 s, deterministically, before any model call**, doesn't store it, and tells them to rotate it. |
+
+**The hand-off to MergeWarden (the coach's last step).** The student pastes their PR link or says "check my PRs". The coach lists only PRs the student authored (read-only, public data) and verifies authorship with the GitHub API. MergeWarden then reviews the chosen PR in the background against that repo's CONTRIBUTING.md. About a minute later the result arrives in the student's language: on WhatsApp, in the simulator inbox, or in the terminal. After pushing fixes, the student sends "review again" (5-minute cooldown, 5 reviews a day).
+
+**Other live runs (2026-10-24, simulator, Gemini):**
+- **Malayalam:**
+  - With consent, the coach read the student's public GitHub and referred to one of their real projects.
+  - It recommended 2 real open TypeScript good-first issues from active AI-tooling repos, each with a "why it fits", plus 1 event challenge.
+  - "Show my PRs" found [gdgcblr/open-source-agents#5](https://github.com/gdgcblr/open-source-agents/pull/5) and verified authorship. MergeWarden returned **Ready, 100/100** in the background, explained in Malayalam with the ✅ Clean PR badge.
+- **Earlier Malayalam and Hindi runs** also covered:
+  - a Kannada voice note → `FIX_PLAN.md` and a draft `README.md`, +10 points
+  - a secret refused in Malayalam
+  - an injection attempt → a polite redirect with no points
+  - a fake PR link failing verification
+
+**Points and badges.** Points come only from the event repos (`COACH_REPOS`), so nothing can be farmed. PRs to other public repos also get a MergeWarden review, shown as suggestions, with a repo-size guard (`COACH_REVIEW_MAX_REPO_MB`). A verified PR to someone else's repo with at least `COACH_EXPLORER_MIN_STARS` stars earns the 🌍 Explorer badge, never points. Badges: 🌱 First Steps, 🗣️ Polyglot, 🐞 Bug Hunter, 📚 Docs Hero, 🏆 Merged!, ✅ Clean PR, 🌍 Explorer.
 
 ### For reviewers: criteria → evidence
 Every claim below links to the file or command that proves it.
@@ -77,7 +92,7 @@ Every claim below links to the file or command that proves it.
 - **Language & Runtime**: Python 3.10+ (developed on 3.12)
 - **Agent Framework**: [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/) 2.13: `SequentialAgent`, `ParallelAgent`, `LlmAgent` with Pydantic `output_schema`, custom deterministic `BaseAgent`s, and an `LlmAgent` coordinator with function tools
 - **Models**: Gemini via Google AI Studio or Vertex AI. Default chain `gemini-3.5-flash-lite` → `gemini-3.8-flash` → deterministic-only
-- **Newcomer Coach**: FastAPI + uvicorn web server, SQLite (stdlib) for points and profiles, Gemini native audio understanding for voice notes, Twilio WhatsApp (optional, no SDK)
+- **Newcomer Coach**: FastAPI + uvicorn web server, SQLite (stdlib) for points and profiles, Gemini native audio understanding for voice notes, Twilio WhatsApp (optional, no SDK). Its model chain is the reverse of the reviewer's: `gemini-3.8-flash` first, then `gemini-3.5-flash-lite` on 429/5xx or timeout (15 s primary timeout, 5-minute cooldown). On 2026-10-24, `gemini-3.8-flash` timed out (504) on every coach call, so all live coach replies came from 3.5 Flash Lite through the fallback.
 - **External APIs / Tools**: GitHub REST API (PR metadata, unauthenticated or with a token), `git` (bare partial clone + `git archive`), optional Docker, optional `gh` CLI for posting comments
 
 ---
@@ -310,7 +325,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 - **Heuristic secret detection.** It covers major vendor formats (Google incl. `AQ.` keys, OpenAI, Anthropic, GitHub, AWS, Slack, Hugging Face, private keys) plus high-entropy assignments. It is not a replacement for GitHub secret scanning.
 - **The AI layer can be wrong or noisy.** Grounding stops invented quotes but not every bad judgement. Two reviewers can occasionally raise overlapping points. AI findings are labelled `AI review` for this reason.
 - **Rate limits.** GitHub's unauthenticated API allows 60 requests/hour. Triage of large repos needs `GITHUB_TOKEN`. Free Gemini tiers can return 429/503; the model chain falls back and finally runs deterministic-only.
-- **Coach scale.** It uses single-host SQLite and in-process sessions, which is fine for an event or a club, not for thousands of concurrent students. Real WhatsApp needs a Twilio account and a public URL (ngrok). Voice quality depends on Gemini's support for the language and on audio quality.
+- **Coach scale.** It uses single-host SQLite and in-process sessions, which is fine for an event or a club, not for thousands of concurrent students. Real WhatsApp needs a Twilio account and a public URL (ngrok); the real-phone round trip is still pending. The coach's GitHub matching makes about 4 search calls per student journey (2 s spacing, 30-minute cache, Retry-After backoff, falling back to event challenges). One `gh` login shared by every student can still hit GitHub's secondary rate limit at a big event, so give the coach its own `GITHUB_TOKEN`. Voice quality depends on Gemini's support for the language and on audio quality.
 - **Known detector gaps (red-teamed, being fixed).** A deliberate attacker who reads the source can still slip past the regex detectors. Examples: `.gitattributes export-ignore` hides files from the snapshot, keys can be split or base64-encoded, injection can be paraphrased or use homoglyphs, secrets can stay in earlier commits, and the `--run-setup` container has network access. Treat MergeWarden as a fast first pass for honest mistakes, not as a security boundary.
 - **Tested on macOS (Python 3.12).** Linux is expected to work. Windows is untested.
 
