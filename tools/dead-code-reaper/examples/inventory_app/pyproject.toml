@@ -1,0 +1,8 @@
+[project]
+name = "inventory-app"
+version = "0.1.0"
+description = "Small inventory app used to demonstrate dead-code-reaper."
+requires-python = ">=3.9"
+
+[project.scripts]
+inventory = "inventory.cli:main"

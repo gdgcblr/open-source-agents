@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [dead-code-reaper](dead-code-reaper/) | Finds dead Python code, proves each deletion against your tests, and lets you review it in an HTML report before anything is removed | CLI / static analysis + test verification, optional Gemini | @gouranshu |

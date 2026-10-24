@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dead-code-reaper"
+version = "0.1.0"
+description = "Find dead Python code, prove it's safe to delete against your tests, and remove it."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+dead-code-reaper = "dead_code_reaper.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["dead_code_reaper*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
