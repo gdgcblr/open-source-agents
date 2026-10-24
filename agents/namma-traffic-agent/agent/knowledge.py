@@ -315,6 +315,54 @@ METRO_STATION_COORDS: Dict[str, tuple] = {
     "Bommasandra": (12.8160, 77.6920)
 }
 
+# Accurate Coordinates for Key Bus Stops for Map Visualizations
+BUS_STOP_COORDS: Dict[str, tuple] = {
+    "Central Silk Board": (12.9172, 77.6228),
+    "HSR Layout BDA Complex": (12.9116, 77.6388),
+    "HSR Layout Sector 2": (12.9140, 77.6500),
+    "HSR Sector 2": (12.9140, 77.6500),
+    "Agara Junction": (12.9230, 77.6540),
+    "Iblur Gate": (12.9265, 77.6680),
+    "Bellandur Gate": (12.9280, 77.6740),
+    "Bellandur": (12.9280, 77.6740),
+    "Ecospace Tech Park": (12.9260, 77.6830),
+    "Ecospace": (12.9260, 77.6830),
+    "Devarabisanahalli": (12.9320, 77.6910),
+    "Kadubeesanahalli": (12.9350, 77.6890),
+    "Marathahalli Bridge": (12.9591, 77.6974),
+    "Marathahalli Multiplex": (12.9591, 77.6974),
+    "Karthik Nagar": (12.9720, 77.7010),
+    "Doddanekundi": (12.9780, 77.7020),
+    "Mahadevapura": (12.9890, 77.6950),
+    "Tin Factory / KR Puram": (12.9972, 77.6756),
+    "Tin Factory": (12.9972, 77.6756),
+    "Kasturi Nagar": (13.0030, 77.6620),
+    "Ramamurthy Nagar": (13.0120, 77.6640),
+    "Babusapalya": (13.0200, 77.6520),
+    "Kalyan Nagar": (13.0250, 77.6440),
+    "Hennur Cross": (13.0290, 77.6360),
+    "Nagavara Junction": (13.0380, 77.6250),
+    "Manyata Tech Park Gate 1": (13.0450, 77.6200),
+    "Hebbal Flyover": (13.0358, 77.5970),
+    "Banashankari TTMC": (12.9255, 77.5468),
+    "Jayadeva Hospital": (12.9180, 77.5980),
+    "Kundalahalli Gate": (12.9660, 77.7120),
+    "Graphite India": (12.9790, 77.7220),
+    "ITPL Main Gate": (12.9860, 77.7380),
+    "Hope Farm Whitefield": (12.9860, 77.7500),
+    "Kempegowda Bus Station (Majestic)": (12.9774, 77.5708),
+    "Kempegowda Bus Station": (12.9774, 77.5708),
+    "Mekhri Circle": (13.0080, 77.5850),
+    "Yelahanka Bypass": (13.1000, 77.5960),
+    "Terminal 1 (BLR Airport)": (13.1986, 77.7066),
+    "Terminal 2 (BLR Airport)": (13.1986, 77.7066),
+    "Domlur Flyover": (12.9610, 77.6380),
+    "Manipal Hospital": (12.9590, 77.6480),
+    "HAL Main Gate": (12.9570, 77.6640),
+    "Electronic City Toll Gate": (12.8480, 77.6680),
+    "Wipro Gate 1": (12.8452, 77.6602)
+}
+
 # Real-time Bengaluru Weather Status
 BENGALURU_WEATHER_CURRENT = {
     "temperature_c": 26.5,

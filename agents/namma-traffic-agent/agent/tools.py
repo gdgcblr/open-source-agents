@@ -14,7 +14,8 @@ from .knowledge import (
     METRO_LINES,
     BMTC_BUS_ROUTES,
     BENGALURU_WEATHER_CURRENT,
-    METRO_STATION_COORDS
+    METRO_STATION_COORDS,
+    BUS_STOP_COORDS
 )
 
 
@@ -376,6 +377,16 @@ def get_bmtc_bus_details(origin: str, destination: str) -> Dict[str, Any]:
     road_dist = _calculate_haversine_distance(orig_data["coords"], dest_data["coords"])
     est_bus_time = int((road_dist / 16.0) * 60) + 10  # BMTC bus avg speed ~16 km/h + stops
 
+    raw_stops = primary_bus.get("stops", [])
+    stops_with_coords = []
+    for st_name in raw_stops:
+        coords = BUS_STOP_COORDS.get(st_name)
+        stops_with_coords.append({
+            "name": st_name,
+            "lat": coords[0] if coords else None,
+            "lng": coords[1] if coords else None
+        })
+
     return {
         "status": "success",
         "route": f"{orig_data['display_name']} ➡️ {dest_data['display_name']}",
@@ -383,8 +394,8 @@ def get_bmtc_bus_details(origin: str, destination: str) -> Dict[str, Any]:
         "available_bus_numbers": [b["route_no"] for b in matching_routes],
         "boarding_bus_stop": orig_data.get("bus_stop", f"{orig_data['display_name']} Bus Bay"),
         "deboarding_bus_stop": dest_data.get("bus_stop", f"{dest_data['display_name']} Bus Bay"),
-        "stop_count": len(primary_bus.get("stops", [])),
-        "intermediate_stops": primary_bus.get("stops", []),
+        "stop_count": len(raw_stops),
+        "intermediate_stops": stops_with_coords,
         "fare_ordinary_inr": primary_bus["fare_ordinary_inr"],
         "fare_ac_vajra_inr": primary_bus["fare_ac_vajra_inr"],
         "frequency": f"Every {primary_bus['frequency_minutes']} minutes",
