@@ -13,7 +13,7 @@
 ### Key Features
 - **Grounded in the code**: Parses manifests (`pyproject.toml`, `requirements.txt`, `package.json`, `Cargo.toml`, `go.mod`, `Dockerfile`, `docker-compose.yml`, `Makefile`, `.env.example`) and reads the most important source files. Anything it cannot confirm becomes a `TODO:` instead of a guess.
 - **Fully local**: Runs on Gemma 4 (`gemma4:e4b`) through Ollama. No API keys, no cloud calls.
-- **Safe by design**: Read-only access, confined to one folder. `.env`, private keys and credential files are never opened, and token-like strings (OpenAI, Google, GitHub, AWS, Slack) are redacted before the model sees them.
+- **Treats every project as untrusted**: Symlinks out of the project, `.git` metadata, `.env`, private keys and credential folders are never read. Passwords, tokens and keys are redacted before the model sees them. Every README is reviewed in code before it is shown or saved: download-and-run commands, tracking images and unverified links planted through prompt injection are removed and reported. See [Security & Privacy Considerations](#security--privacy-considerations).
 - **Bounded context**: Sends the model at most ~30,000 characters of file content, so large repositories cannot overflow its context window.
 - **Two ways to use it**: A chat UI (ADK Dev UI) where you can ask for revisions, or a one-shot CLI. Both save the draft to `output/README.draft.md`.
 - **Runs anywhere with Docker**: `docker compose up` starts the agent and its own Ollama server.
@@ -41,15 +41,19 @@
                  |         entry points, env var NAMES, license              |
                  |       - read_key_files: README, entry points, config,     |
                  |         source files nearest the root (30k char budget)   |
-                 |       - secret files skipped, tokens redacted             |
+                 |       - every path checked by guardrails.safe_path,       |
+                 |         every text passed through guardrails.redact       |
                  |                     |                                     |
                  |                     v                                     |
-                 |  2. Gemma 4 (Ollama) writes the README from those facts   |
+                 |  2. Gemma 4 (Ollama) writes the README from those facts,  |
+                 |       which are marked as untrusted data                  |
                  |       optional tools: list_project_files, read_file       |
+                 |       (capped at 4 tool calls / 6 model calls per turn)   |
                  |                     |                                     |
                  |                     v                                     |
-                 |  3. after_model_callback: extract the README and save     |
-                 |       it to output/README.draft.md                        |
+                 |  3. after_model_callback: guardrails.review_readme        |
+                 |       removes risky commands, unverified images/links     |
+                 |       and secrets, then saves output/README.draft.md      |
                  +-----------------------------------------------------------+
 ```
 
@@ -223,7 +227,7 @@ Every fact above (Python >=3.9, the `peppercorn` dependency, the `sample` script
 
 ## How to Test
 
-**Unit tests** (no model or network needed) cover folder confinement, symlink escapes, secret-file refusal, token redaction, manifest parsing, license detection and README extraction:
+**Unit tests** (27, no model or network needed). `tests/test_tools.py` covers manifest parsing, file selection, license detection and README extraction. `tests/test_security.py` builds a malicious project (symlinks to fake `~/.aws` and `~/.ssh` secrets, a password in `.git/config`, hard-coded passwords, a parser bomb) and checks that nothing leaks, that injected commands, images and links are removed, and that the loop limits hold:
 ```bash
 python -m unittest discover -s tests -v
 # or inside Docker:
@@ -239,6 +243,7 @@ PROJECT_DIR=$PWD docker compose run --rm --no-deps readme-drafter python -m unit
 
 ## Known Limitations
 
+- **Prompt injection is contained, not prevented**: In testing, `gemma4:e4b` followed instructions hidden in a project file in 3 of 3 runs despite being told not to, and wrote the attacker's `curl ... | bash` into the install steps. The code review removed it every time, but it can only catch known-dangerous patterns (download-and-run, destructive commands, unverified links, secrets). An injection that makes the model describe the project wrongly, in plain words, cannot be detected. Read the draft before publishing it, especially for projects you did not write.
 - **Small-model quality**: `gemma4:e4b` writes solid first drafts, but phrasing varies between runs and it can miss details in files outside the 30k-character budget. Always review the draft before publishing. A larger model (`MODEL_NAME=gemma4:12b`) may give richer drafts at the cost of speed.
 - **Occasional empty reply**: Rarely, the model returns an empty or malformed reply. The CLI then prints a message and exits with code 1. Running again fixes it. The agent also asks LiteLLM to retry failed requests (`num_retries=3`).
 - **Thinking mode is disabled on purpose**: With Gemma's thinking enabled, a test run invented files and tool results that did not exist, so the agent sets `reasoning_effort="none"`.
@@ -251,11 +256,26 @@ PROJECT_DIR=$PWD docker compose run --rm --no-deps readme-drafter python -m unit
 
 ## Security & Privacy Considerations
 
-- **Secrets Handling**: The tools refuse to open `.env`, `.env.*` (except `.env.example`/`.sample`/`.template`), `*.pem`, `*.key`, `*.p12`, `*.pfx`, `*.keystore`, `id_rsa*`, `id_ed25519*`, `credentials.json`, `service-account*.json`, `.npmrc`, `.pypirc` and `.netrc`. Only variable names, never values, are taken from `.env.example`. Token-like strings are redacted from everything the model reads and from the saved draft.
-- **Data Privacy**: Nothing leaves your machine. The model runs in Ollama locally, and the agent makes no other network calls.
-- **Safety**: The agent cannot execute code or shell commands. File access is read-only and confined to `PROJECT_DIR`. Paths outside it, including through symlinks, are rejected. Under Docker the project is mounted read-only (`:ro`) and the agent runs as an unprivileged user.
-- **Dev UI exposure**: `adk web` is a development server without authentication. Keep port 8000 on localhost or a trusted network.
-- **Local chat history**: `adk web` stores chat sessions, including the inspected file contents, in `readme_drafter/.adk/session.db`. It is git-ignored and excluded from the Docker image. Delete it to clear the history.
+The project being documented is treated as **untrusted input**: it may come from the internet and be written to attack whoever runs the drafter. All checks live in [`readme_drafter/guardrails.py`](readme_drafter/guardrails.py) and are covered by `tests/test_security.py`.
+
+| Threat | Guardrail |
+| :--- | :--- |
+| A file in the project is a symlink to `~/.aws/credentials`, `~/.ssh/id_rsa` or another private file (git creates symlinks when cloning) | Every path is resolved first, and anything outside `PROJECT_DIR` is refused. This also applies to manifests and the license file. |
+| Secrets inside the project: `.env`, keys, `.git/config` with a password in the remote URL | Never opened: `.env*` (except `.env.example`/`.sample`/`.template`), `*.pem`, `*.key`, `*.p12`, `*.pfx`, `*.jks`, `*.kdbx`, `id_rsa*`/`id_ed25519*`/`id_ecdsa*`, `credentials*`, `service-account*.json`, `.npmrc`, `.pypirc`, `.netrc`, `.pgpass`, `.git-credentials`, `.htpasswd`, `*.tfstate`, `*.tfvars`, `kubeconfig`, `*.ovpn`, and anything under `.git`, `.ssh`, `.aws`, `.gnupg`, `.kube`, `.docker`, `node_modules`, `.venv` and build folders. |
+| Hard-coded secrets in code and config | Redacted before the model sees them and again in the output: private key blocks, OpenAI/Anthropic/Google/GitHub/AWS/Slack/JWT tokens, passwords in URLs (`postgres://user:[REDACTED]@host`), quoted values of keys named like `password`/`secret`/`token`/`api_key`, and unquoted values in config files. Variable names and `${VAR}` references are kept. Only names, never values, are taken from `.env.example`. |
+| Prompt injection: project text tells the model to add `curl ... \| bash`, a tracking image or a phishing link | Project data is wrapped in `<<<PROJECT_DATA` markers and labelled untrusted in the instructions. Because a small model still obeys such text, every README is then reviewed in code: download-and-run commands (`curl/wget \| sh`, `bash <(curl ...)`, PowerShell `iex`, `base64 -d \| sh`) and destructive ones (`rm -rf ~`, `mkfs`, `dd of=/dev/...`) are removed. Images and links whose host does not appear in the project are removed. A `[!WARNING]` note at the top lists every change, with commands and addresses defanged (`hxxps`, `¦`) so they cannot be pasted and run. |
+| Text that makes the agent loop or read endlessly | At most 4 tool calls and 6 model calls per request. At most 5,000 files are walked and 30,000 characters of file content are sent. Malformed manifests are reported as errors instead of crashing the run. |
+| Running it on your home folder or `/` by mistake | Refused, as is any folder containing `.ssh`, `.aws` or `.gnupg` (it looks like a home folder, including under Docker). |
+| Someone else on the same Wi-Fi opening the unauthenticated dev UI | Docker publishes port 8000 on `127.0.0.1` only. `adk web` run locally also binds to `127.0.0.1` by default. |
+| A compromised agent container | Runs as an unprivileged user with a read-only root filesystem, all Linux capabilities dropped and `no-new-privileges`. The project is mounted read-only. The agent has no tool that runs code or commands, and it can only write `output/README.draft.md`. |
+
+- **Data Privacy**: Nothing leaves your machine. The model runs in Ollama locally. LiteLLM's default download of a model price list from GitHub at start-up is turned off (`LITELLM_LOCAL_MODEL_COST_MAP=True`), verified by starting the container with networking disabled.
+- **Local chat history**: `adk web` stores chat sessions, including the inspected file contents, in `readme_drafter/.adk/session.db`. It is git-ignored and excluded from the Docker image, and under Docker it is kept in memory only. Delete it to clear the history.
+- **Remaining risks**:
+  - Injected misinformation in plain words is not detected; review the draft.
+  - Redaction is pattern-based, so a secret in an unusual format (for example, a password written in prose) can slip through.
+  - Hard links cannot be told apart from normal files. Git never creates them, but archives can.
+  - The dev UI has no login, so do not leave it running on a shared machine.
 
 ---
 

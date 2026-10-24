@@ -1,13 +1,12 @@
 """Tools the README drafter uses to inspect a project folder.
 
-Every tool is confined to PROJECT_DIR. Nothing outside it is read, secret
-files such as .env are never opened, and token-like strings are redacted
-before any text reaches the model.
+Every file access goes through guardrails.safe_path: nothing outside PROJECT_DIR is
+read (symlinks included), secret files and credential folders are never opened, and
+secret-looking values are redacted before any text reaches the model.
 """
 
 from __future__ import annotations
 
-import fnmatch
 import json
 import os
 import re
@@ -15,24 +14,8 @@ import tomllib
 from collections import Counter
 from pathlib import Path
 
-SKIP_DIRS = {
-    ".git", ".hg", ".svn", "node_modules", ".venv", "venv", "env", "__pycache__",
-    ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox", ".adk", "dist", "build",
-    ".next", ".nuxt", "target", ".idea", ".vscode", "coverage", "htmlcov", ".gradle",
-}
-SENSITIVE_PATTERNS = [
-    ".env", ".env.*", "*.pem", "*.key", "*.p12", "*.pfx", "*.keystore",
-    "id_rsa*", "id_ed25519*", "credentials.json", "service-account*.json",
-    ".npmrc", ".pypirc", ".netrc",
-]
-ENV_TEMPLATES = (".env.example", ".env.sample", ".env.template")
-SECRET_VALUE_RE = re.compile(
-    r"sk-[A-Za-z0-9_-]{16,}"            # OpenAI / Anthropic style keys
-    r"|AIza[0-9A-Za-z_-]{30,}"          # Google API keys
-    r"|gh[pousr]_[A-Za-z0-9]{30,}"      # GitHub tokens
-    r"|AKIA[0-9A-Z]{16}"                # AWS access key IDs
-    r"|xox[abprs]-[A-Za-z0-9-]{10,}"    # Slack tokens
-)
+from .guardrails import ENV_TEMPLATES, SKIP_DIRS, check_project_root, is_config_like, redact, safe_path
+
 LANGUAGES = {
     ".py": "Python", ".js": "JavaScript", ".jsx": "JavaScript", ".mjs": "JavaScript",
     ".ts": "TypeScript", ".tsx": "TypeScript", ".go": "Go", ".rs": "Rust",
@@ -55,37 +38,34 @@ ENTRY_POINT_NAMES = {
     "index.js", "index.ts", "main.js", "main.ts", "server.js", "server.ts",
     "main.go", "main.rs",
 }
-
 # Gemma chat-template tokens that occasionally leak into replies.
 LEAKED_TOKEN_RE = re.compile(r"<\|?(?:channel|turn)\|?>")
 
 MAX_FILE_CHARS = 8000
 MAX_LISTED_FILES = 300
+MAX_WALKED_FILES = 5000
 KEY_FILES_BUDGET_CHARS = 30000
 KEY_CONFIG_FILES = ("Dockerfile", "docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml", "Makefile")
 DEFAULT_OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
 
 
-def _project_root() -> Path:
-    return Path(os.getenv("PROJECT_DIR") or os.getcwd()).resolve()
+def _open_project() -> tuple[Path, dict | None]:
+    """Returns the project root and, if it must not be used, an error result."""
+    root = Path(os.getenv("PROJECT_DIR") or os.getcwd()).resolve()
+    error = check_project_root(root)
+    return root, ({"status": "error", "error_message": error} if error else None)
 
 
 def _project_name(root: Path) -> str:
     return os.getenv("PROJECT_NAME") or root.name
 
 
-def _is_sensitive(name: str) -> bool:
-    if name in ENV_TEMPLATES:
-        return False
-    return any(fnmatch.fnmatch(name, pattern) for pattern in SENSITIVE_PATTERNS)
-
-
-def _redact(text: str) -> str:
-    return SECRET_VALUE_RE.sub("[REDACTED]", text)
-
-
 def _walk_files(root: Path, max_depth: int):
-    """Yields (relative path, is_sensitive) for files under root, pruning SKIP_DIRS."""
+    """Yields (relative path, readable) for up to MAX_WALKED_FILES files, pruning SKIP_DIRS.
+
+    Symlinked folders are not followed; `readable` is False for files safe_path refuses.
+    """
+    walked = 0
     for dirpath, dirnames, filenames in os.walk(root):
         rel_dir = Path(dirpath).relative_to(root)
         dirnames[:] = sorted(
@@ -94,14 +74,20 @@ def _walk_files(root: Path, max_depth: int):
         if len(rel_dir.parts) + 1 >= max_depth:
             dirnames[:] = []
         for name in sorted(filenames):
-            if name != ".DS_Store":
-                yield rel_dir / name, _is_sensitive(name)
+            if name == ".DS_Store":
+                continue
+            walked += 1
+            if walked > MAX_WALKED_FILES:
+                return
+            rel_path = rel_dir / name
+            yield rel_path, safe_path(root, rel_path)[0] is not None
 
 
 def _read_text(path: Path, limit: int) -> str:
-    """Reads at most `limit` characters without loading a huge file into memory."""
+    """Reads at most `limit` characters, redacted, without loading a huge file into memory."""
     with path.open("rb") as f:
-        return f.read(limit * 4).decode("utf-8", errors="replace")[:limit]
+        text = f.read(limit * 4).decode("utf-8", errors="replace")[:limit]
+    return redact(text, config_like=is_config_like(path))
 
 
 def list_project_files(max_depth: int = 4) -> dict:
@@ -113,16 +99,20 @@ def list_project_files(max_depth: int = 4) -> dict:
     Returns:
         A dict with the project name and the relative path of every file found.
     """
-    root = _project_root()
-    if not root.is_dir():
-        return {"status": "error", "error_message": f"Project folder not found: {root}"}
+    root, error = _open_project()
+    if error:
+        return error
+    try:
+        depth = min(max(1, int(max_depth)), 8)
+    except (TypeError, ValueError):
+        depth = 4
 
-    files, skipped = [], 0
-    for rel_path, sensitive in _walk_files(root, max(1, int(max_depth))):
-        if sensitive:
-            skipped += 1
-        else:
+    files, hidden = [], 0
+    for rel_path, readable in _walk_files(root, depth):
+        if readable:
             files.append(rel_path.as_posix())
+        else:
+            hidden += 1
 
     return {
         "status": "success",
@@ -130,7 +120,7 @@ def list_project_files(max_depth: int = 4) -> dict:
         "file_count": len(files),
         "files": files[:MAX_LISTED_FILES],
         "truncated": len(files) > MAX_LISTED_FILES,
-        "secret_files_hidden": skipped,
+        "unreadable_files_hidden": hidden,
     }
 
 
@@ -231,30 +221,34 @@ def detect_project_stack() -> dict:
     Returns:
         A dict with detected languages, likely entry points and the parsed manifests.
     """
-    root = _project_root()
-    if not root.is_dir():
-        return {"status": "error", "error_message": f"Project folder not found: {root}"}
+    root, error = _open_project()
+    if error:
+        return error
 
     manifests = {}
     for name, parser in MANIFEST_PARSERS.items():
-        path = root / name
-        if path.is_file():
-            try:
-                manifests[name] = parser(path)
-            except (ValueError, OSError, AttributeError) as exc:
-                manifests[name] = {"error": f"Could not parse: {exc}"}
+        if not (root / name).is_symlink() and not (root / name).exists():
+            continue
+        path, refused = safe_path(root, name)
+        if refused:
+            manifests[name] = {"skipped": refused}
+            continue
+        try:
+            manifests[name] = parser(path)
+        except Exception as exc:  # untrusted input: a malformed manifest must not stop the run
+            manifests[name] = {"error": f"Could not parse: {type(exc).__name__}"}
 
     languages, entry_points = Counter(), []
-    for rel_path, sensitive in _walk_files(root, max_depth=4):
-        if sensitive:
+    for rel_path, readable in _walk_files(root, max_depth=4):
+        if not readable:
             continue
         if rel_path.suffix in LANGUAGES:
             languages[LANGUAGES[rel_path.suffix]] += 1
         if rel_path.name in ENTRY_POINT_NAMES and len(rel_path.parts) <= 3:
             entry_points.append(rel_path.as_posix())
 
-    readme = next((p.name for p in root.glob("README*") if p.is_file()), None)
-    license_file = next((p for p in root.glob("LICEN[CS]E*") if p.is_file()), None)
+    readme = next((p.name for p in sorted(root.glob("README*")) if safe_path(root, p.name)[0]), None)
+    license_file = next((p for p in sorted(root.glob("LICEN[CS]E*")) if safe_path(root, p.name)[0]), None)
     license_text = " ".join(_read_text(license_file, 3000).split()) if license_file else ""
     license_name = next((spdx for phrase, spdx in LICENSE_MARKERS if phrase.lower() in license_text.lower()), None)
 
@@ -269,7 +263,7 @@ def detect_project_stack() -> dict:
             "detected": license_name,
             "excerpt": license_text[:120] or None,
         },
-        "manifests": json.loads(_redact(json.dumps(manifests))),
+        "manifests": manifests,
     }
 
 
@@ -282,18 +276,12 @@ def read_file(path: str) -> dict:
     Returns:
         A dict with the file content (cut short if the file is very long) or an error message.
     """
-    root = _project_root()
-    target = (root / path).resolve()
-    if not target.is_relative_to(root):
-        return {"status": "error", "error_message": "Only files inside the project folder can be read."}
-    if _is_sensitive(target.name):
-        return {
-            "status": "error",
-            "error_message": "This file may contain secrets, so it is not read. "
-            "Document it as a file the user creates, for example from .env.example.",
-        }
-    if not target.is_file():
-        return {"status": "error", "error_message": f"File not found: {path}"}
+    root, error = _open_project()
+    if error:
+        return error
+    target, refused = safe_path(root, str(path))
+    if refused:
+        return {"status": "error", "error_message": refused}
 
     with target.open("rb") as f:
         head = f.read(1024)
@@ -304,7 +292,7 @@ def read_file(path: str) -> dict:
     return {
         "status": "success",
         "path": path,
-        "content": _redact(text[:MAX_FILE_CHARS]),
+        "content": text[:MAX_FILE_CHARS],
         "truncated": len(text) > MAX_FILE_CHARS,
     }
 
@@ -319,11 +307,11 @@ def read_key_files() -> dict:
     Returns:
         A dict mapping each chosen file path to its content.
     """
-    root = _project_root()
-    if not root.is_dir():
-        return {"status": "error", "error_message": f"Project folder not found: {root}"}
+    root, error = _open_project()
+    if error:
+        return error
 
-    files = [p for p, sensitive in _walk_files(root, max_depth=4) if not sensitive]
+    files = [p for p, readable in _walk_files(root, max_depth=4) if readable]
     readmes = [p for p in files if len(p.parts) == 1 and p.name.upper().startswith("README")]
     entry_points = [p for p in files if p.name in ENTRY_POINT_NAMES and len(p.parts) <= 3]
     configs = [p for p in files if len(p.parts) == 1 and p.name in KEY_CONFIG_FILES]
@@ -391,5 +379,7 @@ def save_readme_draft(markdown: str) -> dict:
     output_dir = Path(os.getenv("OUTPUT_DIR") or DEFAULT_OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
     target = output_dir / "README.draft.md"
-    target.write_text(_redact(markdown), encoding="utf-8")
+    if target.is_symlink():  # never write through a planted link
+        target.unlink()
+    target.write_text(redact(markdown, config_like=True), encoding="utf-8")
     return {"status": "success", "saved_to": str(target), "characters": len(markdown)}

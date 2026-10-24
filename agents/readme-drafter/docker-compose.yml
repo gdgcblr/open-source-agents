@@ -43,8 +43,17 @@ services:
     volumes:
       - ${PROJECT_DIR:?Set PROJECT_DIR to the folder you want a README for}:/workspace:ro
       - ./output:/output
+    # The ADK dev UI has no login: publish it on this machine only, never on the network.
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/readme_drafter/.adk:uid=1000,gid=1000
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   ollama-models:

@@ -60,7 +60,7 @@ class ToolTests(unittest.TestCase):
         self.assertNotIn(".env", result["files"])
         self.assertNotIn("server.pem", result["files"])
         self.assertFalse(any(f.startswith("node_modules") for f in result["files"]))
-        self.assertEqual(result["secret_files_hidden"], 2)
+        self.assertEqual(result["unreadable_files_hidden"], 2)
 
     def test_list_respects_max_depth(self):
         self.assertNotIn("src/helpers.py", list_project_files(max_depth=1)["files"])
