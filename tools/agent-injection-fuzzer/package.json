@@ -1,0 +1,24 @@
+{
+  "name": "agent-injection-fuzzer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "node --import tsx --test test/*.test.ts",
+    "fuzz": "node --import tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@google/adk": "^2.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22",
+    "eslint": "^9.39.5",
+    "tsx": "^4",
+    "typescript": "^5.9",
+    "typescript-eslint": "^8.72.0"
+  }
+}
