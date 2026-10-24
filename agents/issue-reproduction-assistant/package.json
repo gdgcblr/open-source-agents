@@ -1,0 +1,30 @@
+{
+  "name": "issue-reproduction-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generate a safe, structured bug reproduction brief from an issue and local repository context.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "start": "npm run build --silent && node dist/src/cli.js",
+    "mcp": "npm run build --silent && node dist/src/mcp-main.js",
+    "a2a": "npm run build --silent && node dist/src/a2a-main.js",
+    "demo": "npm run build --silent && node dist/src/cli.js --github",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "adk": "npm run build --silent && node dist/src/adk-main.js"
+  },
+  "dependencies": {
+    "@google/adk": "^2.3.0",
+    "@google/genai": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "dotenv": "^16.4.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}
