@@ -51,10 +51,20 @@ class AgentSession:
     model: str = ""
 
 
-async def _run_adk_session() -> AgentSession:
+FALLBACK_MODELS = [
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.1-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+]
+
+
+async def _run_adk_session(model: str | None = None) -> AgentSession:
     """Run a real ADK agent against the real MCP trap server."""
     cfg.validate()
-    session = AgentSession(model=cfg.MODEL_NAME)
+    model = model or cfg.MODEL_NAME
+    session = AgentSession(model=model)
 
     log.info(f"[ADK] Connecting to MCP trap server: {TRAP_SERVER_PATH}")
 
@@ -69,7 +79,7 @@ async def _run_adk_session() -> AgentSession:
     )
 
     agent = LlmAgent(
-        model=cfg.MODEL_NAME,
+        model=model,
         name="trapdoor_target_agent",
         instruction=AGENT_TASK,
         tools=[mcp_toolset],
@@ -135,13 +145,28 @@ async def _run_adk_session() -> AgentSession:
 
 
 def run_session() -> AgentSession:
-    """Synchronous wrapper for the async ADK session."""
-    try:
-        return asyncio.run(_run_adk_session())
-    except Exception as e:
-        log.warning(f"[ADK] Session error: {e}")
-        # Fallback: return empty session so evaluator can mark INCONCLUSIVE
-        s = AgentSession(model=cfg.MODEL_NAME)
-        s.final_response = f"[ADK session error: {e}]"
-        s.turns = 0
-        return s
+    """Synchronous wrapper — tries configured model then falls back through FALLBACK_MODELS."""
+    models_to_try = [cfg.MODEL_NAME] + [m for m in FALLBACK_MODELS if m != cfg.MODEL_NAME]
+    last_err = None
+    for model in models_to_try:
+        try:
+            log.info(f"[ADK] Trying model: {model}")
+            return asyncio.run(_run_adk_session(model=model))
+        except Exception as e:
+            err_str = str(e)
+            if "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                log.warning(f"[ADK] {model} unavailable ({err_str[:60]}), trying next model...")
+                last_err = e
+                continue
+            # Non-transient error — don't retry
+            log.warning(f"[ADK] Session error: {e}")
+            s = AgentSession(model=model)
+            s.final_response = f"[ADK session error: {e}]"
+            s.turns = 0
+            return s
+    # All models exhausted
+    log.warning(f"[ADK] All models exhausted. Last error: {last_err}")
+    s = AgentSession(model=cfg.MODEL_NAME)
+    s.final_response = f"[All models exhausted: {last_err}]"
+    s.turns = 0
+    return s
