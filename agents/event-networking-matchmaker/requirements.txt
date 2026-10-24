@@ -1,0 +1,7 @@
+-c constraints.txt
+fastapi==0.162.0
+uvicorn==0.54.0
+openpyxl==3.1.5
+httpx==0.28.1
+python-dotenv==1.2.4
+python-multipart==0.0.32
