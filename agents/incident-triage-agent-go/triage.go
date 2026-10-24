@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -104,14 +105,22 @@ func runTriage(ctx context.Context, a agent.Agent, prompt, modelName, tracePath 
 	}
 
 	fmt.Fprintf(log, "■ done in %s · %d tool calls · %d in / %d out tokens\n", tr.Duration, tr.ToolCalls, tr.InputTokens, tr.OutputTokens)
+	if tr.Error != "" {
+		fmt.Fprintf(log, "✗ %s\n", tr.Error)
+	}
 	fmt.Println(tr.Report)
 
 	if tracePath != "" {
 		b, _ := json.MarshalIndent(tr, "", "  ")
-		if err := os.WriteFile(tracePath, b, 0o644); err != nil {
-			return err
+		err := os.MkdirAll(filepath.Dir(tracePath), 0o755)
+		if err == nil {
+			err = os.WriteFile(tracePath, b, 0o644)
 		}
-		fmt.Fprintf(log, "trace written to %s\n", tracePath)
+		if err != nil {
+			fmt.Fprintf(log, "could not write trace: %v\n", err)
+		} else {
+			fmt.Fprintf(log, "trace written to %s\n", tracePath)
+		}
 	}
 	if tr.Error != "" {
 		return fmt.Errorf("%s", tr.Error)
