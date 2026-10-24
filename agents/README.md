@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`namma-sahayaka`](namma-sahayaka/) | Autonomous AI Civic Grievance & Ward Buddy for Bengaluru citizens with Gemini 2.5 Flash & automated evals | TypeScript / Google Gemini 2.5 Flash (`@google/genai`) | Pranav N |

@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`bengaluru-civic-mcp`](bengaluru-civic-mcp/) | Model Context Protocol (MCP) server & utility for Bengaluru ward lookup, triage & bilingual Kannada complaints | Model Context Protocol (MCP) / TypeScript | Pranav N |
