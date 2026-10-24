@@ -136,6 +136,12 @@ def test_blank_goal_never_sends_stored_profile_to_cloud(fixture,monkeypatch):
     result=matches(client,query="",use_ai=True).json()
     assert result["matches"] and "typed goal" in result["warning"]
 
+def test_hosted_origin_behind_https_proxy(fixture,monkeypatch):
+    client,_,_=fixture
+    monkeypatch.setenv("BUILDBUDDY_PUBLIC_URL","https://demo.example")
+    assert client.get("/api/config",headers={"Origin":"https://demo.example"}).status_code==200
+    assert client.get("/api/config",headers={"Origin":"https://evil.example"}).status_code==403
+
 def test_semantic_runtime_failure_falls_back(fixture):
     client,_,_=fixture
     class BrokenModel:

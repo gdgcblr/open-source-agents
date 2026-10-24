@@ -44,3 +44,7 @@ In a second browser tab, Kiran checked in at Table B. Arun's available-now query
 - No formal security audit, penetration test, legal-compliance certification, or real-event outcome study was performed.
 
 The reliable no-key submission path is the tested local lexical NLP workflow. The UI identifies that engine honestly.
+
+## Deployment/email follow-up
+
+Added a Render launch configuration and deployment instructions; a public Render instance has not been provisioned or live-tested. A browser test with a fictional invitation token confirmed automatic sign-in, visible pre-event matches, immediate URL-fragment removal, and no venue check-in. Email-provider delivery/tracking compatibility remains unverified and must be tested by the organizer. Added an exact public-origin regression test for HTTPS proxy hosting.

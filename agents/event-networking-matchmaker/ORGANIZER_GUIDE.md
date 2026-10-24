@@ -2,6 +2,8 @@
 
 You operate one shared server. Attendees use a browser; they do not install the agent or receive the response spreadsheet.
 
+For the quickest hosted evaluator URL and confirmation-email buttons, follow [DEPLOY.md](DEPLOY.md). New token exports include per-attendee `invite_url` values. Send each privately using your existing email sender; clicking opens matches before the event without falsely marking venue arrival.
+
 ## 1. Prepare a private deployment
 
 Follow README installation. Test with `python app.py --demo` and fictional data first. Use a separate database and omit `--demo` for a real event.
