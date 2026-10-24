@@ -20,7 +20,7 @@ agents/<project-slug>/
 ├── README.md               # Copied and completed from template/README.md
 ├── .env.example            # Example configuration with placeholder values
 ├── .gitignore              # Local ignores for dependencies and secrets
-├── requirements.txt        # (or package.json, pyproject.toml, etc.)
+├── requirements.txt        # (or package.json, go.mod, pyproject.toml, etc.)
 └── <source_files>          # Agent implementation code
 ```
 
@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [quickcart-advisor](quickcart-advisor/) | Compares a product across Swiggy Instamart, Blinkit, Zepto and Amazon India by total delivered cost/fees/ETA/membership, with HITL purchase approval and strict live-vs-demo data provenance | Go 1.26, Google ADK-Go v2.6.0, LM Studio (OpenAI-compatible) or Gemini, qbuys | seshachalam-yv |
