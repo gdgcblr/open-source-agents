@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What should be checked before releasing an API change?",
+    "expected_source": "api_change_checklist.md",
+    "expected_topics": ["schema", "tests", "backward compatibility"]
+  },
+  {
+    "question": "How should a collection of strings appear in JSON?",
+    "expected_source": "odata_collections.md",
+    "expected_topics": ["array", "strings"]
+  },
+  {
+    "question": "Can a public demo index restricted company documents?",
+    "expected_source": "documentation_access.md",
+    "expected_topics": ["authorized", "confidential"]
+  }
+]
