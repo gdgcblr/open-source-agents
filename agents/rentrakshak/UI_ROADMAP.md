@@ -2,6 +2,10 @@
 
 Reference: purple **dashboard mockup** (sidebar, hero, locality cards, analyse module with upload, Ask RentRakshak rail).
 
+![Target UI — future enhancements](./assets/ui-mockup-future-enhancements.jpg)
+
+*Full-fidelity target design (Namma Metro / Vidhana Soudha hero, polished analyse module, in-page ADK chat). The shipped `web/` demo implements the functional pieces below; visual polish tracks this mockup.*
+
 ## Implemented in `web/` (v0.2)
 
 | Mockup element | Status |
@@ -20,9 +24,9 @@ Reference: purple **dashboard mockup** (sidebar, hero, locality cards, analyse m
 | Light purple theme | ✅ |
 | Demo seed (12 experiences, 4 vacating posts) | ✅ |
 
-## Future enhancements
+## Future enhancements (vs mockup above)
 
-- [ ] Hero illustration (Vidhana Soudha / Namma Metro) — assets under `web/assets/`
+- [ ] Hero illustration matching mockup (Vidhana Soudha / Namma Metro train)
 - [ ] Scanned PDF → page render + vision (image screenshots work via Ollama Gemma / Gemini)
 - [ ] Document AI fallback for low-quality photos
 - [ ] In-page ADK chat WebSocket to Gemini or Ollama

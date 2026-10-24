@@ -24,6 +24,7 @@ from rentrakshak.services.safety_report import generate_rental_safety_report
 from rentrakshak.services.vacating import create_vacating_post, search_available_rooms
 
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
+ASSETS_ROOT = Path(__file__).resolve().parents[2] / "assets"
 
 app = FastAPI(title="RentRakshak API", version="0.2.1")
 app.add_middleware(
@@ -222,3 +223,5 @@ def index() -> FileResponse:
 
 if WEB_ROOT.is_dir():
     app.mount("/static", StaticFiles(directory=WEB_ROOT), name="static")
+if ASSETS_ROOT.is_dir():
+    app.mount("/assets", StaticFiles(directory=ASSETS_ROOT), name="assets")

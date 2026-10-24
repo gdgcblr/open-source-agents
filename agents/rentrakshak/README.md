@@ -417,7 +417,15 @@ adk web adk_agent
 
 ## Future work
 
-In-app contact relay, rate limiting, admin moderation console, licensed rent feeds, full Model Armor client, Gemma extraction microservice for unstructured listings.
+### UI — target mockup (future enhancements)
+
+The **purple dashboard** below is the north-star UI we are aligning to (not yet pixel-perfect in the live demo). See **[UI_ROADMAP.md](UI_ROADMAP.md)** for what is ✅ in `web/` today vs 🔜 next.
+
+![RentRakshak target UI mockup](./assets/ui-mockup-future-enhancements.jpg)
+
+### Product & platform
+
+In-app contact relay, rate limiting, admin moderation console, licensed rent feeds, full Model Armor client, in-page ADK chat widget, **My Posts** (edit token), map heat view for localities.
 
 ---
 
