@@ -147,7 +147,6 @@ python smoke_test.py --image examples/<your-photo>.jpg "Near 100 Feet Road, Indi
 
 Genuine run on 2026-10-24 with `gemini-3.5-flash`, using a text description (`python smoke_test.py "..."`). Output is unedited apart from trailing whitespace. (This run was recorded while the data was still marked `"verified": false`, which is why 1533 carries the "unverified" label.)
 
-> 🚧 **TODO before opening the PR:** add a run with a real photo (save it in `examples/`).
 
 ### Example Input
 ```
@@ -226,6 +225,76 @@ Would you like me to save a copy of this complaint locally for your records?
 [usage] model requests: 4, input tokens: 11369, output tokens: 795
 ```
 
+
+### Example with a photo
+
+Genuine run on 2026-10-24 with `gemini-3.5-flash-lite` (`python smoke_test.py --image <photo> "..."`), after the data was marked verified for testing. Output is unedited apart from trailing whitespace.
+
+**Input photo:** a large pile of uncleared mixed waste spread across a commercial street, with a garbage auto parked beside it and shop signs in the background. *(The photo is not included in the repository because it isn't the contributor's own image.)*
+
+**Input text:**
+```
+mahadevpura, garbage is piled up becase nobody picked it up since days
+```
+
+**Output:**
+```
+[tool call] list_issue_types({})
+[tool call] find_department({'issue_type': 'garbage'})
+[tool call] get_filing_channels({'authority_id': 'city_corporation'})
+**Issue:** Uncleared garbage / black-spot (ಕಸದ ರಾಶಿ)
+**Responsible:** Bengaluru city corporation (Greater Bengaluru Authority, formerly BBMP), Solid Waste Management (SWM)
+**Location:** Mahadevapura (Note: Please provide a specific road name or nearby landmark when filing so authorities can locate the spot faster.)
+**Severity:** High, because a large accumulation of mixed waste is blocking a public roadway.
+
+**Draft complaint (English)**
+**Subject:** Urgent clearance of accumulated garbage pile in Mahadevapura
+
+Dear Sir/Madam,
+
+I am writing to report a major uncleared garbage black-spot in the Mahadevapura area, near Mumtaz Sanitary Stores as seen in the photo.
+
+A large pile of mixed waste has accumulated directly on the road and has not been cleared for days. This uncleared garbage is blocking passage and poses significant hygiene and public health risks to residents and commuters passing through the area.
+
+I request you to kindly arrange for immediate clearance and disposal of this garbage pile, and to ensure regular waste collection in this area.
+
+Thank you.
+
+[Your name]
+[Your phone number]
+
+**Draft complaint (ಕನ್ನಡ)**
+**ವಿಷಯ:** ಮಹದೇವಪುರದಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿರುವ ಕಸದ ರಾಶಿಯನ್ನು ತಕ್ಷಣ ತೆರವುಗೊಳಿಸುವ ಬಗ್ಗೆ.
+
+ಮಾನ್ಯ ಅಧಿಕಾರಿಗಳೇ,
+
+ನಾನು ಮಹದೇವಪುರ ಪ್ರದೇಶದಲ್ಲಿ (ಮುಂಬಾಜ್ ಸ್ಯಾನಿಟರಿ ಸ್ಟೋರ್ಸ್ ಹತ್ತಿರ) ರಸ್ತೆಯಲ್ಲಿ ಬಿದ್ದಿರುವ ದೊಡ್ಡ ಪ್ರಮಾಣದ ಕಸದ ರಾಶಿಯ ಬಗ್ಗೆ ದೂರು ನೀಡಲು ಬಯಸುತ್ತೇನೆ.
+
+ಇಲ್ಲಿ ಹಲವಾರು ದಿನಗಳಿಂದ ಕಸವನ್ನು ವಿಲೇವಾರಿ ಮಾಡದೆ ರಸ್ತೆಯಲ್ಲೇ ಸಂಗ್ರಹಗೊಂಡಿದೆ. ಇದರಿಂದಾಗಿ ದಾರಿಯಲ್ಲಿ ಓಡಾಡುವ ಸಾರ್ವಜನಿಕರಿಗೆ ತೊಂದರೆಯಾಗುತ್ತಿದ್ದು, ಅನಾರೋಗ್ಯದ ಭೀತಿ ಎದುರಾಗಿದೆ.
+
+ದಯವಿಟ್ಟು ಈ ಕಸದ ರಾಶಿಯನ್ನು ತಕ್ಷಣ ತೆರವುಗೊಳಿಸಿ, ಈ ಪ್ರದೇಶದಲ್ಲಿ ನಿಯಮಿತವಾಗಿ ಕಸ ಸಂಗ್ರಹಣೆ ಮಾಡುವಂತೆ ಕ್ರಮ ಕೈಗೊಳ್ಳಬೇಕಾಗಿ ವಿನಂತಿ.
+
+ಧನ್ಯವಾದಗಳು.
+
+[ನಿಮ್ಮ ಹೆಸರು]
+[ನಿಮ್ಮ ದೂರವಾಣಿ ಸಂಖ್ಯೆ]
+
+**Where to file**
+1. Civic helpline: 1533 (verified)
+2. Sahaaya grievance app / portal (not yet available, please confirm on the official site)
+3. Official X (Twitter) handle (not yet available, please confirm on the official site)
+
+**If nothing happens**
+- Ward-level engineer / health inspector
+- Zonal joint commissioner
+- Corporation commissioner
+
+Would you like me to save a copy of this complaint?
+
+[usage] model requests: 4, input tokens: 16605, output tokens: 621
+```
+
+What this shows: the issue was identified from the photo, a landmark was taken from a visible shop sign, the vague location was flagged, and nothing was added that a photo can't show (e.g. smell). Note the Kannada transliteration of the shop name is slightly off ("ಮುಂಬಾಜ್"), and "(verified)" appears only because the data is marked verified for testing.
 ---
 
 ## How to Test
@@ -285,6 +354,7 @@ The web UI also shows each tool call and its result alongside the conversation.
 | `429 RESOURCE_EXHAUSTED` mentioning `PerMinute` | Free-tier per-minute limit. Wait about a minute and retry. |
 | `429 RESOURCE_EXHAUSTED` mentioning `PerDay` | Free-tier daily limit (20 requests, about 5 complaints). Wait until it resets (the error says when), use a paid tier, or set `MODEL_NAME=gemini-3.5-flash-lite` in `.env` (separate quota; all test scenarios pass on it). |
 | `ERROR: ... requires a different Python` during `pip install` | `google-adk` needs Python 3.11+. Recreate the venv with a newer Python. |
+| `unsupported image format: .avif` | Convert to JPEG: `sips -s format jpeg photo.avif --out photo.jpg` (macOS) or any image editor. |
 | `adk: command not found` | Activate the virtual environment (`source .venv/bin/activate`). |
 | `ModuleNotFoundError: namma_civic_agent` | Run commands from `agents/namma-civic-agent/`, not from the repo root. |
 | `namma_civic_agent` not listed in `adk web` | Same as above: start `adk web` from `agents/namma-civic-agent/`. |
@@ -302,8 +372,8 @@ The web UI also shows each tool call and its result alongside the conversation.
 - **Kannada quality depends on the model.** Have a native speaker review drafts before relying on them.
 - **The guardrail is pattern-based.** It catches phone numbers, URLs, emails and @handles, but not, for example, an invented office address or officer name; those are covered only by the prompt. In streaming mode, partial text may be shown before the final filtered reply.
 - **Classification can be wrong**, especially for ambiguous photos (e.g. storm drain vs sewer). Always review the draft.
-- **Photo input not yet tested with real photos.** Live runs so far used text descriptions only. Image classification relies on Gemini's vision and still needs testing with real street photos.
-- **Tested on:** macOS (Python 3.12, `google-adk` 2.13). Offline tests pass. Live text runs: all six How to Test scenarios except #4 (sewage) passed on `gemini-3.5-flash-lite` with the current prompt; scenarios 1–3 also passed on `gemini-3.5-flash` with an earlier version of the prompt. Linux and Windows untested.
+- **Photo input has had limited testing.** One real street photo has been tested so far (see the photo example). Accuracy on night-time, blurry or ambiguous photos is unknown. AVIF images are not accepted by the Gemini API; convert them to JPEG first.
+- **Tested on:** macOS (Python 3.12, `google-adk` 2.13). Offline tests pass. Live text runs: all six How to Test scenarios except #4 (sewage) passed on `gemini-3.5-flash-lite` with the current prompt; scenarios 1–3 also passed on `gemini-3.5-flash` with an earlier version of the prompt. One real photo (garbage) tested on `gemini-3.5-flash-lite`. Linux and Windows untested.
 
 ---
 

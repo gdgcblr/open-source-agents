@@ -15,6 +15,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# Image formats accepted by the Gemini API.
+SUPPORTED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+
 load_dotenv(Path(__file__).parent / ".env")
 
 from google.adk.runners import InMemoryRunner  # noqa: E402
@@ -26,7 +29,7 @@ from namma_civic_agent.agent import root_agent  # noqa: E402
 def build_message(text: str, image: Path | None) -> types.Content:
     parts = [types.Part(text=text)]
     if image:
-        mime_type = mimetypes.guess_type(image)[0] or "image/jpeg"
+        mime_type = mimetypes.guess_type(image)[0]
         parts.insert(0, types.Part.from_bytes(data=image.read_bytes(), mime_type=mime_type))
     return types.Content(role="user", parts=parts)
 
@@ -64,4 +67,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.image and not args.image.is_file():
         parser.error(f"image not found: {args.image}")
+    if args.image and mimetypes.guess_type(args.image)[0] not in SUPPORTED_IMAGE_TYPES:
+        parser.error(
+            f"unsupported image format: {args.image.suffix}. Use JPEG, PNG, WEBP or HEIC "
+            "(on macOS: sips -s format jpeg in.avif --out out.jpg)"
+        )
     asyncio.run(main(args.message, args.image))
