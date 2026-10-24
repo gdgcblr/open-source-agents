@@ -1,0 +1,202 @@
+[
+  {
+    "id": "two-sum",
+    "title": "Two Sum",
+    "difficulty": "easy",
+    "topic": "Arrays",
+    "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
+    "constraints": [
+      "2 <= nums.length <= 10^4",
+      "-10^9 <= nums[i] <= 10^9",
+      "-10^9 <= target <= 10^9",
+      "Only one valid answer exists.",
+      "Cannot use the same element twice (e.g., indices must be distinct)."
+    ],
+    "examples": [
+      {
+        "input": "nums = [2, 7, 11, 15], target = 9",
+        "output": "[0, 1]",
+        "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+      },
+      {
+        "input": "nums = [3, 2, 4], target = 6",
+        "output": "[1, 2]",
+        "explanation": "nums[1] + nums[2] == 2 + 4 == 6."
+      },
+      {
+        "input": "nums = [3, 3], target = 6",
+        "output": "[0, 1]",
+        "explanation": "Both values are 3, indices are 0 and 1."
+      }
+    ],
+    "followups": [
+      "Can you solve this with time complexity better than O(n^2)?",
+      "What if the input array is already sorted? Can you do it in O(1) extra space?",
+      "How would you handle duplicates or multiple pairs that sum to the target?"
+    ]
+  },
+  {
+    "id": "valid-parentheses",
+    "title": "Valid Parentheses",
+    "difficulty": "easy",
+    "topic": "Strings",
+    "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if open brackets are closed by the same type of brackets and in the correct order, and every close bracket has a corresponding open bracket of the same type.",
+    "constraints": [
+      "1 <= s.length <= 10^4",
+      "s consists of parentheses only '()[]{}'.",
+      "Empty string is considered valid in some contexts, but here length >= 1.",
+      "Brackets must be closed in reverse order of opening (LIFO structure)."
+    ],
+    "examples": [
+      {
+        "input": "s = \"()\"",
+        "output": "true",
+        "explanation": "Simple matching open and close parentheses."
+      },
+      {
+        "input": "s = \"()[]{}\"",
+        "output": "true",
+        "explanation": "Multiple valid sequential matching pairs."
+      },
+      {
+        "input": "s = \"(]\"",
+        "output": "false",
+        "explanation": "Mismatched bracket types."
+      }
+    ],
+    "followups": [
+      "What is the space complexity of your stack approach in the worst case?",
+      "Can we optimize memory if only one bracket type '()' is permitted?",
+      "How would you adapt your solution to support custom bracket pairs passed as a configuration map?"
+    ]
+  },
+  {
+    "id": "reverse-linked-list",
+    "title": "Reverse Linked List",
+    "difficulty": "easy",
+    "topic": "Linked List",
+    "description": "Given the head of a singly linked list, reverse the list, and return the reversed list.",
+    "constraints": [
+      "The number of nodes in the list is in the range [0, 5000].",
+      "-5000 <= Node.val <= 5000",
+      "Head can be null (empty list).",
+      "Single node list should return the node itself."
+    ],
+    "examples": [
+      {
+        "input": "head = [1, 2, 3, 4, 5]",
+        "output": "[5, 4, 3, 2, 1]",
+        "explanation": "All pointers are reversed from right to left."
+      },
+      {
+        "input": "head = [1, 2]",
+        "output": "[2, 1]",
+        "explanation": "Two-node list reversed."
+      },
+      {
+        "input": "head = []",
+        "output": "[]",
+        "explanation": "An empty list returns null."
+      }
+    ],
+    "followups": [
+      "A linked list can be reversed either iteratively or recursively. Could you implement both?",
+      "What is the risk of recursive reversal on very long lists (e.g. 10^6 nodes) in production systems?",
+      "How would you reverse only a subsegment of the list between position left and right?"
+    ]
+  },
+  {
+    "id": "max-depth-binary-tree",
+    "title": "Maximum Depth of Binary Tree",
+    "difficulty": "easy",
+    "topic": "Trees",
+    "description": "Given the root of a binary tree, return its maximum depth. A binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
+    "constraints": [
+      "The number of nodes in the tree is in the range [0, 10^4].",
+      "-100 <= Node.val <= 100",
+      "Root can be null (returns depth 0).",
+      "Tree may be completely skewed or balanced."
+    ],
+    "examples": [
+      {
+        "input": "root = [3, 9, 20, null, null, 15, 7]",
+        "output": "3",
+        "explanation": "The longest path is 3 -> 20 -> 15 (or 7), which has 3 nodes."
+      },
+      {
+        "input": "root = [1, null, 2]",
+        "output": "2",
+        "explanation": "Right-skewed tree with 2 nodes."
+      }
+    ],
+    "followups": [
+      "How does the call stack depth differ between a balanced tree and a degenerated linked-list tree?",
+      "Can you implement this using Breadth-First Search (BFS) level-order traversal iteratively?",
+      "What if the tree is distributed across multiple network storage nodes?"
+    ]
+  },
+  {
+    "id": "best-time-buy-sell-stock",
+    "title": "Best Time to Buy and Sell Stock",
+    "difficulty": "easy",
+    "topic": "Sliding Window",
+    "description": "You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock. Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.",
+    "constraints": [
+      "1 <= prices.length <= 10^5",
+      "0 <= prices[i] <= 10^4",
+      "Cannot sell before buying (buy day < sell day).",
+      "If prices continuously decrease, maximum profit is 0."
+    ],
+    "examples": [
+      {
+        "input": "prices = [7, 1, 5, 3, 6, 4]",
+        "output": "5",
+        "explanation": "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6 - 1 = 5."
+      },
+      {
+        "input": "prices = [7, 6, 4, 3, 1]",
+        "output": "0",
+        "explanation": "In this case, no transactions are done and the max profit = 0."
+      }
+    ],
+    "followups": [
+      "Can this be solved in a single pass with O(1) extra space?",
+      "What if you are allowed to complete as many transactions as you like (buy and sell multiple times)?",
+      "What if there is a transaction fee for every trade?"
+    ]
+  },
+  {
+    "id": "valid-palindrome",
+    "title": "Valid Palindrome",
+    "difficulty": "easy",
+    "topic": "Strings",
+    "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers. Given a string s, return true if it is a palindrome, or false otherwise.",
+    "constraints": [
+      "1 <= s.length <= 2 * 10^5",
+      "s consists only of printable ASCII characters.",
+      "Only alphanumeric characters (a-z, 0-9) are considered.",
+      "Case-insensitive comparison."
+    ],
+    "examples": [
+      {
+        "input": "s = \"A man, a plan, a canal: Panama\"",
+        "output": "true",
+        "explanation": "\"amanaplanacanalpanama\" is a palindrome."
+      },
+      {
+        "input": "s = \"race a car\"",
+        "output": "false",
+        "explanation": "\"raceacar\" is not a palindrome."
+      },
+      {
+        "input": "s = \" \"",
+        "output": "true",
+        "explanation": "s is an empty string \"\" after removing non-alphanumeric characters, which is a palindrome."
+      }
+    ],
+    "followups": [
+      "Can you verify the palindrome in-place with O(1) auxiliary space without creating a cleaned copy of the string?",
+      "How would you support Unicode characters across different human languages and accents?"
+    ]
+  }
+]

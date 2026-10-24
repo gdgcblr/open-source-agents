@@ -1,0 +1,218 @@
+[
+  {
+    "id": "number-of-islands",
+    "title": "Number of Islands",
+    "difficulty": "medium",
+    "topic": "Graphs",
+    "description": "Given an m x n 2D binary grid grid which represents a map of '1's (land) and '0's (water), return the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are all surrounded by water.",
+    "constraints": [
+      "m == grid.length",
+      "n == grid[i].length",
+      "1 <= m, n <= 300",
+      "grid[i][j] is '0' or '1'.",
+      "Diagonal connections do NOT count as connected land.",
+      "The grid can be modified in-place if permitted by the interviewer, or must be left intact with an external visited set."
+    ],
+    "examples": [
+      {
+        "input": "grid = [[\"1\",\"1\",\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"0\",\"0\"]]",
+        "output": "1",
+        "explanation": "All connected 1s form a single large island."
+      },
+      {
+        "input": "grid = [[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]]",
+        "output": "3",
+        "explanation": "Three disconnected islands exist in the grid."
+      }
+    ],
+    "followups": [
+      "Can you solve this using BFS instead of DFS? Which has better space complexity for wide vs deep grids?",
+      "What if the grid is too large to fit in memory (e.g. 100,000 x 100,000) and arrives row by row? How would you use Disjoint Set Union (Union-Find)?",
+      "Can you find the maximum area of an island instead of the count?"
+    ]
+  },
+  {
+    "id": "longest-substring-without-repeating-characters",
+    "title": "Longest Substring Without Repeating Characters",
+    "difficulty": "medium",
+    "topic": "Sliding Window",
+    "description": "Given a string s, find the length of the longest substring without repeating characters.",
+    "constraints": [
+      "0 <= s.length <= 5 * 10^4",
+      "s consists of English letters, digits, symbols and spaces.",
+      "Substring is contiguous; subsequence is not."
+    ],
+    "examples": [
+      {
+        "input": "s = \"abcabcbb\"",
+        "output": "3",
+        "explanation": "The answer is \"abc\", with the length of 3."
+      },
+      {
+        "input": "s = \"bbbbb\"",
+        "output": "1",
+        "explanation": "The answer is \"b\", with the length of 1."
+      },
+      {
+        "input": "s = \"pwwkew\"",
+        "output": "3",
+        "explanation": "The answer is \"wke\", with length of 3. Note that \"pwke\" is a subsequence, not a substring."
+      }
+    ],
+    "followups": [
+      "How does your algorithm behave when the character set is strictly ASCII vs full UTF-8 Unicode?",
+      "Can we optimize the left pointer jump using a hash map storing the most recent index of each character?",
+      "What if we want to return the actual substring itself rather than just its length?"
+    ]
+  },
+  {
+    "id": "lowest-common-ancestor-binary-tree",
+    "title": "Lowest Common Ancestor of a Binary Tree",
+    "difficulty": "medium",
+    "topic": "Trees",
+    "description": "Given a binary tree, find the lowest common ancestor (LCA) of two given nodes, p and q. According to the definition of LCA on Wikipedia: 'The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself).'",
+    "constraints": [
+      "The number of nodes in the tree is in the range [2, 10^5].",
+      "-10^9 <= Node.val <= 10^9",
+      "All Node.val are unique.",
+      "p != q",
+      "p and q will exist in the tree."
+    ],
+    "examples": [
+      {
+        "input": "root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1",
+        "output": "3",
+        "explanation": "The LCA of nodes 5 and 1 is 3."
+      },
+      {
+        "input": "root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4",
+        "output": "5",
+        "explanation": "The LCA of nodes 5 and 4 is 5, since a node can be a descendant of itself."
+      }
+    ],
+    "followups": [
+      "What if nodes p and q are not guaranteed to exist in the tree?",
+      "If we have parent pointers in each node, how can we solve this similar to finding intersection of two linked lists?",
+      "What if you need to perform millions of LCA queries on the same static tree? How would Binary Lifting / Euler Tour + RMQ help?"
+    ]
+  },
+  {
+    "id": "top-k-frequent-elements",
+    "title": "Top K Frequent Elements",
+    "difficulty": "medium",
+    "topic": "Heap",
+    "description": "Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.",
+    "constraints": [
+      "1 <= nums.length <= 10^5",
+      "-10^4 <= nums[i] <= 10^4",
+      "k is in the range [1, the number of unique elements in the array].",
+      "It is guaranteed that the answer is unique."
+    ],
+    "examples": [
+      {
+        "input": "nums = [1,1,1,2,2,3], k = 2",
+        "output": "[1,2]",
+        "explanation": "1 appears 3 times, 2 appears 2 times, 3 appears 1 time."
+      },
+      {
+        "input": "nums = [1], k = 1",
+        "output": "[1]",
+        "explanation": "Only one element, so top 1 is [1]."
+      }
+    ],
+    "followups": [
+      "Your algorithm's time complexity must be better than O(n log n). Can you achieve O(n log k) with a min-heap?",
+      "Can we do this in O(n) average time using Quickselect, or O(n) worst-case time using Bucket Sort?",
+      "What if the numbers arrive in a real-time stream of millions of events per second (e.g., top trending YouTube queries)?"
+    ]
+  },
+  {
+    "id": "word-break",
+    "title": "Word Break",
+    "difficulty": "medium",
+    "topic": "Dynamic Programming",
+    "description": "Given a string s and a dictionary of strings wordDict, return true if s can be segmented into a space-separated sequence of one or more dictionary words. Note that the same word in the dictionary may be reused multiple times in the segmentation.",
+    "constraints": [
+      "1 <= s.length <= 300",
+      "1 <= wordDict.length <= 1000",
+      "1 <= wordDict[i].length <= 20",
+      "s and wordDict[i] consist of only lowercase English letters.",
+      "All strings of wordDict are unique."
+    ],
+    "examples": [
+      {
+        "input": "s = \"leetcode\", wordDict = [\"leet\",\"code\"]",
+        "output": "true",
+        "explanation": "Return true because \"leetcode\" can be segmented as \"leet code\"."
+      },
+      {
+        "input": "s = \"applepenapple\", wordDict = [\"apple\",\"pen\"]",
+        "output": "true",
+        "explanation": "Return true because \"applepenapple\" can be segmented as \"apple pen apple\"."
+      },
+      {
+        "input": "s = \"catsandog\", wordDict = [\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]",
+        "output": "false",
+        "explanation": "Cannot form a complete segmentation."
+      }
+    ],
+    "followups": [
+      "What is the time complexity of the DP solution? How can we optimize it using word length bounds or a Trie?",
+      "If we need to return all valid sentence segmentations instead of just a boolean (Word Break II), how would you avoid combinatorial explosion?",
+      "How would you handle memoization if wordDict has 100,000 words?"
+    ]
+  },
+  {
+    "id": "implement-trie",
+    "title": "Implement Trie (Prefix Tree)",
+    "difficulty": "medium",
+    "topic": "Trie",
+    "description": "A trie (pronounced as \"try\") or prefix tree is a tree data structure used to efficiently store and retrieve keys in a dataset of strings. There are various applications of this data structure, such as autocomplete and spellchecker. Implement the Trie class: Trie() initializes the trie object; void insert(String word) inserts the string word into the trie; boolean search(String word) returns true if the string word is in the trie (i.e., was inserted before), and false otherwise; boolean startsWith(String prefix) returns true if there is a previously inserted string word that has the prefix prefix, and false otherwise.",
+    "constraints": [
+      "1 <= word.length, prefix.length <= 2000",
+      "word and prefix consist only of lowercase English letters.",
+      "At most 3 * 10^4 calls in total will be made to insert, search, and startsWith."
+    ],
+    "examples": [
+      {
+        "input": "[\"Trie\", \"insert\", \"search\", \"search\", \"startsWith\", \"insert\", \"search\"]\n[[], [\"apple\"], [\"apple\"], [\"app\"], [\"app\"], [\"app\"], [\"app\"]]",
+        "output": "[null, null, true, false, true, null, true]",
+        "explanation": "Trie trie = new Trie(); trie.insert(\"apple\"); trie.search(\"apple\"); // return True; trie.search(\"app\"); // return False; trie.startsWith(\"app\"); // return True; trie.insert(\"app\"); trie.search(\"app\"); // return True"
+      }
+    ],
+    "followups": [
+      "How would you implement Trie deletion without leaving orphan nodes?",
+      "How would you support wildcard search matching '.' (any single character)?",
+      "How could you compress branches with single children (Radix tree / Patricia trie) to conserve RAM?"
+    ]
+  },
+  {
+    "id": "subsets",
+    "title": "Subsets",
+    "difficulty": "medium",
+    "topic": "Backtracking",
+    "description": "Given an integer array nums of unique elements, return all possible subsets (the power set). The solution set must not contain duplicate subsets. Return the solution in any order.",
+    "constraints": [
+      "1 <= nums.length <= 10",
+      "-10 <= nums[i] <= 10",
+      "All the numbers of nums are unique."
+    ],
+    "examples": [
+      {
+        "input": "nums = [1,2,3]",
+        "output": "[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]",
+        "explanation": "Total 2^3 = 8 subsets."
+      },
+      {
+        "input": "nums = [0]",
+        "output": "[[],[0]]",
+        "explanation": "Total 2^1 = 2 subsets."
+      }
+    ],
+    "followups": [
+      "Can you solve this both recursively using backtracking and iteratively using bit manipulation?",
+      "What if nums contains duplicate numbers (Subsets II)? How do you prevent duplicate subsets from being emitted?",
+      "What are the exact time and space complexities in terms of N?"
+    ]
+  }
+]
