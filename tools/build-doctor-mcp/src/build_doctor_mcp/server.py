@@ -445,6 +445,58 @@ def analyze_alert(provider: str, payload: str, supporting_log: str = "") -> str:
 
 
 @mcp.tool()
+def inspect_ci_annotations(log: str) -> str:
+    """Extract provider-neutral error annotations from CI output without executing a job."""
+    bounded, truncated = _bounded_log(log)
+    annotations: list[dict[str, Any]] = []
+    patterns = (
+        re.compile(r"##\[(error|warning|notice)\]\s*(.*)", re.I),
+        re.compile(r"(?i)\b(error|warning|notice)\s*:\s*(.*)"),
+    )
+    for line_number, line in enumerate(bounded.splitlines(), start=1):
+        for pattern in patterns:
+            match = pattern.search(line)
+            if match:
+                annotations.append({"level": match.group(1).lower(), "message": _redact(match.group(2).strip()), "line": line_number})
+                break
+        if len(annotations) >= 50:
+            break
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "annotations": annotations,
+        "count": len(annotations),
+        "input_truncated": truncated,
+        "guardrails": ["Text extraction only; no CI provider was called and no job was rerun."],
+    }, indent=2)
+
+
+@mcp.tool()
+def inspect_api_error(payload: str) -> str:
+    """Normalize a sanitized JSON API error envelope into stable evidence."""
+    bounded, truncated = _bounded_log(payload)
+    try:
+        parsed = json.loads(bounded)
+    except json.JSONDecodeError:
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "payload must be valid JSON"})
+    if not isinstance(parsed, dict):
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "payload must be a JSON object"})
+    status = _find_value(parsed, {"status", "status_code", "http_status", "code"})
+    message = _find_value(parsed, {"message", "error", "detail", "description", "title"})
+    request_id = _find_value(parsed, {"request_id", "requestid", "trace_id", "correlation_id"})
+    retry_after = _find_value(parsed, {"retry_after", "retryafter"})
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "status": status,
+        "message": _redact(str(message)) if message is not None else None,
+        "request_id": _redact(str(request_id)) if request_id is not None else None,
+        "retry_after": retry_after,
+        "evidence": [item for item in (f"HTTP status: {status}" if status is not None else None, f"Error message: {_redact(str(message))}" if message is not None else None) if item],
+        "input_truncated": truncated,
+        "guardrails": ["Sanitized envelope inspection only; no retry, network request, or credential handling was performed."],
+    }, indent=2)
+
+
+@mcp.tool()
 def inspect_project(project_path: str) -> str:
     """Read bounded, redacted metadata from root project manifests without executing code."""
     root = _safe_root(project_path)

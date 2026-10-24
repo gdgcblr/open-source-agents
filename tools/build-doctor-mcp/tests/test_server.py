@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_alert, analyze_failure, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
+from build_doctor_mcp.server import analyze_alert, analyze_failure, inspect_api_error, inspect_ci_annotations, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -75,6 +75,23 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
         result = json.loads(analyze_alert("custom-webhook", "not-json"))
 
         self.assertIn("error", result)
+
+    def test_extracts_ci_annotations_without_provider_access(self):
+        result = json.loads(inspect_ci_annotations("##[error]src/app.ts:12 Type error\nwarning: flaky test"))
+
+        self.assertEqual(2, result["count"])
+        self.assertEqual("error", result["annotations"][0]["level"])
+        self.assertIn("Type error", result["annotations"][0]["message"])
+
+    def test_normalizes_api_error_envelope_and_redacts_message(self):
+        payload = json.dumps({"status": 429, "error": {"message": "token=secret-value"}, "request_id": "req-1", "retry_after": 30})
+
+        result = json.loads(inspect_api_error(payload))
+
+        self.assertEqual(429, result["status"])
+        self.assertEqual(30, result["retry_after"])
+        self.assertNotIn("secret-value", json.dumps(result))
+        self.assertIn("req-1", result["request_id"])
 
     def test_parses_structured_test_report_evidence(self):
         report = """<testsuite name=\"unit\" tests=\"2\" failures=\"1\" errors=\"0\" skipped=\"0\">
