@@ -1,4 +1,17 @@
 {
+  "submission": {
+    "url": null,
+    "title": "Add PR summarizer",
+    "author": "rahul-k",
+    "number": 157,
+    "project_dir": "agents/pr-summarizer-agent",
+    "changed_files": [
+      "agents/pr-summarizer-agent/.env.example",
+      "agents/pr-summarizer-agent/.gitignore",
+      "agents/pr-summarizer-agent/README.md",
+      "agents/pr-summarizer-agent/summarize.py"
+    ]
+  },
   "url": null,
   "number": 157,
   "title": "Add PR summarizer",
@@ -14,6 +27,9 @@
   },
   "llm_used": false,
   "sandbox": null,
+  "notes": [
+    "Demo fixture: synthetic PR, deterministic checks only (no Gemini, no sandbox)."
+  ],
   "findings": [
     {
       "check": "structure.manifest",
@@ -138,16 +154,7 @@
     }
   ],
   "demo": true,
-  "notes": [
-    "Demo fixture: synthetic PR, deterministic checks only (no Gemini, no sandbox)."
-  ],
   "review_markdown": "\u003c!-- contribution-gatekeeper -->\n## Contribution Gatekeeper review: `agents/pr-summarizer-agent`\n\n\ud83d\udee0\ufe0f **Changes requested** \u00b7 score **50/100**\n\n| Criterion | Score | |\n| :--- | ---: | :--- |\n| Reproducibility | 0 | `\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591` |\n| Documentation | 0 | `\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591\u2591` |\n| Security & Privacy | 100 | `\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588` |\n| Focused Scope | 100 | `\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588` |\n\n### What to fix (11)\n\n- \ud83d\udd34 **major** \u00b7 Documentation \u00b7 `agents/pr-summarizer-agent/README.md`  \n  README is missing template sections: How to Test, Known Limitations, Future Improvements.\n  - **Fix:** Add each section from template/README.md; write `N/A` plus a reason if one doesn't apply.\n  - **Rule:** _Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)_\n- \ud83d\udd34 **major** \u00b7 Documentation \u00b7 `agents/pr-summarizer-agent/README.md`  \n  The example input/output is copied unchanged from the template, not a genuine run.\n  - **Rule:** _Honest Documentation: Example inputs and outputs must reflect genuine runs. State any model assumptions, token consumption, or third-party paid API requirements clearly. (CONTRIBUTING.md:142)_\n- \ud83d\udd34 **major** \u00b7 Documentation  \n  Checklist claims \"documentation\" but 1 finding(s) contradict it (e.g. README is missing template sections: How to Test, Known Limitations, Future Improvements.)\n- \ud83d\udd34 **major** \u00b7 Documentation  \n  Checklist claims \"example usage\" but 1 finding(s) contradict it (e.g. The example input/output is copied unchanged from the template, not a genuine run.)\n- \ud83d\udd34 **major** \u00b7 Reproducibility  \n  No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.\n  - **Fix:** pip freeze > requirements.txt  # or list only your direct dependencies\n  - **Rule:** _Dependency Tracking: Always include a dependency manifest (requirements.txt, package.json, etc.). Do not assume global package installations. (CONTRIBUTING.md:140)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/README.md`  \n  README setup command will fail on a fresh clone: `pip install -r requirements.txt` (requirements.txt does not exist).\n  - **Rule:** _Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/README.md`  \n  README setup command will fail on a fresh clone: `python app.py --pr 12` (app.py does not exist).\n  - **Rule:** _Fill out all relevant sections of your agents/<project-slug>/README.md (or tools/<project-slug>/README.md). For simple tools, sections that do not apply may be noted as N/A with a short explanation. (CONTRIBUTING.md:74)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/summarize.py`  \n  `GITHUB_TOKEN` is read by the code but documented in neither .env.example nor the README.\n  - **Fix:** Add `GITHUB_TOKEN=` with a placeholder to .env.example and a row to the README config table.\n  - **Rule:** _If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility \u00b7 `agents/pr-summarizer-agent/summarize.py`  \n  `SUMMARY_MODEL` is read by the code but documented in neither .env.example nor the README.\n  - **Fix:** Add `SUMMARY_MODEL=` with a placeholder to .env.example and a row to the README config table.\n  - **Rule:** _If your project requires environment variables or API keys, document them in your README.md and provide placeholder values in your project's .env.example. (CONTRIBUTING.md:76)_\n- \ud83d\udd34 **major** \u00b7 Reproducibility  \n  Checklist claims \"reproducible setup\" but 5 finding(s) contradict it (e.g. No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.)\n- \ud83d\udd34 **major** \u00b7 Reproducibility  \n  Checklist claims \"dependencies declared\" but 1 finding(s) contradict it (e.g. No dependency manifest (requirements.txt, pyproject.toml, package.json, ...) in the project folder.)\n\n---\n<sub>\ud83e\udd16 Generated by contribution-gatekeeper (deterministic checks only). Rules are read from the base branch's CONTRIBUTING.md; AI findings must quote the submission and can never override or clear a deterministic check. A human maintainer makes the final decision.</sub>",
-  "changed_files": [
-    "agents/pr-summarizer-agent/.env.example",
-    "agents/pr-summarizer-agent/.gitignore",
-    "agents/pr-summarizer-agent/README.md",
-    "agents/pr-summarizer-agent/summarize.py"
-  ],
   "policy": {
     "project_roots": [
       "agents",

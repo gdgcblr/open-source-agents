@@ -77,6 +77,7 @@ def to_json(rep: Report) -> dict:
         "project": s.project_dir, "verdict": rep.verdict.value, "score": rep.score(),
         "scores": rep.scores(), "llm_used": rep.llm_used, "sandbox": rep.sandbox,
         "notes": rep.notes, "findings": [f.to_dict() for f in rep.findings],
+        "review_markdown": rep.review_markdown,
     }
 
 

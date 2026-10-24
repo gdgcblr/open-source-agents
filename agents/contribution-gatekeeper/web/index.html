@@ -367,7 +367,14 @@ function renderPipeline(el, status = () => "") {
 renderPipeline($("#pipe-how"));
 
 // ---------- data loading ----------
+// Accept both report shapes: flat keys (older CLI / triage.json) and the nested `submission` object.
+function normalize(r) {
+  const s = r.submission || {};
+  return {...r, url: r.url ?? s.url, number: r.number ?? s.number, title: r.title ?? s.title, author: r.author ?? s.author,
+    project: r.project ?? s.project_dir, changed_files: r.changed_files ?? s.changed_files};
+}
 function addReport(r, select = true) {
+  r = normalize(r);
   const key = r.url || r.project || r.title;
   state.reports = state.reports.filter(x => (x.url || x.project || x.title) !== key);
   state.reports.push(r);
