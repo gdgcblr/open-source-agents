@@ -1,0 +1,63 @@
+[
+  {
+    "name": "add",
+    "description": "Add two integers and return the sum.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "integer",
+          "description": "First number"
+        },
+        "b": {
+          "type": "integer",
+          "description": "Second number"
+        }
+      },
+      "required": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "get_weather",
+    "description": "Get the current weather for a city.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "City name, e.g. Bengaluru"
+        }
+      },
+      "required": [
+        "city"
+      ]
+    }
+  },
+  {
+    "name": "send_email",
+    "description": "Send an email to a recipient.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "description": "Recipient address"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "subject",
+        "body"
+      ]
+    }
+  }
+]

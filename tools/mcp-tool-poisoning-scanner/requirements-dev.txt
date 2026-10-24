@@ -1,0 +1,2 @@
+# Runtime has no dependencies (standard library only). This is only for running the tests.
+pytest>=7

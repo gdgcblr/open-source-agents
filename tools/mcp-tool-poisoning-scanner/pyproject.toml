@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-poison-scan"
+version = "0.1.0"
+description = "Scan MCP server tool definitions for tool poisoning and rug-pulls."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []  # standard library only
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+mcp-poison-scan = "mcp_poison_scan.cli:main"
+
+[tool.setuptools]
+packages = ["mcp_poison_scan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

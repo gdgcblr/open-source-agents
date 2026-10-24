@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "weather": {
+      "command": "python",
+      "args": [
+        "tests/fake_mcp_server.py"
+      ]
+    },
+    "remote-docs": {
+      "type": "http",
+      "url": "https://example.com/mcp"
+    }
+  }
+}

@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`mcp-tool-poisoning-scanner`](mcp-tool-poisoning-scanner/) | Zero-dependency CLI that scans MCP tool definitions for hidden prompt injection, invisible Unicode smuggling, tool shadowing, and rug-pulls | Security / MCP (Python, stdlib) | [soumick](https://github.com/soumick) |
