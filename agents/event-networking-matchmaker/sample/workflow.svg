@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="930" viewBox="0 0 1120 930" role="img" aria-labelledby="title description">
+  <title id="title">BuildBuddy: from registration to real connections</title>
+  <desc id="description">Before the event, the organizer uploads consenting Google Form responses, including availability. An attendee receives a private email button, opens BuildBuddy, and explores relevant people and networking windows. During the event, attendees voluntarily check in at a preferred meeting spot for a short time, find each other by badge, and build connections. The intended outcome is a productive, satisfying event. Email sending is external; future meeting reservations are not implemented.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L8 4.5L0 9" fill="none" stroke="#285e4c" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="1120" height="930" rx="26" fill="#f6f7f0"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#19332b">
+    <text x="44" y="52" font-size="19" font-weight="700" letter-spacing="2">BUILDBUDDY / THE EVENT JOURNEY</text>
+    <text x="44" y="107" font-size="43" font-weight="700">Less searching. More connecting.</text>
+    <text x="44" y="143" font-size="21" fill="#52665c">Turn a registration spreadsheet into your next useful conversation.</text>
+
+    <rect x="32" y="177" width="1056" height="316" rx="20" fill="#fff" stroke="#d7dfd4"/>
+    <rect x="52" y="198" width="160" height="35" rx="17" fill="#d9edaa"/>
+    <text x="71" y="222" font-size="17" font-weight="700">01 / BEFORE</text>
+    <text x="235" y="223" font-size="22" font-weight="700">Arrive with a reason to say hello.</text>
+
+    <text x="60" y="273" font-size="15" font-weight="700" fill="#52665c" letter-spacing="1.5">ORGANIZER</text>
+    <rect x="52" y="290" width="318" height="139" rx="12" fill="#eef3e7"/>
+    <text x="70" y="320" font-size="20" font-weight="700">Google Form responses</text>
+    <text x="70" y="350" font-size="19">Upload XLSX to BuildBuddy</text>
+    <text x="70" y="379" font-size="17" fill="#52665c">Consented skills, interests</text>
+    <text x="70" y="404" font-size="17" fill="#52665c">and available talk windows</text>
+
+    <text x="430" y="273" font-size="15" font-weight="700" fill="#52665c" letter-spacing="1.5">ATTENDEE</text>
+    <rect x="420" y="290" width="290" height="69" rx="12" fill="#f0f3ee"/>
+    <text x="438" y="318" font-size="19" font-weight="700">Confirmation email</text>
+    <text x="438" y="344" font-size="17">Private BuildBuddy button</text>
+    <path d="M720 324H754" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="766" y="290" width="294" height="69" rx="12" fill="#d9edaa"/>
+    <text x="784" y="318" font-size="19" font-weight="700">Click. Sign in. Explore.</text>
+    <text x="784" y="344" font-size="17">Your relevant people, explained</text>
+    <path d="M912 367V384" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="420" y="394" width="640" height="60" rx="12" fill="#eef3e7"/>
+    <text x="440" y="431" font-size="19">State your goal + choose a networking window</text>
+    <path d="M379 358H395V424H408" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="60" y="472" font-size="17" fill="#52665c">Availability comes from registration. Venue check-in waits until arrival.</text>
+
+    <path d="M560 499V521" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="32" y="536" width="1056" height="192" rx="20" fill="#fff" stroke="#d7dfd4"/>
+    <rect x="52" y="556" width="160" height="35" rx="17" fill="#d9edaa"/>
+    <text x="70" y="580" font-size="17" font-weight="700">02 / DURING</text>
+    <text x="235" y="580" font-size="22" font-weight="700">Find the person. Start the conversation.</text>
+    <text x="60" y="630" font-size="21" font-weight="700">Check in voluntarily</text>
+    <text x="60" y="660" font-size="18">Choose a preferred spot</text>
+    <text x="60" y="686" font-size="18">and 15, 30 or 60 minutes</text>
+    <path d="M333 651H389" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="416" y="630" font-size="21" font-weight="700">Meet when available</text>
+    <text x="416" y="660" font-size="18">Use the spot + public badge</text>
+    <text x="416" y="686" font-size="18">Confirm they are free to talk</text>
+    <path d="M706 651H760" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="788" y="630" font-size="21" font-weight="700">Build connections</text>
+    <text x="788" y="660" font-size="18">Exchange useful ideas</text>
+    <text x="788" y="686" font-size="18">Mark people as met</text>
+
+    <path d="M560 735V758" fill="none" stroke="#285e4c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="32" y="774" width="1056" height="111" rx="20" fill="#235e4b"/>
+    <text x="59" y="810" font-size="17" font-weight="700" fill="#d9edaa">03 / AFTER</text>
+    <text x="232" y="816" font-size="27" font-weight="700" fill="#fff">A day well spent. Connections worth keeping.</text>
+    <text x="232" y="852" font-size="19" fill="#e6efdf">The goal: leave feeling productive, connected and satisfied.</text>
+    <text x="44" y="914" font-size="15" fill="#52665c">Consent-first profiles · Evidence-backed matches · Expiring presence, not GPS tracking</text>
+  </g>
+</svg>

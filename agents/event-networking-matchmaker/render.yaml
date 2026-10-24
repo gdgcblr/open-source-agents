@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: buildbuddy-demo
+    runtime: python
+    plan: free
+    rootDir: agents/event-networking-matchmaker
+    buildCommand: pip install -r requirements.txt
+    startCommand: python hosted.py
+    healthCheckPath: /api/config
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.5
+      - key: BUILDBUDDY_DEMO
+        value: "true"
+      - key: BUILDBUDDY_DB
+        value: /tmp/buildbuddy-demo.sqlite3
+      - key: BUILDBUDDY_ADMIN_KEY
+        generateValue: true
