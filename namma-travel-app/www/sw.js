@@ -1,4 +1,4 @@
-// Namma Bengaluru Traffic Copilot Service Worker (PWA)
+// Namma Travel Service Worker (PWA)
 const CACHE_NAME = 'namma-traffic-pwa-v1';
 const STATIC_ASSETS = [
   '/',

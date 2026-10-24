@@ -1,6 +1,6 @@
 {
-  "name": "Namma Bengaluru Traffic Copilot",
-  "short_name": "Namma Traffic",
+  "name": "Namma Travel",
+  "short_name": "Namma Travel",
   "description": "AI Commute Optimizer & Multimodal Fare Saver for Bengaluru (Metro, BMTC Bus, Auto & Cabs)",
   "start_url": "/",
   "display": "standalone",

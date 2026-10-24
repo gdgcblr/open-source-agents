@@ -1,5 +1,5 @@
 """
-server.py - FastAPI Web Server & REST API for Namma Bengaluru Traffic Copilot
+server.py - FastAPI Web Server & REST API for Namma Travel
 Hosts the interactive web UI dashboard and provides REST endpoints for traffic intelligence.
 """
 
@@ -27,8 +27,8 @@ from agent.tools import (
 from agent.knowledge import BENGALURU_HUBS, CHOKEPOINTS
 
 app = FastAPI(
-    title="Namma Bengaluru Traffic Copilot API",
-    description="Intelligent traffic, multimodal transit, and bottleneck optimization for Bengaluru",
+    title="Namma Travel API",
+    description="Intelligent transit, multimodal routing, and commute optimization for Bengaluru",
     version="1.0.0"
 )
 
@@ -300,5 +300,5 @@ async def get_current_user(token: Optional[str] = Query(None)):
 
 if __name__ == "__main__":
     import uvicorn
-    print("\n🚀 Starting Namma Bengaluru Traffic Copilot Web Server on http://localhost:8000")
+    print("\n🚀 Starting Namma Travel Web Server on http://localhost:8000")
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)

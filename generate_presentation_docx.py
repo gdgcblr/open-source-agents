@@ -241,7 +241,7 @@ def build_presentation_docx():
         header = section.header
         hp = header.paragraphs[0]
         hp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        hrun = hp.add_run("Namma Bengaluru Travel App — Mobile Executive Briefing")
+        hrun = hp.add_run("Namma Travel — Mobile Executive Briefing")
         hrun.font.name = "Calibri"
         hrun.font.size = Pt(8.5)
         hrun.font.color.rgb = RGBColor(148, 163, 184)
@@ -260,7 +260,7 @@ def build_presentation_docx():
     title_p = doc.add_paragraph()
     title_p.paragraph_format.space_before = Pt(12)
     title_p.paragraph_format.space_after = Pt(4)
-    run_t = title_p.add_run("📱 Namma Bengaluru Travel App")
+    run_t = title_p.add_run("📱 Namma Travel")
     run_t.font.name = "Calibri"
     run_t.font.size = Pt(26)
     run_t.bold = True
@@ -268,7 +268,7 @@ def build_presentation_docx():
 
     sub_p = doc.add_paragraph()
     sub_p.paragraph_format.space_after = Pt(14)
-    run_sub = sub_p.add_run("Cross-Platform Mobile Transit Copilot & Fare Optimizer for Android & iPhone")
+    run_sub = sub_p.add_run("Cross-Platform Mobile Transit & Fare Optimizer for Android & iPhone")
     run_sub.font.name = "Calibri"
     run_sub.font.size = Pt(14)
     run_sub.font.color.rgb = RGBColor(71, 85, 105)
