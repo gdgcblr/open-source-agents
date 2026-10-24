@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 360" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cfg-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+
+    <linearGradient id="ai-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2e1065" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="db-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="guard-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#082f49" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <filter id="c-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+
+    <style>
+      .cfg-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 700; fill: #fff; }
+      .cfg-code { font-family: 'SFMono-Regular', Consolas, Monaco, monospace; font-size: 12px; font-weight: 600; fill: #38bdf8; }
+      .cfg-desc { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; fill: #94a3b8; line-height: 1.4; }
+      .tag-req { font-family: sans-serif; font-size: 9px; font-weight: 700; fill: #fca5a5; }
+      .tag-opt { font-family: sans-serif; font-size: 9px; font-weight: 700; fill: #6ee7b7; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="360" rx="14" fill="url(#cfg-bg)" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Section Header -->
+  <g transform="translate(35, 26)">
+    <rect width="180" height="20" rx="10" fill="#8b5cf6" fill-opacity="0.2" stroke="#8b5cf6" stroke-width="0.8"/>
+    <text x="12" y="14" font-family="sans-serif" font-size="9" font-weight="700" fill="#c4b5fd" letter-spacing="0.5">CONFIGURATION ARCHITECTURE</text>
+    <text x="0" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#f8fafc">Environment &amp; Agent Configuration Matrix</text>
+  </g>
+
+  <!-- Card 1: Gemini & ADK Core -->
+  <g transform="translate(35, 85)" filter="url(#c-shadow)">
+    <rect width="320" height="240" rx="12" fill="url(#ai-glow)" stroke="#a855f7" stroke-width="1.2"/>
+    <rect x="16" y="14" width="70" height="18" rx="4" fill="#581c87"/>
+    <text x="24" y="27" font-family="sans-serif" font-size="10" font-weight="700" fill="#e9d5ff">AI ENGINE</text>
+    <text x="16" y="54" class="cfg-title">Google ADK &amp; Gemini Model</text>
+    
+    <!-- Variable 1 -->
+    <rect x="14" y="68" width="292" height="68" rx="8" fill="#090d16" stroke="#1e293b" stroke-width="1"/>
+    <text x="24" y="88" class="cfg-code">GOOGLE_API_KEY</text>
+    <rect x="230" y="76" width="65" height="16" rx="8" fill="#065f46"/>
+    <text x="242" y="88" class="tag-opt">OPTIONAL</text>
+    <text x="24" y="106" class="cfg-desc">Google AI Studio API Key. If omitted, scanner-only mode functions automatically.</text>
+
+    <!-- Variable 2 -->
+    <rect x="14" y="146" width="292" height="68" rx="8" fill="#090d16" stroke="#1e293b" stroke-width="1"/>
+    <text x="24" y="166" class="cfg-code">GEMINI_MODEL</text>
+    <text x="24" y="184" class="cfg-desc">Default: <tspan fill="#e2e8f0" font-weight="600">gemini-2.0-flash</tspan></text>
+    <text x="24" y="200" class="cfg-desc">Configurable to any regional model identifier.</text>
+  </g>
+
+  <!-- Card 2: Persistence & Connection -->
+  <g transform="translate(385, 85)" filter="url(#c-shadow)">
+    <rect width="320" height="240" rx="12" fill="url(#db-glow)" stroke="#10b981" stroke-width="1.2"/>
+    <rect x="16" y="14" width="85" height="18" rx="4" fill="#064e3b"/>
+    <text x="24" y="27" font-family="sans-serif" font-size="10" font-weight="700" fill="#a7f3d0">PERSISTENCE</text>
+    <text x="16" y="54" class="cfg-title">PostgreSQL Database Layer</text>
+
+    <!-- Variable 3 -->
+    <rect x="14" y="68" width="292" height="146" rx="8" fill="#090d16" stroke="#1e293b" stroke-width="1"/>
+    <text x="24" y="88" class="cfg-code">DATABASE_URL</text>
+    <rect x="225" y="76" width="70" height="16" rx="8" fill="#7f1d1d"/>
+    <text x="238" y="88" class="tag-req">REQUIRED</text>
+    
+    <text x="24" y="110" class="cfg-desc">Full PostgreSQL connection URL:</text>
+    <text x="24" y="126" font-family="monospace" font-size="10" fill="#cbd5e1">postgresql://user:pass@host/db</text>
+    <text x="24" y="150" class="cfg-desc">• Raw SQL via psycopg3 (no ORM)</text>
+    <text x="24" y="168" class="cfg-desc">• Automated JSONB &amp; Markdown schema</text>
+    <text x="24" y="186" class="cfg-desc">• Idempotent upserts on conflicts</text>
+  </g>
+
+  <!-- Card 3: Guardrails & Resource Limits -->
+  <g transform="translate(735, 85)" filter="url(#c-shadow)">
+    <rect width="330" height="240" rx="12" fill="url(#guard-glow)" stroke="#38bdf8" stroke-width="1.2"/>
+    <rect x="16" y="14" width="85" height="18" rx="4" fill="#075985"/>
+    <text x="24" y="27" font-family="sans-serif" font-size="10" font-weight="700" fill="#bae6fd">GUARDRAILS</text>
+    <text x="16" y="54" class="cfg-title">Safety &amp; Resource Ceilings</text>
+
+    <rect x="14" y="68" width="302" height="146" rx="8" fill="#090d16" stroke="#1e293b" stroke-width="1"/>
+    
+    <text x="24" y="88" class="cfg-code">MAX_REPO_SIZE_MB</text>
+    <text x="24" y="104" class="cfg-desc">Default: <tspan fill="#e2e8f0" font-weight="600">100 MB</tspan> (rejects huge repos)</text>
+
+    <line x1="24" y1="112" x2="295" y2="112" stroke="#1e293b"/>
+
+    <text x="24" y="130" class="cfg-code">SCAN_TIMEOUT_SECONDS</text>
+    <text x="24" y="146" class="cfg-desc">Default: <tspan fill="#e2e8f0" font-weight="600">300s</tspan> hard wall-clock limit</text>
+
+    <line x1="24" y1="154" x2="295" y2="154" stroke="#1e293b"/>
+
+    <text x="24" y="172" class="cfg-code">MAX_SNIPPET_BYTES</text>
+    <text x="24" y="188" class="cfg-desc">Default: <tspan fill="#e2e8f0" font-weight="600">2048 bytes</tspan> context limit to AI</text>
+  </g>
+</svg>

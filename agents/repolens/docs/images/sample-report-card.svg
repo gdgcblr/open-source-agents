@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 620" width="100%" height="100%">
+  <defs>
+    <linearGradient id="r-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+
+    <linearGradient id="high-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#450a0a" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="med-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#451a03" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="ai-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2e1065" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <filter id="f-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+
+    <style>
+      .hdr-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 800; fill: #ffffff; }
+      .hdr-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+      .f-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 700; fill: #f8fafc; }
+      .f-code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 11px; fill: #38bdf8; }
+      .f-rem { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; fill: #cbd5e1; }
+      .stat-num { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 22px; font-weight: 800; }
+      .stat-lbl { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 600; fill: #94a3b8; letter-spacing: 0.5px; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="620" rx="14" fill="url(#r-bg)" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Top Title Strip -->
+  <g transform="translate(35, 28)">
+    <rect width="90" height="20" rx="10" fill="#dc2626" fill-opacity="0.2" stroke="#ef4444" stroke-width="0.8"/>
+    <text x="14" y="14" font-family="sans-serif" font-size="9" font-weight="700" fill="#fca5a5" letter-spacing="0.5">AUDIT REPORT</text>
+    <text x="0" y="44" class="hdr-title">Security Audit Report: OWASP/NodeGoat</text>
+    <text x="0" y="62" class="hdr-sub">Repository: <tspan fill="#38bdf8">https://github.com/OWASP/NodeGoat</tspan> &nbsp;•&nbsp; Stack: <tspan fill="#e2e8f0">Node.js</tspan> &nbsp;•&nbsp; Status: <tspan fill="#34d399">Completed (Illustrative Demo)</tspan></text>
+  </g>
+
+  <!-- Metric Badges Row -->
+  <g transform="translate(35, 105)">
+    <!-- Total Findings -->
+    <g transform="translate(0, 0)">
+      <rect width="180" height="65" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="18" y="34" class="stat-num" fill="#ffffff">5</text>
+      <text x="18" y="52" class="stat-lbl">TOTAL FINDINGS</text>
+    </g>
+
+    <!-- Critical -->
+    <g transform="translate(200, 0)">
+      <rect width="180" height="65" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="18" y="34" class="stat-num" fill="#94a3b8">0</text>
+      <text x="18" y="52" class="stat-lbl">CRITICAL</text>
+    </g>
+
+    <!-- High -->
+    <g transform="translate(400, 0)">
+      <rect width="180" height="65" rx="10" fill="#1e293b" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="18" y="34" class="stat-num" fill="#ef4444">3</text>
+      <text x="18" y="52" class="stat-lbl" fill="#fca5a5">HIGH SEVERITY</text>
+    </g>
+
+    <!-- Medium -->
+    <g transform="translate(600, 0)">
+      <rect width="180" height="65" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1"/>
+      <text x="18" y="34" class="stat-num" fill="#f59e0b">2</text>
+      <text x="18" y="52" class="stat-lbl" fill="#fde68a">MEDIUM</text>
+    </g>
+
+    <!-- Low / Info -->
+    <g transform="translate(800, 0)">
+      <rect width="230" height="65" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+      <text x="18" y="34" class="stat-num" fill="#38bdf8">0</text>
+      <text x="18" y="52" class="stat-lbl">LOW / INFORMATIONAL</text>
+    </g>
+  </g>
+
+  <!-- Findings Cards Grid -->
+  <g transform="translate(35, 190)">
+    <!-- Finding 1: Hardcoded Secret -->
+    <g transform="translate(0, 0)" filter="url(#f-shadow)">
+      <rect width="500" height="180" rx="10" fill="url(#high-card-grad)" stroke="#ef4444" stroke-width="1"/>
+      <rect x="14" y="14" width="55" height="18" rx="4" fill="#ef4444"/>
+      <text x="24" y="27" font-family="sans-serif" font-size="10" font-weight="800" fill="#fff">HIGH</text>
+      <text x="78" y="27" font-family="sans-serif" font-size="11" fill="#94a3b8">Trivy • secret-hardcoded-database-url</text>
+      
+      <text x="14" y="55" class="f-title">Hard-coded MongoDB credentials in development config</text>
+      <text x="14" y="75" font-family="sans-serif" font-size="11" fill="#cbd5e1">Location: <tspan fill="#38bdf8">config/env/development.js:5</tspan></text>
+      
+      <!-- Code Box -->
+      <rect x="14" y="85" width="472" height="36" rx="6" fill="#090d16" stroke="#1e293b" stroke-width="1"/>
+      <text x="24" y="108" class="f-code">db: 'mongodb://<tspan fill="#f43f5e">[REDACTED]</tspan>@localhost/nodegoat'</text>
+      
+      <!-- Remediation -->
+      <text x="14" y="142" font-family="sans-serif" font-size="11" font-weight="600" fill="#10b981">Remediation:</text>
+      <text x="14" y="158" class="f-rem">Move database credentials to environment variables (.env). Use process.env.DB_URL.</text>
+    </g>
+
+    <!-- Finding 2: SQL Injection -->
+    <g transform="translate(530, 0)" filter="url(#f-shadow)">
+      <rect width="500" height="180" rx="10" fill="url(#high-card-grad)" stroke="#ef4444" stroke-width="1"/>
+      <rect x="14" y="14" width="55" height="18" rx="4" fill="#ef4444"/>
+      <text x="24" y="27" font-family="sans-serif" font-size="10" font-weight="800" fill="#fff">HIGH</text>
+      <text x="78" y="27" font-family="sans-serif" font-size="11" fill="#94a3b8">Semgrep • CWE-89 SQL Injection</text>
+      
+      <text x="14" y="55" class="f-title">SQL Injection via unsanitized user input in query</text>
+      <text x="14" y="75" font-family="sans-serif" font-size="11" fill="#cbd5e1">Location: <tspan fill="#38bdf8">app/data/allocations-dao.js:37</tspan></text>
+      
+      <!-- Code Box -->
+      <rect x="14" y="85" width="472" height="36" rx="6" fill="#090d16" stroke="#1e293b" stroke-width="1"/>
+      <text x="24" y="108" class="f-code">db.collection("allocations").find({userId: Number(userId)})</text>
+      
+      <!-- Remediation -->
+      <text x="14" y="142" font-family="sans-serif" font-size="11" font-weight="600" fill="#10b981">Remediation:</text>
+      <text x="14" y="158" class="f-rem">Use parameterized queries or an ODM with schema validation that escapes inputs.</text>
+    </g>
+  </g>
+
+  <!-- Finding 3: AI Priority Action Block -->
+  <g transform="translate(35, 390)" filter="url(#f-shadow)">
+    <rect width="1030" height="195" rx="10" fill="url(#ai-card-grad)" stroke="#a855f7" stroke-width="1.2"/>
+    
+    <rect x="18" y="14" width="165" height="20" rx="5" fill="#7e22ce"/>
+    <text x="26" y="28" font-family="sans-serif" font-size="10" font-weight="700" fill="#fff">GOOGLE ADK AI SUMMARY</text>
+    <text x="195" y="28" font-family="sans-serif" font-size="11" fill="#c084fc">Gemini 2.0 Flash • Prioritized Action Plan</text>
+
+    <text x="18" y="56" font-family="sans-serif" font-size="13" font-weight="600" fill="#f8fafc">
+      Audit Synthesis: 5 security findings identified (3 High, 2 Medium). Zero Critical severity issues.
+    </text>
+    <text x="18" y="75" font-family="sans-serif" font-size="11" fill="#cbd5e1">
+      Scanners detected exposed database credentials in development configs, unsanitized query parameters, and prototype pollution risks.
+    </text>
+
+    <!-- Priority Actions List -->
+    <g transform="translate(18, 92)">
+      <rect width="994" height="26" rx="4" fill="#1e1b4b" fill-opacity="0.6"/>
+      <text x="12" y="17" font-family="sans-serif" font-size="11" fill="#e9d5ff">1. <tspan font-weight="700" fill="#fff">Remediate DB Secrets:</tspan> Immediately invalidate exposed development database credentials and extract to .env.</text>
+
+      <rect y="32" width="994" height="26" rx="4" fill="#1e1b4b" fill-opacity="0.6"/>
+      <text x="12" y="49" font-family="sans-serif" font-size="11" fill="#e9d5ff">2. <tspan font-weight="700" fill="#fff">Parameterize Allocation Query:</tspan> Replace direct object queries with strict schema validation in allocations-dao.js.</text>
+
+      <rect y="64" width="994" height="26" rx="4" fill="#1e1b4b" fill-opacity="0.6"/>
+      <text x="12" y="81" font-family="sans-serif" font-size="11" fill="#e9d5ff">3. <tspan font-weight="700" fill="#fff">Update Express &amp; Install Helmet:</tspan> Upgrade express package from 4.16.4 to patch known CVEs and apply helmet middleware.</text>
+    </g>
+  </g>
+</svg>

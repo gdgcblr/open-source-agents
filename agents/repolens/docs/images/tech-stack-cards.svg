@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 420" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+
+    <!-- Card Backgrounds -->
+    <linearGradient id="card-ai" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="card-sec" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#082f49" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="card-back" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="card-db" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="card-front" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4c0519" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+
+    <style>
+      .t-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 700; fill: #ffffff; }
+      .t-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; }
+      .t-desc { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; fill: #94a3b8; }
+      .pill-text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="420" rx="14" fill="url(#bg)" stroke="#1e293b" stroke-width="1.2"/>
+
+  <!-- Section Header -->
+  <g transform="translate(35, 30)">
+    <rect width="145" height="22" rx="11" fill="#3b82f6" fill-opacity="0.15" stroke="#3b82f6" stroke-width="1"/>
+    <text x="12" y="15" fill="#60a5fa" class="pill-text">TECH STACK ARCHITECTURE</text>
+    <text x="0" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="800" fill="#f8fafc">Component Technologies &amp; Capabilities</text>
+  </g>
+
+  <!-- Row 1: Cards -->
+  <g transform="translate(35, 90)">
+    <!-- Card 1: Google ADK + Gemini -->
+    <g transform="translate(0, 0)" filter="url(#card-shadow)">
+      <rect width="320" height="140" rx="12" fill="url(#card-ai)" stroke="#818cf8" stroke-width="1.2"/>
+      <!-- Icon badge -->
+      <circle cx="34" cy="34" r="18" fill="#4338ca"/>
+      <text x="25" y="39" font-family="sans-serif" font-size="16" fill="#c7d2fe">✦</text>
+      <text x="64" y="30" class="t-title">Google ADK &amp; Gemini</text>
+      <text x="64" y="45" class="t-sub" fill="#a5b4fc">Agent Framework &amp; LLM</text>
+      <text x="18" y="78" class="t-desc">• Single <tspan fill="#e2e8f0">LlmAgent</tspan> with bounded tools</text>
+      <text x="18" y="96" class="t-desc">• Gemini 2.0 Flash reasoning</text>
+      <text x="18" y="114" class="t-desc">• Zero-crash scanner-only fallback</text>
+      <rect x="235" y="14" width="70" height="18" rx="9" fill="#312e81" stroke="#6366f1" stroke-width="0.8"/>
+      <text x="245" y="26" fill="#a5b4fc" class="pill-text">ADK 1.2.1</text>
+    </g>
+
+    <!-- Card 2: Dual Security Engines -->
+    <g transform="translate(350, 0)" filter="url(#card-shadow)">
+      <rect width="320" height="140" rx="12" fill="url(#card-sec)" stroke="#38bdf8" stroke-width="1.2"/>
+      <circle cx="34" cy="34" r="18" fill="#0369a1"/>
+      <text x="25" y="39" font-family="sans-serif" font-size="16" fill="#bae6fd">🛡️</text>
+      <text x="64" y="30" class="t-title">Trivy &amp; Semgrep</text>
+      <text x="64" y="45" class="t-sub" fill="#7dd3fc">Static Scanners &amp; SAST</text>
+      <text x="18" y="78" class="t-desc">• CVEs, secrets, &amp; misconfigurations</text>
+      <text x="18" y="96" class="t-desc">• OWASP Top 10 SAST rule patterns</text>
+      <text x="18" y="114" class="t-desc">• Evidence-first; zero AI hallucinations</text>
+      <rect x="230" y="14" width="75" height="18" rx="9" fill="#0c4a6e" stroke="#0284c7" stroke-width="0.8"/>
+      <text x="238" y="26" fill="#7dd3fc" class="pill-text">EVIDENCE</text>
+    </g>
+
+    <!-- Card 3: FastAPI & Pydantic -->
+    <g transform="translate(700, 0)" filter="url(#card-shadow)">
+      <rect width="330" height="140" rx="12" fill="url(#card-back)" stroke="#34d399" stroke-width="1.2"/>
+      <circle cx="34" cy="34" r="18" fill="#065f46"/>
+      <text x="26" y="39" font-family="sans-serif" font-size="16" fill="#a7f3d0">⚡</text>
+      <text x="64" y="30" class="t-title">FastAPI &amp; Python 3.11</text>
+      <text x="64" y="45" class="t-sub" fill="#6ee7b7">High-Performance Core</text>
+      <text x="18" y="78" class="t-desc">• Pydantic v2 strict schema models</text>
+      <text x="18" y="96" class="t-desc">• Safe async subprocess pipeline</text>
+      <text x="18" y="114" class="t-desc">• pydantic-settings type-safe env</text>
+      <rect x="240" y="14" width="75" height="18" rx="9" fill="#064e3b" stroke="#059669" stroke-width="0.8"/>
+      <text x="250" y="26" fill="#6ee7b7" class="pill-text">PY 3.11+</text>
+    </g>
+  </g>
+
+  <!-- Row 2: Cards -->
+  <g transform="translate(35, 250)">
+    <!-- Card 4: PostgreSQL & Storage -->
+    <g transform="translate(0, 0)" filter="url(#card-shadow)">
+      <rect width="320" height="140" rx="12" fill="url(#card-db)" stroke="#64748b" stroke-width="1.2"/>
+      <circle cx="34" cy="34" r="18" fill="#334155"/>
+      <text x="25" y="39" font-family="sans-serif" font-size="16" fill="#cbd5e1">🗄️</text>
+      <text x="64" y="30" class="t-title">PostgreSQL 16 &amp; psycopg3</text>
+      <text x="64" y="45" class="t-sub" fill="#94a3b8">Persistence Layer</text>
+      <text x="18" y="78" class="t-desc">• Raw parameterized SQL (no ORM)</text>
+      <text x="18" y="96" class="t-desc">• JSONB reports &amp; Markdown storage</text>
+      <text x="18" y="114" class="t-desc">• Idempotent upsert via ON CONFLICT</text>
+      <rect x="235" y="14" width="70" height="18" rx="9" fill="#1e293b" stroke="#475569" stroke-width="0.8"/>
+      <text x="248" y="26" fill="#94a3b8" class="pill-text">PG 16</text>
+    </g>
+
+    <!-- Card 5: React 18, Vite & TS -->
+    <g transform="translate(350, 0)" filter="url(#card-shadow)">
+      <rect width="320" height="140" rx="12" fill="url(#card-ai)" stroke="#60a5fa" stroke-width="1.2"/>
+      <circle cx="34" cy="34" r="18" fill="#1e3a8a"/>
+      <text x="25" y="39" font-family="sans-serif" font-size="16" fill="#93c5fd">⚛️</text>
+      <text x="64" y="30" class="t-title">React 18 &amp; TypeScript</text>
+      <text x="64" y="45" class="t-sub" fill="#93c5fd">Frontend Dashboard</text>
+      <text x="18" y="78" class="t-desc">• Vite lightning bundle system</text>
+      <text x="18" y="96" class="t-desc">• Real-time severity filter triage</text>
+      <text x="18" y="114" class="t-desc">• 1-click JSON &amp; Markdown export</text>
+      <rect x="240" y="14" width="65" height="18" rx="9" fill="#172554" stroke="#2563eb" stroke-width="0.8"/>
+      <text x="255" y="26" fill="#93c5fd" class="pill-text">VITE</text>
+    </g>
+
+    <!-- Card 6: Docker Compose & Sandboxing -->
+    <g transform="translate(700, 0)" filter="url(#card-shadow)">
+      <rect width="330" height="140" rx="12" fill="url(#card-front)" stroke="#f43f5e" stroke-width="1.2"/>
+      <circle cx="34" cy="34" r="18" fill="#881337"/>
+      <text x="25" y="39" font-family="sans-serif" font-size="16" fill="#fecdd3">🐳</text>
+      <text x="64" y="30" class="t-title">Docker Compose &amp; Nginx</text>
+      <text x="64" y="45" class="t-sub" fill="#fda4af">Container &amp; Reverse Proxy</text>
+      <text x="18" y="78" class="t-desc">• Multi-container turnkey deployment</text>
+      <text x="18" y="96" class="t-desc">• Scanners bundled out-of-the-box</text>
+      <text x="18" y="114" class="t-desc">• Zero untrusted code execution</text>
+      <rect x="235" y="14" width="80" height="18" rx="9" fill="#4c0519" stroke="#e11d48" stroke-width="0.8"/>
+      <text x="244" y="26" fill="#fda4af" class="pill-text">COMPOSE</text>
+    </g>
+  </g>
+</svg>

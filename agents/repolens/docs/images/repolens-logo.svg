@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="56" viewBox="0 0 256 56" role="img" aria-labelledby="title">
+  <title id="title">RepoLens</title>
+  <rect x="2" y="2" width="52" height="52" rx="15" fill="#111816" stroke="#405b36"/>
+  <path d="M28 10 42 15v11c0 10-8 16-14 20-6-4-14-10-14-20V15z" fill="#19251d" stroke="#b7f36b" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="m21 27 5 5 10-12" fill="none" stroke="#b7f36b" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="69" y="38" fill="#e8eee9" font-family="Arial,sans-serif" font-size="29" font-weight="700" letter-spacing="-1.2">repo<tspan fill="#b7f36b">lens</tspan></text>
+</svg>

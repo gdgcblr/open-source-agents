@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [repolens](./repolens/) | AI-powered GitHub repository security auditor using Trivy, Semgrep, and Gemini via Google ADK | Python · FastAPI · Google ADK · React/Vite · PostgreSQL | Pavan B N |

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.venv
+venv
+ENV
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+.env
+context
+frontend/node_modules
+frontend/dist

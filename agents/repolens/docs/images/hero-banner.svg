@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="310" viewBox="0 0 1200 310" role="img" aria-labelledby="title desc">
+  <title id="title">RepoLens — evidence first security review</title>
+  <desc id="desc">A dark, mint-accented RepoLens banner with scanner findings, AI triage, and a security score preview.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101815"/><stop offset="1" stop-color="#0b100f"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#b7f36b" stop-opacity=".17"/><stop offset="1" stop-color="#b7f36b" stop-opacity="0"/></radialGradient>
+    <linearGradient id="accent" x1="0" x2="1"><stop stop-color="#b7f36b"/><stop offset="1" stop-color="#8ddc75"/></linearGradient>
+  </defs>
+  <rect width="1200" height="310" rx="22" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1198" height="308" rx="21" fill="none" stroke="#334137"/>
+  <ellipse cx="900" cy="120" rx="390" ry="280" fill="url(#glow)"/>
+  <path d="M34 76h46" stroke="#b7f36b" stroke-width="2"/>
+  <text x="34" y="61" fill="#b7f36b" font-family="monospace" font-size="12" letter-spacing="2">REPOSITORY SECURITY, WITH RECEIPTS</text>
+  <text x="34" y="145" fill="#e8eee9" font-family="Arial,sans-serif" font-size="62" font-weight="700" letter-spacing="-2">See what’s hiding</text>
+  <text x="34" y="210" fill="#b7f36b" font-family="Arial,sans-serif" font-size="62" font-weight="700" letter-spacing="-2">in your code.</text>
+  <text x="37" y="252" fill="#91a39a" font-family="Arial,sans-serif" font-size="16">Evidence-backed scanner findings. AI-assisted triage. Clear uncertainty.</text>
+  <g transform="translate(745 42)">
+    <rect width="405" height="224" rx="16" fill="#111816" stroke="#344238"/>
+    <text x="22" y="31" fill="#91a39a" font-family="monospace" font-size="10" letter-spacing="1">ILLUSTRATIVE DEMO REPORT</text>
+    <text x="22" y="63" fill="#e8eee9" font-family="Arial,sans-serif" font-size="18" font-weight="700">OWASP / NodeGoat</text>
+    <rect x="22" y="79" width="112" height="24" rx="6" fill="#201b16" stroke="#55462e"/>
+    <circle cx="36" cy="91" r="4" fill="#e8d36e"/><text x="48" y="95" fill="#afc1b3" font-family="monospace" font-size="10">TRIVY · SAMPLE</text>
+    <rect x="143" y="79" width="134" height="24" rx="6" fill="#201b16" stroke="#55462e"/>
+    <circle cx="157" cy="91" r="4" fill="#e8d36e"/><text x="169" y="95" fill="#afc1b3" font-family="monospace" font-size="10">SEMGREP · SAMPLE</text>
+    <text x="22" y="133" fill="#91a39a" font-family="monospace" font-size="9" letter-spacing="1">SEVERITY SNAPSHOT</text>
+    <g font-family="Arial,sans-serif" font-weight="700" font-size="22">
+      <text x="22" y="167" fill="#91a39a">00</text><text x="22" y="185" fill="#7e8d83" font-size="9" font-family="monospace">CRITICAL</text>
+      <text x="115" y="167" fill="#ffad62">03</text><text x="115" y="185" fill="#7e8d83" font-size="9" font-family="monospace">HIGH</text>
+      <text x="208" y="167" fill="#e8d36e">02</text><text x="208" y="185" fill="#7e8d83" font-size="9" font-family="monospace">MEDIUM</text>
+    </g>
+    <rect x="300" y="126" width="82" height="82" rx="15" fill="#1c291e" stroke="#405338"/>
+    <path d="M341 143l20 8v16c0 16-12 23-20 27-8-4-20-11-20-27v-16z" fill="none" stroke="url(#accent)" stroke-width="2"/>
+    <path d="M333 167l6 6 12-14" fill="none" stroke="#b7f36b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 208h250" stroke="#29352e"/>
+    <circle cx="29" cy="221" r="3" fill="#b7f36b"/><text x="40" y="225" fill="#aabaad" font-family="Arial,sans-serif" font-size="10">AI ideas are labeled, never passed off as scanner proof</text>
+  </g>
+</svg>

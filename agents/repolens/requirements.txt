@@ -1,0 +1,25 @@
+# RepoLens — Python Dependencies
+# Install: pip install -r requirements.txt
+# Recommended: Python 3.11+
+
+# Web framework
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# Data validation
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# PostgreSQL (psycopg v3)
+psycopg[binary]==3.2.3
+
+# Google Agent Development Kit
+google-adk==1.2.1
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+
+# Dev / type checking (optional, for contributors)
+# mypy==1.13.0
+# ruff==0.8.4
