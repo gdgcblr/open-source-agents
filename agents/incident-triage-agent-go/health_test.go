@@ -17,9 +17,11 @@ func TestVerdict(t *testing.T) {
 		{"small wobble is normal", 0.11, 0.10, 0.05, false, false, "normal"},
 		{"latency recovering is not an incident", 0.39, 2.43, 0.05, false, false, "improving"},
 		{"traffic drop is an incident", 2, 20, 0.5, true, true, "dropped"},
-		{"errors from zero", 0.08, 0, 0.01, false, true, "near zero"},
+		{"errors from zero", 0.08, 0, 0.01, false, true, "was zero"},
+		{"errors from below the floor", 0.08, 0.004, 0.01, false, true, "20.0x"},
 		{"tiny error ratios are ignored", 0.003, 0.001, 0.01, false, false, "normal"},
-		{"memory 1.8x", 47.9, 26.1, 1, false, true, "1.8x"},
+		{"memory leak past 64 MB", 120, 26.1, 64, false, true, "4.6x"},
+		{"small heap doubling is normal", 54, 27, 64, false, false, "normal"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

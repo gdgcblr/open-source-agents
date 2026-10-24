@@ -32,8 +32,9 @@ type serviceHealth struct {
 	Restarts int      `json:"restarts_last_30m"`
 	Signals  []signal `json:"signals"`
 	Abnormal []string `json:"abnormal_signals,omitempty"`
-	// NewLogs are WARN/ERROR patterns that are new or increasing versus the
-	// previous 5 minutes; steady noise is left out on purpose.
+	// NewLogs are WARN/ERROR patterns of the last 2 minutes (the same window
+	// as "now") that are new or increasing versus the 2 minutes before;
+	// steady noise is left out on purpose.
 	NewLogs []logPattern `json:"new_or_increasing_log_patterns,omitempty"`
 }
 
@@ -58,7 +59,8 @@ var healthSpecs = []healthSpec{
 	{"requests_per_sec", `sum by (service) (rate(http_requests_total[1m]))`, 0.5, true},
 	{"error_ratio_5xx", `(sum by (service) (rate(http_requests_total{code=~"5.."}[1m])) or sum by (service) (rate(http_requests_total[1m])) * 0) / sum by (service) (rate(http_requests_total[1m]))`, 0.01, false},
 	{"p99_latency_seconds", `histogram_quantile(0.99, sum by (service, le) (rate(http_request_duration_seconds_bucket[1m])))`, 0.05, false},
-	{"memory_rss_mb", `max by (service) (process_resident_memory_bytes) / 1e6`, 1, false},
+	// Small heaps routinely swing 2x; only a heap past 64 MB can be a leak.
+	{"memory_rss_mb", `max by (service) (process_resident_memory_bytes) / 1e6`, 64, false},
 	{"downstream_p99_seconds", `histogram_quantile(0.99, sum by (service, target, le) (rate(downstream_request_duration_seconds_bucket[1m])))`, 0.05, false},
 	{"downstream_error_ratio", `(sum by (service, target) (rate(downstream_request_duration_seconds_count{outcome="error"}[1m])) or sum by (service, target) (rate(downstream_request_duration_seconds_count[1m])) * 0) / sum by (service, target) (rate(downstream_request_duration_seconds_count[1m]))`, 0.01, false},
 }
@@ -126,7 +128,7 @@ func (t triageTools) serviceHealth(ctx agent.Context, _ noInput) (healthOutput, 
 		}
 	}
 
-	if logs, err := t.logPatterns(ctx, logInput{Minutes: 5}); err == nil {
+	if logs, err := t.logPatterns(ctx, logInput{Minutes: 2}); err == nil {
 		for _, p := range logs.Patterns {
 			if !strings.HasPrefix(p.Trend, "NEW") && !strings.HasPrefix(p.Trend, "INCREASING") {
 				continue
@@ -154,8 +156,8 @@ func verdict(now, base, minAbs float64, dropIsBad bool) string {
 	if now < minAbs && base < minAbs {
 		return "normal"
 	}
-	if base <= 0 || base < minAbs {
-		return fmt.Sprintf("ABNORMAL: now %.3g, baseline was near zero", now)
+	if base <= 0 {
+		return fmt.Sprintf("ABNORMAL: now %.3g, baseline was zero", now)
 	}
 	r := now / base
 	switch {
