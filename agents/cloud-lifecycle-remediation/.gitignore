@@ -1,0 +1,20 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Go
+/bin/
+*.exe
+*.test
+
+# Terraform
+test-infra/.terraform/
+test-infra/terraform.tfstate*
+test-infra/.git/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

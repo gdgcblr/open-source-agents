@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [cloud-lifecycle-remediation](./cloud-lifecycle-remediation/) | Patches Terraform for AWS EKS/RDS deprecations, validates HCL, and opens draft remediation PRs. | Go, Google ADK, Gemini, Terraform | Community |
