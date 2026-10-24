@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`first-pr-compass`](first-pr-compass/) | Evidence-backed onboarding reports and starter task candidates for local or public GitHub repositories. | Python CLI | Community |

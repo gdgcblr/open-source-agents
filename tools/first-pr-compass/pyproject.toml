@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "first-pr-compass"
+version = "0.1.0"
+description = "Evidence-backed onboarding reports and starter task suggestions for local or public GitHub repositories."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "First PR Compass contributors" }]
+dependencies = []
+
+[project.scripts]
+first-pr-compass = "first_pr_compass.cli:main"
+get-report = "first_pr_compass.cli:get_report"
+guide-me-to-contribute = "first_pr_compass.cli:guide_me_to_contribute"
+
+[tool.setuptools.packages.find]
+where = ["src"]
