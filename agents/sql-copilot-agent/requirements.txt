@@ -1,0 +1,6 @@
+google-adk>=1.0.0
+sqlalchemy>=2.0
+python-dotenv>=1.0.0
+
+# For PostgreSQL, also install a driver:  pip install "psycopg[binary]"
+# For MySQL, also install a driver:       pip install pymysql
