@@ -5,6 +5,29 @@ import 'package:open_flutter_qa/src/services/ai_qa_service.dart';
 /// CLI utility for OpenFlutterQA to generate test cases, refine steps with AI,
 /// and export runnable `flutter_test` Dart code from the command line or CI.
 Future<void> main(List<String> args) async {
+  if (args.contains('--help') || args.contains('-h')) {
+    stdout.writeln('Usage: dart run bin/open_flutter_qa.dart [options]');
+    stdout.writeln('');
+    stdout.writeln('Options:');
+    stdout.writeln(
+      '  --step "<text>"    Custom test step instruction to refine with AI',
+    );
+    stdout.writeln(
+      '  --prd "<file>"     PRD document reference (default: very_long_file_name_v3_final.pdf)',
+    );
+    stdout.writeln(
+      '  --figma "<spec>"   Figma file/page spec (default: NewsFeed/BookmarksPage)',
+    );
+    stdout.writeln('  --help, -h         Show this help message');
+    return;
+  }
+
+  final customStepText = _readArgValue(args, '--step');
+  final prdDoc =
+      _readArgValue(args, '--prd') ?? 'very_long_file_name_v3_final.pdf';
+  final figmaSpec =
+      _readArgValue(args, '--figma') ?? 'NewsFeed/BookmarksPage';
+
   final envVars = _loadDotEnv();
   final apiKey =
       Platform.environment['GEMINI_API_KEY'] ?? envVars['GEMINI_API_KEY'] ?? '';
@@ -23,9 +46,11 @@ Future<void> main(List<String> args) async {
 
   final cases = QADefaultData.initialTestCases();
   final targetCase = cases[1]; // "Verify Bookmark Status Reflecting Properly"
-  final targetStep = targetCase.steps[3]; // Step 4
+  final targetStep = customStepText != null
+      ? targetCase.steps[3].copyWith(instruction: customStepText)
+      : targetCase.steps[3]; // Step 4
 
-  stdout.writeln('1. Refining Test Step #4 with AI...');
+  stdout.writeln('1. Refining Test Step #${targetStep.index} with AI...');
   stdout.writeln('   Test Case : ${targetCase.title}');
   stdout.writeln('   Before    : ${targetStep.instruction}');
 
@@ -38,8 +63,8 @@ Future<void> main(List<String> args) async {
 
   stdout.writeln('2. Generating Test Cases from PRD & Figma Spec...');
   final generated = await aiService.generateTestCasesFromSpec(
-    prdDocument: 'very_long_file_name_v3_final.pdf',
-    figmaSpec: 'NewsFeed/BookmarksPage',
+    prdDocument: prdDoc,
+    figmaSpec: figmaSpec,
   );
   for (final tc in generated) {
     stdout.writeln('   [+] ${tc.title} (${tc.steps.length} steps)');
@@ -54,6 +79,14 @@ Future<void> main(List<String> args) async {
 
   stdout.writeln('3. Exporting Flutter Integration Test Script:\n');
   stdout.writeln(aiService.exportToFlutterTestCode(updatedCase));
+}
+
+String? _readArgValue(List<String> args, String flag) {
+  final idx = args.indexOf(flag);
+  if (idx != -1 && idx + 1 < args.length) {
+    return args[idx + 1];
+  }
+  return null;
 }
 
 Map<String, String> _loadDotEnv() {
