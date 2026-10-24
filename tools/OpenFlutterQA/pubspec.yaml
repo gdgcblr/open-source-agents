@@ -1,0 +1,24 @@
+name: open_flutter_qa
+description: >-
+  AI-powered Flutter QA automation plugin and visual test studio. Generate test
+  cases from PRDs and Figma specs, refine test steps with AI, execute suites
+  across devices, and inspect pass/fail analytics.
+version: 0.1.0
+homepage: https://github.com/gdgcblr/open-source-ai
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
