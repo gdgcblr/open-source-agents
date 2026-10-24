@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+umask 077
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$project_dir"
+if [ ! -f .env ]; then
+  echo 'Run sh scripts/setup-local.sh first.' >&2
+  exit 1
+fi
+echo 'Open http://127.0.0.1:8000 and select migine_web.'
+echo 'Keep this terminal open. Press Ctrl+C to stop.'
+exec uv run --frozen adk web examples/web --host 127.0.0.1 --port 8000 --max_llm_calls 8

@@ -8,37 +8,27 @@ and SQLite. App changes require approval. Contacts access is not yet working.
 
 ## Run locally
 
-Requires macOS 14+, [uv](https://docs.astral.sh/uv/), and [Ollama](https://ollama.com/).
-Open the Ollama app and keep it running. No cloud API key is needed.
+Requires macOS 14+, Xcode Command Line Tools, [uv](https://docs.astral.sh/uv/),
+and [Ollama](https://ollama.com/). No cloud API key is needed.
 
-**1. Set up the project** (from the repository root):
+From the repository root:
 
 ```sh
 cd agents/migine-personal-agent
-cp -n .env.example .env
-uv sync --frozen
-ollama pull gemma4:e4b
+sh scripts/setup-local.sh
+sh scripts/run-local.sh
 ```
 
-**2. Load the demo and start ADK Web:**
+Setup installs locked dependencies, prepares `.env`, builds the Mac helper, starts
+Ollama if needed, and downloads missing configured models. Existing settings are preserved.
 
-```sh
-MIGINE_DATA_DIR=./demo uv run migine demo --month 2026-10
-MIGINE_DATA_DIR=./demo uv run adk web examples/web --host 127.0.0.1 --port 8000 --max_llm_calls 8
-```
+Open [ADK Web](http://127.0.0.1:8000), select `migine_web`, and ask:
+“What is on my calendar for the next seven days?” Allow Calendar access when requested.
 
-**3. Open [ADK Web](http://127.0.0.1:8000)**, select `migine_web`, and ask:
-“Summarise my bills and subscription spending for October 2026.”
-
-Keep the terminal running; press **Ctrl+C** to stop. The financial demo uses synthetic
-records and needs no Mac app access. ADK Web is for local development only.
-
-For real email and Calendar access, follow [native setup and usage](USAGE.md#setup),
-including Xcode Command Line Tools and `MIGINE_MAC_HELPER`. Import and review email
-records, then start the same Web command with `MIGINE_DATA_DIR=./data`.
-App tools access your real Mac; approve changes from the terminal using the same data
-directory. Chat history is stored separately in ignored `.adk/` folders under `examples/web/`.
-EmbeddingGemma is optional for search; its setup is in [USAGE.md](USAGE.md).
+To populate bill and subscription reports, [import and review your email](USAGE.md#use-personal-records).
+Mail import is explicit; setup does not read your Inbox or accept financial records.
+Keep the terminal running; press **Ctrl+C** to stop. ADK Web is for local development.
+See [usage](USAGE.md) for permissions, configuration, and approval commands.
 
 ## Components
 

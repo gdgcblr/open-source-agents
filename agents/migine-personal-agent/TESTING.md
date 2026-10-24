@@ -5,8 +5,9 @@ Locked ADK version: 2.13.0 (ADK 2.x).
 
 | Check | Result |
 |---|---|
-| Automated tests | 66 passed |
-| Clean project setup | New environment installed from uv.lock; 66 tests, helper build, and demo passed |
+| Automated tests | 71 passed |
+| Clean project setup | New environment installed from uv.lock; 71 tests and helper build passed |
+| Local setup scripts | Settings preserved, only missing models downloaded, and local Web launch verified with stubs |
 | Ruff checks | Passed |
 | Python source package and wheel | Built |
 | Native Calendar/Contacts helper | Compiled and ad-hoc signed |
@@ -74,3 +75,18 @@ local configuration, or the existing virtual environment.
 
 Use prepared test contacts and messages for write checks. No live write test has run.
 Do not claim complete spending coverage, verified sender authenticity, or bank settlement.
+
+## Optional synthetic demo
+
+Use a separate directory for fixtures. This does not import personal email.
+
+```sh
+MIGINE_DATA_DIR=./demo uv run migine demo --month 2026-10
+MIGINE_DATA_DIR=./demo uv run migine summary --month 2026-10
+MIGINE_DATA_DIR=./demo uv run adk web examples/web --host 127.0.0.1 --port 8000 --max_llm_calls 8
+```
+
+Open localhost:8000, select `migine_web`, and ask for October 2026 bills and subscriptions.
+Expected fixture totals: one INR 12,450.00 statement with matched payment evidence and
+INR 279.00 in subscriptions. Only the financial records are synthetic; Calendar and app
+tools still access your Mac. Keep fixture and personal data directories separate.

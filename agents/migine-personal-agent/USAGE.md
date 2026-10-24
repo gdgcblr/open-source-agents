@@ -9,35 +9,36 @@ No cloud API key is needed. Initial model downloads require internet access.
 Requires macOS 14+, Xcode Command Line Tools, [uv](https://docs.astral.sh/uv/),
 and [Ollama](https://ollama.com/). Python 3.12 is selected by uv.
 
+From the repository root:
+
 ```sh
 cd agents/migine-personal-agent
-cp .env.example .env
-uv sync --frozen
-ollama pull gemma4:e4b
-ollama pull embeddinggemma
-sh scripts/build-mac-helper.sh
+sh scripts/setup-local.sh
+sh scripts/run-local.sh
 ```
 
-Set `MIGINE_MAC_HELPER` in `.env` to the absolute executable path printed by the build.
-Keep Ollama running on `127.0.0.1:11434`. Choose a smaller local Gemma tag if needed.
-Run `uv run migine doctor` to check installed models.
+Open [ADK Web](http://127.0.0.1:8000), select `migine_web`, and ask about your Calendar.
+Keep the terminal running; press **Ctrl+C** to stop. On later runs, only `run-local.sh`
+is needed while Ollama is running.
 
-Grant Calendar and Contacts access when requested. Grant your terminal permission to
-control Mail under System Settings > Privacy & Security > Automation. No Full Disk
-Access is required. Enable birthday calendars in Calendar to include those events.
+Setup installs locked dependencies, creates `.env` only if missing, builds the Mac helper,
+and sets `MIGINE_MAC_HELPER` if unset. It starts the installed Ollama app if needed and
+pulls missing models named in `.env`. Existing settings and data are preserved. Initial
+model downloads can be large. Setup does not import email or change app records.
+
+Keep Ollama on its configured local address (default `127.0.0.1:11434`). Edit `.env`
+to select local Gemma and EmbeddingGemma tags, your time zone, and the data directory
+(default `./data`). Run `uv run migine doctor` to check installed models.
+
+Allow Calendar access when requested. For Mail, grant the calling terminal or app access
+under System Settings > Privacy & Security > Automation. No Full Disk Access is required.
+Enable birthday calendars in Calendar to include those events. Contacts permission
+prompting is unresolved; see [current test results](TESTING.md).
+
 The helper uses local ad-hoc signing; signed/notarised distribution is future work.
-
-## Try synthetic data first
-
-```sh
-MIGINE_DATA_DIR=./demo uv run migine demo --month 2026-10
-MIGINE_DATA_DIR=./demo uv run migine summary --month 2026-10
-MIGINE_DATA_DIR=./demo uv run migine brief --date 2026-10-18
-```
-
-The demo is synthetic and needs no model or Mac app permissions. It produces one
-INR 12,450.00 statement with matching payment evidence and INR 279.00 in subscriptions.
-Keep demo and personal databases separate.
+ADK Web is a local development UI. Its chat history is stored separately in ignored
+`.adk/` folders under `examples/web/`. CLI and Web use the same configured financial
+records, preferences, and search index.
 
 ## Use personal records
 
