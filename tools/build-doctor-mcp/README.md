@@ -39,6 +39,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `inspect_project`: read bounded content from recognized project manifests without executing code.
 - `inspect_test_reports`: parse bounded JUnit, Surefire, and pytest-style XML reports into factual test evidence.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
+- `analyze_alert`: normalize provider alerts from New Relic, CubeAPM, Prometheus, OpenTelemetry, or custom webhooks.
 - `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
 - Deterministic categories for compilation, dependencies, tests, runtime/API, configuration, permissions, network/TLS, resources, data/schema, CI/container, and concurrency/state failures.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
@@ -59,14 +60,36 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 ```text
 [MCP client] <stdio> [BuildDoctor MCP server]
                               |
-             +----------------+----------------+
-             |                                 |
-      [Failure analyzer]                [Manifest reader]
-             |                                 |
-             +----------> [Structured JSON evidence]
+  +-----+----------+----------------------+
+  |                |                      |
+[Failure analyzer] [Manifest/report reader] [Alert normalizer]
+  |                |                      |
+  +----------------+--------> [Structured JSON evidence]
 ```
 
 The server never runs project commands. The client supplies a log and, optionally, a project directory for bounded read-only inspection.
+
+## Observability Integration
+
+BuildDoctor does not poll or mutate monitoring systems. Use a provider webhook or a small secure gateway:
+
+```text
+[New Relic/CubeAPM/Prometheus/Otel alert]
+      |
+       [authenticated webhook gateway]
+      |
+       [MCP client or coding agent]
+      |
+    analyze_alert(provider, payload)
+      |
+       [deterministic evidence + next checks]
+      |
+       summarize_diagnosis(log, project_path)
+```
+
+The provider adapter should map vendor fields into the contract shown in [`examples/observability-alert.json`](examples/observability-alert.json). The standard fields are `event_type`, `service`, `environment`, `metric`, `value`, `threshold`, `unit`, `condition`, `timestamp`, and `correlation_id`. Vendor-specific fields may be retained in the gateway, but only sanitized evidence should be sent to BuildDoctor.
+
+Supported event categories include latency, error rate, availability, saturation, deployment, security, certificate expiry, and queue lag. A threshold breach identifies an incident signal, not its root cause. BuildDoctor returns the next evidence to collect, such as traces, structured logs, deployment changes, dependency health, and resource saturation.
 
 ## Prerequisites
 
@@ -166,6 +189,12 @@ For a quick direct smoke check without an MCP client:
 
 ```bash
 python -c "from build_doctor_mcp.server import analyze_failure; print(analyze_failure('error: cannot find symbol'))"
+```
+
+Analyze a provider-neutral alert directly:
+
+```bash
+python -c "import json; from build_doctor_mcp.server import analyze_alert; print(analyze_alert('new-relic', json.dumps({'event_type': 'latency', 'service': 'payments-api', 'value': 1200, 'threshold': 500, 'unit': 'ms'})))"
 ```
 
 ## Example Tool Input & Output
