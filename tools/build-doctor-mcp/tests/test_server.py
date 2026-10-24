@@ -11,10 +11,12 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
     def test_analyzes_compilation_failure_with_evidence(self):
         result = json.loads(analyze_failure("error: cannot find symbol\n  symbol: class Widget"))
 
-        self.assertEqual("1.0", result["schema_version"])
+        self.assertEqual("1.1", result["schema_version"])
         self.assertEqual("compilation", result["failure_type"])
         self.assertTrue(any("cannot find symbol" in item for item in result["evidence"]))
         self.assertTrue(result["hypotheses"])
+        self.assertIn("compiler-error", result["scoring"]["matched_signals"])
+        self.assertGreaterEqual(result["scoring"]["scores"]["compilation"], 4)
         self.assertTrue(result["remediation_plan"])
         self.assertEqual("pending", result["verification_status"])
 
@@ -39,6 +41,12 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
 
         self.assertEqual("test-failure", result["diagnosis"]["failure_type"])
         self.assertIn("go.mod", result["project"]["manifests"])
+
+    def test_reports_ambiguity_when_signals_tie(self):
+        result = json.loads(analyze_failure("module not found; Tests run: 2, Failures: 1"))
+
+        self.assertEqual("low", result["confidence"])
+        self.assertIn("Multiple failure categories", " ".join(result["missing_evidence"]))
 
     def test_rejects_missing_project_path(self):
         result = json.loads(inspect_project("/path/that/does/not/exist"))

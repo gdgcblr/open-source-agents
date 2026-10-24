@@ -1,4 +1,4 @@
-"""Read-only BuildDoctor MCP server with bounded, redacted diagnostics."""
+"""Read-only BuildDoctor MCP server with deterministic evidence scoring."""
 
 from __future__ import annotations
 
@@ -6,23 +6,15 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("build-doctor")
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 _MANIFESTS = (
-    "pom.xml",
-    "build.gradle",
-    "build.gradle.kts",
-    "package.json",
-    "pyproject.toml",
-    "requirements.txt",
-    "go.mod",
-    "Cargo.toml",
-    "composer.json",
-    "mix.exs",
+    "pom.xml", "build.gradle", "build.gradle.kts", "package.json", "pyproject.toml",
+    "requirements.txt", "go.mod", "Cargo.toml", "composer.json", "mix.exs",
 )
 _MAX_FILE_BYTES = min(max(int(os.getenv("BUILD_DOCTOR_MAX_FILE_BYTES", "200000")), 1), 1000000)
 _MAX_LOG_CHARS = min(max(int(os.getenv("BUILD_DOCTOR_MAX_LOG_CHARS", "200000")), 1), 1000000)
@@ -30,6 +22,81 @@ _SECRET_PATTERNS = (
     (re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[^\s,;]+"), r"\1[REDACTED]"),
     (re.compile(r'''(?i)(["']?(?:api[_-]?key|token|password|secret|client_secret)["']?\s*[:=]\s*["']?)[^"'\s,;}]+'''), r"\1[REDACTED]"),
     (re.compile(r"(?i)(-----BEGIN [A-Z ]+ PRIVATE KEY-----).*?(-----END [A-Z ]+ PRIVATE KEY-----)", re.S), r"\1[REDACTED]\2"),
+)
+
+_RULES: tuple[dict[str, Any], ...] = (
+    {
+        "failure_type": "compilation",
+        "signal_id": "compiler-error",
+        "pattern": re.compile(r"compilation error|cannot find symbol|syntax error|type error|failed to compile", re.I),
+        "weight": 4,
+        "cause": "A source or compiler configuration issue is likely.",
+        "remediation": "Inspect the first compiler error and its source location.",
+        "missing": "The affected source file and compiler command are not present.",
+    },
+    {
+        "failure_type": "compilation",
+        "signal_id": "source-location",
+        "pattern": re.compile(r"\b[\w./-]+\.(?:java|kt|py|js|jsx|ts|tsx|go|rs|rb|cs):\d+(?::\d+)?\b", re.I),
+        "weight": 2,
+        "cause": "The output identifies a source location that can anchor investigation.",
+        "remediation": "Open the reported source location and compare the expected symbol or type.",
+        "missing": "The source location does not prove the underlying cause by itself.",
+    },
+    {
+        "failure_type": "dependency-resolution",
+        "signal_id": "dependency-resolution-error",
+        "pattern": re.compile(r"could not resolve dependencies|module not found|no matching distribution|failed to fetch|package .* not found", re.I),
+        "weight": 4,
+        "cause": "A dependency name, version, lockfile, registry, or access issue may be blocking resolution.",
+        "remediation": "Inspect dependency names, versions, lockfiles, and configured registries.",
+        "missing": "The dependency manifest, lockfile, and registry response are not present.",
+    },
+    {
+        "failure_type": "dependency-resolution",
+        "signal_id": "registry-or-lockfile-context",
+        "pattern": re.compile(r"\b(lock[- ]?file|registry|repository|npm|pypi|maven central|crates\.io|go module)\b", re.I),
+        "weight": 1,
+        "cause": "The output contains package-registry or lockfile context.",
+        "remediation": "Compare the configured registry with the dependency source and lockfile.",
+        "missing": "The complete dependency configuration is not present.",
+    },
+    {
+        "failure_type": "test-failure",
+        "signal_id": "test-summary",
+        "pattern": re.compile(r"tests run:.*(failures|errors): [1-9]|there are test failures|tests? failed", re.I),
+        "weight": 4,
+        "cause": "At least one test failed, but this signal does not establish the underlying cause.",
+        "remediation": "Isolate the failing test and compare expected versus actual values.",
+        "missing": "The failing test name, stack trace, and expected/actual values are incomplete.",
+    },
+    {
+        "failure_type": "test-failure",
+        "signal_id": "assertion-mismatch",
+        "pattern": re.compile(r"assertionerror|expected .* but was", re.I),
+        "weight": 2,
+        "cause": "An assertion mismatch is visible in the supplied output.",
+        "remediation": "Inspect the assertion, fixture, and environment-dependent inputs.",
+        "missing": "The fixture and complete assertion context are not present.",
+    },
+    {
+        "failure_type": "runtime-or-api",
+        "signal_id": "http-status-or-transport",
+        "pattern": re.compile(r"(?:http|status|response)\D*(?:401|403|404|408|429|5\d\d)|timeout|connection refused", re.I),
+        "weight": 4,
+        "cause": "A runtime or API transport failure is observable, but request and service context are needed to separate causes.",
+        "remediation": "Inspect method, response status, timeout, correlation ID, and service logs.",
+        "missing": "The sanitized request, response body, service logs, and environment are incomplete.",
+    },
+    {
+        "failure_type": "runtime-or-api",
+        "signal_id": "exception-or-traceback",
+        "pattern": re.compile(r"traceback|\bexception\b|\bpanic:\b|\bfatal error\b", re.I),
+        "weight": 2,
+        "cause": "The output contains an exception or runtime termination signal.",
+        "remediation": "Inspect the first causal stack-trace frame and the inputs immediately before it.",
+        "missing": "The complete stack trace and runtime inputs are incomplete.",
+    },
 )
 
 
@@ -44,12 +111,85 @@ def _bounded_log(log: str) -> tuple[str, bool]:
     return redacted[:_MAX_LOG_CHARS], len(redacted) > _MAX_LOG_CHARS
 
 
-def _evidence_lines(log: str) -> list[str]:
-    return [
-        line.strip()
-        for line in log.splitlines()
-        if re.search(r"(\[error\]|\berror:|\bfailed\b|\bfailure\b|tests run:|\bexception\b)", line, re.I)
-    ][:8]
+def _evidence_lines(log: str, pattern: re.Pattern[str]) -> list[str]:
+    return [line.strip() for line in log.splitlines() if pattern.search(line)][:5]
+
+
+def _confidence(score: int, match_count: int, tied: bool) -> str:
+    if tied or match_count == 0 or score < 4:
+        return "low"
+    if score >= 6:
+        return "high"
+    return "moderate"
+
+
+def _diagnosis(log: str) -> dict[str, Any]:
+    bounded, truncated = _bounded_log(log)
+    if not bounded.strip():
+        return _result("unknown", "No failure output was provided.", "low", [], [], [], ["The first error and surrounding context are missing."], truncated)
+
+    matches: list[dict[str, Any]] = []
+    for rule in _RULES:
+        if rule["pattern"].search(bounded):
+            matches.append({
+                "failure_type": rule["failure_type"],
+                "signal_id": rule["signal_id"],
+                "weight": rule["weight"],
+                "cause": rule["cause"],
+                "remediation": rule["remediation"],
+                "missing": rule["missing"],
+                "evidence": _evidence_lines(bounded, rule["pattern"]),
+            })
+
+    if not matches:
+        return _result(
+            "unknown",
+            "The supplied output does not match a supported failure signature.",
+            "low",
+            [],
+            [],
+            ["Provide the first error and its surrounding context.", "Identify the command, runtime, service, and expected outcome."],
+            ["The command, environment, expected outcome, and first causal error are missing."],
+            truncated,
+        )
+
+    by_type: dict[str, list[dict[str, Any]]] = {}
+    for match in matches:
+        by_type.setdefault(match["failure_type"], []).append(match)
+    ranked = sorted(by_type.items(), key=lambda item: sum(signal["weight"] for signal in item[1]), reverse=True)
+    top_type, top_signals = ranked[0]
+    top_score = sum(signal["weight"] for signal in top_signals)
+    tied = len(ranked) > 1 and sum(signal["weight"] for signal in ranked[1][1]) == top_score
+    confidence = _confidence(top_score, len(top_signals), tied)
+    evidence = list(dict.fromkeys(item for signal in top_signals for item in signal["evidence"]))
+    hypotheses = []
+    for index, (failure_type, signals) in enumerate(ranked, start=1):
+        score = sum(signal["weight"] for signal in signals)
+        hypotheses.append({
+            "id": f"H{index}",
+            "failure_type": failure_type,
+            "score": score,
+            "confidence": _confidence(score, len(signals), tied and index == 1),
+            "signal_ids": [signal["signal_id"] for signal in signals],
+            "statement": signals[0]["cause"],
+            "supporting_evidence": list(dict.fromkeys(item for signal in signals for item in signal["evidence"])),
+        })
+    remediation = list(dict.fromkeys(signal["remediation"] for signal in top_signals))
+    remediation.append("Rerun the smallest relevant check after a reviewed change; do not treat a suggestion as verified.")
+    missing = list(dict.fromkeys(signal["missing"] for signal in top_signals))
+    if tied:
+        missing.append("Multiple failure categories have equal deterministic scores; provide more context before choosing a fix.")
+    return _result(
+        top_type,
+        f"The strongest deterministic evidence indicates a {top_type} failure.",
+        confidence,
+        evidence,
+        hypotheses,
+        remediation,
+        missing,
+        truncated,
+        {"matched_signals": [signal["signal_id"] for signal in matches], "scores": {key: sum(signal["weight"] for signal in value) for key, value in ranked}},
+    )
 
 
 def _result(
@@ -57,25 +197,20 @@ def _result(
     summary: str,
     confidence: str,
     evidence: list[str],
-    root_causes: list[str],
+    hypotheses: list[dict[str, Any]],
     remediation: list[str],
     missing_evidence: list[str],
-    truncated: bool = False,
+    truncated: bool,
+    scoring: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    hypothesis = {
-        "id": "H1",
-        "statement": root_causes[0],
-        "confidence": confidence,
-        "supporting_evidence": evidence,
-    }
     return {
         "schema_version": SCHEMA_VERSION,
         "failure_type": failure_type,
         "summary": summary,
         "confidence": confidence,
         "evidence": evidence,
-        "hypotheses": [hypothesis],
-        "root_causes": root_causes,
+        "hypotheses": hypotheses,
+        "scoring": scoring or {"matched_signals": [], "scores": {}},
         "remediation_plan": remediation,
         "missing_evidence": missing_evidence,
         "verification": {
@@ -88,77 +223,9 @@ def _result(
         "guardrails": [
             "Read-only analysis; no commands, network calls, file writes, or automatic fixes.",
             "Evidence is redacted before it is returned to the client.",
+            "Confidence is capped when signals are tied, weak, or incomplete.",
         ],
     }
-
-
-def _diagnosis(log: str) -> dict[str, Any]:
-    bounded, truncated = _bounded_log(log)
-    if not bounded.strip():
-        return _result(
-            "unknown",
-            "No failure output was provided.",
-            "low",
-            [],
-            ["There is insufficient evidence to identify a root cause."],
-            ["Provide the complete relevant build, test, runtime, or API output."],
-            ["The first error and surrounding context are missing."],
-            truncated,
-        )
-
-    evidence = _evidence_lines(bounded)
-    patterns = (
-        (
-            "compilation",
-            re.compile(r"compilation error|cannot find symbol|syntax error|type error|failed to compile", re.I),
-            "The output contains a compilation failure.",
-            "high",
-            ["A source or compiler configuration issue is likely; the exact symbol and location need confirmation."],
-            ["Inspect the first compiler error and its source location.", "Check the referenced symbol, language configuration, and compiler settings.", "Rerun the smallest compilation check after the change."],
-            ["The affected source file and compiler command are not present."],
-        ),
-        (
-            "dependency-resolution",
-            re.compile(r"could not resolve dependencies|module not found|no matching distribution|failed to fetch|package .* not found", re.I),
-            "The project could not resolve or download a dependency.",
-            "high",
-            ["A dependency name, version, lockfile, registry, or network-access issue may be blocking resolution."],
-            ["Inspect dependency names, versions, lockfiles, and configured registries.", "Check registry access and package availability without exposing credentials.", "Rerun dependency resolution after confirming the configuration."],
-            ["The dependency manifest, lockfile, and registry response are not present."],
-        ),
-        (
-            "test-failure",
-            re.compile(r"tests run:.*(failures|errors): [1-9]|assertionerror|tests? failed|expected .* but was", re.I),
-            "The output indicates that at least one test failed.",
-            "moderate",
-            ["The observed assertion or test result is evidence of a failing behavior, not proof of its underlying cause."],
-            ["Isolate the failing test and compare expected versus actual values.", "Inspect the test report, fixture, and environment-dependent inputs.", "Rerun the targeted test after a change; verification remains pending until then."],
-            ["The failing test name, stack trace, and expected/actual values are incomplete."],
-        ),
-        (
-            "runtime-or-api",
-            re.compile(r"(http|status|response).*(401|403|404|408|429|5\d\d)|timeout|connection refused|traceback|exception", re.I),
-            "The output indicates a runtime or API interaction failure.",
-            "moderate",
-            ["The runtime or response signal is observable, but the service configuration and request context are needed to separate causes."],
-            ["Inspect request method, response status, timeout, correlation ID, and service logs.", "Check endpoint configuration and authentication without exposing credentials.", "Repeat a safe, read-only health check after confirming the configuration."],
-            ["The sanitized request, response body, service logs, and environment are incomplete."],
-        ),
-    )
-    for failure_type, pattern, summary, confidence, causes, remediation, missing in patterns:
-        if pattern.search(bounded):
-            return _result(failure_type, summary, confidence, evidence, causes, remediation, missing, truncated)
-
-    return _result(
-        "unknown",
-        "The supplied output does not match a supported failure signature.",
-        "low",
-        evidence,
-        ["The available evidence is insufficient or represents an unsupported failure format."],
-        ["Provide the first error and its surrounding context.", "Identify the command, runtime, service, and expected outcome.", "Do not apply a change until the missing evidence is reviewed."],
-        ["The command, environment, expected outcome, and first causal error are missing."],
-        truncated,
-    )
 
 
 def _safe_root(project_path: str) -> Path | None:
@@ -167,9 +234,8 @@ def _safe_root(project_path: str) -> Path | None:
         return None
     allowed = os.getenv("BUILD_DOCTOR_ALLOWED_ROOT")
     if allowed:
-        allowed_root = Path(allowed).expanduser().resolve()
         try:
-            root.relative_to(allowed_root)
+            root.relative_to(Path(allowed).expanduser().resolve())
         except ValueError:
             return None
     return root
@@ -177,7 +243,7 @@ def _safe_root(project_path: str) -> Path | None:
 
 @mcp.tool()
 def analyze_failure(log: str) -> str:
-    """Classify sanitized failure output and return a versioned diagnostic contract as JSON."""
+    """Score deterministic signals in sanitized failure output and return JSON."""
     return json.dumps(_diagnosis(log), indent=2)
 
 
@@ -187,7 +253,6 @@ def inspect_project(project_path: str) -> str:
     root = _safe_root(project_path)
     if root is None:
         return json.dumps({"schema_version": SCHEMA_VERSION, "error": "project_path is missing, invalid, or outside BUILD_DOCTOR_ALLOWED_ROOT"})
-
     manifests: list[str] = []
     sections: list[str] = []
     for name in _MANIFESTS:
@@ -195,28 +260,20 @@ def inspect_project(project_path: str) -> str:
         if not path.is_file() or path.is_symlink():
             continue
         try:
+            manifests.append(name)
             if path.stat().st_size > _MAX_FILE_BYTES:
                 sections.append(f"--- {name} ---\n[file skipped: exceeds size limit]")
-                manifests.append(name)
                 continue
             content = _redact(path.read_text(encoding="utf-8", errors="replace")[:_MAX_FILE_BYTES])
             sections.append(f"--- {name} ---\n{content}")
-            manifests.append(name)
         except OSError as exc:
             sections.append(f"--- {name} ---\n[file unavailable: {exc}]")
-
-    return json.dumps({
-        "schema_version": SCHEMA_VERSION,
-        "project_path": str(root),
-        "manifests": manifests,
-        "content": "\n\n".join(sections),
-        "guardrails": ["Root-level allowlisted manifests only; no symlinks, recursion, execution, or writes."],
-    }, indent=2)
+    return json.dumps({"schema_version": SCHEMA_VERSION, "project_path": str(root), "manifests": manifests, "content": "\n\n".join(sections), "guardrails": ["Root-level allowlisted manifests only; no symlinks, recursion, execution, or writes."]}, indent=2)
 
 
 @mcp.tool()
 def summarize_diagnosis(log: str, project_path: str = "") -> str:
-    """Combine evidence-linked failure analysis and optional project metadata as JSON."""
+    """Combine scored failure analysis and optional project metadata as JSON."""
     project = json.loads(inspect_project(project_path)) if project_path else {"schema_version": SCHEMA_VERSION, "manifests": [], "content": ""}
     return json.dumps({"schema_version": SCHEMA_VERSION, "diagnosis": _diagnosis(log), "project": project}, indent=2)
 
