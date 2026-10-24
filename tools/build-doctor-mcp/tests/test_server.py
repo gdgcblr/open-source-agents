@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_failure, inspect_project, summarize_diagnosis, verify_resolution
+from build_doctor_mcp.server import analyze_failure, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -43,6 +43,35 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
 
         self.assertEqual("test-failure", result["diagnosis"]["failure_type"])
         self.assertIn("go.mod", result["project"]["manifests"])
+
+    def test_parses_structured_test_report_evidence(self):
+        report = """<testsuite name=\"unit\" tests=\"2\" failures=\"1\" errors=\"0\" skipped=\"0\">
+          <testcase classname=\"payments.CheckoutTest\" name=\"rejectsExpiredCard\">
+            <failure message=\"expected 200 but was 401\" />
+          </testcase>
+          <testcase classname=\"payments.CheckoutTest\" name=\"acceptsValidCard\" />
+        </testsuite>"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "surefire-reports").mkdir()
+            (root / "surefire-reports" / "TEST-checkout.xml").write_text(report, encoding="utf-8")
+
+            result = json.loads(inspect_test_reports(str(root)))
+
+        self.assertEqual("parsed", result["reports"][0]["status"])
+        self.assertEqual(2, result["reports"][0]["tests"])
+        self.assertEqual("rejectsExpiredCard", result["reports"][0]["failing_tests"][0]["test"].split(".")[-1])
+        self.assertIn("401", result["reports"][0]["failing_tests"][0]["message"])
+
+    def test_combined_diagnosis_includes_report_evidence(self):
+        report = "<testsuite tests=\"1\" failures=\"1\"><testcase name=\"broken\"><failure message=\"bad\" /></testcase></testsuite>"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "junit.xml").write_text(report, encoding="utf-8")
+
+            result = json.loads(summarize_diagnosis("Tests run: 1, Failures: 1", str(root)))
+
+        self.assertEqual("parsed", result["test_reports"]["reports"][0]["status"])
 
     def test_reports_ambiguity_when_signals_tie(self):
         result = json.loads(analyze_failure("module not found; Tests run: 2, Failures: 1"))

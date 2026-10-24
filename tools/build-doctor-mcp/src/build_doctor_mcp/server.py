@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from typing import Any, Callable
 
+from defusedxml import ElementTree as SafeElementTree
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("build-doctor")
@@ -18,6 +19,7 @@ _MANIFESTS = (
 )
 _MAX_FILE_BYTES = min(max(int(os.getenv("BUILD_DOCTOR_MAX_FILE_BYTES", "200000")), 1), 1000000)
 _MAX_LOG_CHARS = min(max(int(os.getenv("BUILD_DOCTOR_MAX_LOG_CHARS", "200000")), 1), 1000000)
+_MAX_REPORTS = min(max(int(os.getenv("BUILD_DOCTOR_MAX_REPORTS", "20")), 1), 100)
 _SECRET_PATTERNS = (
     (re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[^\s,;]+"), r"\1[REDACTED]"),
     (re.compile(r'''(?i)(["']?(?:api[_-]?key|token|password|secret|client_secret)["']?\s*[:=]\s*["']?)[^"'\s,;}]+'''), r"\1[REDACTED]"),
@@ -291,11 +293,66 @@ def inspect_project(project_path: str) -> str:
     return json.dumps({"schema_version": SCHEMA_VERSION, "project_path": str(root), "manifests": manifests, "content": "\n\n".join(sections), "guardrails": ["Root-level allowlisted manifests only; no symlinks, recursion, execution, or writes."]}, indent=2)
 
 
+def _report_paths(root: Path) -> list[Path]:
+    candidates: list[Path] = []
+    for pattern in ("*.xml", "surefire-reports/*.xml", "test-results/*.xml", "test-results/**/*.xml", "reports/**/*.xml"):
+        candidates.extend(root.glob(pattern))
+    return sorted({path for path in candidates if path.is_file() and not path.is_symlink()})[:_MAX_REPORTS]
+
+
+def _integer_attribute(element: Any, name: str) -> int:
+    try:
+        return max(int(element.attrib.get(name, "0")), 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+@mcp.tool()
+def inspect_test_reports(project_path: str) -> str:
+    """Parse bounded JUnit, Surefire, or pytest-style XML reports without executing tests."""
+    root = _safe_root(project_path)
+    if root is None:
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "project_path is missing, invalid, or outside BUILD_DOCTOR_ALLOWED_ROOT"})
+    reports: list[dict[str, Any]] = []
+    for path in _report_paths(root):
+        relative = path.relative_to(root).as_posix()
+        try:
+            if path.stat().st_size > _MAX_FILE_BYTES:
+                reports.append({"path": relative, "status": "skipped", "reason": "exceeds size limit"})
+                continue
+            document = SafeElementTree.parse(path)
+            root_element = document.getroot()
+            suites = [root_element] if root_element.tag.endswith("testsuite") else list(root_element.iter("testsuite"))
+            failures: list[dict[str, str]] = []
+            totals = {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+            for suite in suites:
+                for key in totals:
+                    totals[key] += _integer_attribute(suite, key)
+                for case in suite.iter("testcase"):
+                    issue = next((child for child in case if child.tag in {"failure", "error"}), None)
+                    if issue is not None and len(failures) < 20:
+                        failures.append({
+                            "test": _redact(f"{case.attrib.get('classname', '')}.{case.attrib.get('name', '')}"),
+                            "kind": issue.tag,
+                            "message": _redact(issue.attrib.get("message", "") or (issue.text or "")[:1000]),
+                        })
+            reports.append({"path": relative, "status": "parsed", **totals, "failing_tests": failures})
+        except (OSError, SafeElementTree.ParseError, ValueError) as exc:
+            reports.append({"path": relative, "status": "unreadable", "reason": type(exc).__name__})
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "project_path": str(root),
+        "reports": reports,
+        "guardrails": ["XML is parsed with defusedxml; no external entities, code execution, recursion outside report directories, or writes."],
+    }, indent=2)
+
+
 @mcp.tool()
 def summarize_diagnosis(log: str, project_path: str = "") -> str:
     """Combine scored failure analysis and optional project metadata as JSON."""
     project = json.loads(inspect_project(project_path)) if project_path else {"schema_version": SCHEMA_VERSION, "manifests": [], "content": ""}
-    return json.dumps({"schema_version": SCHEMA_VERSION, "diagnosis": _diagnosis(log), "project": project}, indent=2)
+    reports = json.loads(inspect_test_reports(project_path)) if project_path else {"schema_version": SCHEMA_VERSION, "reports": []}
+    return json.dumps({"schema_version": SCHEMA_VERSION, "diagnosis": _diagnosis(log), "project": project, "test_reports": reports}, indent=2)
 
 
 @mcp.tool()
