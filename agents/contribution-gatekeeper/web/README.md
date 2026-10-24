@@ -24,4 +24,4 @@ They are marked `"demo": true` and labelled "Demo fixture" in the console. No ne
 
 ## Report format
 
-The console reads the JSON from `report.to_json()` (what `--json` writes): `submission` {url, title, author, number, project_dir, changed_files}, `verdict`, `score`, `scores`, `llm_used`, `sandbox`, `notes`, `findings[]`. Older reports with only the flat keys (`url`, `number`, `title`, `author`, `project`) also work. It shows `review_markdown` and `policy` when present (the server and demo reports add them). A JSON array of reports opens as a triage board.
+The console reads the JSON from `report.to_json()` (what `--json` writes): `submission` {url, title, author, number, project_dir, changed_files}, `verdict`, `score`, `scores`, `llm_used`, `sandbox`, `notes`, `review_markdown`, `findings[]`. Older reports with only the flat keys (`url`, `number`, `title`, `author`, `project`) also work. Demo reports also carry `policy`, which the How it works page shows. A JSON array of reports opens as a triage board.

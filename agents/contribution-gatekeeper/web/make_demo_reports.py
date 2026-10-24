@@ -138,7 +138,7 @@ def build(scenario, policy) -> dict:
         rep.notes.append("Demo fixture: synthetic PR, deterministic checks only (no Gemini, no sandbox).")
         rep.review_markdown = render.markdown(rep)
         out = render.to_json(rep)
-        out.update(demo=True, review_markdown=rep.review_markdown, policy=policy_summary(policy))
+        out.update(demo=True, policy=policy_summary(policy))
         return out
     finally:
         shutil.rmtree(root, ignore_errors=True)

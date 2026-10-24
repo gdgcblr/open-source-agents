@@ -6,7 +6,7 @@ Serves the console (web/index.html) and a small JSON API:
 
     GET  /api/health   -> {"llm": bool, "docker": bool}
     POST /api/review   {"target": "<PR URL | path>", "llm": bool, "run_setup": bool, "project": str|null}
-                       -> the report JSON (report.to_json + review_markdown)
+                       -> the report JSON (report.to_json)
 
 Binds to 127.0.0.1 only: it runs git and (optionally) Docker on this machine.
 Without the server, the console still works offline on the bundled demo reports.
@@ -69,9 +69,7 @@ class Handler(SimpleHTTPRequestHandler):
                 rep = cli.review(target, use_llm=bool(req.get("llm")) and gk.llm_available(),
                                  run_setup=bool(req.get("run_setup")), project=req.get("project") or None,
                                  quiet=True)
-            out = render.to_json(rep)
-            out["review_markdown"] = rep.review_markdown
-            return self._json(200, out)
+            return self._json(200, render.to_json(rep))
         except Exception as e:  # surface the reason in the UI instead of a bare 500
             traceback.print_exc()
             return self._json(500, {"error": f"{type(e).__name__}: {e}"})
