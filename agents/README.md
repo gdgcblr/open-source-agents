@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [research-brief-agent](./research-brief-agent/) | Structured research reports from bundled sources or user URLs | Cursor Agent SDK (TypeScript) | Community |
