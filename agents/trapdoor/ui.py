@@ -44,6 +44,8 @@ async def run_evaluation():
             "verdict": report.verdict,
             "turns": report.turns,
             "total_tool_calls": len(report.all_tool_calls),
+            "framework": session.framework,
+            "model": session.model,
             "trap_tools_invoked": [f.tool_call.name for f in report.findings],
             "evidence": report.evidence,
             "findings": [

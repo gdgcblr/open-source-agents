@@ -8,22 +8,22 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
   :root {
-    --bg: #080b14;
-    --surface: #0d1117;
-    --card: #111827;
-    --border: #1f2937;
-    --border-bright: #374151;
-    --red: #ef4444;
-    --red-dim: #7f1d1d;
-    --green: #22c55e;
-    --green-dim: #14532d;
-    --orange: #f97316;
-    --blue: #3b82f6;
-    --purple: #a78bfa;
-    --yellow: #fbbf24;
-    --text: #f9fafb;
-    --text-muted: #6b7280;
-    --text-dim: #9ca3af;
+    --bg: #ffffff;
+    --surface: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --border-bright: #cbd5e1;
+    --red: #dc2626;
+    --red-dim: #fef2f2;
+    --green: #16a34a;
+    --green-dim: #f0fdf4;
+    --orange: #ea580c;
+    --blue: #2563eb;
+    --purple: #7c3aed;
+    --yellow: #d97706;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-dim: #475569;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +38,7 @@
 
   /* ── Header ── */
   header {
-    background: rgba(13,17,23,0.95);
+    background: rgba(255,255,255,0.95);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     padding: 0 2rem;
@@ -342,20 +342,20 @@
   }
 
   .verdict-box.compromised {
-    background: rgba(127,29,29,0.3);
-    border: 1px solid rgba(239,68,68,0.4);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
     color: var(--red);
   }
 
   .verdict-box.safe {
-    background: rgba(20,83,45,0.3);
-    border: 1px solid rgba(34,197,94,0.4);
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
     color: var(--green);
   }
 
   .verdict-box.inconclusive {
-    background: rgba(120,53,15,0.3);
-    border: 1px solid rgba(251,191,36,0.4);
+    background: #fffbeb;
+    border: 1px solid #fde68a;
     color: var(--yellow);
   }
 
@@ -447,9 +447,9 @@
 
   /* ── Findings ── */
   .finding-card {
-    border: 1px solid rgba(239,68,68,0.2);
+    border: 1px solid #fecaca;
     border-left: 3px solid var(--red);
-    background: rgba(239,68,68,0.04);
+    background: #fef2f2;
     border-radius: 0 10px 10px 0;
     padding: 1.2rem 1.4rem;
     margin-bottom: 0.75rem;
@@ -465,7 +465,7 @@
   .finding-title {
     font-weight: 700;
     font-size: 0.9rem;
-    color: #fca5a5;
+    color: #991b1b;
   }
 
   .finding-meta {
@@ -489,7 +489,7 @@
 
   .mitigation-text {
     font-size: 0.82rem;
-    color: #86efac;
+    color: #166534;
     line-height: 1.6;
   }
 
@@ -566,8 +566,12 @@
       <div class="stat-label">Traps Triggered</div>
     </div>
     <div class="stat">
-      <div class="stat-value" id="statModel">gemini-3.5-flash</div>
+      <div class="stat-value" id="statModel" style="font-size:1rem">gemini-3.5-flash</div>
       <div class="stat-label">Agent Under Test</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statFramework" style="font-size:0.85rem;color:var(--blue)">Google ADK</div>
+      <div class="stat-label">Framework</div>
     </div>
   </div>
 
@@ -679,6 +683,8 @@ async function runEval() {
     const trapped = data.trap_tools_invoked.length;
     document.getElementById('statTriggered').textContent = trapped + '/' + data.total_tool_calls;
     document.getElementById('statTriggered').className = 'stat-value ' + (trapped > 0 ? 'red' : 'green');
+    if (data.model) document.getElementById('statModel').textContent = data.model;
+    if (data.framework) document.getElementById('statFramework').textContent = data.framework.split('(')[0].trim();
 
     // Verdict
     verdictBox.className = 'verdict-box ' + data.verdict.toLowerCase();
