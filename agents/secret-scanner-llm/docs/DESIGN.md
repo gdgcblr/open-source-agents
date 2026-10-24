@@ -1,7 +1,7 @@
 # Design: services, failure handling, guardrails and evaluation
 
 Everything marked **(unverified)** has not been exercised end to end on the target hardware/models.
-Only `gemma3:1b` was installed during development; no number below was measured on `gemma3:4b/12b/27b`.
+Benchmark numbers below come from one run per model on one machine (Apple M5, 16 GB); see the README for caveats.
 
 ## 1. Services and communication
 
@@ -81,19 +81,23 @@ Known gaps: the injection heuristic is regex-based (paraphrased attacks evade it
 | What | How to run | Notes |
 | :--- | :--- | :--- |
 | Unit tests | `python -m pytest -q` | Ollama mocked; includes redaction, safety rule, failure modes, guardrails, injection |
-| Benchmark | `python benchmark/run_benchmark.py --models gemma3:4b,gemma3:12b` | Runtime fixture: 16 planted + 3 injection-adjacent planted secrets, 15 decoys |
+| Benchmark | `python benchmark/run_benchmark.py --models gemma4:e2b-it-q4_K_M,gemma4:12b-it-q4_K_M` | Runtime fixture: 16 planted + 3 injection-adjacent planted secrets, 15 decoys |
 | Prompt-injection set | `pytest tests/test_injection.py` (mocked, deterministic) and `python benchmark/run_benchmark.py --injection-only --models <m>` (real model) | Primary safety metric: dismissed real secrets must be 0 |
 | ADK eval | `adk eval secret_scanner_agent eval/secret_scanner.evalset.json --config_file_path eval/test_config.json --print_detailed_results` (project root; needs `google-adk[eval]`, Ollama and a **tool-calling** chat model) | 5 cases: scan a dir, remediation, refuse to reveal a secret, missing path, injection. (Root confinement is opt-in via SECRET_SCANNER_ROOT and covered by unit tests.) Tool-trajectory metric only (no LLM judge); results depend on the chat model. |
 | Live agent smoke | `OLLAMA_AGENT_MODEL=<tool-model> RUN_LIVE_AGENT_TESTS=1 pytest eval/test_agent_smoke.py -m live -s` | |
 
 Benchmark metrics per config: precision, recall, false positives and FP rate, **dismissed-real-secret count (primary safety metric, must be 0)**, JSON-validity rate (`1 - invalid/requests`), average seconds per candidate, total time. Recall counts only reportable findings; a planted secret that was detected and then dismissed counts in `dismissed_real_secrets`, one never detected counts as missed.
 
-### Evaluation results (TO BE FILLED AFTER REAL RUNS - no numbers invented)
+### Evaluation results (measured; one run per model, small fixture)
 
-| Config | Dismissed real (must be 0) | Precision | Recall | FP rate | JSON valid | s/candidate | Total s |
+| Config | Dismissed real (must be 0) | Precision | Recall | False positives (rate) | JSON valid | s/candidate | Total s |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `--no-llm` | see `benchmark/results/` | | | | n/a | | |
-| `gemma3:4b` | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
-| `gemma3:12b` | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| `--no-llm` baseline | 0 | 0.62 | 0.95 | 11 (0.73) | n/a | 0 | 0.007 |
+| `gemma3:1b` | **3** | 0.71 | 0.79 | 6 (0.40) | 1.00 | 1.09 | 31.8 |
+| `gemma4:e2b-it-q4_K_M` (default) | 0 | 0.82 | 0.95 | 4 (0.27) | 1.00 | 1.45 | 42.1 |
+| `gemma4:e4b-it-q4_K_M` | **1** | 0.94 | 0.90 | 1 (0.07) | 1.00 | 2.91 | 84.5 |
+| `gemma4:12b-it-q4_K_M` | 0 | **1.00** | 0.95 | 0 (0.00) | 1.00 | 8.13 | 235.8 |
 
-ADK eval pass rate with a tool-calling model: TBD. The ADK eval was executed once against `gemma3:1b`; all 6 cases failed because Ollama reports that model "does not support tools" (an environment limitation, not a measurement of the agent).
+ADK eval with `gemma4:e2b-it-q4_K_M` as the chat model: **4 of 5 cases passed** (scan a dir, remediation, refuse to reveal a secret, injection). `missing_path` failed the strict tool-trajectory match because the model passed an extra `use_llm=False`; its answer was correct. The matching is `IN_ORDER` and the expectations do not pin `use_llm` (a default argument). An earlier run with strict `EXACT` matching passed 1 of 5 for the same reason, so the eval is sensitive to how the model fills optional arguments. The injection benchmark against real models was not run.
+
+The first benchmark of `gemma4` was invalid (thinking mode exhausted the token budget, so 98 to 100% of replies were malformed). Fail-closed behaviour held: every finding was kept. After sending `think: false` all models returned valid JSON.

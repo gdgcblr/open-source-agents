@@ -1,6 +1,6 @@
 """Benchmark: precision / recall / false positives / latency for --no-llm and each Gemma model.
 
-    python benchmark/run_benchmark.py --models gemma3:4b,gemma3:12b
+    python benchmark/run_benchmark.py --models gemma4:e2b-it-q4_K_M,gemma4:12b-it-q4_K_M
     python benchmark/run_benchmark.py            # --no-llm only
 
 The fixture is generated into a temp dir at runtime and deleted afterwards. Results are written to
@@ -122,7 +122,7 @@ def to_markdown(r: dict) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--models", default="", help="comma-separated Ollama models, e.g. gemma3:4b,gemma3:12b")
+    ap.add_argument("--models", default="", help="comma-separated Ollama models, e.g. gemma4:e2b-it-q4_K_M,gemma4:12b-it-q4_K_M")
     ap.add_argument("--host", default=None)
     ap.add_argument("--injection-only", action="store_true",
                     help="only the prompt-injection set (real secrets next to 'ignore previous instructions' text)")

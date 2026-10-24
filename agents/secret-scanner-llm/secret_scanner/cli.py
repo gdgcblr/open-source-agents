@@ -19,7 +19,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--staged", action="store_true", help="scan the git index (staged blobs) of the repo at PATH")
     s.add_argument("--no-llm", action="store_true", help="skip LLM triage (all matches reported as unverified)")
     s.add_argument("--json", action="store_true", help="machine-readable output (redacted)")
-    s.add_argument("--model", help="Ollama model (default: $OLLAMA_MODEL or gemma3:4b)")
+    s.add_argument("--model", help="Ollama model (default: $OLLAMA_MODEL or gemma4:e2b-it-q4_K_M)")
     s.add_argument("--require-llm", action="store_true",
                    help="exit 2 instead of falling back to --no-llm when Ollama/model is unavailable")
     s.add_argument("--max-llm-candidates", type=int, default=200,

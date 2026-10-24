@@ -18,7 +18,7 @@ from .models import VERDICTS, Candidate, TriageResult
 
 log = safe_logger(__name__)
 
-DEFAULT_MODEL = "gemma3:4b"
+DEFAULT_MODEL = "gemma4:e2b-it-q4_K_M"
 DEFAULT_HOST = "http://localhost:11434"
 
 
@@ -208,6 +208,9 @@ class OllamaClient:
             "messages": messages,
             "stream": False,
             "format": RESPONSE_SCHEMA,
+            # Reasoning models (gemma4) otherwise spend the whole num_predict budget on thinking
+            # tokens and return a truncated, unusable reply.
+            "think": False,
             "options": {"temperature": 0, "num_predict": 400},
         }
         try:

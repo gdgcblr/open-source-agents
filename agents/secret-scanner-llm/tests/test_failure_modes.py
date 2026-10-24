@@ -32,7 +32,7 @@ def test_ollama_down_falls_back_with_warning_and_keeps_findings(tmp_path):
 
 def test_model_not_pulled_falls_back(tmp_path):
     repo(tmp_path)
-    cl = OllamaClient(model="gemma3:27b", transport=H.make_ollama_transport([{}], tags=("gemma3:4b",)))
+    cl = OllamaClient(model="gemma3:27b", transport=H.make_ollama_transport([{}], tags=("gemma4:e2b-it-q4_K_M",)))
     r = scan(tmp_path, client=cl)
     assert r.stats["mode"] == "no-llm" and "ollama pull gemma3:27b" in " ".join(r.warnings)
     assert len(r.reportable) == 3
@@ -51,7 +51,7 @@ def test_timeout_retries_with_backoff_then_unverified(tmp_path):
 
     def handler(req):
         if req.url.path == "/api/tags":
-            return httpx.Response(200, json={"models": [{"name": "gemma3:4b"}]})
+            return httpx.Response(200, json={"models": [{"name": "gemma4:e2b-it-q4_K_M"}]})
         calls.append(1)
         raise httpx.ReadTimeout("slow")
 
@@ -67,7 +67,7 @@ def test_timeout_then_success(tmp_path):
 
     def handler(req):
         if req.url.path == "/api/tags":
-            return httpx.Response(200, json={"models": [{"name": "gemma3:4b"}]})
+            return httpx.Response(200, json={"models": [{"name": "gemma4:e2b-it-q4_K_M"}]})
         state["n"] += 1
         if state["n"] == 1:
             raise httpx.ReadTimeout("slow")
@@ -98,7 +98,7 @@ def test_llm_dies_midrun_remaining_unverified(tmp_path):
 
     def handler(req):
         if req.url.path == "/api/tags":
-            return httpx.Response(200, json={"models": [{"name": "gemma3:4b"}]})
+            return httpx.Response(200, json={"models": [{"name": "gemma4:e2b-it-q4_K_M"}]})
         state["n"] += 1
         if state["n"] == 1:
             return httpx.Response(200, json={"message": {"content": json.dumps(H.verdict("real"))}})

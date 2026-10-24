@@ -32,13 +32,14 @@ def test_parse_rejects_garbage():
 def test_request_shape_and_retry_on_malformed():
     cap = []
     t = H.make_ollama_transport(["garbage", "{broken", H.verdict("placeholder", 0.9)], cap)
-    cl = OllamaClient(model="gemma3:4b", transport=t)
+    cl = OllamaClient(model="gemma4:e2b-it-q4_K_M", transport=t)
     res = cl.triage(one_candidate())
     assert res.verdict == "placeholder" and len(cap) == 3
     body = cap[0]
     assert body["options"]["temperature"] == 0 and body["stream"] is False
+    assert body["think"] is False  # thinking would eat the num_predict budget (gemma4)
     assert body["format"]["properties"]["verdict"]["enum"] == ["real", "placeholder", "test_fixture", "false_positive"]
-    assert body["model"] == "gemma3:4b" and "/api/chat" not in body  # sanity
+    assert body["model"] == "gemma4:e2b-it-q4_K_M" and "/api/chat" not in body  # sanity
     assert "repair" not in json.dumps(cap[0]).lower()
     assert "not valid" in cap[1]["messages"][-1]["content"]
 
@@ -51,7 +52,7 @@ def test_gives_up_after_retries_with_safe_error():
 
 
 def test_check_model_missing_and_down():
-    cl = OllamaClient(model="gemma3:12b", transport=H.make_ollama_transport([{}], tags=("gemma3:4b",)))
+    cl = OllamaClient(model="gemma3:12b", transport=H.make_ollama_transport([{}], tags=("gemma4:e2b-it-q4_K_M",)))
     with pytest.raises(ModelNotFound) as e:
         cl.check()
     assert "ollama pull gemma3:12b" in str(e.value)

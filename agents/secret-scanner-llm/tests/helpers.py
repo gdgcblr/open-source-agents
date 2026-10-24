@@ -40,7 +40,7 @@ def db_url() -> str:
     return "postgres" + "ql://svc_app:" + "Vq83" + "nKd02Lx" + "@db.internal.example.com:5432/prod"
 
 
-def make_ollama_transport(replies, captured=None, tags=("gemma3:4b",)):
+def make_ollama_transport(replies, captured=None, tags=("gemma4:e2b-it-q4_K_M",)):
     """MockTransport: /api/tags lists `tags`; /api/chat pops from `replies` (str or dict)."""
     replies = list(replies)
 

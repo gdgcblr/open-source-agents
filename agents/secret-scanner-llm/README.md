@@ -25,7 +25,7 @@
 
 - **Language & Runtime**: Python 3.11+ (developed on 3.12)
 - **Agent Framework / Core Library**: vanilla Python + `httpx` for the scanner; Google ADK 2.13.0 (`google-adk[extensions]`) for the agent wrapper
-- **Models**: local Gemma via Ollama (default `gemma3:4b`; any Ollama model works for triage). The ADK chat agent additionally needs a model that supports tool calling (see Known Limitations).
+- **Models**: local Gemma via Ollama (default `gemma4:e2b-it-q4_K_M`; any Ollama model works for triage). The ADK chat agent additionally needs a model that supports tool calling (see Known Limitations).
 - **External APIs / Tools**: Ollama HTTP API at `http://localhost:11434` (`/api/tags`, `/api/chat` with JSON-schema `format`); `git` (only for `--staged`). No cloud services or API keys.
 
 ---
@@ -78,7 +78,7 @@ agents/secret-scanner-llm/
 ## Prerequisites
 
 - Python 3.11 or newer (3.12 tested) and [`uv`](https://docs.astral.sh/uv/) (or plain `pip`)
-- [Ollama](https://ollama.com) running locally, with at least one model pulled, e.g. `ollama pull gemma3:4b` (not needed for `--no-llm`, the unit tests, or the benchmark's `--no-llm` baseline)
+- [Ollama](https://ollama.com) running locally, with at least one model pulled, e.g. `ollama pull gemma4:e2b-it-q4_K_M` (not needed for `--no-llm`, the unit tests, or the benchmark's `--no-llm` baseline)
 - `git` (only for `--staged`)
 - No API keys or paid services
 
@@ -107,7 +107,7 @@ agents/secret-scanner-llm/
 
 4. **Pull a model** (not done by this project):
    ```bash
-   ollama pull gemma3:4b
+   ollama pull gemma4:e2b-it-q4_K_M
    ```
 
 ---
@@ -140,17 +140,17 @@ Choose by your RAM. Sizes are the download sizes shown by `ollama list`; they ar
 
 | RAM | Suggested tag | Size | Notes |
 |---|---|---|---|
-| 8 GB | `gemma3:1b` | 0.8 GB | Fast, but it misjudged a simple placeholder in our smoke test. It also has no tool calling, so it cannot drive the ADK agent. Fine for a quick try of the scanner CLI. |
-| 8 to 16 GB | `gemma4:e2b-it-q4_K_M` | 4.6 GB | Supports tool calling, so it works for both triage and the ADK agent. |
-| 16 GB | `gemma4:e4b-it-q4_K_M` | 6.6 GB | Larger, slower. |
-| 16 GB+ | `gemma4:12b-it-q4_K_M` | 8.0 GB | Slowest of these, tested at roughly 10 s per call. |
+| 8 GB | `gemma3:1b` | 0.8 GB | Not recommended: it dismissed 3 real secrets in our benchmark and has no tool calling, so it cannot drive the ADK agent. Use `--no-llm` on very small machines instead, or try `gemma4:e2b-it-q4_K_M` if it fits. |
+| 8 to 16 GB | `gemma4:e2b-it-q4_K_M` | 4.6 GB | **Default.** 0 real secrets dismissed, about 1.5 s per candidate, supports tool calling (triage and the ADK agent). |
+| 16 GB | `gemma4:e4b-it-q4_K_M` | 6.6 GB | Not recommended: it dismissed 1 real secret in our benchmark. |
+| 16 GB+ | `gemma4:12b-it-q4_K_M` | 8.0 GB | Most precise (no false positives, 0 dismissed), about 8 s per candidate. |
 
 ```bash
 ollama pull gemma4:e2b-it-q4_K_M
 ollama list
 ```
 
-Which variant to use for real work is decided by the benchmark below (precision, recall, and the "real secrets wrongly dismissed" count, which must be 0), not by this table.
+These notes come from the benchmark in the Benchmark section (precision, recall, and the "real secrets wrongly dismissed" count, which must be 0).
 
 > **Known issue (observed on Ollama 0.40.10, Homebrew, macOS arm64):** the *default* `gemma4:<size>` tags are MLX builds, and structured output failed with `structured output is unavailable`. This scanner needs structured output. Use the GGUF tags that end in `-it-q4_K_M` (as above). If you hit this error, run `ollama pull <tag>-it-q4_K_M` and set `OLLAMA_MODEL` to it. Only `gemma4:e2b` was confirmed broken; the other two default tags were not tested.
 
@@ -216,7 +216,7 @@ Run models one at a time so they do not compete for memory and distort the laten
 | Symptom | Likely cause and fix |
 |---|---|
 | `connection refused` on port 11434 | Server not running: `brew services start ollama` (or `ollama serve`). |
-| `model '<tag>' not found` | Not pulled: `ollama pull <tag>`, and check `OLLAMA_MODEL` spelling. The built-in default is `gemma3:4b`, which you may not have pulled. |
+| `model '<tag>' not found` | Not pulled: `ollama pull <tag>`, and check `OLLAMA_MODEL` spelling. The built-in default is `gemma4:e2b-it-q4_K_M`. |
 | `structured output is unavailable` | You pulled an MLX default tag. Use a `-it-q4_K_M` tag. |
 | `does not support tools` (ADK) | The chat model lacks the `tools` capability. Set `OLLAMA_AGENT_MODEL` to one that has it. |
 | Very slow replies | Large model on a small machine, or thinking mode on. Try a smaller tag and close other apps. |
@@ -229,7 +229,7 @@ Run models one at a time so they do not compete for memory and distort the laten
 | Variable Name | Required | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `OLLAMA_HOST` | No | `http://localhost:11434` | Ollama server. Bare `host:port` forms are accepted. |
-| `OLLAMA_MODEL` | No | `gemma3:4b` | Model used for triage (overridden by `--model`). Also the ADK chat model unless `OLLAMA_AGENT_MODEL` is set. |
+| `OLLAMA_MODEL` | No | `gemma4:e2b-it-q4_K_M` | Model used for triage (overridden by `--model`). Also the ADK chat model unless `OLLAMA_AGENT_MODEL` is set. |
 | `OLLAMA_TIMEOUT` | No | `180` | Seconds per triage request. |
 | `OLLAMA_API_BASE` | ADK only | `OLLAMA_HOST` (else `http://localhost:11434`) | Read by LiteLLM for the agent's chat model; set by `agent.py` if absent. |
 | `OLLAMA_AGENT_MODEL` | No | `OLLAMA_MODEL` | Chat model for the ADK agent when it must differ from the triage model (it needs tool calling). |
@@ -249,8 +249,8 @@ No secrets are required or stored.
 python -m secret_scanner scan path/to/repo
 
 # Choose a model / host
-python -m secret_scanner scan path/to/repo --model gemma3:12b
-OLLAMA_MODEL=gemma3:4b python -m secret_scanner scan .
+python -m secret_scanner scan path/to/repo --model gemma4:12b-it-q4_K_M
+OLLAMA_MODEL=gemma4:e2b-it-q4_K_M python -m secret_scanner scan .
 
 # Deterministic only, no Ollama needed (everything is reported as "unverified")
 python -m secret_scanner scan . --no-llm
@@ -277,16 +277,9 @@ The agent uses `LiteLlm(model="ollama_chat/<model>")` (the `ollama_chat/` prefix
 
 ### Choosing a Gemma variant
 
-Quality versus latency is a trade-off; the numbers for this project are still to be measured (see Benchmark). General guidance, not measured here:
+Use the benchmark results below, not guesses. Short version: `gemma4:e2b-it-q4_K_M` is the default (safe, fast, tool-capable); `gemma4:12b-it-q4_K_M` is the most precise but about 5x slower; `gemma3:1b` and `gemma4:e4b-it-q4_K_M` dismissed real secrets in our run and are not recommended.
 
-| Model | Memory (approx., Ollama default quant) | When to use |
-| :--- | :--- | :--- |
-| `gemma3:1b` | ~1 GB | Pipeline smoke tests only. In one informal run it was too eager to dismiss real, non-known-format secrets. |
-| `gemma3:4b` (default) | ~3-4 GB | Laptop default; try this first. |
-| `gemma3:12b` | ~8-9 GB | Better judgement on ambiguous cases, slower per candidate. |
-| `gemma3:27b` | ~17+ GB | Only with enough RAM/VRAM. |
-
-Because known-format findings are protected by the safety rule, model choice mainly affects the *generic* findings (passwords, high-entropy strings, JWTs, URL/shell passwords). Use the benchmark to compare on your hardware: `--models gemma3:4b,gemma3:12b`. Run `ollama show <model>` to check a model's capabilities (look for `tools`) before using it as the ADK chat model.
+Run `ollama show <model>` and look for `tools` in the capabilities before using a model as the ADK chat model.
 
 ---
 
@@ -358,7 +351,7 @@ OLLAMA_AGENT_MODEL=<tool-capable-model> RUN_LIVE_AGENT_TESTS=1 python -m pytest 
 
 # Prompt-injection tests (mocked, deterministic) and the real-model injection benchmark
 python -m pytest tests/test_injection.py -q
-python benchmark/run_benchmark.py --injection-only --models gemma3:4b
+python benchmark/run_benchmark.py --injection-only --models gemma4:e2b-it-q4_K_M
 
 # ADK eval (5 cases, tool-trajectory only, no LLM judge; needs a tool-capable model; run from project root)
 adk eval secret_scanner_agent eval/secret_scanner.evalset.json --config_file_path eval/test_config.json
@@ -371,25 +364,42 @@ The unit tests cover: detectors, redaction, no raw secret in prompts/logs/JSON/M
 `benchmark/run_benchmark.py` builds a fixture tree in a temp dir at runtime (16 planted secrets including obfuscated/custom formats and secrets in comments/shell scripts, one of them a deliberate hard miss; 15 decoys: placeholders, test fixtures, git SHA, UUID, digests, `os.getenv`, template variables), scans it with `--no-llm` and with each model in `--models`, and writes JSON + Markdown to `benchmark/results/`.
 
 ```bash
-python benchmark/run_benchmark.py --models gemma3:4b,gemma3:12b
+python benchmark/run_benchmark.py --models gemma4:e2b-it-q4_K_M
+ollama stop gemma4:e2b-it-q4_K_M
+python benchmark/run_benchmark.py --models gemma4:12b-it-q4_K_M
 ```
 
-**Results: TO BE FILLED AFTER BENCHMARK** against the target Gemma models. Not yet run for them. Only the deterministic `--no-llm` baseline has been run so far (see the file committed in `benchmark/results/`; it reports every deterministic match, so precision there is low by construction). The tool also reported a single informal `gemma3:1b` smoke run during development, which is not a benchmark and is deliberately not quoted as such.
+Run models one at a time so they do not compete for memory. Raw results are in `benchmark/results/`.
 
-| Config | Precision | Recall | False positives | Avg s/candidate | Total s |
-| :--- | ---: | ---: | ---: | ---: | ---: |
-| `--no-llm` | see `benchmark/results/` | | | | |
-| `gemma3:4b` | TBD | TBD | TBD | TBD | TBD |
+**Results**
 
-The primary safety metric, "dismissed real secrets", must be 0; see `docs/DESIGN.md` section 4.
-| `gemma3:12b` | TBD | TBD | TBD | TBD | TBD |
+| Config | Dismissed real (must be 0) | Precision | Recall | False positives (rate) | JSON valid | s/candidate | Total s |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `--no-llm` baseline | 0 | 0.62 | 0.95 | 11 (0.73) | n/a | 0 | 0.007 |
+| `gemma3:1b` | **3** | 0.71 | 0.79 | 6 (0.40) | 1.00 | 1.09 | 31.8 |
+| `gemma4:e2b-it-q4_K_M` (default) | 0 | 0.82 | 0.95 | 4 (0.27) | 1.00 | 1.45 | 42.1 |
+| `gemma4:e4b-it-q4_K_M` | **1** | 0.94 | 0.90 | 1 (0.07) | 1.00 | 2.91 | 84.5 |
+| `gemma4:12b-it-q4_K_M` | 0 | **1.00** | 0.95 | 0 (0.00) | 1.00 | 8.13 | 235.8 |
+
+Measured on one machine (Apple M5, 16 GB, macOS, Ollama 0.40.10), one run per model with temperature 0, models run one at a time. The fixture is small (19 planted secrets, 15 decoys), so treat differences between models as indicative, not statistically established. One planted secret is a deliberate miss for every configuration.
+
+How to read it:
+- `gemma3:1b` and `gemma4:e4b` **fail the safety metric** (they dismissed 3 and 1 real secrets respectively) and should not be used as the triage model.
+- `gemma4:e2b` is the default: zero real secrets dismissed, about 1.5 s per candidate, and it supports tool calling for the ADK agent. It still leaves 4 false positives.
+- `gemma4:12b` had the best precision (no false positives) at about 8 s per candidate. Use it when you can accept the wait.
+- The injection-only benchmark (`--injection-only`) has **not** been run against real models; only the mocked injection tests have.
+
+A first run of the `gemma4` models gave almost all-malformed JSON (valid-JSON rate 0 to 2%, 17 to 77 s per candidate) and was discarded. Cause: Gemma 4 has thinking enabled by default and spent the 400-token output budget on reasoning. The client now sends `think: false`. Because every reply was unusable, the scanner kept all findings (fail-closed), which is the behaviour we want from a broken model.
 
 ---
 
 ## Known Limitations
 
-- **Gemma and tool calling**: when tested here, Ollama rejected `gemma3:1b` for the ADK agent with `does not support tools`, so `adk web` / `adk run` fail with that model. The scanner and its triage do **not** need tool calling (they use structured output only) and work with Gemma. For the ADK agent, set `OLLAMA_AGENT_MODEL` to a model whose `ollama show` capabilities include `tools`. Whether other Gemma builds (`gemma3:4b/12b/27b` or newer Gemma releases) support tools in your Ollama version was **not verified**; the agent has not been run end to end against any tool-capable model.
-- **Only gemma3:1b was available during development**, so triage quality on `gemma3:4b`/`12b`/`27b` is unmeasured. Small models over-dismiss non-known-format secrets (seen informally with `gemma3:1b`); the safety rule protects only known-format findings. Treat `real`-less results from small models with suspicion.
+- **Gemma and tool calling**: `gemma3:1b` has no tool support in Ollama, so it cannot drive the ADK agent (`does not support tools`). The `gemma4` GGUF builds report the `tools` capability and worked in `adk eval`. The scanner and its triage only need structured output.
+- **Default `gemma4` Ollama tags may not work**: on Ollama 0.40.10 (Homebrew, macOS arm64) `gemma4:e2b` was an MLX build and structured output failed with `structured output is unavailable`. Use the `-it-q4_K_M` tags. Only `gemma4:e2b` was confirmed broken.
+- **Thinking mode**: Gemma 4 reasons by default; the client sends `think: false` to keep replies within the output budget.
+- **Small benchmark, one run per model, one machine**: results are indicative only. Small models over-dismiss non-known-format secrets (`gemma3:1b` dismissed 3, `gemma4:e4b` dismissed 1 real secret in our run); the safety rule protects only known-format findings.
+- **ADK eval is 4 of 5 cases passing** with `gemma4:e2b-it-q4_K_M`: in `missing_path` the model added an extra `use_llm=False` argument and the strict trajectory match failed, although it answered correctly. Results vary by chat model and by run.
 - **Prompt injection**: file content is fenced as untrusted data, and injection-looking text near a finding blocks any dismissal. The detector is regex-based, so a paraphrased attack could still sway the model for non-known-format findings. Known-format findings in non-test paths are immune.
 - **Recall is bounded by the rules**: split or computed secrets (`a + b`), prose such as "the password is hunter2 (see wiki)", secrets only in binary/over-1MB/ignored files, and formats without a rule or enough entropy are missed. Secrets inside multi-line strings are only seen line by line.
 - **Documentation keys are reported**: well-known example values in a non-test path (e.g. AWS's documented example key in `docs/`) match a known format and cannot be dismissed by the LLM. Put them under `tests/`/`fixtures/`, use `.secretscanignore`, or add `secretscan:ignore`.
@@ -412,7 +422,7 @@ The primary safety metric, "dismissed real secrets", must be 0; see `docs/DESIGN
 
 ## Future Improvements
 
-- [ ] Run and publish the benchmark for `gemma3:4b`, `12b`, `27b` and newer Gemma releases.
+- [ ] Run the injection benchmark against real models and enlarge the fixture.
 - [ ] Verify the ADK agent end to end with a tool-calling-capable local model (or add a prompt-based tool fallback for Gemma builds without native tools).
 - [ ] Batch several candidates per LLM call and cache verdicts by (rule, redacted context).
 - [ ] Add `git log -p` / history scanning and a baseline file for known findings.

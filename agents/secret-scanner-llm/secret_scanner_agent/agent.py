@@ -33,7 +33,7 @@ os.environ.setdefault("OLLAMA_API_BASE", normalize_host(os.environ.get("OLLAMA_H
 
 # OLLAMA_AGENT_MODEL optionally overrides the *chat* model (it must support tool calling),
 # while OLLAMA_MODEL stays the triage model used inside scan_path.
-MODEL_NAME = os.environ.get("OLLAMA_AGENT_MODEL") or os.environ.get("OLLAMA_MODEL") or "gemma3:4b"
+MODEL_NAME = os.environ.get("OLLAMA_AGENT_MODEL") or os.environ.get("OLLAMA_MODEL") or "gemma4:e2b-it-q4_K_M"
 MAX_FINDINGS_RETURNED = 40
 
 
