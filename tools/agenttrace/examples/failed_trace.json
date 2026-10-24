@@ -1,0 +1,65 @@
+{
+  "name": "Synthetic Failed Agent Trace Demo",
+  "complete": true,
+  "events": [
+    {
+      "id": "call-1",
+      "type": "tool_call",
+      "tool": "fetch_weather",
+      "input": {
+        "city": "Bengaluru",
+        "units": "celsius"
+      }
+    },
+    {
+      "id": "res-1",
+      "type": "tool_result",
+      "call_id": "call-1",
+      "output": "Service temporarily unavailable. HTTP 503."
+    },
+    {
+      "id": "call-2",
+      "type": "tool_call",
+      "tool": "fetch_weather",
+      "input": {
+        "city": "Bengaluru",
+        "units": "celsius"
+      }
+    },
+    {
+      "id": "res-2",
+      "type": "tool_result",
+      "call_id": "call-2",
+      "output": "Service temporarily unavailable. HTTP 503."
+    },
+    {
+      "id": "call-3",
+      "type": "tool_call",
+      "tool": "fetch_weather",
+      "input": {
+        "city": "Bengaluru",
+        "units": "celsius"
+      }
+    },
+    {
+      "id": "res-3",
+      "type": "tool_result",
+      "call_id": "call-3",
+      "output": "Request failed: connection timed out after 30000ms"
+    },
+    {
+      "id": "call-4",
+      "type": "tool_call",
+      "tool": "fallback_alert",
+      "input": {
+        "severity": "high",
+        "channel": "slack"
+      }
+    },
+    {
+      "id": "err-1",
+      "type": "error",
+      "error": "AgentExecutionError: Unrecoverable tool failure loop detected. Process aborted."
+    }
+  ]
+}

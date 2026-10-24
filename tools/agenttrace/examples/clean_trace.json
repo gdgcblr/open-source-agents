@@ -1,0 +1,35 @@
+{
+  "name": "Synthetic Clean Agent Trace Demo",
+  "complete": true,
+  "events": [
+    {
+      "id": "call-1",
+      "type": "tool_call",
+      "tool": "search_documentation",
+      "input": {
+        "query": "AgentTrace architecture overview"
+      }
+    },
+    {
+      "id": "res-1",
+      "type": "tool_result",
+      "call_id": "call-1",
+      "output": "Found 3 matching sections in docs/architecture.md."
+    },
+    {
+      "id": "call-2",
+      "type": "tool_call",
+      "tool": "format_summary",
+      "input": {
+        "format": "markdown",
+        "length": "short"
+      }
+    },
+    {
+      "id": "res-2",
+      "type": "tool_result",
+      "call_id": "call-2",
+      "output": "Successfully generated markdown summary for user."
+    }
+  ]
+}
