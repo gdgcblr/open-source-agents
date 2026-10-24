@@ -1,0 +1,8 @@
+# FixProof — Dependencies
+# Core engine has zero runtime dependencies (stdlib only).
+# The ADK agent and test runner require the packages below.
+
+google-adk>=1.0.0
+pytest>=7.0.0
+python-dotenv>=1.0.0
+streamlit>=1.20.0
