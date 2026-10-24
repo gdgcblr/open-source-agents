@@ -1,0 +1,46 @@
+[
+  {
+    "text": "Contact John Smith at john.smith@example.com or 555-123-4567. SSN: 123-45-6789",
+    "expected_entities": [
+      {"text": "John Smith", "category": "PERSON", "start": 8, "end": 18, "confidence": 1.0},
+      {"text": "john.smith@example.com", "category": "EMAIL_ADDRESS", "start": 23, "end": 45, "confidence": 1.0},
+      {"text": "555-123-4567", "category": "PHONE_NUMBER", "start": 49, "end": 60, "confidence": 1.0},
+      {"text": "123-45-6789", "category": "US_SSN", "start": 67, "end": 78, "confidence": 1.0}
+    ],
+    "description": "Basic PII detection test"
+  },
+  {
+    "text": "Credit card: 4532-1234-5678-9010. IP: 192.168.1.1",
+    "expected_entities": [
+      {"text": "4532-1234-5678-9010", "category": "CREDIT_CARD", "start": 13, "end": 32, "confidence": 1.0},
+      {"text": "192.168.1.1", "category": "IP_ADDRESS", "start": 38, "end": 49, "confidence": 1.0}
+    ],
+    "description": "Financial and network PII"
+  },
+  {
+    "text": "No PII in this text. Just regular information.",
+    "expected_entities": [],
+    "description": "Negative test - no PII"
+  },
+  {
+    "text": "Patient: Jane Doe, DOB: 01/15/1980, Medical ID: MED-12345. Contact: jane.doe@hospital.com, Phone: (415) 555-0123",
+    "expected_entities": [
+      {"text": "Jane Doe", "category": "PERSON", "start": 8, "end": 16, "confidence": 1.0},
+      {"text": "01/15/1980", "category": "DATE_OF_BIRTH", "start": 23, "end": 33, "confidence": 1.0},
+      {"text": "MED-12345", "category": "MEDICAL_LICENSE", "start": 48, "end": 56, "confidence": 1.0},
+      {"text": "jane.doe@hospital.com", "category": "EMAIL_ADDRESS", "start": 67, "end": 88, "confidence": 1.0},
+      {"text": "(415) 555-0123", "category": "PHONE_NUMBER", "start": 96, "end": 110, "confidence": 1.0}
+    ],
+    "description": "HIPAA-related PII"
+  },
+  {
+    "text": "Employee: Robert Johnson, Email: robert.j@company.com, Passport: AB1234567, Address: 123 Main St, New York, NY 10001",
+    "expected_entities": [
+      {"text": "Robert Johnson", "category": "PERSON", "start": 9, "end": 23, "confidence": 1.0},
+      {"text": "robert.j@company.com", "category": "EMAIL_ADDRESS", "start": 31, "end": 50, "confidence": 1.0},
+      {"text": "AB1234567", "category": "PASSPORT", "start": 60, "end": 69, "confidence": 1.0},
+      {"text": "123 Main St, New York, NY 10001", "category": "LOCATION", "start": 78, "end": 107, "confidence": 1.0}
+    ],
+    "description": "GDPR-related PII"
+  }
+]
