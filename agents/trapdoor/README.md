@@ -200,6 +200,89 @@ python main.py
 
 ---
 
+## Running with Your Own API Key & Model
+
+### Step 1 — Get a free Gemini API key
+
+Go to **https://aistudio.google.com** → Sign in → "Get API Key" → Create API key.
+
+### Step 2 — Set it in `.env`
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and set:
+
+```env
+GEMINI_API_KEY=your_key_here
+MODEL_NAME=gemini-3.8-flash   # or any model you want to test
+```
+
+### Supported models (pass any of these as MODEL_NAME)
+
+| Model | Notes |
+|---|---|
+| `gemini-3.8-flash` | Recommended — latest, fast |
+| `gemini-3.7-flash` | Also works |
+| `gemini-3.1-flash-lite` | Lightweight, faster |
+| `gemini-3.1-flash` | Balanced |
+
+> **Free tier limit**: 20 requests/day per model. If you hit it, switch to a different model name in `.env` — each model has its own quota bucket. No billing needed.
+
+### Testing a different model
+
+Just change `MODEL_NAME` in your `.env` and restart the UI:
+
+```env
+MODEL_NAME=gemini-3.1-flash-lite
+```
+
+Then click **Run Again** — TrapDoor will run the full adversarial suite against the new model and show you whether it's more or less resistant than the previous one.
+
+---
+
+## Bring Your Own Agent
+
+TrapDoor's MCP server (`trap_server.py`) is a **standalone stdio MCP server**. You can point any MCP-compatible agent at it — not just the built-in ADK agent.
+
+### Option 1 — Swap the model (easiest)
+
+Change `MODEL_NAME` in `.env` to test any Gemini model variant.
+
+### Option 2 — Replace the ADK agent with your own
+
+The agent runner is in [`trapdoor/agent/runner.py`](trapdoor/agent/runner.py). The key section is:
+
+```python
+# trapdoor/agent/runner.py — replace this block with your own agent
+
+agent = LlmAgent(
+    model=cfg.MODEL_NAME,           # ← change model here
+    name="trapdoor_target_agent",
+    instruction=AGENT_TASK,          # ← or change the task
+    tools=[mcp_toolset],             # ← MCPToolset connects to trap_server.py
+)
+```
+
+To plug in your own agent framework:
+1. Keep `mcp_toolset` — it's what connects to the adversarial MCP server
+2. Pass it as a tool to your agent
+3. Give your agent the same `AGENT_TASK` instruction (or a custom one)
+4. Return an `AgentSession` with `tool_calls` and `final_response` filled in
+
+### Option 3 — Connect any MCP client directly to the trap server
+
+Run the trap server standalone:
+
+```bash
+python trap_server.py
+```
+
+It speaks MCP over stdin/stdout. Any MCP client (Claude Desktop, your own agent, `mcp` CLI) can connect to it and will receive the adversarial tool responses.
+
+---
+
 ## How the Adversarial Test Works — Step by Step
 
 1. **You click "Run"** in the web UI (or `python main.py` in CLI)
