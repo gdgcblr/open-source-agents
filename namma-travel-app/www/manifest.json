@@ -1,0 +1,47 @@
+{
+  "name": "Namma Travel",
+  "short_name": "Namma Travel",
+  "description": "AI Commute Optimizer & Multimodal Fare Saver for Bengaluru (Metro, BMTC Bus, Auto & Cabs)",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#1a73e8",
+  "lang": "en-IN",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Metro Lines",
+      "short_name": "Metro",
+      "url": "/?view=metro",
+      "description": "Quick view of Namma Metro Purple, Green & Yellow lines"
+    },
+    {
+      "name": "BMTC Bus Routes",
+      "short_name": "BMTC",
+      "url": "/?view=bus",
+      "description": "Check Vajra and Ordinary bus stops and fares"
+    },
+    {
+      "name": "Road Repairs Radar",
+      "short_name": "Roadworks",
+      "url": "/?view=repairs",
+      "description": "Active BBMP and BMRCL construction zones"
+    }
+  ],
+  "categories": ["navigation", "travel", "productivity"]
+}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a73e8"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#bgGrad)"/>
+  <!-- Traffic Light Base -->
+  <rect x="74" y="32" width="44" height="106" rx="22" fill="#202124" filter="url(#shadow)"/>
+  <!-- Signal Lights -->
+  <circle cx="96" cy="52" r="12" fill="#ea4335"/>
+  <circle cx="96" cy="85" r="12" fill="#fbbc04"/>
+  <circle cx="96" cy="118" r="12" fill="#34a853"/>
+  <!-- Metro Train / Bus Badge Overlay -->
+  <circle cx="140" cy="140" r="32" fill="#ffffff" filter="url(#shadow)"/>
+  <circle cx="140" cy="140" r="28" fill="#9333ea"/>
+  <text x="140" y="148" font-size="24" text-anchor="middle" fill="#ffffff" font-family="-apple-system, sans-serif">🚇</text>
+  <text x="96" y="172" font-size="12" font-weight="bold" text-anchor="middle" fill="#e8f0fe" font-family="-apple-system, sans-serif">NAMMA TRAFFIC</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a73e8"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
+    </linearGradient>
+    <filter id="shadow512" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad512)"/>
+  <!-- Traffic Light Housing -->
+  <rect x="196" y="80" width="120" height="290" rx="60" fill="#202124" filter="url(#shadow512)"/>
+  <!-- Signal Lamps -->
+  <circle cx="256" cy="135" r="34" fill="#ea4335"/>
+  <circle cx="256" cy="225" r="34" fill="#fbbc04"/>
+  <circle cx="256" cy="315" r="34" fill="#34a853"/>
+  <!-- Circular Transit Badges -->
+  <circle cx="370" cy="380" r="85" fill="#ffffff" filter="url(#shadow512)"/>
+  <circle cx="370" cy="380" r="76" fill="#9333ea"/>
+  <text x="370" y="405" font-size="68" text-anchor="middle" fill="#ffffff" font-family="-apple-system, sans-serif">🚇</text>
+  <circle cx="140" cy="380" r="65" fill="#ffffff" filter="url(#shadow512)"/>
+  <circle cx="140" cy="380" r="58" fill="#0284c7"/>
+  <text x="140" y="400" font-size="48" text-anchor="middle" fill="#ffffff" font-family="-apple-system, sans-serif">🚌</text>
+  <text x="256" y="468" font-size="34" font-weight="900" letter-spacing="2" text-anchor="middle" fill="#ffffff" font-family="-apple-system, sans-serif">NAMMA TRAFFIC</text>
+</svg>

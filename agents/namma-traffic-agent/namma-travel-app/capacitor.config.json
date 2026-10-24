@@ -1,0 +1,21 @@
+{
+  "appId": "com.nammatraffic.travelapp",
+  "appName": "Namma Travel App",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0f172a",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#1a73e8"
+    }
+  }
+}

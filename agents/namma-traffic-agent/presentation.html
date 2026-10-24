@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Namma Travel - DevFest 2026 Presentation</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151e32;
+      --accent: #38bdf8;
+      --accent-grad: linear-gradient(135deg, #38bdf8, #818cf8);
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --green: #4ade80;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top Nav / Header */
+    .deck-header {
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .badge-devfest {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* Slides Container */
+    .slides-viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 40px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(50px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    /* Typography */
+    h1.hero-title {
+      font-size: 3.4rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    h1.hero-title span {
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2.slide-title {
+      font-size: 2.3rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2.slide-title span.tag {
+      font-size: 0.85rem;
+      background: rgba(251, 191, 36, 0.2);
+      color: var(--yellow);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    p.subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 750px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.highlight {
+      border-color: rgba(56, 189, 248, 0.4);
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.08), rgba(21, 30, 50, 0.9));
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p, .card li {
+      color: #cbd5e1;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    ul.feature-list {
+      list-style: none;
+    }
+
+    ul.feature-list li {
+      margin-bottom: 12px;
+      padding-left: 28px;
+      position: relative;
+    }
+
+    ul.feature-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .stat-number {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--yellow);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .pill-red { background: rgba(248, 113, 113, 0.2); color: var(--red); }
+    .pill-green { background: rgba(74, 222, 128, 0.2); color: var(--green); }
+    .pill-yellow { background: rgba(251, 191, 36, 0.2); color: var(--yellow); }
+
+    /* Tables */
+    table.slide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    table.slide-table th, table.slide-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.95rem;
+    }
+
+    table.slide-table th {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Footer / Controls */
+    .deck-footer {
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    .btn-nav {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover {
+      background: #334155;
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="deck-header">
+    <div class="badge-devfest">GDG Cloud Bengaluru • Road to DevFest 2026</div>
+    <div>🚀 Namma Travel // Autonomous AI Agent Deck</div>
+    <div>Slide <span id="currentSlideNum">1</span> / <span id="totalSlidesNum">10</span></div>
+  </div>
+
+  <!-- Main Slides Viewport -->
+  <div class="slides-viewport">
+
+    <!-- SLIDE 1: Title Slide -->
+    <div class="slide active">
+      <div style="margin-bottom: 14px;">
+        <span class="badge-pill pill-yellow">FORK. BUILD. MERGE. Initiative</span>
+      </div>
+      <h1 class="hero-title">Namma Travel<br><span>Autonomous Commute AI</span></h1>
+      <p class="subtitle">An AI-powered multimodal transit intelligence, bottleneck bypass, and Namma Metro optimization agent built with Google GenAI.</p>
+      
+      <div style="display: flex; gap: 32px; margin-top: 20px; font-size: 1rem; color: #94a3b8;">
+        <div><strong>Presenter:</strong> Shaik Ali</div>
+        <div><strong>Category:</strong> Autonomous AI Agents</div>
+        <div><strong>Stack:</strong> Python • Gemini 2.5 • FastAPI • Rich</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Problem Statement -->
+    <div class="slide">
+      <h2 class="slide-title">The Bengaluru Commuter Dilemma <span class="tag">Problem</span></h2>
+      <p class="subtitle">Bengaluru commuters navigate one of the world's most congested road networks daily.</p>
+      
+      <div class="grid-3">
+        <div class="card">
+          <div class="stat-number">250+ hrs</div>
+          <h3>Lost Annually</h3>
+          <p>Every commuter wastes over 10 full days stuck at 6–8 km/h on the Outer Ring Road and CBD arteries.</p>
+        </div>
+        <div class="card">
+          <div class="stat-number">₹19.7k Cr</div>
+          <h3>Economic Loss</h3>
+          <p>Annual loss from lost productivity, fuel wastage, and delivery delays across tech corridors.</p>
+        </div>
+        <div class="card">
+          <div class="stat-number">2.2x Surge</div>
+          <h3>Ride-Hail Surge</h3>
+          <p>Sudden rainstorms cause severe price surging and widespread cab driver cancellations.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Architecture -->
+    <div class="slide">
+      <h2 class="slide-title">System Architecture: AI Agent & Specialized Tools <span class="tag">Engineering</span></h2>
+      <p class="subtitle">Google GenAI Gemini 2.5 Flash reasoning with autonomous tool execution.</p>
+      
+      <div style="text-align: center; margin: 10px 0;">
+        <img src="/assets/presentation_charts/ai_agent_architecture_cinematic.png" style="max-height: 400px; width: 95%; object-fit: contain; border-radius: 12px; border: 1.5px solid rgba(56,189,248,0.4); box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Multimodal Metro Comparator -->
+    <div class="slide">
+      <h2 class="slide-title">Multimodal Transit Showdown: Fare vs Duration <span class="tag">Core Innovation</span></h2>
+      <p class="subtitle">Route: Koramangala ➡️ Whitefield (Peak Evening Commute Benchmark)</p>
+      
+      <div style="text-align: center; margin: 10px 0;">
+        <img src="/assets/presentation_charts/fare_vs_time_cinematic.png" style="max-height: 400px; width: 95%; object-fit: contain; border-radius: 12px; border: 1.5px solid rgba(168,85,247,0.4); box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Chokepoints & Departure Curves -->
+    <div class="slide">
+      <h2 class="slide-title">24H Traffic Thermal Pulse & Golden Departure <span class="tag">Optimization</span></h2>
+      <p class="subtitle">Dynamic delay curve predicting exact departure windows to save up to 47 minutes.</p>
+      
+      <div style="text-align: center; margin: 10px 0;">
+        <img src="/assets/presentation_charts/hourly_congestion_cinematic.png" style="max-height: 400px; width: 95%; object-fit: contain; border-radius: 12px; border: 1.5px solid rgba(56,189,248,0.4); box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Monsoon Safety -->
+    <div class="slide">
+      <h2 class="slide-title">Monsoon & Waterlogging Early Warning <span class="tag">Safety</span></h2>
+      <p class="subtitle">Preventing vehicles from getting submerged in vulnerable low-lying underpasses.</p>
+      
+      <div class="grid-3">
+        <div class="card">
+          <span class="badge-pill pill-red">Critical Hotspot</span>
+          <h3 style="margin-top: 10px;">Kadubeesanahalli Underpass</h3>
+          <p>2+ ft water accumulation during heavy rainfall on ORR. Automated warning advises diversion via Marathahalli.</p>
+        </div>
+        <div class="card">
+          <span class="badge-pill pill-red">Critical Hotspot</span>
+          <h3 style="margin-top: 10px;">Okalipuram Underpass</h3>
+          <p>Submerges within 20 mins of high-intensity downpours near Majestic. Directs commuters onto flyovers.</p>
+        </div>
+        <div class="card">
+          <span class="badge-pill pill-yellow">High Risk</span>
+          <h3 style="margin-top: 10px;">Panathur RUB</h3>
+          <p>Railway underbridge completely impassable. Warns commuters to avoid Balagere/Bellandur connector.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Dual Interfaces -->
+    <div class="slide">
+      <h2 class="slide-title">Dual Interfaces: Terminal CLI & Web UI <span class="tag">User Experience</span></h2>
+      <p class="subtitle">Accessible for both terminal power users and visual dashboard commuters.</p>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3>💻 Rich Terminal CLI</h3>
+          <ul class="feature-list">
+            <li>Instant command line inquiries (<code>python main.py "query"</code>)</li>
+            <li>Colored ASCII tables and progress indicators</li>
+            <li>Interactive conversational REPL mode</li>
+            <li>Monsoon simulation flag: <code>--rain</code></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🌐 Visual Web Dashboard (FastAPI)</h3>
+          <ul class="feature-list">
+            <li>Hosted locally at <code>http://localhost:8000</code></li>
+            <li>One-click quick query pills for popular corridors</li>
+            <li>Live commute comparison & congestion cards</li>
+            <li>REST API endpoints for third-party integrations</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Real World Trade-offs -->
+    <div class="slide">
+      <h2 class="slide-title">Bengaluru Ground Realities & Trade-offs <span class="tag">Nuance</span></h2>
+      <p class="subtitle">Honest engineering: accounting for hyper-local ground constraints.</p>
+      
+      <div class="grid-2">
+        <div class="card highlight">
+          <h3>✅ Key Advantages</h3>
+          <ul class="feature-list">
+            <li>Door-to-door multimodal transit optimization</li>
+            <li>Substantial cost and time savings per trip</li>
+            <li>Proactive underpass flood safety</li>
+            <li>Zero API-key lock-in (runs everywhere)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚠️ Real-World Bengaluru Constraints</h3>
+          <ul class="feature-list">
+            <li><strong>Last-Mile Auto Mafia:</strong> Drivers refusing meter or demanding cash surge outside metro stations.</li>
+            <li><strong>Unannounced Digging:</strong> BBMP/BWSSB road cuts reducing 3 lanes to 1 without digital notice.</li>
+            <li><strong>VIP Convoys:</strong> Sudden stoppages on airport expressway.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8.5: Google Maps vs AI Copilot Superpowers -->
+    <div class="slide">
+      <h2 class="slide-title">Google Maps vs. Namma Traffic AI Agent <span class="tag">The Superpowers</span></h2>
+      <p class="subtitle">Why static GPS navigation is fundamentally incomplete for Bengaluru commuters.</p>
+      
+      <div class="grid-2">
+        <div class="card" style="border-left: 4px solid var(--red);">
+          <h3 style="color: var(--red);">❌ What Google Maps Won't Do</h3>
+          <ul class="feature-list" style="color: #cbd5e1; font-size: 0.9rem;">
+            <li>Zero knowledge of Uber/Ola surge pricing or ₹ savings.</li>
+            <li>No integrated side-by-side multimodal comparison.</li>
+            <li>Forces users into flooded underpasses during rains.</li>
+            <li>No Golden Departure window optimization.</li>
+            <li>Closed proprietary API ($5-$10/1k calls).</li>
+          </ul>
+        </div>
+        <div class="card highlight" style="border-left: 4px solid var(--green);">
+          <h3 style="color: var(--green);">✅ What Namma AI Agent Delivers</h3>
+          <ul class="feature-list" style="color: #ffffff; font-size: 0.9rem;">
+            <li><strong>Exact ₹ Savings:</strong> Proves ₹745+ savings with Metro over cabs.</li>
+            <li><strong>Side-by-Side Multimodal:</strong> Cab vs Metro vs Bus in one view.</li>
+            <li><strong>Underpass Flood Radar:</strong> Advance warnings for Kadubeesanahalli/Panathur.</li>
+            <li><strong>Golden Departure:</strong> Leaving at 4 PM saves 63 mins!</li>
+            <li><strong>100% Open-Source:</strong> MIT licensed, runs locally without API keys.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Testing & Verification -->
+    <div class="slide">
+      <h2 class="slide-title">Code Quality, Testing & Verification <span class="tag">Standards</span></h2>
+      <p class="subtitle">Adheres strictly to the GDG Cloud Bengaluru repository standards.</p>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3>🧪 Automated Pytest Suite</h3>
+          <div class="stat-number" style="color: var(--green);">10 / 10 Passed</div>
+          <p>Full unit test coverage across route calculations, choke point queries, metro alternatives, and agent intent parsing.</p>
+        </div>
+        <div class="card">
+          <h3>📁 Monorepo Compliance</h3>
+          <ul class="feature-list">
+            <li>Fully self-contained under <code>agents/namma-traffic-agent/</code></li>
+            <li>Exhaustive <code>README.md</code>, <code>requirements.txt</code>, and <code>.env.example</code></li>
+            <li>Zero committed secrets or personal tokens</li>
+            <li>Ready for merge into upstream main branch</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: Conclusion -->
+    <div class="slide">
+      <div style="margin-bottom: 14px;">
+        <span class="badge-pill pill-green">GDG Cloud Bengaluru • Road to DevFest 2026</span>
+      </div>
+      <h1 class="hero-title">Thank You! <br><span>Namaskara Bengaluru 🙏</span></h1>
+      <p class="subtitle">Empowering commuters with AI-driven transit intelligence, one corridor at a time.</p>
+      
+      <div class="card" style="max-width: 600px; margin-top: 20px;">
+        <h3>🔗 Project Links</h3>
+        <p><strong>Pull Request:</strong> <code>feat/namma-traffic-agent</code></p>
+        <p><strong>Monorepo:</strong> <code>shikharagrawal17/open-source-agents</code></p>
+        <p><strong>Contributor:</strong> Shaik Ali</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Footer & Controls -->
+  <div class="deck-footer">
+    <div>Use <strong>&larr; Previous</strong> / <strong>Next &rarr;</strong> or Spacebar to navigate</div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <a href="/presentation.docx" download="Namma_Travel_App_Presentation.docx" class="btn-nav" style="text-decoration: none; color: #34d399; border-color: #34d399; font-weight: bold;">
+        📄 Word Presentation Deck (.docx) ⬇
+      </a>
+      <button class="btn-nav" onclick="prevSlide()">&larr; Previous</button>
+      <button class="btn-nav" onclick="nextSlide()">Next &rarr;</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    document.getElementById('totalSlidesNum').innerText = totalSlides;
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === index);
+      });
+      
+      currentSlide = index;
+      document.getElementById('currentSlideNum').innerText = currentSlide + 1;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) showSlide(currentSlide - 1);
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'Home') {
+        showSlide(0);
+      } else if (e.key === 'End') {
+        showSlide(totalSlides - 1);
+      }
+    });
+  </script>
+</body>
+</html>

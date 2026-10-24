@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Namma Travel - Mobile App for Android & iPhone</title>
+  
+  <!-- PWA Manifest & Mobile App Configuration -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+
+  <!-- Apple iOS Native App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Namma Travel">
+  <link rel="apple-touch-icon" href="/icon-192.svg">
+  <link rel="apple-touch-startup-image" href="/icon-512.svg">
+  
+  <!-- Leaflet Maps CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --bg-dark: #202124;
+      --surface: #ffffff;
+      --surface-border: #dadce0;
+      --text-main: #202124;
+      --text-muted: #5f6368;
+      --traffic-red: #ea4335;
+      --traffic-orange: #fbbc04;
+      --traffic-green: #34a853;
+      --metro-purple: #9333ea;
+      --metro-green: #16a34a;
+      --metro-yellow: #ca8a04;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Google Sans', Roboto, Arial, -apple-system, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #e8eaed;
+    }
+
+    /* Fullscreen Map */
+    #map {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Floating Google Maps-style Left Panel */
+    .gmaps-sidebar {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      width: 440px;
+      max-height: calc(100vh - 32px);
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .gmaps-sidebar {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: 78vh;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.3);
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+      }
+      .mobile-drag-bar {
+        display: block !important;
+        width: 40px;
+        height: 5px;
+        background: #cbd5e1;
+        border-radius: 3px;
+        margin: 6px auto 2px auto;
+        cursor: pointer;
+      }
+      .map-controls-panel {
+        top: max(10px, env(safe-area-inset-top));
+        right: 10px;
+        font-size: 0.78rem;
+      }
+      .map-btn {
+        padding: 6px 10px;
+      }
+      .live-tracking-pill {
+        display: none; /* Hide on small mobile to give maximum map viewing area */
+      }
+    }
+
+    /* Install Mobile App Modal */
+    .mobile-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .mobile-modal-box {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: #f1f3f4;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .modal-os-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 14px 0;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .modal-os-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-os-tab.active-android {
+      background: #34a853;
+      color: #ffffff;
+    }
+    .modal-os-tab.active-ios {
+      background: #000000;
+      color: #ffffff;
+    }
+
+    /* Auth Modal & Profile Dropdown Styles */
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+      color: #5f6368;
+    }
+    .auth-tab-btn.active {
+      background: #1a73e8;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(26,115,232,0.3);
+    }
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #ffffff;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.12);
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+    .google-btn:hover {
+      background: #f8fafd;
+      border-color: #d2e3fc;
+      box-shadow: 0 2px 6px rgba(60,64,67,0.2);
+    }
+    .user-dropdown-card {
+      position: absolute;
+      top: 54px;
+      right: 16px;
+      width: 280px;
+      background: #ffffff;
+      border: 1px solid #dadce0;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      padding: 14px;
+      z-index: 10000;
+      display: none;
+    }
+    .auth-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #202124;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      z-index: 11000;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Sidebar Header & Brand */
+    .sidebar-header {
+      padding: 16px 20px 12px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1a73e8;
+    }
+
+    .brand-title span.tag {
+      font-size: 0.72rem;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    /* Route Input Form */
+    .route-inputs {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-line {
+      display: flex;
+      align-items: center;
+      background: #f1f3f4;
+      border-radius: 8px;
+      padding: 6px 12px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .input-line:focus-within {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+    }
+
+    .input-icon {
+      font-size: 1rem;
+      margin-right: 10px;
+      width: 18px;
+      text-align: center;
+    }
+
+    .route-inputs input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      padding: 4px 0;
+    }
+
+    .btn-swap {
+      position: absolute;
+      right: 12px;
+      top: 26px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      z-index: 2;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    .time-selector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .time-selector select {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--surface-border);
+      background: #f8f9fa;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .rain-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: #1e293b;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-search {
+      width: 100%;
+      margin-top: 12px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-search:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Corridor Chips */
+    .corridor-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--surface-border);
+      scrollbar-width: none;
+    }
+
+    .corridor-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      white-space: nowrap;
+      background: #f1f3f4;
+      color: #3c4043;
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: #e8f0fe;
+      color: var(--primary);
+      border-color: #d2e3fc;
+    }
+
+    /* Scrollable Results Drawer */
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Money & Time Saver Summary Banner */
+    .money-saver-banner {
+      background: linear-gradient(135deg, #137333, #0d652d);
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(19, 115, 51, 0.25);
+    }
+
+    .saver-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #e6f4ea;
+      font-weight: 700;
+    }
+
+    .saver-metric-row {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+
+    .saver-big-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .saver-sub {
+      font-size: 0.9rem;
+      color: #ceead6;
+    }
+
+    /* Route Option Cards */
+    .route-card {
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid var(--surface-border);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .route-card:hover {
+      border-color: #aecbfa;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .route-card.selected {
+      border: 2px solid var(--primary);
+      background: #f8fafd;
+    }
+
+    .route-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .route-mode-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .tag-recommended {
+      background: #e6f4ea;
+      color: #137333;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tag-gridlock {
+      background: #fce8e6;
+      color: #c5221f;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .route-duration-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .route-duration {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .route-fare {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a73e8;
+      margin-left: auto;
+    }
+
+    .route-details {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* AI Copilot Advice Card */
+    .copilot-advice-card {
+      background: #ffffff;
+      border-left: 4px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      color: #3c4043;
+      line-height: 1.5;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .copilot-advice-card h4 {
+      font-size: 0.92rem;
+      color: #1a73e8;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Top-Right Floating Controls (Map Layers) */
+    .map-controls-panel {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+
+    .map-btn {
+      padding: 10px 14px;
+      border: none;
+      background: #ffffff;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 1px solid var(--surface-border);
+      transition: background 0.2s;
+    }
+
+    .map-btn:last-child {
+      border-bottom: none;
+    }
+
+    .map-btn:hover {
+      background: #f1f3f4;
+    }
+
+    .map-btn.active {
+      color: var(--primary);
+      font-weight: 700;
+      background: #e8f0fe;
+    }
+
+    /* Custom Leaflet Map Pulsing Markers */
+    .choke-pin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--traffic-red);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.4);
+      animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(234, 67, 53, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+    }
+
+    .metro-pin {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--metro-purple);
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .water-pin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #0284c7;
+      border: 2px solid #ffffff;
+      animation: pulse-blue 1.5s infinite;
+    }
+
+    /* Distinct Visual Station & Bus Stop Badges on Map */
+    .custom-metro-station {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .metro-badge {
+      width: 24px;
+      height: 24px;
+      background: #9333ea;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .metro-badge:hover {
+      transform: scale(1.2);
+    }
+    .station-lbl {
+      background: rgba(255, 255, 255, 0.95);
+      color: #581c87;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid #d8b4fe;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+
+    .custom-bus-stop {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .bus-badge {
+      width: 22px;
+      height: 22px;
+      background: #0284c7;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .bus-badge:hover {
+      transform: scale(1.2);
+    }
+    .bus-lbl {
+      background: rgba(255, 255, 255, 0.95);
+      color: #0369a1;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #bae6fd;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+
+    /* Live Animated Vehicles (Train, Bus, Cab) */
+    .vehicle-marker {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 3px 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 800;
+      font-size: 11px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      cursor: pointer;
+      white-space: nowrap;
+      animation: float-vehicle 2s ease-in-out infinite;
+    }
+    @keyframes float-vehicle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Road Repair / Construction Hazard Pin */
+    .repair-pin {
+      width: 22px;
+      height: 22px;
+      background: #f59e0b;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.4);
+      animation: pulse-orange 1.6s infinite;
+      cursor: pointer;
+    }
+    @keyframes pulse-orange {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    /* Small station & stop dots on map */
+    .station-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #9333ea;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .bus-stop-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0284c7;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    /* Timeline stops styling */
+    .timeline-stops-list {
+      margin-top: 8px;
+      padding-left: 14px;
+      border-left: 2px dashed #9333ea;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-bus-list {
+      margin-top: 8px;
+      padding-left: 14px;
+      border-left: 2px dashed #0284c7;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-item {
+      position: relative;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+
+    .timeline-item::before {
+      content: '•';
+      position: absolute;
+      left: -19px;
+      top: -2px;
+      font-size: 1.2rem;
+      color: #9333ea;
+    }
+
+    .timeline-bus-list .timeline-item::before {
+      color: #0284c7;
+    }
+
+    @keyframes pulse-blue {
+      0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+    }
+
+    /* Active Bus Stop Pulse during Live Tracking */
+    .bus-stop-pulse-active .bus-badge {
+      background: #0284c7 !important;
+      box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.9) !important;
+      animation: bus-stop-ping 1s infinite !important;
+      transform: scale(1.35) !important;
+    }
+    @keyframes bus-stop-ping {
+      0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.8); }
+      70% { box-shadow: 0 0 0 14px rgba(2, 132, 199, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+    }
+    .bus-stop-pulse-active .bus-lbl {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.5) !important;
+    }
+
+    /* Live Bus Stop Tracker Timeline in Sidebar */
+    .bus-live-tracker-box {
+      margin-top: 10px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .bus-live-tracker-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .stop-progress-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .stop-progress-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: #475569;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .stop-progress-item:hover {
+      border-color: #0284c7;
+      background: #f8fafc;
+    }
+    .stop-progress-item.completed {
+      background: #f8fafc;
+      color: #64748b;
+      border-color: #e2e8f0;
+    }
+    .stop-progress-item.active {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 800;
+      border-color: #0284c7;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+      transform: scale(1.02);
+    }
+    .stop-status-pill {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .stop-progress-item.active .stop-status-pill {
+      background: #ffffff;
+      color: #0284c7;
+      animation: pulse-badge 1s infinite alternate;
+    }
+    @keyframes pulse-badge {
+      from { opacity: 0.85; }
+      to { opacity: 1; }
+    }
+    .stop-progress-item.completed .stop-status-pill {
+      background: #e2e8f0;
+      color: #166534;
+    }
+    .stop-progress-item.upcoming .stop-status-pill {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    /* Segmented Tab Selectors for Bus (Ordinary/AC) and Ride-Hail (Cab/Auto/Bike) */
+    .segmented-selector {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+      margin: 10px 0;
+    }
+    .segment-tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #475569;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .segment-tab:hover {
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.7);
+    }
+    .segment-tab.active {
+      background: #ffffff;
+      color: var(--primary);
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.2);
+    }
+    .segment-tab.active-blue {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35) !important;
+    }
+    .segment-tab.active-red {
+      background: #ea4335 !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 4px rgba(234, 67, 53, 0.35) !important;
+    }
+    .fare-sub-badge {
+      font-size: 0.72rem;
+      background: rgba(0, 0, 0, 0.08);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .segment-tab.active-blue .fare-sub-badge,
+    .segment-tab.active-red .fare-sub-badge {
+      background: rgba(255, 255, 255, 0.28);
+      color: #ffffff;
+    }
+
+    /* Loading Indicator */
+    .loading-bar {
+      height: 3px;
+      width: 100%;
+      background: #e8eaed;
+      position: relative;
+      overflow: hidden;
+      display: none;
+    }
+
+    .loading-bar::after {
+      content: '';
+      position: absolute;
+      left: -50%;
+      height: 100%;
+      width: 50%;
+      background: var(--primary);
+      animation: loading-anim 1s infinite linear;
+    }
+
+    @keyframes loading-anim {
+      0% { left: -50%; }
+      100% { left: 100%; }
+    }
+
+    /* Live Vehicle Tracking Simulation Pill */
+    .live-tracking-pill {
+      position: absolute;
+      bottom: 24px;
+      left: 470px;
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 900px) {
+      .live-tracking-pill {
+        left: 16px;
+        bottom: 14px;
+        font-size: 0.74rem;
+        padding: 6px 12px;
+      }
+    }
+
+    .radar-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: radar-pulse 1.4s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes radar-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen Interactive Map -->
+  <div id="map"></div>
+
+  <!-- Real-Time Vehicle Tracking Status Pill -->
+  <div class="live-tracking-pill" id="trackingPill">
+    <div class="radar-dot"></div>
+    <span><b>Live GPS Tracking Simulation:</b> 🚆 Metro (65 km/h) &bull; 🚌 BMTC (24 km/h) &bull; 🚖 Cab (11 km/h)</span>
+  </div>
+
+  <!-- Top-Right Map View Toggles -->
+  <div class="map-controls-panel">
+    <button class="map-btn active" id="btnToggleBasemap" onclick="toggleBasemap()">
+      🛰️ Satellite View
+    </button>
+    <button class="map-btn active" id="btnToggleTraffic" onclick="toggleTrafficLayer()">
+      🚦 Traffic Congestion
+    </button>
+    <button class="map-btn active" id="btnToggleMetro" onclick="toggleMetroLayer()">
+      🚇 Namma Metro Lines
+    </button>
+    <button class="map-btn active" id="btnToggleBusStops" onclick="toggleBusStopsLayer()">
+      🚏 BMTC Bus Stops
+    </button>
+    <button class="map-btn active" id="btnToggleRoadWork" onclick="toggleRoadWorkLayer()">
+      🚧 Road Repairs & Work
+    </button>
+    <button class="map-btn active" id="btnToggleFloods" onclick="toggleFloodLayer()">
+      🌧️ Flooded Underpasses
+    </button>
+    <a href="/presentation" target="_blank" class="map-btn" style="text-decoration: none; color: #1a73e8; font-weight: 700;">
+      📊 DevFest Deck ↗
+    </a>
+    <a href="/presentation.docx" download="Namma_Travel_App_Presentation.docx" class="map-btn" style="text-decoration: none; color: #16a34a; font-weight: 700;">
+      📄 Word Deck (.docx) ⬇
+    </a>
+  </div>
+
+  <!-- Floating Google Maps-style Left Panel -->
+  <div class="gmaps-sidebar" id="gmapsSidebar">
+    <!-- Mobile drag bar handle -->
+    <div class="mobile-drag-bar" style="display: none;" onclick="toggleMobileSheet()"></div>
+
+    <div class="sidebar-header">
+      <div class="brand-row">
+        <div class="brand-title">
+          <span>🚦</span> Namma Travel
+          <span class="tag">AI Optimizer</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; position: relative;">
+          <button onclick="openMobileAppModal()" style="background: linear-gradient(135deg, #1a73e8, #1557b0); color: #fff; border: none; padding: 4px 9px; border-radius: 20px; font-size: 0.74rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(26,115,232,0.35);">
+            📲 App
+          </button>
+          
+          <!-- Auth User Pill / Login Trigger -->
+          <button id="btnHeaderLogin" onclick="openAuthModal()" style="background: #ffffff; color: #1a73e8; border: 1.5px solid #1a73e8; padding: 4px 10px; border-radius: 20px; font-size: 0.74rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            👤 Sign In
+          </button>
+          
+          <div id="headerUserProfile" onclick="toggleUserDropdown()" style="display: none; background: #f1f3f4; border: 1px solid #dadce0; border-radius: 20px; padding: 3px 8px 3px 4px; align-items: center; gap: 5px; cursor: pointer;">
+            <div id="userAvatarCircle" style="width: 22px; height: 22px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">U</div>
+            <span id="headerUserName" style="font-size: 0.72rem; font-weight: 700; color: #202124; max-width: 65px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</span>
+            <span style="font-size: 0.65rem; color: #5f6368;">▼</span>
+          </div>
+
+          <!-- User Profile Dropdown Card -->
+          <div class="user-dropdown-card" id="userProfileDropdown">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px; margin-bottom: 10px;">
+              <div id="dropdownAvatarCircle" style="width: 36px; height: 36px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: bold;">U</div>
+              <div style="flex: 1; overflow: hidden;">
+                <div id="dropdownUserName" style="font-size: 0.86rem; font-weight: 800; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bengaluru Rider</div>
+                <div id="dropdownUserContact" style="font-size: 0.72rem; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">user@gmail.com</div>
+              </div>
+            </div>
+            <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.78rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: #64748b;">🚇 Metro Card:</span>
+                <span id="dropdownMetroCard" style="font-weight: 700; color: #9333ea;">₹280.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #64748b;">🚌 BMTC Pass:</span>
+                <span id="dropdownBmtcPass" style="font-weight: 700; color: #16a34a;">Active Daily Pass</span>
+              </div>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 10px;">
+              <b>⭐ Saved Route:</b> Koramangala ⇄ Whitefield
+            </div>
+            <button onclick="logoutUser()" style="width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 8px; padding: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Bengaluru Weather Ribbon -->
+      <div id="weatherRibbon" style="background: #e8f0fe; border-radius: 8px; padding: 6px 12px; margin-bottom: 10px; font-size: 0.82rem; color: #1a73e8; display: flex; align-items: center; justify-content: space-between;">
+        <span>⛅ 26.5°C Bengaluru • 🌧️ Showers (Yellow Alert)</span>
+        <span style="font-weight: 600;">💧 82% Hum</span>
+      </div>
+
+      <!-- Route Search Inputs -->
+      <div class="route-inputs">
+        <div class="input-line">
+          <span class="input-icon" style="color: #34a853;">🟢</span>
+          <input type="text" id="originInput" placeholder="Choose starting point..." value="Koramangala" list="hubsList">
+        </div>
+
+        <div class="btn-swap" onclick="swapLocations()" title="Reverse direction">⇅</div>
+
+        <div class="input-line">
+          <span class="input-icon" style="color: #ea4335;">🔴</span>
+          <input type="text" id="destInput" placeholder="Choose destination..." value="Whitefield" list="hubsList">
+        </div>
+      </div>
+
+      <!-- Departure & Monsoon Controls -->
+      <div class="controls-row">
+        <div class="time-selector">
+          <span>Leave at:</span>
+          <select id="timeSelect">
+            <option value="16">4:00 PM (Early Window)</option>
+            <option value="17">5:00 PM (Rush Start)</option>
+            <option value="18" selected>6:00 PM (Peak Gridlock)</option>
+            <option value="19">7:00 PM (Heavy Flow)</option>
+            <option value="20">8:00 PM (Night Rush)</option>
+            <option value="21">9:00 PM (Clearer)</option>
+          </select>
+        </div>
+
+        <label class="rain-toggle">
+          <input type="checkbox" id="rainCheckbox">
+          <span>🌧️ Monsoon Rain</span>
+        </label>
+      </div>
+
+      <button class="btn-search" onclick="calculateCommute()">
+        <span>🔍</span> Find Best Route & Save Money
+      </button>
+    </div>
+
+    <!-- Loading Bar -->
+    <div class="loading-bar" id="loadingBar"></div>
+
+    <!-- Quick Corridor Chips -->
+    <div class="corridor-chips">
+      <div class="chip" onclick="setCorridor('Koramangala', 'Whitefield')">Koramangala ➔ Whitefield</div>
+      <div class="chip" onclick="setCorridor('Indiranagar', 'Airport')">Indiranagar ➔ Airport</div>
+      <div class="chip" onclick="setCorridor('HSR Layout', 'Bellandur')">HSR ➔ Bellandur / ORR</div>
+      <div class="chip" onclick="setCorridor('Majestic', 'Electronic City')">Majestic ➔ E-City</div>
+    </div>
+
+    <!-- Dynamic Commute & Savings Content -->
+    <div class="sidebar-content" id="sidebarContent">
+      <!-- Injected dynamically by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Datalist for Autocomplete -->
+  <datalist id="hubsList">
+    <option value="Koramangala">
+    <option value="Whitefield">
+    <option value="Indiranagar">
+    <option value="HSR Layout">
+    <option value="Bellandur">
+    <option value="Marathahalli">
+    <option value="Electronic City">
+    <option value="Hebbal">
+    <option value="Manyata Tech Park">
+    <option value="Majestic">
+    <option value="MG Road">
+    <option value="Airport">
+    <option value="JP Nagar">
+    <option value="Banashankari">
+  </datalist>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // Initialize Google Maps style Leaflet Map centered on Bengaluru
+    const map = L.map('map', {
+      zoomControl: false
+    }).setView([12.9716, 77.6200], 12);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // High-Resolution Satellite Imagery Layer (No API Key required, no watermark)
+    const satelliteBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Satellite',
+      maxZoom: 19
+    });
+
+    // Street Names & Road Boundaries Overlay for Satellite View
+    const satelliteLabels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '',
+      maxZoom: 19
+    });
+
+    // Clean OpenStreetMap Street Basemap (No API Key required, no watermark)
+    const streetBase = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    });
+
+    // Default: Satellite View with Road Overlays
+    let isSatellite = true;
+    satelliteBase.addTo(map);
+    satelliteLabels.addTo(map);
+
+    function toggleBasemap() {
+      isSatellite = !isSatellite;
+      const btn = document.getElementById('btnToggleBasemap');
+      if (isSatellite) {
+        map.removeLayer(streetBase);
+        satelliteBase.addTo(map);
+        satelliteLabels.addTo(map);
+        btn.innerHTML = '🛰️ Satellite View';
+        btn.classList.add('active');
+      } else {
+        map.removeLayer(satelliteBase);
+        map.removeLayer(satelliteLabels);
+        streetBase.addTo(map);
+        btn.innerHTML = '🗺️ Street Map';
+        btn.classList.remove('active');
+      }
+    }
+
+    // Hub Coordinates Database
+    const BENGALURU_COORDS = {
+      "koramangala": [12.9352, 77.6245],
+      "indiranagar": [12.9719, 77.6412],
+      "whitefield": [12.9698, 77.7500],
+      "hsr_layout": [12.9121, 77.6446],
+      "bellandur": [12.9304, 77.6784],
+      "marathahalli": [12.9591, 77.6974],
+      "electronic_city": [12.8452, 77.6602],
+      "hebbal": [13.0358, 77.5970],
+      "manyata": [13.0450, 77.6200],
+      "majestic": [12.9774, 77.5708],
+      "mg_road": [12.9756, 77.6066],
+      "airport": [13.1986, 77.7066],
+      "jp_nagar": [12.9063, 77.5857],
+      "banashankari": [12.9255, 77.5468]
+    };
+
+    // Layer Groups
+    let trafficLayerGroup = L.layerGroup().addTo(map);
+    let metroLayerGroup = L.layerGroup().addTo(map);
+    let busStopsLayerGroup = L.layerGroup().addTo(map);
+    let roadWorkLayerGroup = L.layerGroup().addTo(map);
+    let floodLayerGroup = L.layerGroup().addTo(map);
+    let routeLayerGroup = L.layerGroup().addTo(map);
+
+    // Plot Chokepoints (Silk Board, Tin Factory, Hebbal, Marathahalli, Ecospace)
+    const CHOKEPOINTS_DATA = [
+      { name: "Central Silk Board", coords: [12.9172, 77.6228], delay: "~35 min delay", score: "9.6/10", bypass: "Use Madiwala market internal corridor or Yellow line." },
+      { name: "Tin Factory / KR Puram", coords: [12.9972, 77.6756], delay: "~30 min delay", score: "9.3/10", bypass: "Purple line metro direct bypass over bridge." },
+      { name: "Hebbal Flyover Junction", coords: [13.0358, 77.5970], delay: "~25 min delay", score: "8.9/10", bypass: "Use Hennur-Bagalur road for airport." },
+      { name: "Ecospace / Bellandur ORR", coords: [12.9260, 77.6830], delay: "~35 min delay", score: "9.4/10", bypass: "Stagger departure: leave before 4 PM or after 8 PM." },
+      { name: "Marathahalli Bridge", coords: [12.9591, 77.6974], delay: "~20 min delay", score: "8.7/10", bypass: "Use Kundalahalli Gate underpass." }
+    ];
+
+    function drawChokepoints() {
+      trafficLayerGroup.clearLayers();
+      CHOKEPOINTS_DATA.forEach(cp => {
+        const icon = L.divIcon({ className: 'choke-pin', iconSize: [14, 14] });
+        const marker = L.marker(cp.coords, { icon: icon }).addTo(trafficLayerGroup);
+        marker.bindPopup(`
+          <div style="font-family: sans-serif;">
+            <b style="color: #ea4335;">🚦 ${cp.name}</b><br>
+            <span style="color:#d93025; font-weight:bold;">Congestion Index: ${cp.score}</span><br>
+            <span>Delay: ${cp.delay}</span><br>
+            <small style="color: #137333;"><b>💡 Bypass:</b> ${cp.bypass}</small>
+          </div>
+        `);
+      });
+
+      // Highlight Outer Ring Road traffic crawl in Red with asphalt background & dashed road lines
+      const orrLine = [
+        [12.9172, 77.6228], // Silk Board
+        [12.9260, 77.6830], // Ecospace
+        [12.9591, 77.6974], // Marathahalli
+        [12.9972, 77.6756], // Tin factory
+        [13.0358, 77.5970]  // Hebbal
+      ];
+      // Dark asphalt road bed
+      L.polyline(orrLine, { color: '#0f172a', weight: 10, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(trafficLayerGroup);
+      // Red congested corridor
+      L.polyline(orrLine, { color: '#ea4335', weight: 6, opacity: 0.9, lineCap: 'round' })
+        .addTo(trafficLayerGroup)
+        .bindTooltip("Outer Ring Road: 🔴 Severe Peak Gridlock", { sticky: true });
+      // Road center dashed divider
+      L.polyline(orrLine, { color: '#fef08a', weight: 1.5, dashArray: '6, 10', opacity: 0.95 }).addTo(trafficLayerGroup);
+    }
+
+    // Draw Namma Metro Lines (Realistic Railway Tracks with Ballast and Ties)
+    function drawMetroLines() {
+      metroLayerGroup.clearLayers();
+      // Purple Line: Challaghatta -> Majestic -> MG Road -> Indiranagar -> Whitefield
+      const purpleLineCoords = [
+        [12.9080, 77.4850], // Challaghatta
+        [12.9774, 77.5708], // Majestic
+        [12.9756, 77.6066], // MG Road
+        [12.9719, 77.6412], // Indiranagar
+        [12.9972, 77.6756], // KR Puram
+        [12.9698, 77.7500]  // Whitefield Kadugodi
+      ];
+      // Railway Ballast Bed
+      L.polyline(purpleLineCoords, { color: '#1e1b4b', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(metroLayerGroup);
+      // Rail Sleepers / Ties
+      L.polyline(purpleLineCoords, { color: '#c084fc', weight: 5, dashArray: '4, 8', opacity: 0.95 }).addTo(metroLayerGroup);
+      // Polished Steel Rail Center
+      L.polyline(purpleLineCoords, { color: '#ffffff', weight: 1.8, opacity: 0.9 })
+        .addTo(metroLayerGroup)
+        .bindTooltip("🚇 Namma Metro Purple Line (High-Speed Railway Track)", { sticky: true });
+
+      // Green Line: Silk Institute -> Majestic -> Yeshwantpur -> Nagasandra
+      const greenLineCoords = [
+        [12.8680, 77.5350], // Silk Institute
+        [12.9255, 77.5468], // Banashankari
+        [12.9774, 77.5708], // Majestic
+        [13.0280, 77.5500], // Yeshwantpur
+        [13.0500, 77.5000]  // Nagasandra
+      ];
+      // Railway Ballast Bed
+      L.polyline(greenLineCoords, { color: '#064e3b', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(metroLayerGroup);
+      // Rail Sleepers / Ties
+      L.polyline(greenLineCoords, { color: '#4ade80', weight: 5, dashArray: '4, 8', opacity: 0.95 }).addTo(metroLayerGroup);
+      // Polished Steel Rail Center
+      L.polyline(greenLineCoords, { color: '#ffffff', weight: 1.8, opacity: 0.9 })
+        .addTo(metroLayerGroup)
+        .bindTooltip("🚇 Namma Metro Green Line (North-South Railway Track)", { sticky: true });
+    }
+
+    // Active Road Repairs & BBMP/BMRCL Work Zones
+    const ROAD_REPAIRS_DATA = [
+      {
+        name: "Central Silk Board Interchange",
+        coords: [12.9172, 77.6228],
+        agency: "BMRCL / BBMP",
+        work: "Metro Blue Line Phase-2A Pier Work & Flyover Ramp Construction",
+        severity: "CRITICAL",
+        lanes: "3 lanes narrowed down to 1 lane on Hosur Road ramp",
+        delay: "+35 mins delay",
+        bypass: "Take Madiwala Market 16th Main Road inner corridor or Yellow Line Metro."
+      },
+      {
+        name: "Ecospace - Bellandur Outer Ring Road",
+        coords: [12.9260, 77.6830],
+        agency: "BWSSB",
+        work: "Cauvery Water Supply Stage V Pipeline Trenching & Road Digging",
+        severity: "HIGH",
+        lanes: "Service road closed completely; left lane on main carriageway barricaded",
+        delay: "+30 mins delay",
+        bypass: "Use BMTC 500-D bus lane or bypass via Haralur Road towards Sarjapur."
+      },
+      {
+        name: "Kadubeesanahalli ORR Underpass",
+        coords: [12.9350, 77.6890],
+        agency: "BBMP Road Infrastructure",
+        work: "Stormwater Drain Culvert Desilting & Pavement Resurfacing",
+        severity: "MODERATE",
+        lanes: "Slow crawl due to gravel; speed limited to 10 km/h",
+        delay: "+20 mins delay",
+        bypass: "Use surface-level roundabout above underpass or Marathahalli outer link."
+      },
+      {
+        name: "Marathahalli Railway Overbridge (ROB)",
+        coords: [12.9591, 77.6974],
+        agency: "BBMP / South Western Railway",
+        work: "Expansion Joint Replacement & Bituminous Concrete Resurfacing",
+        severity: "HIGH",
+        lanes: "Single lane traffic movement over bridge towards Whitefield",
+        delay: "+25 mins delay",
+        bypass: "Kundalahalli Gate Underpass via Old Airport Road."
+      },
+      {
+        name: "Tin Factory / Benniganahalli Junction",
+        coords: [12.9972, 77.6756],
+        agency: "BMRCL / BBMP",
+        work: "Pedestrian Skywalk Girder Erection & Kasturi Nagar Flyover Landing Remodeling",
+        severity: "CRITICAL",
+        lanes: "Major lane merge bottleneck from Old Madras Road into ORR",
+        delay: "+35 mins delay",
+        bypass: "Use Namma Metro Purple Line from Baiyappanahalli direct to Whitefield."
+      },
+      {
+        name: "Goraguntepalya / Peenya Elevated Corridor",
+        coords: [13.0280, 77.5350],
+        agency: "NHAI & BBMP",
+        work: "Pre-stressed Cable Tensioning & Flyover Pier Bearing Retrofitting",
+        severity: "HIGH",
+        lanes: "Heavy goods vehicles diverted to surface level, creating heavy gridlock on 8th Mile",
+        delay: "+30 mins delay",
+        bypass: "Green Line Metro (Nagasandra to Majestic) bypassing Tumkur Road completely."
+      },
+      {
+        name: "Sony World Signal / Koramangala 100ft Road",
+        coords: [12.9352, 77.6245],
+        agency: "BBMP",
+        work: "White-Topping Concrete Curing & Stormwater Side Drain Widening",
+        severity: "MODERATE",
+        lanes: "Southbound lane restricted; alternating one-way traffic management by BTP",
+        delay: "+18 mins delay",
+        bypass: "Use Intermediate Ring Road (Domlur-Koramangala link) or 80ft Road."
+      },
+      {
+        name: "Kundalahalli to Hoodi Junction",
+        coords: [12.9730, 77.7180],
+        agency: "GAIL Gas & BESCOM",
+        work: "Underground Gas Pipeline Trenching & High-Tension Cable Ducting",
+        severity: "MODERATE",
+        lanes: "Unpaved trenches on road shoulders, rough gravel surface",
+        delay: "+20 mins delay",
+        bypass: "Divert via ITPL Main Road or Hoodi Metro Station link."
+      }
+    ];
+
+    function drawRoadRepairs() {
+      roadWorkLayerGroup.clearLayers();
+      ROAD_REPAIRS_DATA.forEach(rw => {
+        const icon = L.divIcon({
+          className: 'repair-pin-wrapper',
+          html: `<div class="repair-pin" title="${rw.name}">🚧</div>`
+        });
+        const marker = L.marker(rw.coords, { icon: icon }).addTo(roadWorkLayerGroup);
+        marker.bindPopup(`
+          <div style="font-family: sans-serif; min-width: 210px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <b style="color: #b45309; font-size: 13px;">🚧 Active Road Work</b>
+              <span style="background: #fef3c7; color: #b45309; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 800;">${rw.severity}</span>
+            </div>
+            <div style="font-weight: 700; color: #1e293b; margin: 4px 0;">${rw.name}</div>
+            <div style="font-size: 11.5px; color: #475569; margin-bottom: 3px;"><b>Agency:</b> ${rw.agency}</div>
+            <div style="font-size: 11.5px; color: #475569; margin-bottom: 3px;"><b>Work:</b> ${rw.work}</div>
+            <div style="font-size: 11.5px; color: #dc2626; font-weight: 700; margin-bottom: 4px;">⚠️ ${rw.delay} &bull; ${rw.lanes}</div>
+            <div style="font-size: 11px; background: #f0fdf4; color: #166534; padding: 4px 6px; border-radius: 4px; border: 1px solid #bbf7d0;">
+              <b>💡 Recommended Bypass:</b> ${rw.bypass}
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    // Draw Waterlogging / Flooded Underpasses
+    const FLOOD_ZONES = [
+      { name: "Kadubeesanahalli Underpass (ORR)", coords: [12.9350, 77.6890], desc: "2 ft standing water during heavy downpour. Impassable for sedans." },
+      { name: "Okalipuram Underpass", coords: [12.9820, 77.5670], desc: "Submerged within 20 mins of cloudburst. Use Majestic flyover." },
+      { name: "Panathur Railway Underbridge (RUB)", coords: [12.9380, 77.7050], desc: "Completely submerged. Avoid Bellandur-Balagere connector." }
+    ];
+
+    function drawFloodZones() {
+      floodLayerGroup.clearLayers();
+      FLOOD_ZONES.forEach(fz => {
+        const icon = L.divIcon({ className: 'water-pin', iconSize: [14, 14] });
+        const marker = L.marker(fz.coords, { icon: icon }).addTo(floodLayerGroup);
+        marker.bindPopup(`
+          <div>
+            <b style="color: #0284c7;">🌧️ ${fz.name}</b><br>
+            <span style="color:#d93025; font-weight:bold;">Waterlogging Risk: HIGH</span><br>
+            <small>${fz.desc}</small>
+          </div>
+        `);
+      });
+    }
+
+    // Toggle Handlers
+    let showTraffic = true;
+    let showMetro = true;
+    let showBusStops = true;
+    let showRoadWork = true;
+    let showFloods = true;
+
+    function toggleTrafficLayer() {
+      showTraffic = !showTraffic;
+      document.getElementById('btnToggleTraffic').classList.toggle('active', showTraffic);
+      if (showTraffic) drawChokepoints(); else trafficLayerGroup.clearLayers();
+    }
+
+    function toggleMetroLayer() {
+      showMetro = !showMetro;
+      document.getElementById('btnToggleMetro').classList.toggle('active', showMetro);
+      if (showMetro) drawMetroLines(); else metroLayerGroup.clearLayers();
+    }
+
+    function toggleBusStopsLayer() {
+      showBusStops = !showBusStops;
+      document.getElementById('btnToggleBusStops').classList.toggle('active', showBusStops);
+      if (showBusStops) {
+        map.addLayer(busStopsLayerGroup);
+      } else {
+        map.removeLayer(busStopsLayerGroup);
+      }
+    }
+
+    function toggleRoadWorkLayer() {
+      showRoadWork = !showRoadWork;
+      document.getElementById('btnToggleRoadWork').classList.toggle('active', showRoadWork);
+      if (showRoadWork) drawRoadRepairs(); else roadWorkLayerGroup.clearLayers();
+    }
+
+    function toggleFloodLayer() {
+      showFloods = !showFloods;
+      document.getElementById('btnToggleFloods').classList.toggle('active', showFloods);
+      if (showFloods) drawFloodZones(); else floodLayerGroup.clearLayers();
+    }
+
+    function swapLocations() {
+      const orig = document.getElementById('originInput');
+      const dest = document.getElementById('destInput');
+      const temp = orig.value;
+      orig.value = dest.value;
+      dest.value = temp;
+      calculateCommute();
+    }
+
+    function setCorridor(orig, dest) {
+      document.getElementById('originInput').value = orig;
+      document.getElementById('destInput').value = dest;
+      calculateCommute();
+    }
+
+    // Normalize location string to coordinate key
+    function getCoords(name) {
+      const key = name.toLowerCase().replace(/[^a-z]/g, '_');
+      for (const k in BENGALURU_COORDS) {
+        if (key.includes(k) || k.includes(key)) return BENGALURU_COORDS[k];
+      }
+      return [12.9716, 77.5946];
+    }
+
+    // Main Commute Calculation Function
+    async function calculateCommute() {
+      const origin = document.getElementById('originInput').value.trim();
+      const destination = document.getElementById('destInput').value.trim();
+      const hour = parseInt(document.getElementById('timeSelect').value);
+      const isRaining = document.getElementById('rainCheckbox').checked;
+      const loadingBar = document.getElementById('loadingBar');
+      const content = document.getElementById('sidebarContent');
+
+      if (!origin || !destination) return;
+
+      loadingBar.style.display = 'block';
+
+      try {
+        // Fetch AI Agent route analysis & multimodal metro savings
+        const queryPrompt = `How is traffic from ${origin} to ${destination} at ${hour}:00 hrs?`;
+        const [res, busRes, weatherRes] = await Promise.all([
+          fetch('/api/ask', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ prompt: queryPrompt, is_raining: isRaining, hour: hour })
+          }),
+          fetch(`/api/bus?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`),
+          fetch('/api/weather')
+        ]);
+
+        const data = await res.json();
+        const busData = await busRes.json();
+        const weatherData = await weatherRes.json();
+
+        // Update Weather Ribbon
+        if (weatherData && weatherData.weather) {
+          const w = weatherData.weather;
+          document.getElementById('weatherRibbon').innerHTML = `
+            <span>⛅ ${w.temperature_c}°C BLR • 🌧️ ${w.condition}</span>
+            <span style="font-weight: 600;">💧 ${w.humidity_pct}% Hum</span>
+          `;
+        }
+
+        renderSidebarResults(data, busData, origin, destination);
+        drawRouteOnMap(origin, destination, busData, data);
+      } catch (err) {
+        content.innerHTML = `<div style="color:red; padding:12px;">Failed to fetch route data: ${err.message}</div>`;
+      } finally {
+        loadingBar.style.display = 'none';
+      }
+    }
+
+    let liveTrackingInterval = null;
+
+    function getPointAtFraction(coordsList, fraction) {
+      if (!coordsList || coordsList.length === 0) return null;
+      if (coordsList.length === 1) return coordsList[0];
+      
+      let dists = [];
+      let totalDist = 0;
+      for (let i = 0; i < coordsList.length - 1; i++) {
+        const dLat = coordsList[i+1][0] - coordsList[i][0];
+        const dLng = coordsList[i+1][1] - coordsList[i][1];
+        const d = Math.hypot(dLat, dLng);
+        dists.push(d);
+        totalDist += d;
+      }
+      if (totalDist === 0) return coordsList[0];
+
+      const targetDist = Math.max(0, Math.min(1, fraction)) * totalDist;
+      let accumulated = 0;
+      for (let i = 0; i < dists.length; i++) {
+        if (accumulated + dists[i] >= targetDist) {
+          const segFraction = (targetDist - accumulated) / (dists[i] || 0.00001);
+          const lat = coordsList[i][0] + (coordsList[i+1][0] - coordsList[i][0]) * segFraction;
+          const lng = coordsList[i][1] + (coordsList[i+1][1] - coordsList[i][1]) * segFraction;
+          return [lat, lng];
+        }
+        accumulated += dists[i];
+      }
+      return coordsList[coordsList.length - 1];
+    }
+
+    function zoomToStop(lat, lng, name) {
+      if (lat && lng) {
+        map.flyTo([lat, lng], 15, { duration: 1.0 });
+        L.popup()
+          .setLatLng([lat, lng])
+          .setContent(`<b>🚏 BMTC Bus Stop: ${name}</b><br><small style="color:#0284c7; font-weight:700;">Live Bus Tracking Active</small>`)
+          .openOn(map);
+      }
+    }
+
+    function drawRouteOnMap(origName, destName, busData, data) {
+      routeLayerGroup.clearLayers();
+      busStopsLayerGroup.clearLayers();
+      if (liveTrackingInterval) {
+        clearInterval(liveTrackingInterval);
+        liveTrackingInterval = null;
+      }
+
+      const c1 = getCoords(origName);
+      const c2 = getCoords(destName);
+
+      // Start & Destination Map Markers
+      L.marker(c1).addTo(routeLayerGroup).bindPopup(`<b>🟢 Starting Point: ${origName}</b>`).openPopup();
+      L.marker(c2).addTo(routeLayerGroup).bindPopup(`<b>🔴 Destination: ${destName}</b>`);
+
+      // -------------------------------------------------------------
+      // 1. REALISTIC ROAD CORRIDOR (Asphalt + Heavy Congestion + Dividers)
+      // -------------------------------------------------------------
+      const roadMid = [(c1[0] + c2[0])/2 + 0.012, (c1[1] + c2[1])/2 - 0.012];
+      const roadPath = [c1, roadMid, c2];
+
+      // Layer 1: Dark Asphalt Base Roadbed
+      L.polyline(roadPath, { color: '#0f172a', weight: 12, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayerGroup);
+      // Layer 2: Red Traffic Flow
+      L.polyline(roadPath, { color: '#ea4335', weight: 7, opacity: 0.9, lineCap: 'round' })
+        .addTo(routeLayerGroup)
+        .bindTooltip("🚖 Road Cab Route (Slow, Choked by Congestion)", { sticky: true });
+      // Layer 3: Dashed Center Lane Highway Divider
+      L.polyline(roadPath, { color: '#fef08a', weight: 1.5, dashArray: '8, 12', opacity: 0.95 }).addTo(routeLayerGroup);
+
+      // -------------------------------------------------------------
+      // 2. REALISTIC BMTC BUS CORRIDOR (Asphalt + Dedicated Cyan Lane + Stops)
+      // -------------------------------------------------------------
+      const busMid = [(c1[0] + c2[0])/2 + 0.006, (c1[1] + c2[1])/2 + 0.008];
+      let busRoadCoords = [c1];
+      let busStopObjects = [];
+
+      if (busData && busData.intermediate_stops && busData.intermediate_stops.length > 0) {
+        const stops = busData.intermediate_stops;
+        stops.forEach((st, idx) => {
+          let stopLat = st.lat;
+          let stopLng = st.lng;
+          if (!stopLat || !stopLng) {
+            const ratio = (idx + 1) / (stops.length + 1);
+            stopLat = c1[0] + (c2[0] - c1[0]) * ratio + 0.004;
+            stopLng = c1[1] + (c2[1] - c1[1]) * ratio + 0.006;
+          }
+          const stopCoords = [stopLat, stopLng];
+          busRoadCoords.push(stopCoords);
+
+          const stopName = st.name || st;
+          const stopIcon = L.divIcon({
+            className: 'custom-bus-stop-wrapper',
+            html: `<div class="custom-bus-stop" id="busStopPin_${idx}"><div class="bus-badge">🚏</div><span class="bus-lbl">${stopName}</span></div>`
+          });
+          const stopMarker = L.marker(stopCoords, { icon: stopIcon }).addTo(busStopsLayerGroup);
+          stopMarker.bindPopup(`
+            <b>🚏 BMTC Bus Stop: ${stopName}</b><br>
+            <small>Stop #${idx + 1} &bull; Route ${busData.primary_bus?.route_no || '500-D'}</small><br>
+            <span style="color: #0284c7; font-weight: 700;">📡 Live Bus Tracking Active</span>
+          `);
+
+          busStopObjects.push({
+            index: idx,
+            name: stopName,
+            coords: stopCoords,
+            marker: stopMarker
+          });
+        });
+      } else {
+        busRoadCoords.push(busMid);
+      }
+      busRoadCoords.push(c2);
+
+      // Layer 1: Road Asphalt Bed for Bus
+      L.polyline(busRoadCoords, { color: '#0f172a', weight: 10, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayerGroup);
+      // Layer 2: Dedicated Bus Transit Lane (Cyan)
+      L.polyline(busRoadCoords, { color: '#0284c7', weight: 6, opacity: 0.9, lineCap: 'round' })
+        .addTo(routeLayerGroup)
+        .bindTooltip(`🚌 BMTC Bus Route Corridor (${busData?.primary_bus?.route_no || '500-D'})`, { sticky: true });
+      // Layer 3: Dashed Divider
+      L.polyline(busRoadCoords, { color: '#ffffff', weight: 1.5, dashArray: '6, 8', opacity: 0.95 }).addTo(routeLayerGroup);
+
+      // -------------------------------------------------------------
+      // 3. REALISTIC NAMMA METRO RAILWAY TRACK (Ballast + Sleepers + Rails)
+      // -------------------------------------------------------------
+      let metroData = null;
+      if (data && data.raw_tool_data) {
+        data.raw_tool_data.forEach(item => { if (item.origin_boarding_station) metroData = item; });
+      }
+
+      let metroTrackCoords = [c1];
+      let metroStationObjects = [];
+
+      if (metroData && metroData.intermediate_stations && metroData.intermediate_stations.length > 0) {
+        metroData.intermediate_stations.forEach((st, idx) => {
+          let stLat = st.lat;
+          let stLng = st.lng;
+          if (!stLat || !stLng) {
+            const ratio = (idx + 1) / (metroData.intermediate_stations.length + 1);
+            stLat = c1[0] + (c2[0] - c1[0]) * ratio;
+            stLng = c1[1] + (c2[1] - c1[1]) * ratio;
+          }
+          const stCoords = [stLat, stLng];
+          metroTrackCoords.push(stCoords);
+
+          const stIcon = L.divIcon({
+            className: 'custom-metro-station-wrapper',
+            html: `<div class="custom-metro-station" id="metroStationPin_${idx}"><div class="metro-badge">🚇</div><span class="station-lbl">${st.name}</span></div>`
+          });
+          const stationMarker = L.marker(stCoords, { icon: stIcon }).addTo(routeLayerGroup);
+          stationMarker.bindPopup(`
+            <b>🚇 Metro Station: ${st.name}</b><br>
+            <small>Headway: ${metroData.train_frequency || 'Every 4 mins'}</small><br>
+            <small>QR Fare: ₹${metroData.metro_qr_smartcard_fare_inr || 57}</small>
+          `);
+
+          metroStationObjects.push({
+            index: idx,
+            name: st.name,
+            coords: stCoords,
+            marker: stationMarker
+          });
+        });
+      } else {
+        metroTrackCoords.push([(c1[0] + c2[0])/2, (c1[1] + c2[1])/2]);
+      }
+      metroTrackCoords.push(c2);
+
+      // Layer 1: Dark Stone Railway Ballast Bed
+      L.polyline(metroTrackCoords, { color: '#1e1b4b', weight: 8, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayerGroup);
+      // Layer 2: Railway Sleepers / Ties (Dashed Purple Lines)
+      L.polyline(metroTrackCoords, { color: '#c084fc', weight: 5, dashArray: '3, 6', opacity: 0.95 }).addTo(routeLayerGroup);
+      // Layer 3: Polished Center Steel Rail
+      L.polyline(metroTrackCoords, { color: '#ffffff', weight: 1.8, opacity: 0.9 })
+        .addTo(routeLayerGroup)
+        .bindTooltip("🚇 Namma Metro High-Speed Railway Track (Smooth Rail Transit)", { sticky: true });
+
+      // -------------------------------------------------------------
+      // 4. CONTINUOUS MOVING VEHICLE TRACKING SIMULATION WITH STOPS TRACKING
+      // -------------------------------------------------------------
+      const trainIcon = L.divIcon({
+        className: 'vehicle-marker-wrapper',
+        html: `<div class="vehicle-marker" style="border: 2px solid #9333ea; color: #581c87; background: #ffffff;">🚆 <span id="trainSpeedBadge">Metro • 65 km/h</span></div>`
+      });
+      const metroMovingMarker = L.marker(metroTrackCoords[0], { icon: trainIcon }).addTo(routeLayerGroup);
+      metroMovingMarker.bindPopup(`<b>🚇 Namma Metro Express</b><br>Speed: 65 km/h<br>Smooth electric rail bypasses all road cuts`);
+
+      const busIcon = L.divIcon({
+        className: 'vehicle-marker-wrapper',
+        html: `<div class="vehicle-marker" style="border: 2px solid #0284c7; color: #0369a1; background: #ffffff;">🚌 <span id="busSpeedBadge">BMTC ${busData?.primary_bus?.route_no || '500-D'}</span></div>`
+      });
+      const busMovingMarker = L.marker(busRoadCoords[0], { icon: busIcon }).addTo(routeLayerGroup);
+      busMovingMarker.bindPopup(`<b>🚌 BMTC ${busData?.primary_bus?.route_no || '500-D'} Vajra</b><br>Tracking active along intermediate bus stops`);
+
+      const cabIcon = L.divIcon({
+        className: 'vehicle-marker-wrapper',
+        html: `<div class="vehicle-marker" style="border: 2px solid #ea4335; color: #c5221f; background: #ffffff;">🚖 <span id="cabSpeedBadge">Cab • 9 km/h (Crawl)</span></div>`
+      });
+      const cabMovingMarker = L.marker(roadPath[0], { icon: cabIcon }).addTo(routeLayerGroup);
+      cabMovingMarker.bindPopup(`<b>🚖 Road Cab (Ola / Uber)</b><br>Speed: 9 km/h (Bottleneck crawl)<br>Surge multiplier active`);
+
+      // Animation Loop state
+      let trainProg = 0.0;
+      let busProg = 0.30;
+      let cabProg = 0.15;
+      const routeNo = busData?.primary_bus?.route_no || '500-D';
+
+      liveTrackingInterval = setInterval(() => {
+        trainProg = (trainProg + 0.0028) % 1.0;
+        busProg = (busProg + 0.0018) % 1.0;
+        cabProg = (cabProg + 0.0009) % 1.0;
+
+        const ptTrain = getPointAtFraction(metroTrackCoords, trainProg);
+        const ptBus = getPointAtFraction(busRoadCoords, busProg);
+        const ptCab = getPointAtFraction(roadPath, cabProg);
+
+        if (ptTrain) metroMovingMarker.setLatLng(ptTrain);
+        if (ptBus) busMovingMarker.setLatLng(ptBus);
+        if (ptCab) cabMovingMarker.setLatLng(ptCab);
+
+        // --- BUS STOPS TRACKING LOGIC ---
+        if (busStopObjects.length > 0 && ptBus) {
+          let closestStop = null;
+          let closestDist = Infinity;
+          let closestIdx = -1;
+
+          for (let i = 0; i < busStopObjects.length; i++) {
+            const st = busStopObjects[i];
+            const d = Math.hypot(ptBus[0] - st.coords[0], ptBus[1] - st.coords[1]);
+            if (d < closestDist) {
+              closestDist = d;
+              closestStop = st;
+              closestIdx = i;
+            }
+          }
+
+          const isAtStop = closestDist < 0.0035;
+
+          // Update Map Pin pulses & Sidebar Stop Items
+          busStopObjects.forEach((st, i) => {
+            const pinEl = document.getElementById('busStopPin_' + i);
+            const sideEl = document.getElementById('sidebarStop_' + i);
+
+            if (i < closestIdx) {
+              if (pinEl) pinEl.classList.remove('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item completed';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = '✓ Passed';
+              }
+            } else if (i === closestIdx && isAtStop) {
+              if (pinEl) pinEl.classList.add('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item active';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = '🚌 BUS HERE';
+              }
+            } else if (i === closestIdx && !isAtStop) {
+              if (pinEl) pinEl.classList.remove('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item active';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = '➔ Approaching';
+              }
+            } else {
+              if (pinEl) pinEl.classList.remove('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item upcoming';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = `⏳ Stop #${i + 1}`;
+              }
+            }
+          });
+
+          // Update Moving Bus Badge
+          const busBadge = document.getElementById('busSpeedBadge');
+          if (busBadge && closestStop) {
+            if (isAtStop) {
+              busBadge.innerHTML = `BMTC ${routeNo} &bull; 🚏 <b>At: ${closestStop.name}</b>`;
+            } else {
+              const nextIdx = (closestIdx >= 0) ? closestIdx : 0;
+              const nextTarget = busStopObjects[nextIdx] || closestStop;
+              busBadge.innerHTML = `BMTC ${routeNo} &bull; ➔ <b>Next: ${nextTarget.name}</b>`;
+            }
+          }
+
+          // Update Bottom Live Tracking Pill
+          const trackingPill = document.getElementById('trackingPill');
+          if (trackingPill && closestStop) {
+            if (isAtStop) {
+              trackingPill.innerHTML = `
+                <div class="radar-dot"></div>
+                <span><b>Live Bus Tracking:</b> 🚌 BMTC ${routeNo} <b>AT STOP: ${closestStop.name}</b> &bull; 🚆 Metro (65 km/h) &bull; 🚖 Cab (9 km/h)</span>
+              `;
+            } else {
+              trackingPill.innerHTML = `
+                <div class="radar-dot"></div>
+                <span><b>Live Bus Tracking:</b> 🚌 BMTC ${routeNo} ➔ Next Stop: <b>${closestStop.name}</b> &bull; 🚆 Metro (65 km/h) &bull; 🚖 Cab (9 km/h)</span>
+              `;
+            }
+          }
+        }
+      }, 50);
+
+      // Fit map to show both points
+      const bounds = L.latLngBounds([c1, c2]);
+      map.fitBounds(bounds, { padding: [80, 80] });
+    }
+
+    let currentCommuteResult = null;
+    let currentBusResult = null;
+    let selectedBusType = 'ac';
+    let selectedRideHailMode = 'cab';
+
+    function selectBusType(type) {
+      selectedBusType = type;
+      const isAc = (type === 'ac');
+      document.getElementById('tabBusOrd')?.classList.toggle('active-blue', !isAc);
+      document.getElementById('tabBusAc')?.classList.toggle('active-blue', isAc);
+
+      const b = currentBusResult?.primary_bus;
+      const ordFare = currentBusResult?.fare_ordinary_inr || 25;
+      const acFare = currentBusResult?.fare_ac_vajra_inr || 45;
+      const curFare = isAc ? acFare : ordFare;
+
+      const fareEl = document.getElementById('busDisplayFare');
+      if (fareEl) fareEl.textContent = `₹${curFare}`;
+
+      const servEl = document.getElementById('busDisplayService');
+      if (servEl) servEl.textContent = isAc ? (b?.service_type || 'AC Vajra Volvo (Air-Conditioned)') : 'Ordinary Suvarna Red/Green Service';
+
+      const t = currentCommuteResult?.raw_tool_data?.find(x => x.cost_estimates);
+      const cabFare = t?.cost_estimates?.cab_uber_ola_inr || 750;
+      const savingsEl = document.getElementById('busDisplaySavings');
+      if (savingsEl) savingsEl.textContent = `💰 Saves ₹${Math.max(0, cabFare - curFare)} vs surge cab!`;
+
+      const busBadge = document.getElementById('busSpeedBadge');
+      if (busBadge) {
+        const routeNo = b?.route_no || '500-D';
+        busBadge.innerHTML = isAc ? `BMTC ${routeNo} Vajra` : `BMTC ${routeNo} Ordinary`;
+      }
+    }
+
+    function selectRideHail(mode) {
+      selectedRideHailMode = mode;
+      document.getElementById('tabRoadCab')?.classList.toggle('active-red', mode === 'cab');
+      document.getElementById('tabRoadAuto')?.classList.toggle('active-red', mode === 'auto');
+      document.getElementById('tabRoadBike')?.classList.toggle('active-red', mode === 'bike');
+
+      const t = currentCommuteResult?.raw_tool_data?.find(x => x.cost_estimates);
+      const dist = t?.distance_km || 18;
+      const surge = t?.cost_estimates?.surge_multiplier || '1.6x';
+      const cabFare = t?.cost_estimates?.cab_uber_ola_inr || 750;
+      const autoFare = t?.cost_estimates?.namma_auto_inr || Math.round(30 + Math.max(0, dist - 2) * 15 * 1.15);
+      const bikeFare = t?.cost_estimates?.bike_taxi_rapido_inr || Math.round(20 + Math.max(0, dist - 1.5) * 8.5 * 1.1);
+
+      const cabTime = t?.current_travel_time_mins || 115;
+      const autoTime = t?.auto_travel_time_mins || Math.round(cabTime * 0.88);
+      const bikeTime = t?.bike_travel_time_mins || Math.round(cabTime * 0.65);
+
+      const iconEl = document.getElementById('roadHeaderIcon');
+      const titleEl = document.getElementById('roadHeaderTitle');
+      const tagEl = document.getElementById('roadHeaderTag');
+      const durEl = document.getElementById('roadDisplayDuration');
+      const fareEl = document.getElementById('roadDisplayFare');
+      const detEl = document.getElementById('roadDisplayDetails');
+      const roadBadge = document.getElementById('cabSpeedBadge');
+
+      if (mode === 'cab') {
+        if (iconEl) iconEl.textContent = '🚖';
+        if (titleEl) titleEl.textContent = 'Road Cab (Ola / Uber)';
+        if (tagEl) { tagEl.textContent = '🔴 Severe Crawl'; tagEl.style.background = '#fce8e6'; tagEl.style.color = '#c5221f'; }
+        if (durEl) durEl.textContent = `${cabTime} mins`;
+        if (fareEl) fareEl.textContent = `₹${cabFare}`;
+        if (detEl) detEl.innerHTML = `
+          • <b>Vehicle Type:</b> Ola / Uber Cab (Sedan / Hatchback)<br>
+          • <b>Road Distance:</b> ${dist} km &bull; <b>Congestion:</b> Heavy Crawl (Speed: 9 km/h)<br>
+          • <b>Surge Multiplier:</b> ${surge} active.<br>
+          <span style="color: #d93025;">⚠️ Vulnerable to Silk Board / ORR traffic gridlocks</span>
+        `;
+        if (roadBadge) roadBadge.innerHTML = '🚖 Cab • 9 km/h (Crawl)';
+      } else if (mode === 'auto') {
+        if (iconEl) iconEl.textContent = '🛺';
+        if (titleEl) titleEl.textContent = 'Auto (Namma Yatri / Ola)';
+        if (tagEl) { tagEl.textContent = '🟡 Nimbler Flow'; tagEl.style.background = '#fef9c3'; tagEl.style.color = '#854d0e'; }
+        if (durEl) durEl.textContent = `${autoTime} mins`;
+        if (fareEl) fareEl.textContent = `₹${autoFare}`;
+        if (detEl) detEl.innerHTML = `
+          • <b>Tariff:</b> Official Bengaluru Meter (₹30 first 2km + ₹15/km)<br>
+          • <b>Agility:</b> Slightly faster (~12%) than cars by cutting through service lanes<br>
+          • <b>Platforms:</b> Namma Yatri (Direct-to-driver), Ola Auto, Uber Auto.<br>
+          <span style="color: #b45309;">💡 Budget alternative for short to mid-distance trips</span>
+        `;
+        if (roadBadge) roadBadge.innerHTML = '🛺 Auto • 15 km/h';
+      } else if (mode === 'bike') {
+        if (iconEl) iconEl.textContent = '🏍️';
+        if (titleEl) titleEl.textContent = 'Bike Taxi (Rapido / Uber Moto)';
+        if (tagEl) { tagEl.textContent = '⚡ Fastest Road'; tagEl.style.background = '#dcfce7'; tagEl.style.color = '#15803d'; }
+        if (durEl) durEl.textContent = `${bikeTime} mins`;
+        if (fareEl) fareEl.textContent = `₹${bikeFare}`;
+        if (detEl) detEl.innerHTML = `
+          • <b>Tariff:</b> Rapido / Uber Moto (₹20 base + ₹8.5/km)<br>
+          • <b>Agility:</b> Weaves through gridlock; cuts 35% travel time vs cars!<br>
+          • <b>Best for:</b> Solo commuters beating tech corridor bottlenecks.<br>
+          <span style="color: #166534; font-weight: 700;">⚡ Saves ₹${cabFare - bikeFare} and ${cabTime - bikeTime} mins vs car cab!</span>
+        `;
+        if (roadBadge) roadBadge.innerHTML = '🏍️ Bike Taxi • 28 km/h';
+      }
+    }
+
+    function renderSidebarResults(data, busData, origin, destination) {
+      currentCommuteResult = data;
+      currentBusResult = busData;
+      const content = document.getElementById('sidebarContent');
+      let html = '';
+
+      let trafficData = null;
+      let metroData = null;
+      let departureData = null;
+
+      if (data.raw_tool_data) {
+        data.raw_tool_data.forEach(item => {
+          if (item.current_travel_time_mins && item.distance_km) trafficData = item;
+          if (item.origin_boarding_station) metroData = item;
+          if (item.golden_departure_window) departureData = item;
+        });
+      }
+
+      const distKm = trafficData?.distance_km || 18;
+      const roadTime = trafficData ? trafficData.current_travel_time_mins : 120;
+      const cabFare = trafficData ? trafficData.cost_estimates.cab_uber_ola_inr : 800;
+      const autoFare = trafficData?.cost_estimates?.namma_auto_inr || Math.round(30 + Math.max(0, distKm - 2) * 15 * 1.15);
+      const bikeFare = trafficData?.cost_estimates?.bike_taxi_rapido_inr || Math.round(20 + Math.max(0, distKm - 1.5) * 8.5 * 1.1);
+
+      const metroTime = metroData ? metroData.breakdown.total_multimodal_time_mins : 75;
+      const metroFare = metroData ? (metroData.metro_qr_smartcard_fare_inr || 57) : 57;
+
+      const busFareOrd = busData?.fare_ordinary_inr || 25;
+      const busFareAc = busData?.fare_ac_vajra_inr || 45;
+      const busTime = busData?.estimated_travel_time_mins || 65;
+
+      const timeSaved = Math.max(0, roadTime - metroTime);
+      const moneySaved = Math.max(0, cabFare - metroFare);
+
+      // Metro stations list HTML
+      let metroStationsHtml = '';
+      if (metroData && metroData.intermediate_stations) {
+        metroStationsHtml = metroData.intermediate_stations.map(s => `
+          <div class="timeline-item">${s.name}</div>
+        `).join('');
+      }
+
+      // Bus stops list HTML & Interactive Live Stop Progress Steps
+      let busStopsHtml = '';
+      let busStopStepsHtml = '';
+      if (busData && busData.intermediate_stops) {
+        busStopsHtml = busData.intermediate_stops.map(s => `
+          <div class="timeline-item">${s.name || s}</div>
+        `).join('');
+
+        busStopStepsHtml = busData.intermediate_stops.map((st, i) => {
+          const name = st.name || st;
+          const lat = st.lat || 0;
+          const lng = st.lng || 0;
+          return `
+            <div class="stop-progress-item upcoming" id="sidebarStop_${i}" onclick="zoomToStop(${lat}, ${lng}, '${name.replace(/'/g, "\\'")}')">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-weight: 700; opacity: 0.7;">#${i + 1}</span>
+                <span>🚏 ${name}</span>
+              </div>
+              <span class="stop-status-pill">⏳ Stop #${i + 1}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 1. Money & Time Saver Big Banner
+      html += `
+        <div class="money-saver-banner">
+          <div class="saver-header">
+            <span>⚡ AI Commute Optimization</span>
+            <span>Bengaluru DevFest</span>
+          </div>
+          <div class="saver-metric-row">
+            <div>
+              <div class="saver-big-val">₹${moneySaved}</div>
+              <div class="saver-sub">Saved vs Surge Cab</div>
+            </div>
+            <div style="margin-left: 20px;">
+              <div class="saver-big-val">${timeSaved}m</div>
+              <div class="saver-sub">Faster with Metro</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 2. Route Option: Namma Metro (RECOMMENDED)
+      html += `
+        <div class="route-card selected" onclick="highlightRoute('metro')">
+          <div class="route-card-header">
+            <div class="route-mode-badge" style="color: #137333;">
+              <span>🚇 Namma Metro Multimodal</span>
+            </div>
+            <span class="tag-recommended">⭐ AI Recommended</span>
+          </div>
+          <div class="route-duration-row">
+            <span class="route-duration">${metroTime} mins</span>
+            <span class="route-fare">₹${metroFare}</span>
+          </div>
+          <div class="route-details">
+            • <b>Boarding:</b> ${metroData?.origin_boarding_station || 'Nearest Metro Station'}<br>
+            • <b>Deboarding:</b> ${metroData?.destination_deboarding_station || 'Dest. Station'}<br>
+            • <b>Fare Breakdown:</b> QR/Smartcard: <b>₹${metroData?.metro_qr_smartcard_fare_inr || 57}</b> | Token: ₹${metroData?.metro_token_fare_inr || 60}<br>
+            • <b>Headway:</b> ${metroData?.train_frequency || 'Every 4-5 mins'}<br>
+            <span style="color: #137333; font-weight: 700;">💰 Saves ₹${moneySaved} vs surge cab!</span>
+
+            <!-- Collapsible Metro Stations Accordion -->
+            <details style="margin-top: 10px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 6px 10px; cursor: pointer;">
+              <summary style="font-weight: 700; color: #7e22ce; outline: none;">
+                📍 View All ${metroData?.station_count || 'Route'} Metro Stations ▾
+              </summary>
+              <div class="timeline-stops-list">
+                ${metroStationsHtml || '<div class="timeline-item">Direct Metro Route</div>'}
+              </div>
+            </details>
+          </div>
+        </div>
+      `;
+
+      // 3. Route Option: BMTC Bus Details (BUDGET FRIENDLY with Ordinary / AC Tab Selector)
+      if (busData && busData.status === 'success') {
+        const b = busData.primary_bus;
+        const curBusFare = (selectedBusType === 'ac') ? busFareAc : busFareOrd;
+        const busMoneySaved = Math.max(0, cabFare - curBusFare);
+        html += `
+          <div class="route-card" style="border-left: 4px solid #0284c7;">
+            <div class="route-card-header">
+              <div class="route-mode-badge" style="color: #0284c7;">
+                <span>🚌 BMTC Bus: Route ${b.route_no}</span>
+              </div>
+              <span id="busActiveBadge" style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+                ${selectedBusType === 'ac' ? 'AC Vajra' : 'Ordinary'}
+              </span>
+            </div>
+
+            <!-- Selectable Bus Type Tabs (Ordinary vs AC Vajra) -->
+            <div class="segmented-selector">
+              <div class="segment-tab ${selectedBusType === 'ordinary' ? 'active-blue' : ''}" id="tabBusOrd" onclick="selectBusType('ordinary')">
+                <span>🟢 Ordinary Bus</span>
+                <span class="fare-sub-badge">₹${busFareOrd}</span>
+              </div>
+              <div class="segment-tab ${selectedBusType === 'ac' ? 'active-blue' : ''}" id="tabBusAc" onclick="selectBusType('ac')">
+                <span>🔵 AC Vajra Volvo</span>
+                <span class="fare-sub-badge">₹${busFareAc}</span>
+              </div>
+            </div>
+
+            <div class="route-duration-row">
+              <span class="route-duration">${busTime} mins</span>
+              <span class="route-fare" id="busDisplayFare" style="color: #0284c7;">₹${curBusFare}</span>
+            </div>
+            <div class="route-details">
+              • <b>Boarding Stop:</b> ${busData.boarding_bus_stop}<br>
+              • <b>Deboarding Stop:</b> ${busData.deboarding_bus_stop}<br>
+              • <b>Service:</b> <span id="busDisplayService">${selectedBusType === 'ac' ? (b.service_type || 'AC Vajra Volvo (Air-Conditioned)') : 'Ordinary Suvarna Red/Green Service'}</span> (${busData.frequency})<br>
+              • <b>Alternative Routes:</b> ${busData.available_bus_numbers.join(', ')}<br>
+              <span id="busDisplaySavings" style="color: #0284c7; font-weight: 700;">💰 Saves ₹${busMoneySaved} vs cab!</span>
+
+              <!-- Collapsible BMTC Bus Stops Accordion -->
+              <details style="margin-top: 10px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 6px 10px; cursor: pointer;">
+                <summary style="font-weight: 700; color: #0284c7; outline: none;">
+                  📍 View All ${busData.stop_count || 'Corridor'} Bus Stops ▾
+                </summary>
+                <div class="timeline-bus-list">
+                  ${busStopsHtml || '<div class="timeline-item">Bus Corridor Stops</div>'}
+                </div>
+              </details>
+
+              <!-- Live BMTC Bus Stops Tracking Box -->
+              <div class="bus-live-tracker-box">
+                <div class="bus-live-tracker-title">
+                  <span>🚏 Live Bus Stop Tracking (${busData.stop_count || 'Corridor'} Stops)</span>
+                  <span style="font-size: 0.72rem; color: #0284c7; font-weight: 700;">📡 Live GPS Active</span>
+                </div>
+                <div class="stop-progress-steps" id="busStopStepsContainer">
+                  ${busStopStepsHtml || '<div style="font-size: 0.75rem; color: #64748b;">Direct transit link</div>'}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 4. Route Option: Road Ride-Hail with Cab, Auto, & Bike Selector Tabs
+      html += `
+        <div class="route-card" onclick="highlightRoute('road')" style="border-left: 4px solid #ea4335;">
+          <div class="route-card-header">
+            <div class="route-mode-badge" style="color: #c5221f;">
+              <span id="roadHeaderIcon">🚖</span> <span id="roadHeaderTitle">Road Transit Options</span>
+            </div>
+            <span class="tag-gridlock" id="roadHeaderTag">🔴 Severe Crawl</span>
+          </div>
+
+          <!-- Selectable Ride-Hail Tabs (Cab vs Auto vs Bike) -->
+          <div class="segmented-selector">
+            <div class="segment-tab ${selectedRideHailMode === 'cab' ? 'active-red' : ''}" id="tabRoadCab" onclick="selectRideHail('cab')">
+              <span>🚖 Cab</span>
+              <span class="fare-sub-badge">₹${cabFare}</span>
+            </div>
+            <div class="segment-tab ${selectedRideHailMode === 'auto' ? 'active-red' : ''}" id="tabRoadAuto" onclick="selectRideHail('auto')">
+              <span>🛺 Auto</span>
+              <span class="fare-sub-badge">₹${autoFare}</span>
+            </div>
+            <div class="segment-tab ${selectedRideHailMode === 'bike' ? 'active-red' : ''}" id="tabRoadBike" onclick="selectRideHail('bike')">
+              <span>🏍️ Bike</span>
+              <span class="fare-sub-badge">₹${bikeFare}</span>
+            </div>
+          </div>
+
+          <div class="route-duration-row">
+            <span class="route-duration" id="roadDisplayDuration">${roadTime} mins</span>
+            <span class="route-fare" id="roadDisplayFare" style="color: #ea4335;">₹${cabFare}</span>
+          </div>
+          <div class="route-details" id="roadDisplayDetails">
+            • <b>Vehicle Type:</b> Ola / Uber Cab (Sedan / Hatchback)<br>
+            • <b>Road Distance:</b> ${distKm} km &bull; <b>Congestion:</b> Heavy Crawl (Speed: 9 km/h)<br>
+            • <b>Surge Multiplier:</b> ${trafficData?.cost_estimates?.surge_multiplier || '1.6x'} active.<br>
+            <span style="color: #d93025;">⚠️ Vulnerable to ORR/Silk Board bottlenecks</span>
+          </div>
+        </div>
+      `;
+
+      // 5. Golden Departure Window Option
+      if (departureData) {
+        html += `
+          <div class="route-card" style="border-left: 4px solid #ca8a04;">
+            <div class="route-card-header">
+              <div class="route-mode-badge" style="color: #ca8a04;">
+                <span>⏱️ Golden Departure Window</span>
+              </div>
+              <span style="background: #fef9c3; color: #854d0e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Optimal</span>
+            </div>
+            <div class="route-duration-row">
+              <span class="route-duration" style="font-size: 1.15rem;">Leave at ${departureData.golden_departure_window}</span>
+            </div>
+            <div class="route-details">
+              ${departureData.time_saved_by_timing}. Avoids peak IT corridor outflow.
+            </div>
+          </div>
+        `;
+      }
+
+      // 6. Active Road Repairs & Detours Card
+      html += `
+        <div class="route-card" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
+          <div class="route-card-header">
+            <div class="route-mode-badge" style="color: #b45309;">
+              <span>🚧 Active Road Repairs & Detours</span>
+            </div>
+            <span style="background: #fde68a; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">BBMP / BMRCL</span>
+          </div>
+          <div class="route-details" style="color: #78350f;">
+            <b>8 Active City Road Works Monitored:</b>
+            <ul style="margin: 6px 0 6px 18px; font-size: 0.82rem; line-height: 1.5;">
+              <li><b>Central Silk Board:</b> Metro Blue Line pier work (3 lanes ➔ 1 lane, +35m delay).</li>
+              <li><b>Ecospace ORR:</b> BWSSB Cauvery pipeline trenching (service road closed, +30m delay).</li>
+              <li><b>Marathahalli ROB:</b> Railway bridge joint & pothole resurfacing (+25m delay).</li>
+              <li><b>Tin Factory:</b> Metro skywalk girder launch bottleneck (+35m delay).</li>
+            </ul>
+            <span style="font-weight: 700; color: #b45309;">💡 Commuter Pro-Tip:</span> Namma Metro completely bypasses all road cuts and construction bottlenecks!
+          </div>
+        </div>
+      `;
+
+      // 7. AI Copilot Advice
+      html += `
+        <div class="copilot-advice-card">
+          <h4>🤖 Namma Travel AI Advice</h4>
+          <p>${data.response || 'Avoid Outer Ring Road between 5:30 PM and 8:30 PM. Namma Metro Purple Line or BMTC 500-D Vajra AC offers reliable transit at a fraction of the cost of surge cabs.'}</p>
+        </div>
+      `;
+
+      content.innerHTML = html;
+    }
+
+    // Service Worker Registration for PWA & Mobile Install
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+      });
+    }
+
+    // PWA Install prompt handling
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('btnPwaInstall');
+      if (btn) btn.style.display = 'block';
+    });
+
+    function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            console.log('User installed PWA');
+          }
+          deferredPrompt = null;
+          closeMobileAppModal();
+        });
+      } else {
+        alert("To install on Android: In Chrome tap the three dots (⋮) in top right and choose 'Install app' or 'Add to Home screen'.");
+      }
+    }
+
+    function openMobileAppModal() {
+      const modal = document.getElementById('mobileAppModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeMobileAppModal() {
+      const modal = document.getElementById('mobileAppModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function closeModalOnBg(e) {
+      if (e.target.id === 'mobileAppModal') closeMobileAppModal();
+    }
+
+    function showOsInstall(os) {
+      const androidTab = document.getElementById('tabAndroid');
+      const iosTab = document.getElementById('tabIos');
+      const androidContent = document.getElementById('androidInstallContent');
+      const iosContent = document.getElementById('iosInstallContent');
+
+      if (os === 'android') {
+        androidTab.className = 'modal-os-tab active-android';
+        iosTab.className = 'modal-os-tab';
+        androidContent.style.display = 'block';
+        iosContent.style.display = 'none';
+      } else {
+        androidTab.className = 'modal-os-tab';
+        iosTab.className = 'modal-os-tab active-ios';
+        androidContent.style.display = 'none';
+        iosContent.style.display = 'block';
+      }
+    }
+
+    let isMobileSheetExpanded = false;
+    function toggleMobileSheet() {
+      const sidebar = document.getElementById('gmapsSidebar');
+      if (!sidebar) return;
+      isMobileSheetExpanded = !isMobileSheetExpanded;
+      if (isMobileSheetExpanded) {
+        sidebar.style.maxHeight = '88vh';
+      } else {
+        sidebar.style.maxHeight = '32vh';
+      }
+    }
+
+    // ==========================================
+    // Authentication (Google / Gmail & Mobile OTP)
+    // ==========================================
+    let currentUserSession = null;
+    let otpCountdownInterval = null;
+
+    function showAuthToast(msg, icon = '✅') {
+      const toast = document.getElementById('authToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      if (!toast) return;
+      toastMsg.innerText = msg;
+      toastIcon.innerText = icon;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function openAuthModal() {
+      const modal = document.getElementById('authModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('authModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function closeAuthModalOnBg(e) {
+      if (e.target.id === 'authModal') closeAuthModal();
+    }
+
+    function switchAuthTab(tab) {
+      const tabGoogle = document.getElementById('tabAuthGoogle');
+      const tabMobile = document.getElementById('tabAuthMobile');
+      const secGoogle = document.getElementById('authSectionGoogle');
+      const secMobile = document.getElementById('authSectionMobile');
+
+      if (tab === 'google') {
+        tabGoogle.className = 'auth-tab-btn active';
+        tabMobile.className = 'auth-tab-btn';
+        secGoogle.style.display = 'block';
+        secMobile.style.display = 'none';
+      } else {
+        tabGoogle.className = 'auth-tab-btn';
+        tabMobile.className = 'auth-tab-btn active';
+        secGoogle.style.display = 'none';
+        secMobile.style.display = 'block';
+      }
+    }
+
+    async function loginWithGoogleManual() {
+      const emailInput = document.getElementById('googleEmailInput');
+      const email = emailInput ? emailInput.value.trim() : '';
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid Gmail / Google email address.');
+        return;
+      }
+      await performGoogleAuth(email, email.split('@')[0].replace('.', ' ').toUpperCase());
+    }
+
+    async function loginWithGoogleDemo() {
+      await performGoogleAuth('shaik.bengaluru@gmail.com', 'Shaik Commuter');
+    }
+
+    async function performGoogleAuth(email, name) {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          saveAndApplyUserSession(data.user);
+          closeAuthModal();
+          showAuthToast(`Welcome back, ${data.user.name}! (Signed in via Gmail)`);
+        } else {
+          alert(data.error || 'Google sign in failed');
+        }
+      } catch (err) {
+        // Fallback for offline PWA
+        const fallbackUser = {
+          name: name || 'Google Commuter',
+          email: email,
+          provider: 'google',
+          smart_card_balance: 280,
+          bmtc_daily_pass: 'Active Daily Pass',
+          token: 'offline_token'
+        };
+        saveAndApplyUserSession(fallbackUser);
+        closeAuthModal();
+        showAuthToast(`Welcome, ${fallbackUser.name}! (Offline mode)`);
+      }
+    }
+
+    let activePhoneForOtp = '';
+
+    async function sendMobileOtp() {
+      const phoneInput = document.getElementById('mobileNumberInput');
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      if (!phone || phone.length < 10) {
+        alert('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+      activePhoneForOtp = phone;
+      const btn = document.getElementById('btnSendOtp');
+      if (btn) btn.innerText = 'Sending OTP...';
+
+      try {
+        const res = await fetch('/api/auth/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: '+91' + phone })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          document.getElementById('otpStepPhone').style.display = 'none';
+          document.getElementById('otpStepCode').style.display = 'block';
+          document.getElementById('otpTargetPhone').innerText = '+91 ' + phone;
+          if (data.demo_otp) {
+            document.getElementById('demoOtpDisplay').innerText = data.demo_otp;
+          }
+          startOtpCountdown();
+        } else {
+          alert(data.error || 'Failed to send OTP');
+        }
+      } catch (e) {
+        document.getElementById('otpStepPhone').style.display = 'none';
+        document.getElementById('otpStepCode').style.display = 'block';
+        document.getElementById('otpTargetPhone').innerText = '+91 ' + phone;
+        document.getElementById('demoOtpDisplay').innerText = '123456';
+        startOtpCountdown();
+      } finally {
+        if (btn) btn.innerText = '📨 Send 6-Digit OTP';
+      }
+    }
+
+    function autoFillOtp(code) {
+      const input = document.getElementById('otpCodeInput');
+      if (input) {
+        input.value = code;
+        input.focus();
+      }
+    }
+
+    function resetOtpStep() {
+      document.getElementById('otpStepPhone').style.display = 'block';
+      document.getElementById('otpStepCode').style.display = 'none';
+      if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+    }
+
+    function startOtpCountdown() {
+      let seconds = 30;
+      const timerText = document.getElementById('otpTimerText');
+      const resendBtn = document.getElementById('btnResendOtp');
+      if (resendBtn) resendBtn.disabled = true;
+
+      if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+      otpCountdownInterval = setInterval(() => {
+        seconds--;
+        if (timerText) timerText.innerText = `Resend OTP in ${seconds}s`;
+        if (seconds <= 0) {
+          clearInterval(otpCountdownInterval);
+          if (timerText) timerText.innerText = `Didn't get code?`;
+          if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.style.color = '#1a73e8';
+          }
+        }
+      }, 1000);
+    }
+
+    async function verifyMobileOtp() {
+      const codeInput = document.getElementById('otpCodeInput');
+      const otp = codeInput ? codeInput.value.trim() : '';
+      if (!otp || otp.length < 6) {
+        alert('Please enter the 6-digit OTP code.');
+        return;
+      }
+
+      const btn = document.getElementById('btnVerifyOtp');
+      if (btn) btn.innerText = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/auth/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: '+91' + activePhoneForOtp, otp })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          saveAndApplyUserSession(data.user);
+          closeAuthModal();
+          resetOtpStep();
+          showAuthToast(`Verified! Welcome ${data.user.name}`);
+        } else {
+          alert(data.error || 'Incorrect OTP code');
+        }
+      } catch (e) {
+        // Fallback for offline PWA
+        const fallbackUser = {
+          name: `Commuter (+91 ${activePhoneForOtp})`,
+          phone: activePhoneForOtp,
+          provider: 'mobile_otp',
+          smart_card_balance: 350,
+          bmtc_daily_pass: 'Active Daily Pass',
+          token: 'offline_otp_token'
+        };
+        saveAndApplyUserSession(fallbackUser);
+        closeAuthModal();
+        resetOtpStep();
+        showAuthToast(`Verified via mobile OTP!`);
+      } finally {
+        if (btn) btn.innerText = 'Verify & Sign In';
+      }
+    }
+
+    function saveAndApplyUserSession(user) {
+      currentUserSession = user;
+      try {
+        localStorage.setItem('namma_auth_user', JSON.stringify(user));
+      } catch (e) {}
+      renderAuthUserState();
+    }
+
+    function renderAuthUserState() {
+      const btnHeaderLogin = document.getElementById('btnHeaderLogin');
+      const headerUserProfile = document.getElementById('headerUserProfile');
+      const headerUserName = document.getElementById('headerUserName');
+      const userAvatarCircle = document.getElementById('userAvatarCircle');
+
+      const dropdownUserName = document.getElementById('dropdownUserName');
+      const dropdownUserContact = document.getElementById('dropdownUserContact');
+      const dropdownMetroCard = document.getElementById('dropdownMetroCard');
+      const dropdownBmtcPass = document.getElementById('dropdownBmtcPass');
+      const dropdownAvatarCircle = document.getElementById('dropdownAvatarCircle');
+
+      if (currentUserSession) {
+        if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+        if (headerUserProfile) headerUserProfile.style.display = 'flex';
+        
+        const displayName = currentUserSession.name || 'Commuter';
+        const initial = displayName.charAt(0).toUpperCase();
+        if (headerUserName) headerUserName.innerText = displayName;
+        if (userAvatarCircle) userAvatarCircle.innerText = initial;
+        
+        if (dropdownUserName) dropdownUserName.innerText = displayName;
+        if (dropdownUserContact) {
+          dropdownUserContact.innerText = currentUserSession.email || ('+91 ' + (currentUserSession.phone || ''));
+        }
+        if (dropdownMetroCard && currentUserSession.smart_card_balance) {
+          dropdownMetroCard.innerText = `₹${currentUserSession.smart_card_balance}.00`;
+        }
+        if (dropdownBmtcPass && currentUserSession.bmtc_daily_pass) {
+          dropdownBmtcPass.innerText = currentUserSession.bmtc_daily_pass;
+        }
+        if (dropdownAvatarCircle) dropdownAvatarCircle.innerText = initial;
+      } else {
+        if (btnHeaderLogin) btnHeaderLogin.style.display = 'flex';
+        if (headerUserProfile) headerUserProfile.style.display = 'none';
+        const dropdown = document.getElementById('userProfileDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+      }
+    }
+
+    function toggleUserDropdown() {
+      const dropdown = document.getElementById('userProfileDropdown');
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    }
+
+    function logoutUser() {
+      currentUserSession = null;
+      try {
+        localStorage.removeItem('namma_auth_user');
+      } catch (e) {}
+      renderAuthUserState();
+      const dropdown = document.getElementById('userProfileDropdown');
+      if (dropdown) dropdown.style.display = 'none';
+      showAuthToast('Signed out successfully', '👋');
+    }
+
+    function initAuth() {
+      try {
+        const saved = localStorage.getItem('namma_auth_user');
+        if (saved) {
+          currentUserSession = JSON.parse(saved);
+        }
+      } catch (e) {}
+      renderAuthUserState();
+    }
+
+    // Initial Setup on Page Load
+    window.onload = () => {
+      initAuth();
+      drawChokepoints();
+      drawMetroLines();
+      drawRoadRepairs();
+      drawFloodZones();
+      calculateCommute();
+    };
+  </script>
+
+  <!-- Auth Modal: Login with Gmail or Mobile OTP -->
+  <div class="mobile-modal-overlay" id="authModal" onclick="closeAuthModalOnBg(event)">
+    <div class="mobile-modal-box" style="max-width: 440px;">
+      <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+      
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; background: #e8f0fe; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+          🔐
+        </div>
+        <div>
+          <h3 style="font-size: 1.1rem; color: #1e293b; font-weight: 800;">Login to Namma Travel App</h3>
+          <p style="font-size: 0.76rem; color: #64748b;">Sync smart cards, digital bus passes & live alerts</p>
+        </div>
+      </div>
+
+      <!-- Auth Provider Tabs -->
+      <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin: 14px 0 16px 0;">
+        <div class="auth-tab-btn active" id="tabAuthGoogle" onclick="switchAuthTab('google')">
+          🌐 Google / Gmail
+        </div>
+        <div class="auth-tab-btn" id="tabAuthMobile" onclick="switchAuthTab('mobile')">
+          📱 Mobile (OTP)
+        </div>
+      </div>
+
+      <!-- Tab 1: Google / Gmail Authentication -->
+      <div id="authSectionGoogle">
+        <button class="google-btn" onclick="loginWithGoogleDemo()" style="margin-bottom: 12px;">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin: 12px 0;">
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+          <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">or enter email</span>
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Gmail / Google Account</label>
+          <input type="email" id="googleEmailInput" placeholder="e.g. shaik.commuter@gmail.com" value="shaik.bengaluru@gmail.com" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1a73e8'">
+        </div>
+
+        <button onclick="loginWithGoogleManual()" style="width: 100%; background: #1a73e8; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 2px 6px rgba(26,115,232,0.3);">
+          Sign In with Gmail
+        </button>
+      </div>
+
+      <!-- Tab 2: Mobile Number (OTP) Authentication -->
+      <div id="authSectionMobile" style="display: none;">
+        <!-- Step 1: Enter Phone Number -->
+        <div id="otpStepPhone">
+          <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Indian Mobile Number</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="padding: 10px 12px; background: #f1f5f9; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 0.88rem; color: #334155;">
+              🇮🇳 +91
+            </div>
+            <input type="tel" id="mobileNumberInput" maxlength="10" placeholder="98765 43210" value="9876543210" style="flex: 1; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none;">
+          </div>
+          <button id="btnSendOtp" onclick="sendMobileOtp()" style="width: 100%; background: #16a34a; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 2px 6px rgba(22,163,74,0.3);">
+            📨 Send 6-Digit OTP
+          </button>
+        </div>
+
+        <!-- Step 2: Enter OTP Code -->
+        <div id="otpStepCode" style="display: none;">
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.76rem; color: #166534; font-weight: 600;">✅ OTP sent to <span id="otpTargetPhone">+91 9876543210</span></span>
+              <button onclick="resetOtpStep()" style="background: none; border: none; color: #1a73e8; font-size: 0.72rem; cursor: pointer; text-decoration: underline;">Change</button>
+            </div>
+            <div style="margin-top: 6px; font-size: 0.74rem; color: #15803d;">
+              ⚡ <b>Test Code:</b> <span id="demoOtpDisplay" onclick="autoFillOtp(this.innerText)" style="background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; cursor: pointer; border: 1px dashed #86efac;" title="Click to auto-fill">123456</span> <span style="font-size: 0.68rem; color: #64748b;">(tap to autofill)</span>
+            </div>
+          </div>
+
+          <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Enter 6-Digit Verification Code</label>
+          <input type="text" id="otpCodeInput" maxlength="6" placeholder="• • • • • •" style="width: 100%; padding: 12px; border: 2px solid #1a73e8; border-radius: 8px; font-size: 1.25rem; font-weight: 800; letter-spacing: 8px; text-align: center; margin-bottom: 12px; outline: none;">
+
+          <button id="btnVerifyOtp" onclick="verifyMobileOtp()" style="width: 100%; background: #1a73e8; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 2px 6px rgba(26,115,232,0.3);">
+            Verify & Sign In
+          </button>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.74rem; color: #64748b;">
+            <span id="otpTimerText">Resend OTP in 30s</span>
+            <button id="btnResendOtp" onclick="sendMobileOtp()" disabled style="background: none; border: none; color: #94a3b8; cursor: pointer; font-weight: 600;">Resend OTP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Perks Footer -->
+      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; text-align: center; font-size: 0.72rem; color: #64748b;">
+        <span>💳 Smart Card Sync</span>
+        <span>•</span>
+        <span>🚌 BMTC Pass Active</span>
+        <span>•</span>
+        <span>⚡ WhatsApp Alerts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="auth-toast" id="authToast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Logged in successfully!</span>
+  </div>
+
+  <!-- Mobile App Installation Modal for Android & iPhone -->
+  <div class="mobile-modal-overlay" id="mobileAppModal" onclick="closeModalOnBg(event)">
+    <div class="mobile-modal-box">
+      <button class="modal-close-btn" onclick="closeMobileAppModal()">✕</button>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <img src="/icon-192.svg" width="44" height="44" style="border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+        <div>
+          <h3 style="font-size: 1.05rem; color: #1e293b; font-weight: 800;">Namma Travel App</h3>
+          <p style="font-size: 0.78rem; color: #64748b;">Official Android & iPhone Mobile App</p>
+        </div>
+      </div>
+
+      <!-- OS Tabs -->
+      <div class="modal-os-tabs">
+        <div class="modal-os-tab active-android" id="tabAndroid" onclick="showOsInstall('android')">
+          🤖 Android / Play Store
+        </div>
+        <div class="modal-os-tab" id="tabIos" onclick="showOsInstall('ios')">
+          🍎 iPhone (iOS)
+        </div>
+      </div>
+
+      <!-- Android Content -->
+      <div id="androidInstallContent" style="display: block;">
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+          <b style="color: #166534; font-size: 0.85rem;">⚡ Instant 1-Tap Android Install:</b>
+          <p style="font-size: 0.78rem; color: #334155; margin-top: 4px; line-height: 1.4;">
+            Installs as a standalone APK on your home screen with zero storage overhead.
+          </p>
+          <button id="btnPwaInstall" onclick="triggerPwaInstall()" style="width: 100%; margin-top: 8px; background: #16a34a; color: #ffffff; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);">
+            📥 Install on Android (Play Store Ready)
+          </button>
+        </div>
+        <div style="font-size: 0.78rem; color: #475569; line-height: 1.5;">
+          <b>🛒 Google Play Store Generation:</b><br>
+          Packaged under <code>apps/namma-travel-app/</code>. Run <code>npm run twa:playstore</code> or <code>npx cap open android</code> in Android Studio.
+        </div>
+      </div>
+
+      <!-- iPhone iOS Content -->
+      <div id="iosInstallContent" style="display: none;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+          <b style="color: #0f172a; font-size: 0.85rem;">🍎 Install on iPhone (Safari):</b>
+          <ol style="margin: 8px 0 0 20px; font-size: 0.8rem; color: #334155; line-height: 1.6;">
+            <li>Open this URL in <b>Safari</b> on your iPhone.</li>
+            <li>Tap the <b>Share icon</b> (⎙ or square with arrow up) on bottom bar.</li>
+            <li>Scroll down and tap <b>"Add to Home Screen"</b> (➕).</li>
+            <li>Tap <b>"Add"</b> in the top right corner.</li>
+          </ol>
+        </div>
+        <p style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">
+          Launches full-screen with native iOS animations, Retina icons, safe-area support, and zero browser navigation bars!
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
