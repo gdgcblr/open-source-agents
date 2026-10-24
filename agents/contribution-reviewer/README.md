@@ -29,24 +29,102 @@
 
 ## Architecture & Data Flow
 
-```
-python main.py agents/<slug>         adk web (browser UI)
-            |                               |
-            +-----------> root_agent <------+
-                    (ADK Agent, Gemini)
-                            |
-          calls tools (contribution_reviewer/checks.py)
-          +-------------+-------------+-------------+-------------+
-          |             |             |             |             |
-   check_structure check_readme  scan_secrets  check_scope   read_readme
-   (name, files)  (sections,    (git ls-files, (git diff vs  (README text
-                  placeholders)  redacted)     base ref)     for quality)
-                            |
-                            v
-   Markdown review: Verdict, Checklist table, Fixes, README feedback
+```mermaid
+flowchart LR
+  subgraph IN["Entry points"]
+    CLI["main.py<br/>command line"]
+    WEB["adk web<br/>browser chat"]
+  end
+
+  subgraph ADK["Google ADK runtime"]
+    RUN["InMemoryRunner<br/>+ session"]
+    AGENT["root_agent<br/>LlmAgent + review instructions"]
+  end
+
+  subgraph TOOLS["checks.py: deterministic tools"]
+    T1["check_structure"]
+    T2["check_readme"]
+    T3["scan_secrets<br/>redacts matches"]
+    T4["check_scope"]
+    T5["read_readme"]
+  end
+
+  subgraph LOCAL["Local machine, read-only"]
+    FILES[("Contribution<br/>folder files")]
+    GIT[("git<br/>ls-files, diff, status")]
+    ENV[(".env<br/>GOOGLE_API_KEY")]
+  end
+
+  GEM["Gemini API<br/>gemini-3.8-flash"]
+  OUT1["PASS / FAIL report<br/>exit code 0 or 1"]
+  OUT2["Markdown review<br/>verdict, checklist, fixes"]
+
+  CLI -->|"--checks-only"| TOOLS
+  CLI -->|"AI review"| RUN
+  WEB --> RUN
+  RUN --> AGENT
+  AGENT -->|"tool calls"| TOOLS
+  AGENT <-->|"prompt + redacted results"| GEM
+  ENV -.->|"api key"| AGENT
+  T1 --> FILES
+  T2 --> FILES
+  T5 --> FILES
+  T3 --> GIT
+  T4 --> GIT
+  TOOLS --> OUT1
+  AGENT --> OUT2
 ```
 
 The pass/fail facts come only from the deterministic Python checks. The model's job is to interpret them, judge the README's quality, and write the feedback. With `--checks-only`, the agent is skipped entirely and the check results are printed directly.
+
+**Trust boundary:** only README text, file names and check results are sent to Gemini. Source code and secret values never are.
+
+### Use Cases
+
+```mermaid
+flowchart LR
+  C(["Contributor"])
+  M(["Maintainer"])
+  CI(["CI pipeline<br/>(planned)"])
+  G(["Gemini<br/>external model"])
+
+  subgraph SYS["Contribution Reviewer"]
+    direction TB
+    UC1(("Run quick<br/>checks"))
+    UC2(("Get AI<br/>review"))
+    UC3(("Chat in<br/>adk web"))
+    UC4(("First-pass review<br/>of an incoming PR"))
+    UC5(("Block a<br/>non-compliant PR"))
+    subgraph CHECKS["Included checks"]
+      direction TB
+      S1(("Folder<br/>and files"))
+      S2(("README<br/>completeness"))
+      S3(("Secret<br/>scan"))
+      S4(("PR<br/>scope"))
+    end
+    UC6(("Judge README<br/>quality"))
+  end
+
+  C --- UC1
+  C --- UC2
+  C --- UC3
+  M --- UC4
+  CI --- UC5
+  UC1 -.->|"include"| CHECKS
+  UC2 -.->|"include"| CHECKS
+  UC2 -.->|"include"| UC6
+  UC3 -.->|"include"| UC2
+  UC4 -.->|"include"| UC2
+  UC5 -.->|"include"| UC1
+  UC6 --- G
+```
+
+- **Contributor:** self-checks before opening a PR, with quick checks, the full AI review, or a chat in the browser.
+- **Maintainer:** gets a first-pass review of an incoming PR, so human review time goes to the code itself.
+- **CI pipeline (planned):** runs quick checks on every PR and blocks it when the exit code is 1.
+- **Gemini:** used only for judging README quality and writing the feedback.
+
+A presentation pitch for this project is in [docs/pitch.md](docs/pitch.md).
 
 ---
 
