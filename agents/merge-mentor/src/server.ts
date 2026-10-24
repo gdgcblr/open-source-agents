@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import http from 'node:http';
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { LEVELS, Level, PROJECT_ROOT, isValidLevel, loadConfig, normalizeLanguage } from './config.js';
 import { Fixture, GitHubClient, assertDemoSupports, loadFixture } from './github.js';
-import { Issue, Repository, fetchIssue, fetchRepo } from './finder.js';
+import { Issue, REPO_PAGE_SIZE, REPO_REF, Repository, fetchIssue, fetchRepo, findRepos } from './finder.js';
 import { scoreBand } from './signals.js';
 import { Gemini } from './gemini.js';
 import { issueKey } from './difficulty.js';
@@ -27,16 +28,49 @@ const port = Number(values.port ?? process.env.PORT ?? 3000);
 
 /** Rows from the most recent searches, so opening an issue does not refetch it. */
 const known = new Map<string, { issue: Issue; repo: Repository }>();
+/** Projects seen in the project list, so opening one does not refetch it. */
+const knownRepos = new Map<string, Repository>();
 
-const PAGE = path.join(PROJECT_ROOT, 'web', 'index.html');
-const SECURITY_HEADERS = {
+const pageHtml = readFileSync(path.join(PROJECT_ROOT, 'web', 'index.html'), 'utf8');
+const BASE_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'no-referrer',
-  'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src data:",
+  'Cross-Origin-Resource-Policy': 'same-origin',
 };
+/** JSON and event-stream responses never need to load anything. */
+const API_HEADERS = { ...BASE_HEADERS, 'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'" };
+/** The page may run only its own inline script (matched by a fresh nonce) and talk only to this server. */
+const pageHeaders = (nonce: string) => ({
+  ...BASE_HEADERS,
+  'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; connect-src 'self'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`,
+});
+
+const MAX_CACHE = 300;
+/** Insert into a size-limited Map, dropping the oldest entry when it grows too large. */
+function remember<K, V>(map: Map<K, V>, key: K, value: V): void {
+  map.delete(key);
+  map.set(key, value);
+  if (map.size > MAX_CACHE) map.delete(map.keys().next().value as K);
+}
+
+/** Simple per-process limit so a runaway page or script cannot hammer GitHub and Gemini through this server. */
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 90;
+let windowStart = Date.now();
+let windowCount = 0;
+function rateLimited(): boolean {
+  if (Date.now() - windowStart > RATE_WINDOW_MS) {
+    windowStart = Date.now();
+    windowCount = 0;
+  }
+  return ++windowCount > RATE_MAX;
+}
+
+const MAX_EXPLAINS = 2;
+let activeExplains = 0;
 
 function json(res: http.ServerResponse, status: number, body: unknown): void {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...SECURITY_HEADERS });
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...API_HEADERS });
   res.end(JSON.stringify(body));
 }
 
@@ -61,38 +95,94 @@ function toJson(row: Row) {
   };
 }
 
-async function handleIssues(url: URL, res: http.ServerResponse): Promise<void> {
-  const lang = (url.searchParams.get('lang') ?? '').trim();
+const REPO_RE = REPO_REF;
+
+function parseLevel(url: URL): Level | null {
   const level = url.searchParams.get('level') ?? 'beginner';
+  return isValidLevel(level) ? level : null;
+}
+
+function parsePage(url: URL, max: number): number {
+  return Math.max(1, Math.min(max, Math.floor(Number(url.searchParams.get('page'))) || 1));
+}
+
+/** Step 1: only the project list (one GitHub search, no scoring, no Gemini). */
+async function handleProjects(url: URL, res: http.ServerResponse): Promise<void> {
+  const lang = (url.searchParams.get('lang') ?? '').trim();
+  const level = parseLevel(url);
   if (!/^[\w.+#-]{1,30}$/.test(lang)) return json(res, 400, { error: 'Enter a language such as typescript, python or go.' });
-  if (!isValidLevel(level)) return json(res, 400, { error: `Level must be one of: ${LEVELS.join(', ')}` });
+  if (!level) return json(res, 400, { error: `Level must be one of: ${LEVELS.join(', ')}` });
 
   const language = normalizeLanguage(lang);
   assertDemoSupports(fixture, language, level);
-  const page = Math.max(1, Math.min(5, Math.floor(Number(url.searchParams.get('page'))) || 1));
+  const page = parsePage(url, 5);
+  if (fixture && page > 1) return json(res, 200, { projects: [], page, hasMore: false });
+
+  let repos = await findRepos(gh, language, level, now ?? Date.now(), page);
+  // The demo recording has issues for its first projects only; do not offer the others.
+  const demoRepos = fixture?.meta?.repos;
+  if (demoRepos) repos = repos.filter((r) => demoRepos.some((d) => d.toLowerCase() === r.full_name.toLowerCase()));
+  for (const r of repos) remember(knownRepos, r.full_name.toLowerCase(), r);
+  json(res, 200, {
+    projects: repos.map((r) => ({
+      full_name: r.full_name,
+      stars: r.stargazers_count,
+      language: r.language,
+      description: r.description ?? null,
+      pushed: r.pushed_at,
+      url: r.html_url ?? `https://github.com/${r.full_name}`,
+    })),
+    page,
+    hasMore: repos.length >= REPO_PAGE_SIZE,
+  });
+}
+
+/** Step 2: free issues of one chosen project (claim check, Merge Chance, difficulty rating). */
+async function handleIssues(url: URL, res: http.ServerResponse): Promise<void> {
+  const repoName = url.searchParams.get('repo') ?? '';
+  const level = parseLevel(url);
+  if (!REPO_RE.test(repoName)) return json(res, 400, { error: 'Choose a project first.' });
+  if (!level) return json(res, 400, { error: `Level must be one of: ${LEVELS.join(', ')}` });
+
+  if (fixture) {
+    const m = fixture.meta;
+    const covered = m?.repos ?? (m?.repo ? [m.repo] : []);
+    if (!covered.some((c) => c.toLowerCase() === repoName.toLowerCase()) || m?.level !== level) {
+      throw new Error(`Demo mode only has issues recorded for the first ${covered.length} ${m?.language ?? 'typescript'} projects (${m?.level ?? 'beginner'} level). Run without --demo (npm run ui) to browse any project live.`);
+    }
+  }
+  const page = parsePage(url, 5);
   if (fixture && page > 1) return json(res, 200, { issues: [], hiddenTaken: 0, page, hasMore: false });
+
+  const repo = knownRepos.get(repoName.toLowerCase()) ?? (await fetchRepo(gh, repoName));
+  remember(knownRepos, repoName.toLowerCase(), repo);
+
   const { rows, hiddenTaken, hasMore } = await rankIssues({
     gh,
     gemini,
-    language,
-    level: level as Level,
+    repos: [repo],
+    language: repo.language ?? '',
+    level,
     limit: 20,
     page,
     now: now ?? Date.now(),
     recordedRatings: fixture ? ((fixture.gemini.difficulty ?? {}) as Record<string, any>) : undefined,
   });
-  for (const r of rows) known.set(issueKey(r.issue), { issue: r.issue, repo: r.repo });
+  for (const r of rows) remember(known, issueKey(r.issue), { issue: r.issue, repo: r.repo });
   json(res, 200, { issues: rows.map(toJson), hiddenTaken, page, hasMore });
 }
 
 function handleExplain(url: URL, req: http.IncomingMessage, res: http.ServerResponse): void {
   const repoName = url.searchParams.get('repo') ?? '';
   const number = Number(url.searchParams.get('number'));
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repoName) || !Number.isInteger(number) || number < 1) {
+  if (!REPO_RE.test(repoName) || !Number.isInteger(number) || number < 1) {
     return json(res, 400, { error: 'Invalid issue reference.' });
   }
 
-  res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', Connection: 'keep-alive', ...SECURITY_HEADERS });
+  if (activeExplains >= MAX_EXPLAINS) return json(res, 429, { error: 'Two explanations are already running. Wait for one to finish.' });
+  activeExplains++;
+
+  res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', Connection: 'keep-alive', ...API_HEADERS });
   const send = (event: string, data: unknown) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   let closed = false;
   req.on('close', () => (closed = true));
@@ -121,11 +211,15 @@ function handleExplain(url: URL, req: http.IncomingMessage, res: http.ServerResp
       issue: entry.issue,
       recordedAnswer,
       onStep: (step) => !closed && send('step', step),
+      isCancelled: () => closed,
     });
     if (!closed) send('done', { markdown: maskSecrets(markdown), ai: Boolean(gemini) || Boolean(recordedAnswer) });
   })()
     .catch((error) => !closed && send('error', { message: maskSecrets(error instanceof Error ? error.message : String(error)) }))
-    .finally(() => res.end());
+    .finally(() => {
+      activeExplains--;
+      res.end();
+    });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -135,14 +229,32 @@ const server = http.createServer(async (req, res) => {
     if (!['localhost', '127.0.0.1'].includes(host)) return json(res, 403, { error: 'Forbidden host' });
     if (req.method !== 'GET') return json(res, 405, { error: 'Method not allowed' });
 
+    // Block other websites from driving this server through the visitor's browser (it would spend their quota).
+    const site = req.headers['sec-fetch-site'];
+    if (site && site !== 'same-origin' && site !== 'none') return json(res, 403, { error: 'Cross-site requests are not allowed' });
+    const origin = req.headers.origin;
+    if (origin) {
+      let allowed = false;
+      try {
+        const o = new URL(origin);
+        allowed = ['localhost', '127.0.0.1'].some((h) => o.host === `${h}:${port}`);
+      } catch { /* malformed Origin header: not allowed */ }
+      if (!allowed) return json(res, 403, { error: 'Cross-origin requests are not allowed' });
+    }
+
     const url = new URL(req.url ?? '/', 'http://localhost');
+    if (url.pathname.startsWith('/api/') && url.pathname !== '/api/status' && rateLimited()) {
+      return json(res, 429, { error: 'Too many requests. Slow down for a minute.' });
+    }
     if (url.pathname === '/') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS });
-      return void res.end(readFileSync(PAGE));
+      const nonce = randomBytes(16).toString('base64');
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...pageHeaders(nonce) });
+      return void res.end(pageHtml.replace('<script>', `<script nonce="${nonce}">`));
     }
     if (url.pathname === '/api/status') {
       return json(res, 200, { demo, ai: demo || Boolean(gemini), githubToken: gh.hasToken, model: config.modelName });
     }
+    if (url.pathname === '/api/projects') return await handleProjects(url, res);
     if (url.pathname === '/api/issues') return await handleIssues(url, res);
     if (url.pathname === '/api/explain') return handleExplain(url, req, res);
     json(res, 404, { error: 'Not found' });

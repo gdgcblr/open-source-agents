@@ -93,12 +93,13 @@ npm run ui          # then open http://localhost:3000
 npm run ui:demo     # same UI on recorded data: no keys or network needed
 ```
 
-Pick your language and level, press **Find issues**, then click an issue to see the 8-section explanation, a color-coded suggested diff with copy buttons, and the PR draft. The server listens on `localhost` only, so your keys never leave your machine.
+Pick your language and level and press **Find projects** (one cheap GitHub search). Click a project to see only its free issues (that is when claims and merge history are checked and Gemini rates difficulty), then click an issue to see the 8-section explanation, a color-coded suggested diff with copy buttons, and the PR draft. Choosing step by step keeps GitHub and Gemini calls to what you actually look at. The server listens on `localhost` only, so your keys never leave your machine.
 
 ### Command line
 
 ```bash
 npm start -- --lang typescript --level beginner      # search, then pick an issue
+npm start -- --lang typescript --repo dexie/Dexie.js   # only one project's issues
 npm start -- --issue owner/repo#123                  # explain one issue directly
 npm start -- --lang python --level intermediate --save   # also save as Markdown
 npm run demo                                         # offline demo, no keys needed
@@ -166,7 +167,7 @@ npm run demo   # end-to-end run on recorded data
 
 - Claim detection is pattern-based; silent or non-English claims may be missed.
 - Merge Chance is a heuristic from the last 50 closed PRs, not a guarantee.
-- The AI explanation and suggested fix can be wrong. Always verify them against the cited `file:line` references.
+- The AI explanation and suggested fix can be wrong. The automatic checks catch invented citations and diffs that do not match the file, but they cannot prove a fix is correct. Always verify them against the cited `file:line` references.
 - Without `GITHUB_TOKEN`, GitHub allows 60 requests per hour (about 2-3 runs) and the `search_code` tool is off.
 - The Gemini free tier has a small daily request limit per model (20/day on some models). merge-mentor falls back to lighter models automatically, but a very busy day can still exhaust all of them; the scores still work without Gemini.
 - Only issues labelled for your level (for example `good first issue`) are searched, so some good issues without labels are not found.
@@ -179,13 +180,14 @@ npm run demo   # end-to-end run on recorded data
 
 - **Secrets Handling**: keys are read from a git-ignored `.env` file, never printed or saved, and secret-looking strings are masked in output.
 - **Data Privacy**: only public GitHub data is read. Issue text and public code are sent to Gemini.
-- **Safety guardrails**:
-  - The web UI server binds to `127.0.0.1` only, accepts only `GET` requests with a `localhost` Host header, validates every parameter, and sends a strict Content-Security-Policy.
-  - GitHub client allows only `GET` requests to `api.github.com`; it cannot push, comment, or open PRs.
-  - Agent tools are locked to the selected repo, with path checks and a 400-line read limit.
-  - Issue text is treated as untrusted data in the prompt (prompt-injection protection).
-  - The agent loop stops after 8 tool calls.
-  - Never clones, installs, or runs code from other repositories.
+- **Safety guardrails** (all enforced in code, none depend on the model behaving):
+  - **Read-only by construction:** the GitHub client sends only `GET` requests, only to `api.github.com`, with timeouts and a single polite retry when GitHub asks it to slow down. It cannot push, comment, or open PRs, and it never clones or runs code from other repositories.
+  - **Agent tools are fenced in:** `list_files`, `read_file` and `search_code` only reach the one selected repository (path checks block `..` and odd characters; search qualifiers such as `repo:` are stripped; 400-line read limit; 8 tool calls maximum).
+  - **Untrusted text stays untrusted:** issue text, comments and file contents are marked as data in the prompt, and issue text is scanned for prompt-injection phrases (shown as a warning).
+  - **The answer is checked after the model finishes, without any AI:** every `file:line` citation must fall inside lines the agent was actually shown; the suggested diff's removed/context lines must exist in the real file; added lines are scanned for risky patterns (shell pipes, `eval`, external URLs, secrets read from the environment). Results appear under **Automatic checks** in every explanation.
+  - **Secrets never leave:** keys are read from a git-ignored `.env`, never printed or saved, and secret-looking strings are masked in all output. Only public GitHub data and issue text go to Gemini.
+  - **The web UI server is locked down:** bound to `127.0.0.1`; `GET` only; `localhost` Host header required; cross-site requests rejected (`Sec-Fetch-Site`/`Origin`); parameters validated; strict Content-Security-Policy with a per-request script nonce and no framing; at most 2 explanations at once and 90 API requests per minute; closing the tab cancels the run.
+  - **Budgets:** at most 120 Gemini calls per process, with automatic fallback to lighter models if one is rate-limited.
 
 ---
 

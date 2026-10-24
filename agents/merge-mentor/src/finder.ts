@@ -7,6 +7,8 @@ export interface Repository {
   pushed_at: string;
   default_branch: string;
   language: string | null;
+  description?: string | null;
+  html_url?: string;
 }
 
 export interface Issue {
@@ -24,7 +26,9 @@ export interface Issue {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Active, well-starred repos whose main language matches and that have issues for this level. */
-export async function findRepos(gh: GitHubClient, language: string, level: Level, now: number): Promise<Repository[]> {
+export const REPO_PAGE_SIZE = 10;
+
+export async function findRepos(gh: GitHubClient, language: string, level: Level, now: number, page = 1): Promise<Repository[]> {
   const since = new Date(now - 30 * DAY_MS).toISOString().slice(0, 10);
   const q = [
     `language:${language}`,
@@ -34,7 +38,7 @@ export async function findRepos(gh: GitHubClient, language: string, level: Level
     `pushed:>${since}`,
     LEVEL_PROFILES[level].repoQualifier,
   ].join(' ');
-  const result = await gh.getJson('/search/repositories', { q, sort: 'stars', order: 'desc', per_page: 10 });
+  const result = await gh.getJson('/search/repositories', { q, sort: 'stars', order: 'desc', per_page: REPO_PAGE_SIZE, page });
   return result.items ?? [];
 }
 
@@ -43,7 +47,7 @@ export const ISSUE_PAGE_SIZE = 30;
 /**
  * Open, unassigned issues with level labels and no linked pull request, quietest first.
  * Sorted by fewest comments (not "recently updated": recent activity usually means someone is already on it).
- * At most 3 issues per repo; `limit` caps how many candidates are returned.
+ * `limit` caps how many candidates are returned.
  */
 export async function findIssues(
   gh: GitHubClient,
@@ -60,13 +64,17 @@ export async function findIssues(
   const result = await gh.getJson('/search/issues', { q, sort: 'comments', order: 'asc', per_page: ISSUE_PAGE_SIZE, page });
   const items: any[] = result.items ?? [];
 
+  // Browsing one project shows its issues (up to 20); across many projects, 3 each keeps the list varied.
+  const cap = repos.length === 1 ? 20 : 3;
+  const allowed = new Set(repos.map((r) => r.full_name.toLowerCase()));
   const perRepo = new Map<string, number>();
   const issues: Issue[] = [];
   for (const item of items) {
     if (item.pull_request) continue;
     const repoName = item.repository_url.split('/').slice(-2).join('/');
+    if (!allowed.has(repoName.toLowerCase())) continue;
     const count = perRepo.get(repoName) ?? 0;
-    if (count >= 3) continue;
+    if (count >= cap) continue;
     perRepo.set(repoName, count + 1);
     issues.push({ ...item, repo_full_name: repoName });
     if (issues.length >= limit) break;
@@ -74,12 +82,15 @@ export async function findIssues(
   return { issues, hasMore: items.length >= ISSUE_PAGE_SIZE };
 }
 
+/** owner/name, never with "." or ".." segments. Used for every repo name that comes from outside the program. */
+export const REPO_REF = /^(?!\.{1,2}\/)[\w.-]+\/(?!\.{1,2}$)[\w.-]+$/;
+
 /** Parse "owner/repo#123" or a GitHub issue URL. */
 export function parseIssueRef(ref: string): { repo: string; number: number } | null {
   const match =
     ref.match(/^([\w.-]+\/[\w.-]+)#(\d+)$/) ??
     ref.match(/github\.com\/([\w.-]+\/[\w.-]+)\/issues\/(\d+)/);
-  return match ? { repo: match[1], number: Number(match[2]) } : null;
+  return match && REPO_REF.test(match[1]) ? { repo: match[1], number: Number(match[2]) } : null;
 }
 
 export async function fetchRepo(gh: GitHubClient, fullName: string): Promise<Repository> {

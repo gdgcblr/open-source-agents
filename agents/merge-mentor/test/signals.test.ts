@@ -60,3 +60,12 @@ test('scoreMergeChance rewards healthy repos and caps Taken / penalises Claimed'
 test('scoreBand thresholds', () => {
   assert.deepEqual([scoreBand(70), scoreBand(45), scoreBand(44)], ['High', 'Medium', 'Low']);
 });
+
+test('computeRepoHealth ignores bot PRs (dependabot must not look like outside contributors)', () => {
+  const bot = { author_association: 'NONE', created_at: daysAgo(2), merged_at: daysAgo(1), user: { login: 'dependabot[bot]', type: 'Bot' } };
+  const human = { author_association: 'FIRST_TIME_CONTRIBUTOR', created_at: daysAgo(4), merged_at: daysAgo(2), user: { login: 'sam', type: 'User' } };
+  const health = computeRepoHealth([bot, bot, bot, human]);
+  assert.equal(health.closedPRs, 1);
+  assert.equal(health.mergedPRs, 1);
+  assert.equal(health.outsideMerged, 1);
+});

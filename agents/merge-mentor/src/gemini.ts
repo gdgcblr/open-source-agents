@@ -2,6 +2,8 @@ import { ApiError, GoogleGenAI, type GenerateContentConfig, type GenerateContent
 
 const REQUEST_TIMEOUT_MS = 45_000;
 const COOLDOWN_MS = 10 * 60_000;
+/** Hard stop for runaway loops: one process may make at most this many model calls. */
+const MAX_CALLS = 120;
 
 /** Lighter models tried in order when the preferred one is rate-limited or unavailable. */
 export const FALLBACK_MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
@@ -18,7 +20,10 @@ export class Gemini {
     this.models = [preferredModel, ...FALLBACK_MODELS.filter((m) => m !== preferredModel)];
   }
 
+  private calls = 0;
+
   async generate(params: Omit<GenerateContentParameters, 'model'> & { config?: GenerateContentConfig }): Promise<GenerateContentResponse> {
+    if (++this.calls > MAX_CALLS) throw new Error(`Gemini call budget reached (${MAX_CALLS} per run). Restart merge-mentor to continue.`);
     let lastError: unknown;
     for (const model of this.models) {
       if ((this.deadUntil.get(model) ?? 0) > Date.now()) continue;

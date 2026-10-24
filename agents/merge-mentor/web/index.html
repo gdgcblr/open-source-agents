@@ -84,7 +84,7 @@
 <div class="wrap">
   <header>
     <h1>merge-mentor</h1>
-    <p>From "I know TypeScript" to your first merged PR. Pick your language and level, choose an issue, and get the explanation and fix plan.</p>
+    <p>From "I know TypeScript" to your first merged PR. Pick your language and level, choose a project, then an issue, and get the explanation and fix plan.</p>
     <div class="chips" id="status"></div>
   </header>
 
@@ -97,13 +97,13 @@
       <label class="t" id="level-label">Your level</label>
       <div class="row" role="group" aria-labelledby="level-label" id="levels"></div>
     </div>
-    <div class="row"><button class="go" id="find" type="button">Find issues</button><span id="find-status" role="status" aria-live="polite" class="chip" hidden></span></div>
+    <div class="row"><button class="go" id="find" type="button">Find projects</button><span id="find-status" role="status" aria-live="polite" class="chip" hidden></span></div>
   </section>
 
   <main>
-    <section aria-label="Issues">
-      <h2 class="sec">Issues</h2>
-      <div id="list"><div class="panel empty">Choose a language and level, then press <strong>Find issues</strong>.</div></div>
+    <section aria-label="Projects and issues">
+      <h2 class="sec" id="list-title">Projects</h2>
+      <div id="list"><div class="panel empty">Choose a language and level, then press <strong>Find projects</strong>. Pick a project to see its free issues.</div></div>
     </section>
     <section aria-label="Explanation" class="detail" id="detail" aria-live="polite">
       <h2 class="sec">Explanation</h2>
@@ -118,11 +118,14 @@
 const LANGS = ['typescript', 'javascript', 'python', 'go', 'rust', 'java', 'c++', 'ruby'];
 const LEVELS = ['beginner', 'intermediate', 'advanced'];
 const $ = (id) => document.getElementById(id);
-const state = { lang: 'typescript', level: 'beginner', issues: [], current: null, source: null, demo: false, page: 1, hasMore: false, hidden: 0 };
+const state = { lang: 'typescript', level: 'beginner', issues: [], current: null, source: null, demo: false, page: 1, hasMore: false, hidden: 0,
+  view: 'projects', projects: [], pPage: 1, pMore: false, repo: null };
 
 function remember(key, value) { try { localStorage.setItem('mm.' + key, value); } catch {} }
 function recall(key) { try { return localStorage.getItem('mm.' + key); } catch { return null; } }
 
+/* Only ever link to github.com, whatever the server sends. */
+const safeUrl = (u) => (/^https:\/\/github\.com\//.test(String(u)) ? String(u) : '#');
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
@@ -164,7 +167,8 @@ function renderExplanation(markdown) {
   return parts.map((part) => {
     const nl = part.indexOf('\n'); const head = (nl < 0 ? part : part.slice(0, nl)).trim(); const body = nl < 0 ? '' : part.slice(nl + 1);
     const m = head.match(/^(\d+)\.\s*(.*)/);
-    return `<div class="step"><h3>${m ? `<span class="n">${esc(m[1])}</span>` : ''}${esc(m ? m[2] : head)}</h3>${renderBlocks(body)}</div>`;
+    const caution = /suggested fix/i.test(head) ? '<div class="notice b-claimed">AI-generated. Read it carefully, apply it yourself, and run the project\'s tests before you rely on it.</div>' : '';
+    return `<div class="step"><h3>${m ? `<span class="n">${esc(m[1])}</span>` : ''}${esc(m ? m[2] : head)}</h3>${caution}${renderBlocks(body)}</div>`;
   }).join('');
 }
 
@@ -184,6 +188,9 @@ document.addEventListener('click', (e) => {
     const text = [...t.parentElement.querySelectorAll('.l')].map((n) => n.textContent.replace(/^ $/, '')).join('\n');
     navigator.clipboard?.writeText(text).then(() => { t.textContent = 'Copied'; setTimeout(() => (t.textContent = 'Copy'), 1200); });
   } else if (t.id === 'more') loadMore();
+  else if (t.id === 'more-projects') loadMoreProjects();
+  else if (t.id === 'back') { closeStream(); state.view = 'projects'; state.current = null; $('detail').innerHTML = EMPTY_DETAIL; renderProjects(); }
+  else if (t.dataset.project) openProject(t.dataset.project);
   else if (t.dataset.key) openIssue(t.dataset.key);
 });
 function syncPressed(kind) {
@@ -209,42 +216,90 @@ function card(i) {
       <span title="${esc(i.difficultyReason || 'Difficulty')}">Difficulty ${dots(i.difficulty)}</span>
     </div></button>`;
 }
-function renderList() {
-  const head = state.issues.length
-    ? `<div class="chip" style="margin-bottom:10px">${state.issues.length} free issue${state.issues.length === 1 ? '' : 's'}${state.hidden ? ` · ${state.hidden} hidden (already have an open PR)` : ''}</div>`
-    : '';
-  const empty = '<div class="panel empty">No free issues on this page. ' + (state.hasMore ? 'Try loading more.' : 'Try another level.') + '</div>';
-  const more = state.hasMore ? '<button class="pill" type="button" id="more" style="width:100%;margin-top:4px;padding:10px">Load more issues</button>' : '';
-  $('list').innerHTML = head + (state.issues.length ? state.issues.map(card).join('') : empty) + more;
+const EMPTY_DETAIL = '<h2 class="sec">Explanation</h2><div class="panel empty">Select an issue to see what it means, where it happens, and how to fix it.</div>';
+
+function projectCard(p) {
+  return `<button class="issue" type="button" data-project="${esc(p.full_name)}">
+    <div class="repo">★ ${p.stars.toLocaleString()}${p.language ? ' · ' + esc(p.language) : ''} · active ${esc(String(p.pushed).slice(0, 10))}</div>
+    <div class="title">${esc(p.full_name)}</div>
+    <div class="meta">${esc(p.description || 'No description')}</div></button>`;
 }
 
-async function fetchPage(page) {
-  const res = await fetch(`/api/issues?lang=${encodeURIComponent(state.lang)}&level=${state.level}&page=${page}`);
+function renderProjects() {
+  $('list-title').textContent = 'Projects'; $('list-title').style.textTransform = '';
+  const head = state.projects.length ? `<div class="chip" style="margin-bottom:10px">${state.projects.length} projects with ${esc(state.level)} issues · pick one</div>` : '';
+  const empty = '<div class="panel empty">No projects found for that language and level. Try another level.</div>';
+  const more = state.pMore ? '<button class="pill" type="button" id="more-projects" style="width:100%;margin-top:4px;padding:10px">Load more projects</button>' : '';
+  $('list').innerHTML = head + (state.projects.length ? state.projects.map(projectCard).join('') : empty) + more;
+}
+
+function renderList() {
+  $('list-title').textContent = state.repo; $('list-title').style.textTransform = 'none';
+  const back = '<button class="pill" type="button" id="back" style="margin-bottom:10px">← All projects</button>';
+  const head = state.issues.length
+    ? `<div class="chip" style="margin:0 0 10px 8px">${state.issues.length} free issue${state.issues.length === 1 ? '' : 's'}${state.hidden ? ` · ${state.hidden} hidden (already have an open PR)` : ''}</div>`
+    : '';
+  const empty = '<div class="panel empty">No free issues in this project right now. ' + (state.hasMore ? 'Try loading more, or ' : 'Try ') + 'another project.</div>';
+  const more = state.hasMore ? '<button class="pill" type="button" id="more" style="width:100%;margin-top:4px;padding:10px">Load more issues</button>' : '';
+  $('list').innerHTML = back + head + (state.issues.length ? state.issues.map(card).join('') : empty) + more;
+}
+
+async function getJson(url) {
+  const res = await fetch(url);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
+const projectsUrl = (page) => `/api/projects?lang=${encodeURIComponent(state.lang)}&level=${state.level}&page=${page}`;
+const issuesUrl = (page) => `/api/issues?repo=${encodeURIComponent(state.repo)}&level=${state.level}&page=${page}`;
 
-async function findIssues() {
+/* Step 1: only the project list. One cheap GitHub search, no scoring, no Gemini. */
+async function findProjects() {
   const btn = $('find'); const st = $('find-status');
-  closeStream(); state.current = null; state.issues = []; state.page = 1; state.hidden = 0; state.hasMore = false;
-  btn.disabled = true; st.hidden = false; st.innerHTML = '<span class="spin"></span>Searching GitHub, checking claims and merge history… (about 10-20s)';
-  $('list').innerHTML = ''; $('detail').innerHTML = '<h2 class="sec">Explanation</h2><div class="panel empty">Select an issue to see what it means, where it happens, and how to fix it.</div>';
+  closeStream(); state.view = 'projects'; state.current = null; state.projects = []; state.pPage = 1; state.pMore = false; state.repo = null;
+  btn.disabled = true; st.hidden = false; st.innerHTML = '<span class="spin"></span>Searching GitHub for projects…';
+  $('list').innerHTML = ''; $('detail').innerHTML = EMPTY_DETAIL;
   try {
-    const data = await fetchPage(1);
-    state.issues = data.issues; state.hidden = data.hiddenTaken || 0; state.hasMore = Boolean(data.hasMore); renderList();
+    const data = await getJson(projectsUrl(1));
+    state.projects = data.projects; state.pMore = Boolean(data.hasMore); renderProjects();
     remember('lang', state.lang); remember('level', state.level);
-    st.textContent = `${data.issues.length} free issues found`;
+    st.textContent = `${data.projects.length} projects found`;
   } catch (err) {
     $('list').innerHTML = `<div class="err">${esc(err.message)}</div>`; st.hidden = true;
   } finally { btn.disabled = false; }
+}
+
+async function loadMoreProjects() {
+  const btn = $('more-projects'); if (!btn) return;
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Loading…';
+  try {
+    const data = await getJson(projectsUrl(state.pPage + 1));
+    state.pPage += 1; state.pMore = Boolean(data.hasMore);
+    const have = new Set(state.projects.map((p) => p.full_name));
+    state.projects = state.projects.concat(data.projects.filter((p) => !have.has(p.full_name)));
+    renderProjects();
+  } catch (err) { btn.disabled = false; btn.textContent = 'Load more projects'; btn.insertAdjacentHTML('afterend', `<div class="err" style="margin-top:8px">${esc(err.message)}</div>`); }
+}
+
+/* Step 2: free issues of the chosen project (claim check, Merge Chance, difficulty rating). */
+async function openProject(name) {
+  closeStream(); state.view = 'issues'; state.repo = name; state.current = null; state.issues = []; state.page = 1; state.hidden = 0; state.hasMore = false;
+  $('detail').innerHTML = EMPTY_DETAIL;
+  $('list-title').textContent = name; $('list-title').style.textTransform = 'none';
+  $('list').innerHTML = '<div class="panel"><span class="spin"></span>Checking open PRs, claims and merge history… (about 10-15s)</div>';
+  try {
+    const data = await getJson(issuesUrl(1));
+    state.issues = data.issues; state.hidden = data.hiddenTaken || 0; state.hasMore = Boolean(data.hasMore); renderList();
+  } catch (err) {
+    $('list').innerHTML = '<button class="pill" type="button" id="back" style="margin-bottom:10px">← All projects</button>' + `<div class="err">${esc(err.message)}</div>`;
+  }
 }
 
 async function loadMore() {
   const btn = $('more'); if (!btn) return;
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Loading…';
   try {
-    const data = await fetchPage(state.page + 1);
+    const data = await getJson(issuesUrl(state.page + 1));
     state.page += 1; state.hidden += data.hiddenTaken || 0; state.hasMore = Boolean(data.hasMore);
     const have = new Set(state.issues.map((i) => i.key));
     state.issues = state.issues.concat(data.issues.filter((i) => !have.has(i.key)));
@@ -261,7 +316,7 @@ function openIssue(key) {
     ? `<div class="notice b-taken">Someone already has an open pull request for this issue (${esc(issue.reason || '')}). Consider picking another one.</div>`
     : issue.status === 'Claimed' ? `<div class="notice b-claimed">Someone recently asked to work on this (${esc(issue.reason || '')}). Check the thread before you start.</div>` : '';
   const head = `<h2 class="sec">Explanation</h2><div class="panel"><h2>${esc(issue.title)}</h2>
-    <div class="sub">${esc(issue.repo)} #${issue.number} · <a href="${esc(issue.url)}" target="_blank" rel="noopener noreferrer">open on GitHub</a></div>${notice}<div id="out">
+    <div class="sub">${esc(issue.repo)} #${issue.number} · <a href="${esc(safeUrl(issue.url))}" target="_blank" rel="noopener noreferrer">open on GitHub</a></div>${notice}<div id="out">
     <div><span class="spin"></span>Mentor is reading the code…</div><ul class="steps" id="steps"></ul></div></div>`;
   $('detail').innerHTML = head;
   if (window.innerWidth <= 860) $('detail').scrollIntoView({ behavior: 'smooth' });
@@ -287,7 +342,7 @@ async function init() {
     const s = await (await fetch('/api/status')).json();
     state.demo = s.demo;
     const chips = [];
-    if (s.demo) { chips.push('<span class="chip warn">Demo mode: recorded data (typescript · beginner)</span>'); state.lang = 'typescript'; state.level = 'beginner'; }
+    if (s.demo) { chips.push('<span class="chip warn">Demo mode: recorded data (one typescript project)</span>'); state.lang = 'typescript'; state.level = 'beginner'; }
     chips.push(s.ai ? `<span class="chip">AI mentor on</span>` : '<span class="chip warn">No Gemini key: scores only</span>');
     if (!s.demo && !s.githubToken) chips.push('<span class="chip warn">No GitHub token: 60 requests/hour</span>');
     $('status').innerHTML = chips.join('');
@@ -298,7 +353,7 @@ async function init() {
     document.querySelectorAll('[data-lang]:not([data-lang="typescript"]), [data-level]:not([data-level="beginner"])').forEach((b) => { b.disabled = true; b.title = 'Not available in demo mode'; b.style.opacity = '.45'; b.style.cursor = 'not-allowed'; });
     $('other').disabled = true; $('other').placeholder = 'live mode only';
   }
-  $('find').addEventListener('click', findIssues);
+  $('find').addEventListener('click', findProjects);
 }
 init();
 </script>

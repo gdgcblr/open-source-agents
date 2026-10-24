@@ -11,11 +11,12 @@
     "start": "node dist/cli.js",
     "dev": "tsx src/cli.ts",
     "demo": "node dist/cli.js --demo --lang typescript --level beginner --pick 1",
-    "record-demo": "node dist/cli.js --record --lang typescript --level beginner --pick 1",
+    "record-demo": "node dist/record-demo.js",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
     "ui": "node dist/server.js",
-    "ui:demo": "node dist/server.js --demo"
+    "ui:demo": "node dist/server.js --demo",
+    "record-demo:mentor": "node dist/record-demo.js --mentor-only"
   },
   "engines": {
     "node": ">=20.12"

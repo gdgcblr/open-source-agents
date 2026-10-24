@@ -56,7 +56,11 @@ export function detectClaim(timeline: any[], now: number, repoFullName: string):
   return claim;
 }
 
-export function computeRepoHealth(closedPulls: any[]): RepoHealth {
+const isBot = (pr: any) => pr.user?.type === 'Bot' || String(pr.user?.login ?? '').endsWith('[bot]');
+
+export function computeRepoHealth(allClosedPulls: any[]): RepoHealth {
+  // Dependabot/Renovate merges say nothing about how welcoming a repo is to people, so they are ignored.
+  const closedPulls = allClosedPulls.filter((pr) => !isBot(pr));
   const merged = closedPulls.filter((pr) => pr.merged_at);
   const days = merged
     .map((pr) => (new Date(pr.merged_at).getTime() - new Date(pr.created_at).getTime()) / DAY_MS)
@@ -92,6 +96,19 @@ export function scoreBand(score: number): 'High' | 'Medium' | 'Low' {
   return score >= 70 ? 'High' : score >= 45 ? 'Medium' : 'Low';
 }
 
+const TIMELINE_PAGE = 100;
+const MAX_TIMELINE_PAGES = 5;
+
+/** Reads the whole timeline (up to 500 events) so a claim or PR deep in a long thread is not missed. */
+async function fetchTimeline(gh: GitHubClient, repoFullName: string, issueNumber: number): Promise<any[]> {
+  const path = `/repos/${repoFullName}/issues/${issueNumber}/timeline`;
+  let events: any[] = await gh.getJson<any[]>(path, { per_page: TIMELINE_PAGE });
+  for (let page = 2; events.length === TIMELINE_PAGE * (page - 1) && page <= MAX_TIMELINE_PAGES; page++) {
+    events = events.concat(await gh.getJson<any[]>(path, { per_page: TIMELINE_PAGE, page }));
+  }
+  return events;
+}
+
 /** Claim check + Merge Chance for one issue. Repo health is cached per repo. */
 export async function getMergeChance(
   gh: GitHubClient,
@@ -109,7 +126,7 @@ export async function getMergeChance(
     );
   }
   const [timeline, health] = await Promise.all([
-    gh.getJson<any[]>(`/repos/${repo.full_name}/issues/${issue.number}/timeline`, { per_page: 100 }),
+    fetchTimeline(gh, repo.full_name, issue.number),
     healthCache.get(repo.full_name)!,
   ]);
   const claim = detectClaim(timeline, now, repo.full_name);

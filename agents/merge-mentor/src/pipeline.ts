@@ -12,6 +12,8 @@ export interface RankOptions {
   gemini?: Gemini;
   language: string;
   level: Level;
+  /** Rank issues of just these repositories instead of searching for repositories first. */
+  repos?: Repository[];
   /** Max candidate issues to check on this page. */
   limit: number;
   page?: number;
@@ -48,7 +50,7 @@ async function mapPool<T, R>(items: T[], size: number, fn: (item: T) => Promise<
 
 /** Steps 1-4: find repos and issues, check claims, compute Merge Chance, rate difficulty, rank. */
 export async function rankIssues(o: RankOptions): Promise<RankResult> {
-  const repos = await findRepos(o.gh, o.language, o.level, o.now);
+  const repos = o.repos ?? (await findRepos(o.gh, o.language, o.level, o.now));
   const { issues, hasMore } = await findIssues(o.gh, repos, o.level, o.limit, o.page ?? 1);
   if (issues.length === 0) return { rows: [], ratings: {}, hiddenTaken: 0, hasMore };
   o.log?.(`${repos.length} repos, ${issues.length} open issues. Checking claims and merge history…`);
@@ -86,6 +88,7 @@ export interface ExplainOptions {
   /** Recorded answer used by --demo instead of calling Gemini. */
   recordedAnswer?: string;
   onStep?: (line: string) => void;
+  isCancelled?: () => boolean;
 }
 
 /** Step 5: the mentor agent (or a plain pointer when there is no Gemini key). */
@@ -96,5 +99,5 @@ export async function explainIssue(o: ExplainOptions): Promise<string> {
 
   const raw = await o.gh.getJson<any[]>(`/repos/${o.repo.full_name}/issues/${o.issue.number}/comments`, { per_page: 20 });
   const comments = raw.map((c) => ({ user: c.user?.login ?? 'unknown', body: String(c.body ?? '') }));
-  return mentorIssue({ gemini: o.gemini, ctx, issue: o.issue, comments, onStep: o.onStep });
+  return mentorIssue({ gemini: o.gemini, ctx, issue: o.issue, comments, onStep: o.onStep, isCancelled: o.isCancelled });
 }

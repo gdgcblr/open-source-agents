@@ -2,12 +2,13 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const API_HOST = 'api.github.com';
 const TIMEOUT_MS = 15_000;
+const MAX_RETRY_WAIT_SEC = 90;
 
 /** Recorded responses used by --demo (replay) and --record. */
 export interface Fixture {
   recordedAt: string;
   /** The one search the recording covers; demo mode refuses anything else. */
-  meta?: { language: string; level: string };
+  meta?: { language: string; level: string; repo?: string; repos?: string[] };
   github: Record<string, unknown>;
   gemini: Record<string, unknown>;
 }
@@ -36,7 +37,7 @@ export function slimForFixture(key: string, data: any): unknown {
       }));
   }
   if (pathname.endsWith('/pulls') && Array.isArray(data)) {
-    return data.map((p) => ({ merged_at: p.merged_at, created_at: p.created_at, author_association: p.author_association }));
+    return data.map((p) => ({ merged_at: p.merged_at, created_at: p.created_at, author_association: p.author_association, user: p.user ? { login: p.user.login, type: p.user.type } : undefined }));
   }
   if (pathname.includes('/git/trees/') && data?.tree) {
     return { tree: data.tree.filter((n: any) => n.type === 'blob').map((n: any) => ({ path: n.path, type: n.type })) };
@@ -48,7 +49,7 @@ export function slimForFixture(key: string, data: any): unknown {
     return { items: data.items.map((i: any) => ({ number: i.number, title: i.title, html_url: i.html_url, repository_url: i.repository_url, body: String(i.body ?? '').slice(0, 1500), comments: i.comments, created_at: i.created_at, updated_at: i.updated_at, labels: (i.labels ?? []).map((l: any) => ({ name: l.name })) })) };
   }
   if (pathname === '/search/repositories' && data?.items) {
-    return { items: data.items.map((r: any) => ({ full_name: r.full_name, stargazers_count: r.stargazers_count, pushed_at: r.pushed_at, default_branch: r.default_branch, language: r.language })) };
+    return { items: data.items.map((r: any) => ({ full_name: r.full_name, stargazers_count: r.stargazers_count, pushed_at: r.pushed_at, default_branch: r.default_branch, language: r.language, description: r.description ? String(r.description).slice(0, 200) : null, html_url: r.html_url })) };
   }
   return data;
 }
@@ -68,6 +69,9 @@ export class GitHubClient {
     private mode: FixtureMode = 'live',
     private fixture?: Fixture,
   ) {}
+
+  /** Called when the client pauses for a rate limit, so callers can tell the user. */
+  onWait?: (message: string) => void;
 
   get hasToken(): boolean {
     return Boolean(this.token) || this.mode === 'replay';
@@ -110,13 +114,29 @@ export class GitHubClient {
     };
     if (this.token) headers.Authorization = `Bearer ${this.token}`;
 
-    const res = await fetch(url, { method: 'GET', headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
-    if (!res.ok) {
-      if ((res.status === 403 || res.status === 429) && res.headers.get('x-ratelimit-remaining') === '0') {
+    let res: Response;
+    for (let attempt = 1; ; attempt++) {
+      res = await fetch(url, { method: 'GET', headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
+      if (res.ok) break;
+
+      const body = (await res.text().catch(() => '')).slice(0, 300);
+      const limited = res.status === 403 || res.status === 429;
+      const primaryExhausted = limited && res.headers.get('x-ratelimit-remaining') === '0';
+      const secondary = limited && !primaryExhausted && (/secondary rate limit/i.test(body) || res.headers.has('retry-after'));
+      if (secondary) {
+        // GitHub asks clients to slow down briefly after a burst; wait once and retry instead of failing.
+        const waitSec = Math.max(5, Number(res.headers.get('retry-after')) || 60);
+        if (attempt === 1 && waitSec <= MAX_RETRY_WAIT_SEC) {
+          this.onWait?.(`GitHub asked us to slow down; waiting ${waitSec}s…`);
+          await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
+          continue;
+        }
+        throw new Error(`GitHub is rate limiting requests. Wait about ${waitSec} seconds and try again.`);
+      }
+      if (primaryExhausted) {
         throw new Error(`GitHub rate limit reached.${this.token ? '' : ' Add GITHUB_TOKEN to .env to raise it.'}`);
       }
-      const body = (await res.text().catch(() => '')).slice(0, 200);
-      throw new Error(`GitHub API ${res.status} for ${url.pathname}: ${body}`);
+      throw new Error(`GitHub API ${res.status} for ${url.pathname}: ${body.slice(0, 200)}`);
     }
     const data = raw ? await res.text() : await res.json();
 

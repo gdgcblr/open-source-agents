@@ -41,3 +41,25 @@ test('normalizeLanguage and parseIssueRef', () => {
   assert.deepEqual(parseIssueRef('https://github.com/a/b/issues/9'), { repo: 'a/b', number: 9 });
   assert.equal(parseIssueRef('nonsense'), null);
 });
+
+import { sanitizeSearchQuery } from '../src/mentor.js';
+import { REPO_REF } from '../src/finder.js';
+
+test('sanitizeSearchQuery strips qualifiers so code search stays inside the chosen repo', () => {
+  assert.equal(sanitizeSearchQuery('password repo:someone/private'), 'password');
+  assert.equal(sanitizeSearchQuery('token org:acme user:bob path:/etc'), 'token');
+  assert.equal(sanitizeSearchQuery('registerCommand "gemini.diff.accept"'), 'registerCommand gemini.diff.accept');
+  assert.equal(sanitizeSearchQuery('repo:a/b'), '');
+  assert.equal(sanitizeSearchQuery(undefined), '');
+});
+
+test('numberLines copes with model-supplied junk numbers', () => {
+  assert.ok(numberLines('a\nb\nc', 'abc', 'xyz').startsWith('1: a\n2: b\n3: c'));
+  assert.ok(numberLines('a\nb\nc', '2', undefined).startsWith('2: b'));
+  assert.ok(numberLines('a\nb\nc', Infinity, NaN).startsWith('1: a')); // falls back to the start
+});
+
+test('REPO_REF accepts owner/name and rejects traversal-looking names', () => {
+  for (const ok of ['dexie/Dexie.js', 'vercel/next.js', 'a-b/c_d']) assert.ok(REPO_REF.test(ok), ok);
+  for (const bad of ['../etc', 'a/..', './x', 'a/b/c', 'a', 'a/b?x=1', '']) assert.ok(!REPO_REF.test(bad), bad);
+});

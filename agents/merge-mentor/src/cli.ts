@@ -5,8 +5,8 @@ import readline from 'node:readline/promises';
 import pc from 'picocolors';
 import { LEVELS, Level, PROJECT_ROOT, isValidLevel, loadConfig, normalizeLanguage } from './config.js';
 import { Fixture, FixtureMode, GitHubClient, assertDemoSupports, loadFixture, saveFixture } from './github.js';
-import { Issue, Repository, fetchIssue, fetchRepo, parseIssueRef } from './finder.js';
-import { DifficultyResult } from './difficulty.js';
+import { Issue, REPO_REF, Repository, fetchIssue, fetchRepo, findRepos, parseIssueRef } from './finder.js';
+import { DifficultyResult, issueKey } from './difficulty.js';
 import { explainIssue, rankIssues } from './pipeline.js';
 import { Gemini } from './gemini.js';
 import { maskSecrets } from './mentor.js';
@@ -23,6 +23,7 @@ Usage:
 Options:
   --lang <name>      Language you are good at (e.g. typescript, python, go)
   --level <level>    beginner (default), intermediate, advanced
+  --repo <owner/name> Only list issues of this project
   --issue <ref>      Explain one issue directly (owner/repo#123 or an issue URL)
   --limit <n>        Candidate issues to check (default 10)
   --show-taken       Also list issues that already have an open PR
@@ -44,6 +45,7 @@ async function main() {
       stack: { type: 'string' },
       level: { type: 'string', default: 'beginner' },
       issue: { type: 'string' },
+      repo: { type: 'string' },
       limit: { type: 'string', default: '10' },
       'show-taken': { type: 'boolean', default: false },
       pick: { type: 'string' },
@@ -87,12 +89,22 @@ async function main() {
     if (!lang) fail('Tell me your language: --lang typescript (or --issue owner/repo#123). Try --help.');
     const language = normalizeLanguage(lang);
     if (mode === 'replay') try { assertDemoSupports(fixture, language, level); } catch (e) { fail((e as Error).message); }
-    if (fixture && mode === 'record') fixture.meta = { language, level };
+    if (fixture && mode === 'record') fixture.meta = { language, level, repo: values.repo };
+    let onlyRepos: Repository[] | undefined;
+    // The demo recording has one explained project; use it when no --repo is given.
+    const wantedRepo = values.repo ?? (mode === 'replay' ? fixture?.meta?.repo : undefined);
+    if (wantedRepo) {
+      if (!REPO_REF.test(wantedRepo)) fail('--repo must look like owner/name');
+      // Also run the project search while recording so the web UI demo can replay its project list.
+      if (mode === 'record') await findRepos(gh, language, level as Level, now);
+      onlyRepos = [await fetchRepo(gh, wantedRepo)];
+    }
 
     console.log(`\n🔎 Finding ${pc.bold(level)} issues in ${pc.bold(language)} repositories…`);
     const { rows, ratings, hiddenTaken } = await rankIssues({
       gh,
       gemini: useAi ? ai : undefined,
+      repos: onlyRepos,
       language,
       level: level as Level,
       limit,
@@ -128,7 +140,12 @@ async function main() {
     gemini: useAi ? ai : undefined,
     repo,
     issue,
-    recordedAnswer: mode === 'replay' ? String(fixture!.gemini.mentor ?? 'No recorded mentor answer.') : undefined,
+    recordedAnswer:
+      mode === 'replay'
+        ? issueKey(issue) === fixture!.gemini.mentorFor
+          ? String(fixture!.gemini.mentor)
+          : `Demo mode only has a recorded explanation for ${fixture!.gemini.mentorFor}. Run without --demo to explain any issue.`
+        : undefined,
     onStep: (step) => console.log(pc.dim(`   → ${step}`)),
   });
   if (fixture && mode === 'record') {
