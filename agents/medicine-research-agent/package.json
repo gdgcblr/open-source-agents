@@ -1,0 +1,24 @@
+{
+  "name": "medicine-agent",
+  "version": "1.0.0",
+  "description": "> [One-sentence summary of what this project does and the value it provides.]",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/adk": "^2.3.0",
+    "dotenv": "^18.0.9",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@google/adk-devtools": "^2.3.0",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
