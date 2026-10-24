@@ -1,0 +1,137 @@
+# Default rules for the open-source-ai repository (gdgcblr/open-source-agents).
+# Every value here comes from CONTRIBUTING.md or .github/PULL_REQUEST_TEMPLATE.md.
+# Checks read their settings from this file, so a future per-repo rules file can
+# override it without touching check code.
+
+schema_version = 1
+
+[structure]
+categories = ["agents", "tools"]
+slug_pattern = "^[a-z0-9]+(-[a-z0-9]+)*$"
+generic_names = [
+    "agent", "tool", "project", "my-agent", "my-tool", "my-project",
+    "final", "final-project", "final-test", "test", "tests", "demo",
+    "sample", "example", "helper", "untitled", "new-project", "hackathon",
+]
+
+[readme]
+file = "README.md"
+# README text beyond this many characters is not sent to the AI reviewer.
+max_ai_chars = 20000
+
+# Template lines that are scaffolding meant to be kept, so D3 never reports them as leftovers.
+keep_template_lines = [
+    "Before running this project, ensure you have:",
+    "1. **Navigate to the project directory:**",
+    "2. **Set up the virtual environment / install dependencies:**",
+    "3. **Configure Environment Variables:**",
+    "Copy the example environment file and fill in your keys:",
+    "- For Node.js / TypeScript:",
+    "*This project is contributed under the repository's open-source license.*",
+]
+
+# Sections a reviewer will look for. A README heading matches when it contains one of the
+# aliases as whole words (case-insensitive, emoji and punctuation ignored).
+# level = "required" -> missing is an error; "recommended" -> missing is a warning.
+# Template headings not listed here are still expected (warning), matched by shared keywords.
+# Aliases below marked "(PR #n)" were added after false alarms on real pull requests.
+[[readme.sections]]
+title = "Overview"
+level = "required"
+aliases = ["overview", "introduction", "about", "what it does", "problem statement", "summary"]  # (PR #1)
+
+[[readme.sections]]
+title = "Prerequisites"
+level = "required"
+aliases = ["prerequisites", "requirements", "before you begin"]
+
+[[readme.sections]]
+title = "Installation & Setup"
+level = "required"
+aliases = ["installation", "install", "setup", "getting started", "quick start", "quickstart"]  # (PR #1, #18)
+
+[[readme.sections]]
+title = "How to Run"
+level = "required"
+aliases = ["how to run", "usage", "running", "run", "cli", "commands"]  # (PR #6)
+
+[[readme.sections]]
+title = "Example Input & Output"
+level = "required"
+aliases = ["example", "examples", "sample", "demo"]
+
+[[readme.sections]]
+title = "How to Test"
+level = "required"
+aliases = ["test", "testing", "tests"]
+
+[[readme.sections]]
+title = "Known Limitations"
+level = "required"
+aliases = ["limitations", "limitation", "known issues"]
+
+[[readme.sections]]
+title = "Security & Privacy Considerations"
+level = "required"
+aliases = ["security", "privacy", "safety", "guardrails"]  # (PR #18)
+
+[[readme.sections]]
+title = "Technical Stack"
+level = "recommended"
+aliases = ["stack", "tech", "technologies", "built with"]
+
+[[readme.sections]]
+title = "Architecture & Data Flow"
+level = "recommended"
+aliases = ["architecture", "data flow", "design", "how it works"]  # (PR #10)
+
+[[readme.sections]]
+title = "Configuration & Environment Variables"
+level = "recommended"
+aliases = ["configuration", "config", "environment", "env", "settings"]
+
+[[readme.sections]]
+title = "Future Improvements"
+level = "recommended"
+aliases = ["future", "roadmap", "next steps", "planned", "todo"]  # (PR #1)
+
+[[readme.sections]]
+title = "License"
+level = "recommended"
+aliases = ["license", "licence", "licensing"]
+
+[dependencies]
+manifests = [
+    "requirements.txt", "requirements-dev.txt", "pyproject.toml", "Pipfile",
+    "setup.py", "setup.cfg", "environment.yml", "package.json", "deno.json",
+    "go.mod", "Cargo.toml", "pom.xml", "build.gradle", "build.gradle.kts",
+    "composer.json", "Gemfile",
+]
+
+[files]
+# Files that must never be committed (matched against the file name).
+forbidden_names = [
+    ".env", "credentials.json", "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519",
+    ".npmrc", ".pypirc",
+]
+forbidden_globs = [
+    ".env.*", "*.pem", "*.key", "*.p12", "*.pfx", "*.keystore", "*.jks",
+    "service-account*.json",
+]
+# Allowed even though they match a forbidden pattern above.
+allowed_names = [".env.example", ".env.sample", ".env.template"]
+# Folders that are build output or local environments, never source.
+junk_dirs = [
+    ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache",
+    ".mypy_cache", ".ruff_cache", ".tox", ".ipynb_checkpoints",
+    ".adk",  # Google ADK local sessions and artifacts (PRs #36, #38)
+]
+# Files larger than this are not scanned for secrets.
+max_scan_bytes = 1000000
+
+[scope]
+# Base branches tried, in order, when --base is not given.
+default_bases = ["upstream/main", "origin/main", "main"]
+# Contributors may add one row to their category's index table.
+max_index_lines_added = 2
+max_index_lines_removed = 1

@@ -1,0 +1,270 @@
+# Real pull requests on gdgcblr/open-source-agents, pinned to exact commits, with verdicts
+# checked by hand. Used by evals/run_real_prs_eval.py.
+#
+# `expect` lists every check that should flag the folder (all others must pass or skip).
+# Add entries only after reviewing the PR yourself; `--capture` prints drafts to start from.
+
+repo_url = "https://github.com/gdgcblr/open-source-agents.git"
+base_sha = "b0ad2a403b7dc731f3b5e2d5e9ba0fe07f6d4b36"  # upstream main when these were reviewed
+reviewed_on = "2026-10-24"
+
+[[pr]]
+number = 1
+sha = "75eb24ef78ac50bf06ca0ab552f3bd19187d257f"
+folder = "agents/namma-traffic-agent"
+expect = { D2 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: no Security & Privacy section. 'Quick Start' counts as install (was a false alarm)."
+
+[[pr]]
+number = 2
+sha = "30c549241725268269379a4ada02c1ca2b473c6d"
+folder = "agents/pdf-qa-agent"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template step labels must not trigger D3 (was a false alarm)."
+
+[[pr]]
+number = 3
+sha = "b4d9d8a83b9abace0f0d0b131d5a5b578b0380b7"
+folder = "tools/token-cost-estimator"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template step labels and license line must not trigger D3 (was a false alarm)."
+
+[[pr]]
+number = 4
+sha = "c4a6b0c77fe135f9e6fb0bf60c6a90c49dca0195"
+folder = "tools/stacktrace-copilot"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template scaffold lines must not trigger D3 (was a false alarm)."
+
+[[pr]]
+number = 5
+sha = "70072d14336b9e925d08cd80e6d67d5d2c9c77d8"
+folder = "agents/mergewarden"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Similar contribution-review tool; kept template step label (was a D3 false alarm)."
+
+[[pr]]
+number = 6
+sha = "8b6aa4d65ecde1a61f7f382e7176d04d9a20a84f"
+folder = "agents/invoice-validation-agent"
+expect = { D2 = "fail", D4 = "warn" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: no Overview or Prerequisites; Example Input & Output section is empty. 'CLI' counts as How to Run."
+
+[[pr]]
+number = 7
+sha = "3d355b26b105623820f152341d92bae2d8a24e3e"
+folder = "agents/contribution-review-agent"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Prose and sample output quoting agents/<project-slug>/ must not trigger D3 (was a false alarm)."
+
+[[pr]]
+number = 8
+sha = "86353057af140efad452820ba48df90a32d862ad"
+folder = "tools/browser-qa-mcp"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template step label (was a D3 false alarm)."
+
+[[pr]]
+number = 9
+sha = "a741008d3aaf612636ce4b80cdaa00889649eab0"
+folder = "agents/resume-jd-match-agent"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template license sentence (was a D3 false alarm)."
+
+[[pr]]
+number = 10
+sha = "d0bb7e94f7fd43f323106584a09e74c02c161ca3"
+folder = "agents/devops-pipeline-analyzer"
+expect = { D2 = "fail", M1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: no dependency manifest; no Overview, Example or Security sections."
+
+[[pr]]
+number = 11
+sha = "42c6aae481791baf621b703594f6f2b995fd72f5"
+folder = "tools/contrib-sentinel"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template step labels (was a D3 false alarm)."
+
+[[pr]]
+number = 12
+sha = "7d59a4c808dfbcb2e2ae7d74df9029004f180295"
+folder = "tools/tool-schema-lint"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template scaffold lines (was a D3 false alarm)."
+
+[[pr]]
+number = 13
+sha = "4e0beb80cec78349e88267d50747dfc1afe1c60e"
+folder = "cc/agents/trace-pilot"
+expect = { S1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: project placed under cc/agents/ instead of agents/."
+
+[[pr]]
+number = 14
+sha = "caaaf651c0addea16e3f041cbdbe8acd507528c2"
+folder = "agents/namma-sahayaka"
+expect = { D2 = "fail", G1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: two projects in one PR (each sees the other as out of scope); agent README lacks required sections."
+
+[[pr]]
+number = 14
+sha = "caaaf651c0addea16e3f041cbdbe8acd507528c2"
+folder = "tools/bengaluru-civic-mcp"
+expect = { G1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: two projects in one PR (each sees the other as out of scope); agent README lacks required sections."
+
+[[pr]]
+number = 15
+sha = "96976cc02cc5e043e4aa2a679c9b5d5ef93559c7"
+folder = "agents/diff-risk-reviewer"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template scaffold lines (was a D3 false alarm)."
+
+[[pr]]
+number = 16
+sha = "091d2d4cb454c987b685be4d2aacbd201599fec3"
+folder = "agents/incident-triage-agent-go"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template license sentence (was a D3 false alarm)."
+
+[[pr]]
+number = 17
+sha = "a8468b10d58949596224376d1e46d8c3a6bb2e77"
+folder = "agents/github-pr-guardian"
+expect = { X2 = "warn" }
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. AWS docs example key is a note (was an error); a fake 'sk_live' fixture value stays a warning."
+
+[[pr]]
+number = 18
+sha = "dfb2ee9ab93dca4e8b32f8f09ddd40d956ec5b2b"
+folder = "agents/sql-analyst-agent"
+expect = { D2 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: no tests, limitations or overview sections. 'Quickstart Guide' and 'Safety Guardrails' count."
+
+[[pr]]
+number = 19
+sha = "b9b89ba6a2711a4b18c74a2080f7c851c61a2817"
+folder = "agents/research-assistant"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Kept template step label (was a D3 false alarm)."
+
+[[pr]]
+number = 33
+sha = "33269252697c6e675261b1dce8961e5fba5559f6"
+folder = "agents/issue-reproduction-assistant"
+expect = { X2 = "info" }
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Sequential fake test token is a note and 'super-secret' values are placeholders (were errors)."
+
+[[pr]]
+number = 36
+sha = "c115fbfb58fe044bd21a4a6fd765c311d40fd3c8"
+folder = "agents/.github"
+expect = { S2 = "fail", S4 = "warn", D1 = "fail", M1 = "fail", G1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: underscores in folder name, committed .adk/ session data, no .gitignore/.env.example, stray agents/.github, missing sections."
+
+[[pr]]
+number = 36
+sha = "c115fbfb58fe044bd21a4a6fd765c311d40fd3c8"
+folder = "agents/accessable_ai"
+expect = { S2 = "fail", S4 = "warn", D2 = "fail", M2 = "info", X3 = "warn", X4 = "fail", G1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: underscores in folder name, committed .adk/ session data, no .gitignore/.env.example, stray agents/.github, missing sections."
+
+[[pr]]
+number = 38
+sha = "f0477e6cd111f83f699cc1e48ed059ba41148192"
+folder = "agents/accessable_ai"
+expect = { S2 = "fail", S4 = "warn", D2 = "fail", M2 = "info", X3 = "warn", X4 = "fail", G1 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: same project as #36 (underscores, committed .adk/ session data, missing files and sections)."
+
+[[pr]]
+number = 42
+sha = "ef82c935aa908e005cca4294d9e6f23a35fc36e2"
+folder = "agents/git-pr-review-agent"
+expect = { D2 = "warn", X2 = "info" }
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Sequential fake keys in tests are notes (were errors); no Technical Stack section is a warning."
+
+[[pr]]
+number = 43
+sha = "c6dfeb8deb7a6f3f637313c53e6a3d905239985c"
+folder = "agents/good-first-issue-agent"
+expect = { X2 = "info" }
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. Fake test tokens and a private-key header without key material are notes (were errors)."
+
+[[pr]]
+number = 48
+sha = "157674522001358218bebcec6dce395b588f6d00"
+folder = "agents/ishikawa-rca"
+expect = { X2 = "info" }
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. AWS docs example key and a key header without body are notes (were errors)."
+
+[[pr]]
+number = 49
+sha = "66f99d8b5a71154ec930f245f9ceb7819853dce7"
+folder = "agents/metroagent"
+expect = { D3 = "fail", M2 = "info", X4 = "fail" }
+ready = false
+reviewed = "2026-10-24"
+why = "Real: README is the untouched template (now blocking) and .adk/ session data is committed."
+
+[[pr]]
+number = 76
+sha = "5671afe8d07e634c5908a1bb1698ec81054aa93a"
+folder = "tools/pr-readiness-checker"
+expect = {}
+ready = true
+reviewed = "2026-10-24"
+why = "Ready. This tool's own PR."

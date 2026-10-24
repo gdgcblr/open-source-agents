@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pr-readiness-checker"
+version = "0.1.0"
+description = "Checks an open-source-ai contribution against the repository's rules before you open a pull request."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "typer==0.27.3",
+    "rich==15.0.0",
+    "pydantic==2.14.1",
+]
+
+[project.optional-dependencies]
+# Gemini README review (`prcheck check --ai`). The core checks never need this.
+ai = [
+    "google-genai==2.33.0",
+    "python-dotenv==1.2.4",
+]
+dev = [
+    "pytest==9.1.1",
+]
+
+[project.scripts]
+prcheck = "prcheck.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["prcheck*"]
+
+[tool.setuptools.package-data]
+prcheck = ["data/*.md", "data/*.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
