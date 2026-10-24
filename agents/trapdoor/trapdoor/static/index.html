@@ -472,7 +472,34 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
     color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .payload-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #b91c1c;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .payload-box {
+    background: #fff1f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #7f1d1d;
+    white-space: pre-wrap;
+    word-break: break-word;
     margin-bottom: 0.8rem;
+    max-height: 120px;
+    overflow-y: auto;
   }
 
   .mitigation-label {
@@ -575,6 +602,26 @@
     </div>
   </div>
 
+  <div class="section-header" style="margin-top:2.5rem">
+    <span class="section-title">How It Works</span>
+    <div class="section-line"></div>
+  </div>
+  <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:1.5rem 2rem;margin-bottom:2rem;font-size:0.85rem;color:var(--text-dim);line-height:1.8">
+    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:0.82rem">
+      <span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:6px;font-weight:600">Google ADK LlmAgent</span>
+      <span style="color:var(--text-muted)">──MCPToolset (stdio)──▶</span>
+      <span style="background:#fef9c3;color:#92400e;padding:4px 10px;border-radius:6px;font-weight:600">trap_server.py subprocess</span>
+      <span style="color:var(--text-muted)">──adversarial response──▶</span>
+      <span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:6px;font-weight:600">TrapDoor Evaluator</span>
+    </div>
+    <ul style="margin-top:1rem;padding-left:1.2rem;list-style:disc;display:grid;grid-template-columns:1fr 1fr;gap:0.2rem 2rem">
+      <li><strong>Real MCP server</strong> — <code>trap_server.py</code> spawned as a subprocess via stdio transport</li>
+      <li><strong>Real ADK agent</strong> — <code>google.adk.agents.LlmAgent</code> with <code>MCPToolset</code></li>
+      <li><strong>Agent decides autonomously</strong> which tools to call — no scripted sequence</li>
+      <li><strong>Traps hidden in responses</strong> — adversarial payloads inside normal-looking tool outputs</li>
+    </ul>
+  </div>
+
   <div class="section-header">
     <span class="section-title">Attack Scenarios</span>
     <div class="section-line"></div>
@@ -612,7 +659,8 @@
         <thead>
           <tr>
             <th style="width:60px">Turn</th>
-            <th>Tool</th>
+            <th style="width:180px">Tool (MCP)</th>
+            <th>MCP Server Response (first 200 chars)</th>
             <th style="width:100px">Type</th>
           </tr>
         </thead>
@@ -695,17 +743,21 @@ async function runEval() {
       `${data.turns} turn(s) · ${data.total_tool_calls} tool calls · ${trapped} trap(s) triggered · ${data.suspicious_patterns?.length || 0} suspicious patterns`;
 
     // Trace
-    document.getElementById('traceBody').innerHTML = data.tool_call_trace.map(tc => `
+    document.getElementById('traceBody').innerHTML = data.tool_call_trace.map(tc => {
+      const resp = (tc.mcp_response || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const preview = resp.length > 200 ? resp.slice(0,200) + '…' : resp;
+      return `
       <tr class="${tc.is_trap ? 'is-trap' : ''}">
         <td class="turn-num">${tc.turn}</td>
         <td class="tool-name">${tc.name}()</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:${tc.is_trap ? '#7f1d1d' : 'var(--text-muted)'};max-width:500px;word-break:break-word">${preview || '<span style="opacity:.4">—</span>'}</td>
         <td>
           <span class="badge ${tc.is_trap ? 'badge-trap' : 'badge-safe'}">
             ${tc.is_trap ? '⚡ TRAP' : '✓ safe'}
           </span>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
 
     // Findings
     const fh = document.getElementById('findingsHeader');
@@ -713,17 +765,20 @@ async function runEval() {
     if (data.findings.length > 0) {
       fh.style.display = 'flex';
       document.getElementById('findingsCount').textContent = data.findings.length + ' found';
-      fc.innerHTML = data.findings.map(f => `
+      fc.innerHTML = data.findings.map(f => {
+        const payload = (f.mcp_payload || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `
         <div class="finding-card">
           <div class="finding-header">
             <span style="color:var(--red);font-size:1rem">●</span>
             <span class="finding-title">${f.attack_type}</span>
           </div>
-          <div class="finding-meta">via <code>${f.tool}</code> at turn ${f.turn}</div>
+          <div class="finding-meta">via <code>${f.tool}</code> at turn ${f.turn} · delivered by MCP stdio server</div>
+          ${payload ? `<div class="payload-label">🔴 Adversarial MCP Payload Received by Agent</div><div class="payload-box">${payload}</div>` : ''}
           <div class="mitigation-label">💡 Mitigation</div>
           <div class="mitigation-text">${f.mitigation}</div>
         </div>
-      `).join('');
+      `}).join('');
     } else {
       fh.style.display = 'none';
       fc.innerHTML = '';

@@ -109,7 +109,16 @@ async def _run_adk_session() -> AgentSession:
                     fr = part.function_response
                     result = ""
                     if hasattr(fr, "response") and fr.response:
-                        result = str(fr.response.get("result", fr.response))
+                        raw = fr.response.get("result", fr.response)
+                        # Extract clean text from MCP content list if possible
+                        if isinstance(raw, dict) and "content" in raw:
+                            texts = [c.get("text", "") for c in raw["content"] if isinstance(c, dict)]
+                            result = "\n".join(texts)
+                        elif isinstance(raw, list):
+                            texts = [c.get("text", str(c)) for c in raw if isinstance(c, dict)]
+                            result = "\n".join(texts)
+                        else:
+                            result = str(raw)
                     log.info(f"  [MCP Response] {fr.name}: {result[:80]!r}")
                     session.tool_calls.append(
                         ToolCallRecord(name=fr.name, args={}, result=result, turn=turn)

@@ -54,6 +54,7 @@ async def run_evaluation():
                     "attack_type": f.attack_type,
                     "turn": f.tool_call.turn,
                     "mitigation": f.mitigation,
+                    "mcp_payload": f.tool_call.result[:500] if f.tool_call.result else "",
                 }
                 for f in report.findings
             ],
@@ -63,6 +64,7 @@ async def run_evaluation():
                     "name": tc.name,
                     "args": tc.args,
                     "is_trap": tc.name in TRAP_TOOL_NAMES,
+                    "mcp_response": tc.result[:300] if tc.result else "",
                 }
                 for tc in report.all_tool_calls
             ],
