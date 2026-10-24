@@ -1,0 +1,73 @@
+{
+  "_comment": "Hand-written test fixture shaped like a Deepgram /v1/listen response with utterances=true and diarization enabled.",
+  "metadata": {
+    "request_id": "00000000-0000-0000-0000-000000000000",
+    "duration": 18.4,
+    "channels": 1
+  },
+  "results": {
+    "channels": [
+      {
+        "alternatives": [
+          {
+            "transcript": "Thank you for calling MedCare General Hospital. How can I help you today? Hi, when is the cardiology OPD open this week? Cardiology OPD is open Monday to Saturday. Would you like an appointment? Yes, with Dr. Arjun Menon, please.",
+            "confidence": 0.97,
+            "words": []
+          }
+        ]
+      }
+    ],
+    "utterances": [
+      {
+        "start": 0.32,
+        "end": 4.1,
+        "confidence": 0.97,
+        "channel": 0,
+        "transcript": "Thank you for calling MedCare General Hospital. How can I help you today?",
+        "words": [],
+        "speaker": 0,
+        "id": "utt-1"
+      },
+      {
+        "start": 4.8,
+        "end": 8.9,
+        "confidence": 0.94,
+        "channel": 0,
+        "transcript": "Hi, when is the cardiology OPD open this week?",
+        "words": [],
+        "speaker": 1,
+        "id": "utt-2"
+      },
+      {
+        "start": 9.4,
+        "end": 14.2,
+        "confidence": 0.96,
+        "channel": 0,
+        "transcript": "Cardiology OPD is open Monday to Saturday. Would you like an appointment?",
+        "words": [],
+        "speaker": 0,
+        "id": "utt-3"
+      },
+      {
+        "start": 14.9,
+        "end": 18.0,
+        "confidence": 0.93,
+        "channel": 0,
+        "transcript": "Yes, with Dr. Arjun Menon, please.",
+        "words": [],
+        "speaker": 1,
+        "id": "utt-4"
+      },
+      {
+        "start": 18.1,
+        "end": 18.3,
+        "confidence": 0.21,
+        "channel": 0,
+        "transcript": "  ",
+        "words": [],
+        "speaker": 1,
+        "id": "utt-5"
+      }
+    ]
+  }
+}

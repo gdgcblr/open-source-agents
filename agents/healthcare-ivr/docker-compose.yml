@@ -1,0 +1,29 @@
+# Single-host deployment: `make docker-up`, then open http://localhost:8080.
+name: healthcare-ivr
+
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      # Container paths; the named volume holds the database and call recordings.
+      DATABASE_URL: sqlite+aiosqlite:////app/data/reception_calls.db
+      RECORDINGS_DIR: /app/data/recordings
+    volumes:
+      - app-data:/app/data
+    ports:
+      # Point your tunnel (e.g. `make tunnel`) at this port so Twilio can reach the API.
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  app-data:

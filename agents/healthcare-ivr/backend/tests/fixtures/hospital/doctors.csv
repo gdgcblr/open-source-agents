@@ -1,0 +1,4 @@
+name,department,specialty,opd_days,opd_start,opd_end,slot_minutes,consultation_fee_inr
+Dr. Asha Rao,Cardiology,Heart failure,Mon Wed Fri,09:00,10:00,15,1000
+Dr. Vikram Shah,Orthopaedics,Knee replacement,Tue-Sat,14:00,15:00,30,900
+Dr. Neha Rao,General Medicine,"Fever, infections",Mon-Sat,09:00,11:00,20,

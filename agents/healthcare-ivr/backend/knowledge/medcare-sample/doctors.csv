@@ -1,0 +1,16 @@
+name,department,specialty,opd_days,opd_start,opd_end,slot_minutes,consultation_fee_inr
+Dr. Arjun Menon,Cardiology,Interventional cardiology,Mon Wed Fri,09:00,13:00,15,1000
+Dr. Priya Nair,Cardiology,Non-invasive cardiology and heart failure,Tue Thu Sat,10:00,16:00,15,1000
+Dr. Kavya Rao,Pediatrics,General pediatrics and vaccinations,Mon-Sat,09:00,13:00,15,700
+Dr. Rohan Kulkarni,Orthopedics,Joint replacement,Mon Wed Fri,10:00,16:00,15,900
+Dr. Imran Sheikh,Orthopedics,Sports medicine and spine,Tue Thu Sat,09:00,13:00,15,900
+Dr. Sneha Iyer,Dermatology,Clinical and cosmetic dermatology,Mon Wed Sat,11:00,17:00,15,800
+Dr. Vikram Hegde,Neurology,"Epilepsy, stroke, and headaches",Tue Thu,10:00,16:00,15,1000
+Dr. Anil Kumar,General Medicine,Diabetes and high blood pressure,Mon-Sat,08:00,12:00,15,600
+Dr. Meera Joshi,General Medicine,"Fever, infections, and health checkups",Mon-Sat,14:00,18:00,15,600
+Dr. Lakshmi Prasad,Obstetrics and Gynaecology,High-risk pregnancy,Mon Wed Fri,09:00,14:00,15,900
+Dr. Farah Khan,Obstetrics and Gynaecology,Infertility and gynaecological surgery,Tue Thu Sat,10:00,15:00,15,900
+Dr. Suresh Reddy,ENT,"Sinus, hearing, and voice disorders",Mon Thu Sat,10:00,14:00,15,700
+Dr. Neha Bhat,Ophthalmology,Cataract and LASIK,Tue Wed Fri,09:00,13:00,15,700
+Dr. Rahul Deshpande,Psychiatry,"Anxiety, depression, and sleep problems",Mon Wed Fri,14:00,18:00,15,1000
+Dr. Kiran Shetty,Radiology and Diagnostics,"Ultrasound, CT, and MRI reporting",Mon-Sat,08:00,16:00,15,

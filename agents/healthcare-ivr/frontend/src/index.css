@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/atkinson-hyperlegible-next';
+@plugin '@tailwindcss/typography';
+
+/*
+ * Colour is reserved for speaker identity: each diarized speaker keeps the same hue in the
+ * timeline, the transcript and the legend. Everything else stays in neutral slate tones.
+ */
+:root {
+  --page: #f3f5f7;
+  --surface: #ffffff;
+  --surface-muted: #eaeef2;
+  --ink: #1b2733;
+  --ink-muted: #586878;
+  --line: #d7dee5;
+  --ok: #1e7f4f;
+  --warn: #9a6a12;
+  --danger: #b4322a;
+  --speaker-1: #2f5bd3;
+  --speaker-2: #d9730d;
+  --speaker-3: #7b4fc9;
+  --speaker-4: #138a72;
+  --speaker-5: #c23d6b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0f1822;
+    --surface: #16212d;
+    --surface-muted: #1e2b38;
+    --ink: #e4ebf2;
+    --ink-muted: #94a5b6;
+    --line: #2a3947;
+    --ok: #5cc98f;
+    --warn: #e8b85a;
+    --danger: #f08378;
+    --speaker-1: #7fa2ff;
+    --speaker-2: #f5a04a;
+    --speaker-3: #b69bf0;
+    --speaker-4: #4fc7aa;
+    --speaker-5: #f07fa6;
+  }
+}
+
+@theme inline {
+  /* Atkinson has no Devanagari, so Hindi falls through to each platform's Devanagari UI font. */
+  --font-sans: 'Atkinson Hyperlegible Next Variable', 'Kohinoor Devanagari', 'Nirmala UI', 'Noto Sans Devanagari', ui-sans-serif, system-ui, sans-serif;
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-speaker-1: var(--speaker-1);
+}
+
+/* Long-form markdown (the hospital information) in the app's own colours, in both themes. */
+@utility prose-theme {
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-lead: var(--ink-muted);
+  --tw-prose-links: var(--speaker-1);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-counters: var(--ink-muted);
+  --tw-prose-bullets: var(--ink-muted);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--ink-muted);
+  --tw-prose-quote-borders: var(--line);
+  --tw-prose-captions: var(--ink-muted);
+  --tw-prose-code: var(--ink);
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+}
+
+@layer base {
+  body {
+    @apply bg-page font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-speaker-1;
+  }
+}

@@ -1,0 +1,18 @@
+name,department,specialty,opd_days,opd_start,opd_end,slot_minutes,consultation_fee_inr
+Dr. Aditi Deshmukh,Cardiology,Preventive cardiology and heart failure,Mon Wed Fri,09:00,13:00,15,1200
+Dr. Nikhil Joshi,Cardiology,Interventional cardiology,Tue Thu Sat,14:00,18:00,15,1200
+Dr. Vaibhav Patwardhan,Cardiac Surgery,Bypass and valve surgery,Wed Sat,10:00,13:00,20,1500
+Dr. Shruti Gokhale,Endocrinology,Diabetes and thyroid disorders,Mon-Fri,10:00,14:00,15,1000
+Dr. Omkar Bhide,Gastroenterology,Liver disease and endoscopy,Mon Wed Fri,14:00,18:00,15,1100
+Dr. Pooja Ranade,General Surgery,Laparoscopic and hernia surgery,Tue Thu Sat,09:00,13:00,15,1000
+Dr. Kedar Sathe,Haematology,Anaemia and blood disorders,Tue Fri,10:00,14:00,20,1100
+Dr. Meghana Apte,Nephrology,Kidney disease and dialysis,Mon Thu,09:00,13:00,15,1100
+Dr. Ashish Kale,Neurology,Headaches and epilepsy,Mon Wed Fri,10:00,14:00,15,1200
+Dr. Gauri Paranjpe,Neurology,Stroke and movement disorders,Tue Thu Sat,14:00,18:00,15,1200
+Dr. Rohit Inamdar,Neurosurgery,Brain and spine surgery,Wed Sat,14:00,17:00,20,1500
+Dr. Sneha Bapat,Oncology,Medical oncology and chemotherapy,Mon-Fri,11:00,15:00,20,1300
+Dr. Tanmay Limaye,Organ Transplant,Kidney and liver transplant evaluation,Thu,10:00,13:00,30,1500
+Dr. Prasad Chitale,Orthopaedics,Knee and hip replacement,Mon Wed Fri,09:00,13:00,15,1200
+Dr. Amruta Khare,Orthopaedics,Sports injuries and arthroscopy,Tue Thu Sat,10:00,14:00,15,1100
+Dr. Saurabh Mehendale,Urology,Kidney stones and prostate,Mon Thu Sat,14:00,18:00,15,1100
+Dr. Ketaki Phadke,General Medicine,"Fever, infections and check-ups",Mon-Sat,09:00,17:00,15,800
