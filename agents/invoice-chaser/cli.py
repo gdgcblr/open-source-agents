@@ -16,6 +16,7 @@ disputes) live here. The agent can only propose; you decide.
 
 import argparse
 import asyncio
+import logging
 import os
 import subprocess
 import sys
@@ -223,6 +224,10 @@ def run_agent(message: str, replay: bool = False) -> int:
         return 1
     from google.adk.runners import InMemoryRunner
     from google.genai import types
+
+    # Keep the terminal readable: ADK's internal notices (cache hints, missing usage
+    # metadata from the replay model) are not useful to the owner. Errors still show.
+    logging.getLogger("google_adk").setLevel(logging.ERROR)
 
     if replay:
         from invoice_chaser.replay import build_replay_agent, load_recording
