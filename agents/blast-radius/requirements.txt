@@ -1,0 +1,2 @@
+# Testing (standard library unittest also supported out-of-the-box)
+pytest>=7.0.0

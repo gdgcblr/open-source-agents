@@ -1,0 +1,11 @@
+--- a/src/main/java/com/example/order/PaymentClient.java
++++ b/src/main/java/com/example/order/PaymentClient.java
+@@ -8,4 +8,7 @@ public class PaymentClient {
+         if (currency == null || currency.isBlank()) {
+             throw new IllegalArgumentException("Currency must not be empty");
+         }
++        if (amount > 10000.0 && !"USD".equalsIgnoreCase(currency)) {
++            throw new IllegalArgumentException("High-value transactions must be denominated in USD");
++        }
+         // Simulated HTTP payment gateway invocation
+

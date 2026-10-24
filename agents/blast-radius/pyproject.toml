@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blast-radius"
+version = "0.1.0"
+description = "Change Impact Analysis Agent for Java Microservices"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "GDG Cloud Bengaluru Community Contributor" }
+]
+keywords = ["java", "change-impact-analysis", "ai-agent", "git-diff", "developer-tools"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+blast-radius = "blast_radius.cli:main"
+blast-radius-mcp = "blast_radius.mcp_server:main"
+
