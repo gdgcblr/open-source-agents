@@ -169,20 +169,12 @@ Provide your architectural synthesis in structured Markdown format.
         try:
             from google import genai
             client = genai.Client(api_key=self.api_key)
-            candidate_models = ["gemini-3.8-flash", self.model_name, "gemini-flash-latest", "gemini-2.5-flash"]
-            seen = set()
-            models_to_try = [m for m in candidate_models if not (m in seen or seen.add(m))]
-
-            for model in models_to_try:
-                try:
-                    response = client.models.generate_content(
-                        model=model,
-                        contents=prompt
-                    )
-                    if response and response.text:
-                        return f"*(Live Gemini Synthesis via `{model}`)*\n\n" + response.text
-                except Exception:
-                    continue
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=prompt
+            )
+            if response and response.text:
+                return "*(Live Gemini Synthesis via `gemini-3.8-flash`)*\n\n" + response.text
         except Exception as e:
             offline = self._offline_analysis(resources, target_project, target_region, finops)
             return f"*(Notice: Gemini API call returned: {str(e)}. Displaying verified offline analysis engine output.)*\n\n{offline}"

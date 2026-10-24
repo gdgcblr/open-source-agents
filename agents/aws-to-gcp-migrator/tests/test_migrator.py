@@ -93,7 +93,7 @@ def test_generator_terraform_and_report():
 
     html = generator.generate_dashboard_html([res1, res2], topology=topo, finops=finops)
     assert "<!DOCTYPE html>" in html
-    assert "AWS to GCP Migration Agent" in html
+    assert "AWS to GCP Migration" in html
 
 
 def test_agent_three_agent_pipeline():
