@@ -7,6 +7,8 @@
 - 🤝 **For first-timers: Namma Commit**, a coach that mentors students on WhatsApp in any language, by text or voice. It matches them to issues that fit their skills, guides them from fork to PR, and explains MergeWarden's review of their PR in their language.
 - 🛡️ **For maintainers: MergeWarden**, which reviews every PR against the repo's own rules and ranks the queue ready-first.
 
+📽️ **Pitch deck (7 slides):** [`docs/NammaCommit-MergeWarden-deck.pdf`](docs/NammaCommit-MergeWarden-deck.pdf): problem, solution, the coach, how it works, proof, and how to try it.
+
 ### At a glance (all numbers from real runs on 2026-10-24)
 | | |
 | :--- | :--- |
