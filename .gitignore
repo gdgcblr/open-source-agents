@@ -80,6 +80,11 @@ lerna-debug.log*
 .next/
 out/
 
+# Databases
+vulcan_demo.db*
+*.db
+*.sqlite3
+
 # General Build & Caches
 *.log
 tmp/
