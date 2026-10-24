@@ -56,7 +56,7 @@ def _uses_schema_object(tool: ToolDef) -> bool:
       GEMINI_DECL, targets=_TARGET)
 def gemini_name(tool: ToolDef) -> Iterable[Issue]:
     if isinstance(tool.name, str) and tool.name and not _NAME.match(tool.name):
-        yield Issue(tool.location + "/name", f"function name '{tool.name}' is not valid for Gemini",
+        yield Issue(tool.body_location + "/name", f"function name '{tool.name}' is not valid for Gemini",
                     "Start with a letter or '_' and use only letters, digits, '_', '.', ':' or '-' (max 128).")
 
 

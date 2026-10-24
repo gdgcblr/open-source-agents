@@ -27,6 +27,7 @@ def test_openai_chat_completions_format_and_strict_flag():
     t = load_tools(doc)[0]
     assert (t.source_format, t.name, t.strict) == ("openai", "f", True)
     assert t.schema_location == "/0/function/parameters"
+    assert t.body_location == "/0/function"
 
 
 def test_openai_responses_api_format():

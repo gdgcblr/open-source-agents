@@ -37,7 +37,7 @@ def _normalize(text: str) -> str:
 @rule("G001", Severity.ERROR, "Tool has a non-empty string name", MCP_TOOL)
 def missing_name(tool: ToolDef) -> Iterable[Issue]:
     if not isinstance(tool.name, str) or not tool.name.strip():
-        yield Issue(tool.location + "/name", "tool has no name",
+        yield Issue(tool.body_location + "/name", "tool has no name",
                     "Every provider requires a unique, non-empty tool name.")
 
 
@@ -48,7 +48,7 @@ def duplicate_names(tools: list[ToolDef]) -> Iterable[Issue]:
         if not isinstance(tool.name, str):
             continue
         if tool.name in seen:
-            yield Issue(tool.location + "/name",
+            yield Issue(tool.body_location + "/name",
                         f"duplicate tool name '{tool.name}' (first defined at {seen[tool.name].location})",
                         "Rename one of the tools; models select tools by name.", tool)
         else:
@@ -58,7 +58,7 @@ def duplicate_names(tools: list[ToolDef]) -> Iterable[Issue]:
 @rule("G003", Severity.WARNING, "Tool has a description", ANTHROPIC_GUIDE)
 def missing_description(tool: ToolDef) -> Iterable[Issue]:
     if not isinstance(tool.description, str) or not tool.description.strip():
-        yield Issue(tool.location + "/description", "tool has no description",
+        yield Issue(tool.body_location + "/description", "tool has no description",
                     "Describe what the tool does, when to use it, and what it returns. "
                     "The model relies on this text to choose the tool.")
 
@@ -71,7 +71,7 @@ def short_description(tool: ToolDef) -> Iterable[Issue]:
     if isinstance(tool.name, str) and _normalize(d) == _normalize(tool.name):
         return  # reported by G005
     if len(d.strip()) < MIN_DESCRIPTION_CHARS:
-        yield Issue(tool.location + "/description",
+        yield Issue(tool.body_location + "/description",
                     f"description is only {len(d.strip())} characters: \"{d.strip()}\"",
                     "Say when the tool should (and should not) be used and what it returns.")
 
@@ -81,10 +81,10 @@ def placeholder_description(tool: ToolDef) -> Iterable[Issue]:
     d = tool.description
     if isinstance(d, str) and d.strip():
         if PLACEHOLDER.match(d):
-            yield Issue(tool.location + "/description", f"description looks like a placeholder: \"{d.strip()}\"",
+            yield Issue(tool.body_location + "/description", f"description looks like a placeholder: \"{d.strip()}\"",
                         "Replace it with a real explanation of the tool.")
         elif isinstance(tool.name, str) and _normalize(d) == _normalize(tool.name):
-            yield Issue(tool.location + "/description", "description only repeats the tool name",
+            yield Issue(tool.body_location + "/description", "description only repeats the tool name",
                         "Explain the behaviour instead of restating the name.")
     for node in walk(tool.schema):
         if node.property_name is None or not isinstance(node.schema, dict):

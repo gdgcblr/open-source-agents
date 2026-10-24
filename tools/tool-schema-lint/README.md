@@ -154,6 +154,35 @@ G013 warning weather.get-forecast /result/tools/0/inputSchema/properties/units/d
 7 errors
 ```
 
+### Use it in your agent's test suite
+The most practical way to use the linter while building an agent is to make your tool definitions part of your tests: if anyone adds a tool that a target provider would reject, `pytest` fails before the agent ever calls a model.
+
+[`examples/agent_integration/`](examples/agent_integration/) is a working example for a small trip-planner agent:
+- [`agent_tools.py`](examples/agent_integration/agent_tools.py) holds the agent's tools (OpenAI Chat format, `strict: true`, written to be valid for Gemini too).
+- [`test_agent_tools.py`](examples/agent_integration/test_agent_tools.py) is the test to copy into your own agent:
+
+```python
+from agent_tools import TOOLS
+
+from tool_schema_lint import Severity, lint, load_tools
+
+TARGETS = ["openai-strict", "gemini"]  # the providers this agent must work with
+
+
+def test_tool_definitions_are_valid_for_every_target_provider():
+    result = lint(load_tools(TOOLS), targets=TARGETS)
+    errors = [f for f in result.findings if f.severity == Severity.ERROR]
+    assert not errors, "\n".join(f"{f.rule_id} {f.tool} {f.path}: {f.message}" for f in errors)
+```
+
+Run it with `python -m pytest examples/agent_integration` (it is also part of the main `python -m pytest` run). If a teammate renames `search_flights` to `flights.search` and changes `max_stops` to `"type": ["integer", "null"]`, the test fails with:
+```
+E       AssertionError: O001 flights.search /0/function/name: function name 'flights.search' contains characters other than a-z A-Z 0-9 _ -
+E         GM004 flights.search /0/function/parameters/properties/max_stops/type: type ['integer', 'null'] is an array; Gemini's Schema takes one type
+```
+
+To install the linter in another project, point pip at this folder, e.g. `pip install "git+https://github.com/gdgcblr/open-source-agents.git#subdirectory=tools/tool-schema-lint"`.
+
 ### Use in CI (GitHub Actions)
 The `github` format prints workflow commands that GitHub shows as annotations on the run. Example step (illustrative; this repository does not run it):
 ```yaml
@@ -328,13 +357,14 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install -r requirements.txt
 python -m pytest
 ```
-Expected: `102 passed`.
+Expected: `105 passed` (103 in `tests/` plus the 2 in `examples/agent_integration/`).
 
 The suite runs offline with no mocks and covers:
 - **Every rule**: a test fails if a registered rule has no bad-input case. Each rule must fire on its bad case, provider rules must stay silent for other targets, and a shared "good" tool must be clean under all five targets.
 - **Loader**: all four formats and their variants, JSON-RPC unwrapping, ambiguous input, empty, malformed, non-UTF-8, BOM, oversized, and pathologically nested input.
 - **Edge cases**: recursive `$ref: "#"` (terminates), external `$ref`s, the exact nesting-limit boundary, the `strict: true` flag, Gemini `parametersJsonSchema` vs `parameters`, and upper-case Gemini types.
 - **CLI end to end**: exit codes, `--fail-on`, `--disable`, `--max-tokens`, text / JSON / GitHub output, multiple files, and a subprocess run of `python -m tool_schema_lint -` over stdin.
+- **Agent integration example**: the trip-planner tools in `examples/agent_integration/` must stay valid for OpenAI strict mode and Gemini and within a 1,000-token budget.
 
 Manual check: run the commands in [How to Run](#how-to-run) and compare with the outputs above.
 

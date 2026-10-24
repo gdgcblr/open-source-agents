@@ -174,4 +174,5 @@ def _to_tool(item: Any, path: tuple[Any, ...], input_format: str | None) -> Tool
         schema_key=schema_key,
         strict=strict,
         raw=body,
+        body_location=pointer(*body_path),
     )

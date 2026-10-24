@@ -5,6 +5,7 @@ import copy
 import pytest
 from conftest import good_tool, rule_ids
 
+from tool_schema_lint import lint, load_tools
 from tool_schema_lint.rules import REGISTRY
 
 
@@ -184,3 +185,9 @@ def test_boolean_subschemas_are_valid_but_other_scalars_are_not():
     assert "G007" not in rule_ids({"tools": [tool]})
     schema(tool)["properties"]["anything"] = "string"
     assert "G007" in rule_ids({"tools": [tool]})
+
+
+def test_name_findings_point_inside_openai_function_object():
+    doc = [{"type": "function", "function": {"name": "flights.search", "description": "d" * 50}}]
+    findings = lint(load_tools(doc), ["openai"]).findings
+    assert [(f.rule_id, f.path) for f in findings] == [("O001", "/0/function/name")]

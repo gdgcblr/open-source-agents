@@ -17,7 +17,7 @@ _NAME = re.compile(r"^[A-Za-z0-9_.-]{1,128}$")
 @rule("M001", Severity.WARNING, "Tool name uses 1-128 of A-Z a-z 0-9 _ - .", MCP_NAMES, targets=[FORMAT_MCP])
 def mcp_name(tool: ToolDef) -> Iterable[Issue]:
     if isinstance(tool.name, str) and tool.name and not _NAME.match(tool.name):
-        yield Issue(tool.location + "/name",
+        yield Issue(tool.body_location + "/name",
                     f"tool name '{tool.name}' does not follow MCP naming guidance",
                     "Use only ASCII letters, digits, '_', '-' and '.', at most 128 characters, no spaces.")
 

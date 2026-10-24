@@ -20,7 +20,7 @@ _SENTENCE_END = re.compile(r"[.!?](\s|$)")
       targets=[FORMAT_ANTHROPIC])
 def anthropic_name(tool: ToolDef) -> Iterable[Issue]:
     if isinstance(tool.name, str) and tool.name and not _NAME.match(tool.name):
-        yield Issue(tool.location + "/name",
+        yield Issue(tool.body_location + "/name",
                     f"tool name '{tool.name}' does not match ^[a-zA-Z0-9_-]{{1,128}}$",
                     "Replace dots, spaces, and other characters with '_' or '-'.")
 
@@ -32,6 +32,6 @@ def anthropic_sentences(tool: ToolDef) -> Iterable[Issue]:
     if isinstance(d, str) and d.strip() and not PLACEHOLDER.match(d):
         sentences = len(_SENTENCE_END.findall(d.strip())) or 1
         if sentences < 3:
-            yield Issue(tool.location + "/description",
+            yield Issue(tool.body_location + "/description",
                         f"description has {sentences} sentence(s); Anthropic recommends at least 3-4",
                         "Cover what the tool does, when to use it, what each parameter means, and caveats.")

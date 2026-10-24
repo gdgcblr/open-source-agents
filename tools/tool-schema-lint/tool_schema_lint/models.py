@@ -44,6 +44,9 @@ class ToolDef:
     schema_key: str  # key the schema was read from, e.g. "inputSchema"
     strict: bool = False
     raw: dict[str, Any] = field(default_factory=dict)
+    # JSON pointer of the object holding name/description; differs from `location` for
+    # OpenAI Chat Completions tools, where they live under "function".
+    body_location: str = ""
 
     @property
     def label(self) -> str:

@@ -21,4 +21,4 @@ tool-schema-lint = "tool_schema_lint.cli:main"
 packages = ["tool_schema_lint", "tool_schema_lint.rules"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "examples/agent_integration"]

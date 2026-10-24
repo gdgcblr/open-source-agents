@@ -38,7 +38,7 @@ def openai_name(tool: ToolDef) -> Iterable[Issue]:
     if isinstance(tool.name, str) and tool.name and not _NAME.match(tool.name):
         reason = ("is longer than 64 characters" if len(tool.name) > 64
                   else "contains characters other than a-z A-Z 0-9 _ -")
-        yield Issue(tool.location + "/name", f"function name '{tool.name}' {reason}",
+        yield Issue(tool.body_location + "/name", f"function name '{tool.name}' {reason}",
                     "OpenAI rejects the request with a 400 error. Replace '.', ':' and spaces with '_'.")
 
 
