@@ -1,0 +1,4 @@
+google-adk>=1.0.0
+litellm>=1.40.0
+pydantic>=2.7.0
+python-dotenv>=1.0.0

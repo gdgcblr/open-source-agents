@@ -1,0 +1,13 @@
+.env
+venv/
+.venv/
+__pycache__/
+# Ignore all .env files anywhere in this folder or subfolders
+.env
+**/.env
+.env.*
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.adk/
