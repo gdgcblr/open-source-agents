@@ -117,7 +117,7 @@ def _parse_with_heuristics(text: str) -> Tuple[List[Member], List[Expense], List
             members_dict[slug] = Member(id=slug, name=name.strip())
         return members_dict[slug]
 
-    lines = [line.strip() for line in text.split("\n") if line.strip()]
+    lines = [line.strip() for line in re.split(r"[\n\.]+", text) if line.strip()]
 
     for line in lines:
         # Pattern 1: Settlement / Payment: "<Person A> paid <Person B> <amount>"
@@ -149,16 +149,29 @@ def _parse_with_heuristics(text: str) -> Tuple[List[Member], List[Expense], List
             )
             continue
 
-        # Pattern 2: Expense with split: "<Desc> [of]? <amount> paid by <Person> split [between/with] <Person1>, <Person2>..."
+        # Pattern 2: Expense with split
+        # Variant A: "<Desc> of <amount> paid by <Payer>"
         exp_match = re.search(
             r"(?:for|on)?\s*([A-Za-z0-9\s]+?)\s*(?:of|amount)?\s*(?:₹|INR|\$)?\s*([0-9]+(?:\.[0-9]{1,2})?)\s+paid\s+by\s+([A-Za-z0-9_]+)",
             line,
             re.IGNORECASE,
         )
-        if exp_match:
-            desc = exp_match.group(1).strip()
-            amount = float(exp_match.group(2))
-            payer_name = exp_match.group(3).strip()
+        # Variant B: "<Payer> paid <amount> for <Desc>"
+        exp_match_b = re.search(
+            r"([A-Za-z0-9_]+)\s+paid\s+(?:₹|INR|\$)?\s*([0-9]+(?:\.[0-9]{1,2})?)\s+for\s+([A-Za-z0-9\s]+)",
+            line,
+            re.IGNORECASE,
+        )
+        if exp_match or exp_match_b:
+            if exp_match:
+                desc = exp_match.group(1).strip()
+                amount = float(exp_match.group(2))
+                payer_name = exp_match.group(3).strip()
+            else:
+                payer_name = exp_match_b.group(1).strip()
+                amount = float(exp_match_b.group(2))
+                desc = exp_match_b.group(3).strip()
+
             payer_m = get_or_create_member(payer_name)
 
             # Look for split participants
@@ -167,9 +180,8 @@ def _parse_with_heuristics(text: str) -> Tuple[List[Member], List[Expense], List
                 split_idx = line.lower().find("split")
                 split_part = line[split_idx:]
 
-            names_found = re.findall(r"\b([A-Z][a-z]+)\b", split_part)
+            names_found = [n for n in re.findall(r"([A-Z][a-z]+)", split_part) if n.lower() not in ["split", "with"]]
             if not names_found:
-                # Fallback: split between all members seen so far or default pair
                 names_found = [payer_m.name, "Bob" if payer_m.name.lower() != "bob" else "Alice"]
 
             included_members = [get_or_create_member(n) for n in names_found]
@@ -179,7 +191,6 @@ def _parse_with_heuristics(text: str) -> Tuple[List[Member], List[Expense], List
             per_person = round(amount / len(included_members), 2)
             shares = {m.id: per_person for m in included_members}
 
-            # Adjust remainder cents on payer
             diff = round(amount - sum(shares.values()), 2)
             shares[payer_m.id] = round(shares[payer_m.id] + diff, 2)
 
@@ -192,7 +203,6 @@ def _parse_with_heuristics(text: str) -> Tuple[List[Member], List[Expense], List
                     category="General",
                 )
             )
-
     # Ensure at least 2 members exist
     if len(members_dict) < 2 and expenses:
         m1 = get_or_create_member("User A")

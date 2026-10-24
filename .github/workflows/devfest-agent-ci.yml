@@ -1,0 +1,50 @@
+name: DevFest Agent Invariant & Guardrail Verification CI
+
+on:
+  push:
+    branches: [ main, feat/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify-invariants:
+    name: Double-Entry Conservation & Quant Invariant Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio pydantic fastapi httpx uvicorn yfinance
+
+      - name: Run Bharat Dues Ledger Auditor Tests (5/5)
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$PWD/agents/gemini-audit-agent
+          pytest agents/gemini-audit-agent/tests -v
+
+      - name: Run Arthaniti Quant MCP Tests (7/7)
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$PWD/tools/gemma-quant-mcp
+          pytest tools/gemma-quant-mcp/tests -v
+
+      - name: Verify Mathematical Invariant Zero-Sum Conserved
+        run: |
+          python -c "
+          from agents.gemini_audit_agent.core.models import Member, Expense, SettlementRecord
+          from agents.gemini_audit_agent.core.ledger import audit_ledger
+          m1 = Member(id='m1', name='Alice')
+          m2 = Member(id='m2', name='Bob')
+          e = Expense(description='Lunch', payer_id='m1', amount=3000.0, shares={'m1': 1500.0, 'm2': 1500.0})
+          rep = audit_ledger([m1, m2], [e], [])
+          assert rep.is_balanced is True
+          assert rep.net_zero_delta == 0.0
+          print('CI Gate Passed: Double-entry invariant conserved (∑Δ = 0.00)')
+          "
