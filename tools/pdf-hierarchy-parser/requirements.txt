@@ -1,0 +1,4 @@
+docling
+networkx
+rich
+pytest
