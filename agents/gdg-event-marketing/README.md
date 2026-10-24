@@ -45,11 +45,21 @@ review and edit.
 
 ### UI Preview
 
-![Updated UI preview showing Google Developer Groups branding and the event campaign timeline](screenshots/ui-demo.png)
+The screenshots below show different parts of the offline demo workflow. All
+chapter, speaker, event, and link details are fictional; no real organizer
+information or live API-generated content is shown.
 
-This visual preview uses fictional offline-demo details. The chapter, speaker,
-event, and link are fictional; no live API-generated content or real organizer
-information is shown.
+**Event setup and channel draft review**
+
+![GDG Event Marketing Studio with event details and a polished LinkedIn draft](screenshots/ui-drafts.png)
+
+**Event-relative campaign timeline**
+
+![Campaign timeline with announcement, topic spotlight, event reminder, and follow-up cards](screenshots/ui-demo.png)
+
+**Draft-to-visual carousel**
+
+![Locally generated visual carousel preview with PNG and PDF export controls](screenshots/ui-carousel.png)
 
 ---
 
