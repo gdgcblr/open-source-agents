@@ -53,5 +53,17 @@
     "log": "request timeout after 30s while calling inventory service",
     "expected_failure_type": "runtime-or-api",
     "required_signals": ["http-status-or-transport"]
+  },
+  {
+    "id": "github-actions-compile-error",
+    "log": "##[error]src/main.ts:18:5 - error TS2322: Type 'string' is not assignable to type 'number'",
+    "expected_failure_type": "compilation",
+    "required_signals": ["compiler-error", "source-location"]
+  },
+  {
+    "id": "pytest-assertion-failure",
+    "log": "FAILED tests/test_checkout.py::test_declines_expired_card - AssertionError: assert 200 == 401",
+    "expected_failure_type": "test-failure",
+    "required_signals": ["assertion-mismatch"]
   }
 ]

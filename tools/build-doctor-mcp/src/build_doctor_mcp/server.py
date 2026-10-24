@@ -30,7 +30,7 @@ _RULES: tuple[dict[str, Any], ...] = (
     {
         "failure_type": "compilation",
         "signal_id": "compiler-error",
-        "pattern": re.compile(r"compilation error|cannot find symbol|syntax error|type error|mismatched types|error\[e\d+\]|failed to compile", re.I),
+        "pattern": re.compile(r"compilation error|cannot find symbol|syntax error|type error|mismatched types|error\[e\d+\]|error\s+ts\d+|failed to compile", re.I),
         "weight": 4,
         "cause": "A source or compiler configuration issue is likely.",
         "remediation": "Inspect the first compiler error and its source location.",
