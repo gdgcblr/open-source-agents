@@ -153,6 +153,8 @@ It does not intentionally invent contrast ratios or claim to know keyboard navig
 
 The output is intended to guide further testing—not to certify accessibility compliance.
 
+<img width="1789" height="1071" alt="Screenshot 2026-10-24 at 1 12 56 PM" src="https://github.com/user-attachments/assets/6345c750-79a8-475b-9de7-748cc9dcd0cb" />
+
 ---
 
 ## 👥 Who Can Use It?
