@@ -1,0 +1,10 @@
+google-adk>=2.13
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pillow>=10.0
+numpy>=1.26
+python-dotenv>=1.0
+
+# tests
+pytest>=8.0
+httpx>=0.27

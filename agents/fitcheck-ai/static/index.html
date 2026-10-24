@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FitCheck AI — Your Stylist Council</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f6f1ea; --card: #fffdf9; --ink: #1d1a17; --muted: #6f665d; --line: #e4dbcf;
+    --accent: #7a2e4d; --accent-soft: #f1e1e7; --ok: #2f6b4f; --warn: #a4581e;
+    --serif: "Fraunces", Georgia, serif; --sans: "DM Sans", system-ui, sans-serif;
+    --radius: 18px; --shadow: 0 1px 0 rgba(0,0,0,.03), 0 8px 24px -12px rgba(60,40,20,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #15120f; --card: #1f1b17; --ink: #f3ece3; --muted: #a99d90; --line: #332c25;
+            --accent: #e08aae; --accent-soft: #3a2230; --ok: #7fc7a1; --warn: #f0a868; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.55 var(--sans); }
+  button, input, textarea { font: inherit; color: inherit; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  header { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+           border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 28px; }
+  .brand h1 { font: 600 clamp(30px, 4vw, 44px)/1 var(--serif); margin: 0; letter-spacing: -.02em; }
+  .brand h1 em { font-weight: 400; color: var(--accent); }
+  .brand p { margin: 8px 0 0; color: var(--muted); }
+  .pill.warn { color: #b42318; border-color: #b42318; }
+  .pill { font-size: 12px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+          box-shadow: var(--shadow); padding: 22px; }
+  .step + .step { margin-top: 16px; }
+  .step h2 { font: 600 19px/1.2 var(--serif); margin: 0 0 4px; display: flex; gap: 10px; align-items: baseline; }
+  .step h2 .n { font: 500 12px var(--sans); color: var(--accent); letter-spacing: .08em; }
+  .step .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+
+  .seg { display: inline-flex; background: var(--paper); border: 1px solid var(--line); border-radius: 99px; padding: 3px; margin-bottom: 14px; }
+  .seg button { border: 0; background: none; padding: 7px 14px; border-radius: 99px; cursor: pointer; color: var(--muted); }
+  .seg button.on { background: var(--ink); color: var(--paper); }
+
+  .drop { border: 1.5px dashed var(--line); border-radius: 14px; padding: 18px; text-align: center; cursor: pointer;
+          color: var(--muted); transition: .2s; position: relative; overflow: hidden; min-height: 120px;
+          display: grid; place-items: center; }
+  .drop:hover, .drop.drag { border-color: var(--accent); background: var(--accent-soft); }
+  .drop img { max-width: 100%; max-height: 260px; border-radius: 10px; display: block; }
+  .drop .x { position: absolute; top: 8px; right: 8px; background: var(--ink); color: var(--paper); border: 0;
+             border-radius: 99px; width: 26px; height: 26px; cursor: pointer; }
+  .selfie-row { display: flex; gap: 14px; align-items: center; }
+  .selfie { width: 92px; height: 92px; border-radius: 50%; min-height: 0; padding: 0; flex: none; font-size: 12px; }
+  .selfie img { width: 100%; height: 100%; object-fit: cover; max-height: none; border-radius: 50%; }
+
+  .pick-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12.5px; color: var(--muted); min-height: 30px; }
+  .wardrobe { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; max-height: 320px; overflow: auto; padding: 2px; }
+  .item { border: 1px solid var(--line); border-radius: 12px; padding: 8px 6px 7px; background: var(--paper); cursor: pointer;
+          text-align: center; font-size: 11.5px; line-height: 1.25; transition: .15s; }
+  .item svg { width: 40px; height: 40px; display: block; margin: 0 auto 4px; }
+  .item.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; background: var(--accent-soft); }
+  .cat { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--card); outline: 1px solid var(--line);
+        cursor: pointer; position: relative; transition: transform .15s; }
+  .sw:hover { transform: scale(1.1); }
+  .sw.on { outline: 2.5px solid var(--ink); }
+  .sw.on::after { content: "✓"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff;
+                  font-size: 13px; text-shadow: 0 0 3px rgba(0,0,0,.6); }
+  .sw.add { display: grid; place-items: center; background: var(--paper); color: var(--muted); overflow: hidden; }
+  .sw.add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .field { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); outline: none; }
+  .field:focus { border-color: var(--accent); }
+  .occ-row { display: flex; gap: 8px; }
+  .mic { flex: none; width: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; }
+  .mic.live { background: var(--accent); color: #fff; border-color: var(--accent); animation: pulse 1.2s infinite; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { border: 1px solid var(--line); background: none; padding: 5px 11px; border-radius: 99px; cursor: pointer; font-size: 12.5px; color: var(--muted); }
+  .chip:hover { border-color: var(--ink); color: var(--ink); }
+
+  .go { width: 100%; margin-top: 18px; padding: 15px; border: 0; border-radius: 14px; background: var(--ink); color: var(--paper);
+        font-weight: 600; font-size: 16px; cursor: pointer; transition: .2s; }
+  .go:hover:not(:disabled) { background: var(--accent); }
+  .go:disabled { opacity: .55; cursor: progress; }
+
+  .mini-board { margin-top: 14px; padding: 12px; border-radius: 12px; background: var(--paper); font-size: 12.5px; color: var(--muted); display: none; }
+  .mini-board .swatches .sw { width: 24px; height: 24px; cursor: default; }
+
+  /* Council */
+  .members { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  @media (max-width: 560px) { .members { grid-template-columns: repeat(2, 1fr); } }
+  .member { text-align: center; padding: 14px 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); }
+  .avatar { width: 44px; height: 44px; margin: 0 auto 8px; border-radius: 50%; display: grid; place-items: center;
+            font: 600 16px var(--serif); color: #fff; }
+  .member b { display: block; font-size: 13px; }
+  .member small { color: var(--muted); font-size: 11.5px; }
+  .status { margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .status.thinking { color: var(--accent); } .status.done { color: var(--ok); }
+  .dots::after { content: ""; animation: dots 1.2s steps(4) infinite; }
+
+  .feed { display: grid; gap: 10px; }
+  .msg { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 14px; border-radius: 14px; background: var(--card);
+         border: 1px solid var(--line); animation: rise .35s ease; }
+  .msg .avatar { width: 34px; height: 34px; font-size: 13px; margin: 0; }
+  .msg h4 { margin: 0 0 3px; font-size: 13px; }
+  .msg p { margin: 0; white-space: pre-wrap; font-size: 13.5px; color: var(--ink); }
+  details.feedwrap summary { cursor: pointer; color: var(--muted); font-size: 13px; margin: 18px 0 10px; }
+
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty h3 { font: 400 26px/1.2 var(--serif); color: var(--ink); margin: 0 0 8px; }
+
+  .score-hero { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+  @media (max-width: 560px) { .score-hero { grid-template-columns: 1fr; text-align: center; } .ring { margin: 0 auto; } }
+  .ring { width: 132px; height: 132px; position: relative; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .val { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+               justify-content: center; font: 600 38px/1 var(--serif); }
+  .ring .val small { font: 400 12px var(--sans); color: var(--muted); margin-top: 6px; }
+  .verdict { font: 400 24px/1.25 var(--serif); margin: 0 0 14px; }
+  .bars { display: grid; gap: 8px; }
+  .bar { display: grid; grid-template-columns: 96px 1fr 32px; gap: 10px; align-items: center; font-size: 12.5px; color: var(--muted); }
+  .bar .track { height: 7px; background: var(--paper); border-radius: 99px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--accent); border-radius: 99px; width: 0; transition: width 1s ease; }
+  .bar b { color: var(--ink); text-align: right; }
+
+  .section-title { font: 600 18px var(--serif); margin: 26px 0 12px; display: flex; justify-content: space-between; align-items: center; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+  ol.fixes { margin: 0; padding-left: 20px; } ol.fixes li { margin: 6px 0; }
+  .debate-item { padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; }
+  .debate-item:last-child { border: 0; }
+  .debate-item b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+
+  .alts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .alt { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--card); }
+  .alt .pieces { display: flex; gap: 2px; margin-bottom: 10px; }
+  .alt .pieces svg { width: 38px; height: 38px; }
+  .alt ul { margin: 0 0 8px; padding: 0; list-style: none; font-size: 12.5px; color: var(--muted); }
+  .alt p { margin: 0; font-size: 13px; }
+  .tag { display: inline-block; font-size: 10.5px; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); margin-bottom: 8px; }
+
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+  .chipcolor { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--card); font-size: 11.5px; }
+  .chipcolor div { height: 64px; }
+  .chipcolor span { display: block; padding: 6px 8px; }
+  .chipcolor span small { color: var(--muted); display: block; font-size: 10.5px; }
+  .meta { font-size: 13px; color: var(--muted); margin-top: 12px; display: grid; gap: 6px; }
+  .meta b { color: var(--ink); }
+  .conf { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11.5px; }
+  .ghost { border: 1px solid var(--line); background: none; padding: 7px 12px; border-radius: 99px; cursor: pointer; font-size: 12.5px; }
+  .ghost:hover { border-color: var(--ink); }
+  .err { background: #fde8e8; color: #8a1c1c; padding: 14px; border-radius: 12px; font-size: 13.5px; }
+  footer { margin-top: 40px; color: var(--muted); font-size: 12px; text-align: center; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+  @keyframes pulse { 50% { opacity: .7; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>FitCheck <em>AI</em></h1>
+      <p>Your personal stylist council and colour guide. Built with Gemma and Google ADK.</p>
+    </div>
+    <span class="pill" id="modelPill">Gemma</span>
+  </header>
+
+  <div class="grid">
+    <!-- INPUTS -->
+    <section>
+      <div class="card step">
+        <h2><span class="n">01</span> The outfit</h2>
+        <p class="sub">Upload a look, or build one from your digital wardrobe.</p>
+        <div class="seg" role="tablist">
+          <button class="on" data-mode="photo">Upload photo</button>
+          <button data-mode="wardrobe">Pick from wardrobe</button>
+        </div>
+        <div id="photoMode">
+          <label class="drop" id="outfitDrop">
+            <input type="file" accept="image/*" hidden id="outfitInput" />
+            <span>Drop an outfit photo or <u>browse</u><br /><small>Full-length, good light works best</small></span>
+          </label>
+        </div>
+        <div id="wardrobeMode" hidden>
+          <div class="pick-bar"><span id="pickCount">Nothing selected</span><button type="button" class="ghost" id="clearPicks" hidden>Clear</button></div>
+          <div class="wardrobe" id="wardrobe"></div>
+        </div>
+      </div>
+
+      <div class="card step">
+        <h2><span class="n">02</span> Your colours</h2>
+        <p class="sub">Optional selfie for colour analysis, plus colours you love. Lighting is auto-corrected.</p>
+        <div class="selfie-row">
+          <label class="drop selfie" id="selfieDrop">
+            <input type="file" accept="image/*" hidden id="selfieInput" />
+            <span>+ Selfie</span>
+          </label>
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <div class="mini-board" id="miniBoard"></div>
+      </div>
+
+      <div class="card step">
+        <h2><span class="n">03</span> The occasion</h2>
+        <p class="sub">Type it, or tap the mic and say it.</p>
+        <div class="occ-row">
+          <input class="field" id="occasion" placeholder="e.g. Speaking at DevFest, evening networking" />
+          <button class="mic" id="mic" title="Speak the occasion" aria-label="Speak the occasion">🎙</button>
+        </div>
+        <div class="chips" id="occChips"></div>
+        <textarea class="field" id="notes" rows="2" style="margin-top:10px;resize:vertical"
+          placeholder="Anything else? (comfort needs, weather, dress code…)"></textarea>
+        <button class="go" id="go">Convene the council →</button>
+      </div>
+    </section>
+
+    <!-- COUNCIL -->
+    <section>
+      <div class="members" id="members"></div>
+      <div id="stage">
+        <div class="card empty">
+          <h3>The council is waiting.</h3>
+          <p>Four experts judge your look, then a shopping skeptic and a head stylist settle it.
+             You get a score, fixes, outfits from your own closet and your colour board.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+  <footer>Colour readings are estimates. Selfies taken in daylight work best.</footer>
+</div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const MEMBERS = [
+  { id: "Stylist", name: "Stylist", role: "Silhouette & layers", color: "#7a2e4d", ini: "S" },
+  { id: "ColorExpert", name: "Color Expert", role: "Harmony & contrast", color: "#2b6f8a", ini: "C" },
+  { id: "OccasionExpert", name: "Occasion Expert", role: "Dress code", color: "#a4581e", ini: "O" },
+  { id: "ColorAnalyst", name: "Color Analyst", role: "Your palette", color: "#2f6b4f", ini: "A" },
+];
+const EXTRA = {
+  ColorLab: { name: "Color Lab", color: "#555", ini: "λ" },
+  OutfitReader: { name: "Outfit Reader", color: "#6b5b95", ini: "👁" },
+  ShoppingSkeptic: { name: "Shopping Skeptic", color: "#8a7a2a", ini: "₹" },
+  HeadStylist: { name: "Head Stylist", color: "#1d1a17", ini: "H" },
+};
+const META = Object.fromEntries([...MEMBERS.map(m => [m.id, m]), ...Object.entries(EXTRA)]);
+
+const PRESET = ["#111111", "#f7f7f5", "#1f2a44", "#c19a6b", "#9caf88", "#11777a", "#2b4fbf", "#b9d3ea",
+                "#c42f87", "#e8b4b0", "#c62828", "#6d1a2d", "#d4a72c", "#a5472a", "#b9a6d9", "#6b6b2a"];
+const OCCASIONS = ["Office day", "Speaking at a tech conference", "Wedding sangeet", "Date night", "Job interview", "Sunday brunch", "Diwali party"];
+
+const state = { mode: "photo", outfit: null, selfie: null, liked: new Set(), items: new Set(), wardrobe: [] };
+
+// ---------- garment icons ----------
+function garment(cat, hex) {
+  const stroke = "rgba(0,0,0,.25)";
+  const p = {
+    top: "M14 8l6-3h8l6 3 8 6-4 6-4-2v22H14V18l-4 2-4-6z",
+    bottom: "M14 5h20l2 38h-8l-4-26-4 26h-8z",
+    dress: "M18 4h12l-2 8 10 31H10l10-31z",
+    outerwear: "M15 6l9 6 9-6 9 7v30h-8V22l-2 21H17l-2-21v21H7V13z",
+    shoes: "M5 30c6 0 9-8 15-8 3 0 4 4 9 5l12 3c3 1 3 6 0 6H5z",
+    accessory: "M14 18h20l3 22H11zM18 18c0-6 3-9 6-9s6 3 6 9",
+  }[cat] || "M8 8h32v32H8z";
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="${p}" fill="${hex}" stroke="${stroke}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+}
+
+// ---------- image helpers ----------
+function readImage(file, max = 768) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL("image/jpeg", 0.88));
+      };
+      img.onerror = rej; img.src = r.result;
+    };
+    r.onerror = rej; r.readAsDataURL(file);
+  });
+}
+
+function setupDrop(dropEl, inputEl, key, onChange) {
+  const original = dropEl.querySelector("span").outerHTML;
+  const render = () => {
+    if (state[key]) {
+      dropEl.querySelectorAll("img,.x,span").forEach(n => n.remove());
+      dropEl.insertAdjacentHTML("beforeend", `<img src="${state[key]}" alt="" /><button class="x" type="button" aria-label="Remove">×</button>`);
+      dropEl.querySelector(".x").onclick = (e) => { e.preventDefault(); state[key] = null; inputEl.value = ""; render(); onChange && onChange(); };
+    } else {
+      dropEl.querySelectorAll("img,.x").forEach(n => n.remove());
+      if (!dropEl.querySelector("span")) dropEl.insertAdjacentHTML("beforeend", original);
+    }
+  };
+  const take = async (file) => { if (!file) return; state[key] = await readImage(file); render(); onChange && onChange(); };
+  inputEl.onchange = () => take(inputEl.files[0]);
+  ["dragover", "dragenter"].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.add("drag"); }));
+  ["dragleave", "drop"].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.remove("drag"); }));
+  dropEl.addEventListener("drop", e => take(e.dataTransfer.files[0]));
+}
+
+// ---------- build UI ----------
+function renderMembers(status = {}) {
+  $("#members").innerHTML = MEMBERS.map(m => `
+    <div class="member">
+      <div class="avatar" style="background:${m.color}">${m.ini}</div>
+      <b>${m.name}</b><small>${m.role}</small>
+      <div class="status ${status[m.id] || ""}">${status[m.id] === "thinking" ? '<span class="dots">deliberating</span>' : status[m.id] === "done" ? "✓ verdict in" : "ready"}</div>
+    </div>`).join("");
+}
+
+function renderSwatches() {
+  const all = [...new Set([...PRESET, ...state.liked])];
+  $("#swatches").innerHTML = all.map(h => `<button type="button" class="sw ${state.liked.has(h) ? "on" : ""}" data-hex="${h}" style="background:${h}" aria-label="colour ${h}"></button>`).join("")
+    + `<label class="sw add" title="Add a custom colour">+<input type="color" id="customColor" /></label>`;
+  $("#swatches").querySelectorAll(".sw[data-hex]").forEach(b => b.onclick = () => {
+    const h = b.dataset.hex; state.liked.has(h) ? state.liked.delete(h) : state.liked.add(h); renderSwatches(); previewBoard();
+  });
+  $("#customColor").onchange = (e) => { state.liked.add(e.target.value); renderSwatches(); previewBoard(); };
+}
+
+function renderWardrobe() {
+  $("#wardrobe").innerHTML = state.wardrobe.map(i => `
+    <button type="button" class="item ${state.items.has(i.id) ? "on" : ""}" data-id="${i.id}" title="${esc(i.name)}">
+      ${garment(i.category, i.hex)}<span class="cat">${i.category}</span><br />${esc(i.name)}
+    </button>`).join("");
+  $("#wardrobe").querySelectorAll(".item").forEach(b => b.onclick = () => {
+    const id = b.dataset.id; state.items.has(id) ? state.items.delete(id) : state.items.add(id); renderWardrobe();
+  });
+  const n = state.items.size;
+  $("#pickCount").textContent = n ? `${n} piece${n > 1 ? "s" : ""} selected` : "Nothing selected";
+  $("#clearPicks").hidden = !n;
+}
+$("#clearPicks").onclick = () => { state.items.clear(); renderWardrobe(); };
+
+let boardTimer;
+function previewBoard() {
+  clearTimeout(boardTimer);
+  boardTimer = setTimeout(async () => {
+    const box = $("#miniBoard");
+    if (!state.selfie && !state.liked.size) { box.style.display = "none"; return; }
+    try {
+      const r = await fetch("/api/palette", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selfie: state.selfie, liked_colors: [...state.liked] }) });
+      const d = await r.json();
+      const sk = d.selfie?.skin;
+      box.style.display = "block";
+      box.innerHTML = `<div style="margin-bottom:8px"><b style="color:var(--ink)">Instant colour board</b> · ${esc(d.palette.source)}</div>
+        <div class="swatches">${d.palette.colors.map(c => `<span class="sw" title="${esc(c.name)}" style="background:${c.hex}"></span>`).join("")}</div>
+        ${sk && sk.skin_hex ? `<div style="margin-top:8px">${sk.undertone} undertone · ${sk.depth} depth · ${sk.contrast} contrast → <b style="color:var(--ink)">${sk.season}</b> · confidence ${Math.round(d.selfie.lighting.confidence * 100)}%</div>` : ""}`;
+    } catch { box.style.display = "none"; }
+  }, 250);
+}
+
+// mode toggle
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".seg button").forEach(x => x.classList.toggle("on", x === b));
+  state.mode = b.dataset.mode;
+  $("#photoMode").hidden = state.mode !== "photo";
+  $("#wardrobeMode").hidden = state.mode !== "wardrobe";
+});
+
+$("#occChips").innerHTML = OCCASIONS.map(o => `<button type="button" class="chip">${o}</button>`).join("");
+$("#occChips").querySelectorAll(".chip").forEach(c => c.onclick = () => { $("#occasion").value = c.textContent; });
+
+// voice input for occasion (Web Speech API, where available)
+(() => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const mic = $("#mic");
+  if (!SR) { mic.title = "Voice input isn't supported in this browser"; mic.style.opacity = .4; return; }
+  const rec = new SR(); rec.lang = "en-IN"; rec.interimResults = true;
+  rec.onresult = (e) => { $("#occasion").value = [...e.results].map(r => r[0].transcript).join(" "); };
+  rec.onend = () => mic.classList.remove("live");
+  mic.onclick = () => { if (mic.classList.contains("live")) { rec.stop(); } else { mic.classList.add("live"); rec.start(); } };
+})();
+
+setupDrop($("#outfitDrop"), $("#outfitInput"), "outfit");
+setupDrop($("#selfieDrop"), $("#selfieInput"), "selfie", previewBoard);
+renderMembers(); renderSwatches();
+fetch("/api/health").then(r => r.json()).then(h => {
+  const pill = $("#modelPill");
+  pill.textContent = h.model;
+  if (!h.api_key_set) { pill.textContent += " · API key missing"; pill.classList.add("warn"); }
+}).catch(() => {});
+fetch("/api/wardrobe").then(r => r.json()).then(w => { state.wardrobe = w; renderWardrobe(); });
+
+// ---------- run the council ----------
+const STAGES = ["ColorLab", "OutfitReader", "Council", "ShoppingSkeptic", "HeadStylist"];
+
+$("#go").onclick = async () => {
+  const usingPhoto = state.mode === "photo";
+  if (usingPhoto && !state.outfit) return alertStage("Add an outfit photo — or switch to “Pick from wardrobe”.");
+  if (!usingPhoto && state.items.size < 2) return alertStage("Pick at least two pieces from your wardrobe.");
+  if (!usingPhoto && state.items.size > 8) return alertStage("That's a lot of pieces for one outfit. Pick up to 8.");
+
+  const go = $("#go"); go.disabled = true; go.textContent = "The council is deliberating…";
+  const status = {}; renderMembers(status);
+  $("#members").scrollIntoView({ behavior: "smooth", block: "start" });
+  $("#stage").innerHTML = `<div class="card"><div class="section-title" style="margin-top:0">Live deliberation <span class="pill" id="stageLabel">Color Lab measuring<span class="dots"></span></span></div><div class="feed" id="feed"></div></div>`;
+
+  const body = {
+    outfit_photo: usingPhoto ? state.outfit : null, selfie: state.selfie,
+    liked_colors: [...state.liked], selected_item_ids: usingPhoto ? [] : [...state.items],
+    occasion: $("#occasion").value.trim(), notes: $("#notes").value.trim(),
+  };
+
+  const label = (t) => { const el = $("#stageLabel"); if (el) el.innerHTML = t + '<span class="dots"></span>'; };
+  try {
+    const res = await fetch("/api/fitcheck", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+        if (!line) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === "agent") {
+          addMsg(ev.agent, ev.text);
+          if (ev.agent === "ColorLab") label("Outfit Reader looking");
+          if (ev.agent === "OutfitReader") { MEMBERS.forEach(m => status[m.id] = "thinking"); renderMembers(status); label("Council deliberating"); }
+          if (META[ev.agent] && MEMBERS.find(m => m.id === ev.agent)) {
+            status[ev.agent] = "done"; renderMembers(status);
+            if (MEMBERS.every(m => status[m.id] === "done")) label("Shopping skeptic raiding your closet");
+          }
+          if (ev.agent === "ShoppingSkeptic") label("Head stylist settling the debate");
+        } else if (ev.type === "result") {
+          renderResult(ev.result);
+        } else if (ev.type === "error") {
+          $("#stage").insertAdjacentHTML("afterbegin", `<div class="err">${esc(ev.message)}</div>`);
+        }
+      }
+    }
+  } catch (e) {
+    $("#stage").insertAdjacentHTML("afterbegin", `<div class="err">${esc(e.message)}</div>`);
+  } finally {
+    go.disabled = false; go.textContent = "Convene the council again →";
+  }
+};
+
+function alertStage(msg) {
+  $("#stage").innerHTML = `<div class="card empty"><h3>One more thing.</h3><p>${esc(msg)}</p></div>`;
+}
+
+function addMsg(agent, text) {
+  const m = META[agent] || { name: agent, color: "#777", ini: "?" };
+  const shown = agent === "HeadStylist" ? "Scorecard ready." : text;
+  $("#feed")?.insertAdjacentHTML("beforeend", `
+    <div class="msg"><div class="avatar" style="background:${m.color}">${m.ini}</div>
+    <div><h4>${esc(m.name)}</h4><p>${esc(shown)}</p></div></div>`);
+}
+
+function ring(score) {
+  const v = Math.max(0, Math.min(10, Number(score) || 0)), r = 56, c = 2 * Math.PI * r;
+  return `<div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="10"/>
+    <circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${c}" style="transition:stroke-dashoffset 1.2s ease" data-target="${c * (1 - v / 10)}"/></svg>
+    <div class="val">${score != null ? Number(score).toFixed(1) : "–"}<small>out of 10</small></div></div>`;
+}
+
+function renderResult(r) {
+  const feedHTML = $("#feed")?.innerHTML || "";
+  const s = r.scores || {};
+  const bars = [["Silhouette", s.silhouette], ["Colour", s.color], ["Occasion", s.occasion], ["Palette fit", s.palette_fit]];
+  const cb = r.color_board || {};
+  const light = r.selfie?.lighting || r.outfit_photo?.lighting;
+  const conf = light ? Math.round(light.confidence * 100) : null;
+  const confColor = conf == null ? "" : conf >= 70 ? "var(--ok)" : conf >= 50 ? "var(--warn)" : "#b42318";
+  const sk = r.selfie?.skin;
+
+  $("#stage").innerHTML = `
+    <div class="card">
+      <div class="score-hero">
+        ${ring(r.overall_score)}
+        <div>
+          <p class="verdict">“${esc(r.verdict)}”</p>
+          <div class="bars">${bars.map(([k, v]) => `
+            <div class="bar"><span>${k}</span><div class="track"><div class="fill" data-w="${(Number(v) || 0) * 10}%"></div></div><b>${v ?? "–"}</b></div>`).join("")}
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="ghost" id="speak">Read verdict aloud</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div><div class="section-title">Make it better</div>
+          <ol class="fixes">${(r.improvements || []).map(i => `<li>${esc(i)}</li>`).join("") || "<li>No changes needed.</li>"}</ol></div>
+        <div><div class="section-title">How the council debated</div>
+          ${(r.debate || []).map(d => `<div class="debate-item"><b>${esc(d.topic)}</b>${esc(d.resolution)}</div>`).join("") || '<p style="color:var(--muted)">The council agreed.</p>'}</div>
+      </div>
+
+      <div class="section-title">From your own closet <span class="pill">Shopping Skeptic approved</span></div>
+      <div class="alts">${(r.alternatives || []).map(a => `
+        <div class="alt"><span class="tag">${esc(a.combo_id)} · ${esc(a.scheme)}</span>
+          <div class="pieces">${a.items.map(i => garment(i.category, i.hex)).join("")}</div>
+          <ul>${a.items.map(i => `<li>${esc(i.name)}</li>`).join("")}</ul>
+          <p>${esc(a.why)}</p></div>`).join("")}</div>
+      ${r.buy_next ? `<p style="margin:12px 0 0;font-size:13.5px"><b>Buy next:</b> ${esc(r.buy_next)}</p>` : ""}
+
+      <div class="section-title">Your colour board</div>
+      <div class="board">${(r.palette?.colors || []).map(c => `
+        <div class="chipcolor"><div style="background:${c.hex}"></div><span>${esc(c.name)}<small>${c.hex}</small></span></div>`).join("")}</div>
+      <div class="meta">
+        <div>${esc(r.palette?.source || "")}</div>
+        ${cb.hero_colors?.length ? `<div><b>Hero colours:</b> ${cb.hero_colors.map(esc).join(", ")}</div>` : ""}
+        ${cb.avoid_near_face?.length ? `<div><b>Keep away from the face:</b> ${cb.avoid_near_face.map(esc).join(", ")}</div>` : ""}
+        ${cb.tip ? `<div><b>Tip:</b> ${esc(cb.tip)}</div>` : ""}
+        ${sk && sk.skin_hex ? `<div><b>Selfie reading:</b> <span class="sw" style="display:inline-block;width:14px;height:14px;vertical-align:-2px;background:${sk.skin_hex};cursor:default"></span> ${sk.undertone} undertone · ${sk.depth} · ${sk.contrast} contrast → ${sk.season}</div>` : ""}
+        ${light ? `<div><b>Lighting:</b> ${esc(light.cast)}, ${esc(light.exposure)} exposure · <span class="conf" style="background:${confColor};color:#fff">${conf}% confidence</span><br/><small>${light.notes.map(esc).join(" ")}</small></div>` : ""}
+      </div>
+    </div>
+    <details class="feedwrap"><summary>Show the full council transcript</summary><div class="feed">${feedHTML}</div></details>
+    <p style="color:var(--muted);font-size:12px;text-align:right">${esc(r.model)}${r.parsed_ok ? "" : " · scores taken from each expert"}</p>`;
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w);
+    document.querySelectorAll("circle[data-target]").forEach(c => c.style.strokeDashoffset = c.dataset.target);
+  });
+  $("#speak").onclick = () => {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const text = `${r.verdict}. Overall ${r.overall_score} out of 10. ` + (r.improvements || []).slice(0, 2).join(". ");
+    const u = new SpeechSynthesisUtterance(text); u.lang = "en-IN"; u.rate = 1;
+    speechSynthesis.speak(u);
+  };
+}
+</script>
+</body>
+</html>

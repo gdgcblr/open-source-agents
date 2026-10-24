@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`fitcheck-ai`](fitcheck-ai/) | Stylist council + lighting-aware colour analysis; picks outfits from your own wardrobe | Google ADK · Gemma 3 (Ollama) · FastAPI | Saniya Imroze |
