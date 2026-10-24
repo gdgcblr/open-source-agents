@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`agent-eval-lite`](agent-eval-lite/README.md) | Lightweight CLI evaluation tool for benchmarking local Ollama models with deterministic string and JSON checks. | Evaluation / Benchmarking | [@vipin-creator](https://github.com/vipin-creator) |

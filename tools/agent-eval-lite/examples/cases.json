@@ -1,0 +1,22 @@
+[
+  {
+    "id": "capital-france",
+    "prompt": "What is the capital of France? Answer with the city only.",
+    "expected_substrings": ["Paris"],
+    "tags": ["factual"]
+  },
+  {
+    "id": "json-status",
+    "prompt": "Return only raw JSON like {\"status\": \"ok\"}. Do not write Python code, explanation, or markdown fences.",
+    "expected_json": true,
+    "expected_json_keys": ["status"],
+    "expected_substrings": ["ok"],
+    "tags": ["structured-output"]
+  },
+  {
+    "id": "instruction-following",
+    "prompt": "Reply with exactly the word READY in uppercase and nothing else.",
+    "expected_substrings": ["READY"],
+    "tags": ["instruction-following"]
+  }
+]
