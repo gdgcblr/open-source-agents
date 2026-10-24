@@ -1,0 +1,7 @@
+{"session": "research", "tool": "search", "args": {"q": "release notes"}, "ok": true}
+{"session": "research", "tool": "fetch", "args": {"url": "https://example.invalid/notes"}, "ok": false}
+{"session": "research", "tool": "search", "args": {"q": "release notes"}, "ok": true}
+{"session": "research", "tool": "fetch", "args": {"url": "https://example.invalid/notes"}, "ok": false}
+{"session": "ops", "tool": "http_get", "args": {"headers": {"Authorization": "Bearer FAKE-demo-token-0000"}}, "ok": true}
+{"session": "ops", "tool": "shell", "args": {"cmd": "cat ../.env"}}
+{"session": "ops", "tool": "shell", "args": {"cmd": "rm -rf /tmp/build"}
