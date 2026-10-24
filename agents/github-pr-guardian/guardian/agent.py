@@ -8,6 +8,7 @@ from .rules_scanner import RulesScanner, Finding
 from .gemini_client import GeminiClient
 from .github_client import GitHubClient, parse_pr_identifier
 from .reporter import ReviewReporter
+from .guardrails import GuardrailEngine
 
 
 class GuardianAgent:
@@ -15,6 +16,7 @@ class GuardianAgent:
 
     def __init__(self, gemini_api_key: str | None = None, github_token: str | None = None):
         self.rules_scanner = RulesScanner()
+        self.guardrails = GuardrailEngine()
         self.gemini_client = GeminiClient(api_key=gemini_api_key)
         self.github_client = GitHubClient(token=github_token)
 
@@ -82,11 +84,18 @@ class GuardianAgent:
             }
             return empty_review, []
 
+        # 0. Apply Input Guardrail (Prompt Injection Defense & Size Limits)
+        diff_text, guardrail_findings = self.guardrails.sanitize_input(
+            diff_text=diff_text,
+            pr_title=pr_title,
+            pr_description=pr_description,
+        )
+
         # 1. Parse unified diff
         files = parse_unified_diff(diff_text)
 
         # 2. Run static security heuristic scanner
-        static_findings = self.rules_scanner.scan_files(files)
+        static_findings = guardrail_findings + self.rules_scanner.scan_files(files)
 
         # Format summary of static findings for LLM context
         static_summary_lines = []
@@ -96,6 +105,7 @@ class GuardianAgent:
         static_summary = "\n".join(static_summary_lines)
 
         # 3. LLM Reasoning phase (optional / fallback)
+        review_data: dict[str, Any] | None = None
         if use_llm:
             try:
                 review_data = self.gemini_client.analyze_diff(
@@ -104,39 +114,42 @@ class GuardianAgent:
                     pr_description=pr_description,
                     static_findings_summary=static_summary,
                 )
-                return review_data, static_findings
             except Exception as e:
                 print(f"[Warning] LLM analysis unavailable ({e}). Falling back to static review mode.")
 
-        # Fallback heuristic score calculation if LLM is disabled or unavailable
-        has_critical = any(f.severity == "CRITICAL" for f in static_findings)
-        has_high = any(f.severity == "HIGH" for f in static_findings)
+        # Fallback heuristic review if LLM was skipped or failed
+        if review_data is None:
+            has_critical = any(f.severity == "CRITICAL" for f in static_findings)
+            has_high = any(f.severity == "HIGH" for f in static_findings)
 
-        if has_critical:
-            verdict = "REQUEST_CHANGES"
-            score = 90
-            level = "CRITICAL"
-        elif has_high:
-            verdict = "REQUEST_CHANGES"
-            score = 65
-            level = "HIGH"
-        elif static_findings:
-            verdict = "COMMENT"
-            score = 30
-            level = "MEDIUM"
-        else:
-            verdict = "APPROVE"
-            score = 5
-            level = "LOW"
+            if has_critical:
+                verdict = "REQUEST_CHANGES"
+                score = 90
+                level = "CRITICAL"
+            elif has_high:
+                verdict = "REQUEST_CHANGES"
+                score = 65
+                level = "HIGH"
+            elif static_findings:
+                verdict = "COMMENT"
+                score = 30
+                level = "MEDIUM"
+            else:
+                verdict = "APPROVE"
+                score = 5
+                level = "LOW"
 
-        fallback_review = {
-            "verdict": verdict,
-            "risk_score": score,
-            "risk_level": level,
-            "executive_summary": f"Completed static rule scan on {len(files)} file(s). Found {len(static_findings)} rule alerts.",
-            "findings": [],
-            "key_strengths": ["Passed basic static checks"] if not static_findings else [],
-            "test_coverage_recommendations": ["Ensure test coverage for modified code paths."],
-            "maintainer_notes": "Static mode only. For in-depth reasoning, configure GEMINI_API_KEY.",
-        }
-        return fallback_review, static_findings
+            review_data = {
+                "verdict": verdict,
+                "risk_score": score,
+                "risk_level": level,
+                "executive_summary": f"Completed static rule scan on {len(files)} file(s). Found {len(static_findings)} alert(s).",
+                "findings": [],
+                "key_strengths": ["Passed basic static checks"] if not static_findings else [],
+                "test_coverage_recommendations": ["Ensure test coverage for modified code paths."],
+                "maintainer_notes": "Static mode only. For in-depth reasoning, configure GEMINI_API_KEY.",
+            }
+
+        # 4. Apply Output Guardrails (Deterministic Safety, Score Clamping, Secret Masking)
+        guarded_review = self.guardrails.apply_output_guardrails(review_data, static_findings)
+        return guarded_review, static_findings

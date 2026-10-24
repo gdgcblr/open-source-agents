@@ -12,7 +12,11 @@
 
 ### Key Features
 - **Deterministic Static Pre-Scan**: Zero-latency detection of leaked credentials (AWS keys, GitHub personal access tokens, private keys, generic secrets) and dangerous runtime calls (`eval()`, `exec()`, `shell=True`, unsanitized SQL string formatting).
-- **Intelligent LLM Reasoning**: Powered by Google Gemini (`gemini-2.5-flash`), evaluating complex architectural patterns, edge cases, error handling, and code maintainability.
+- **Multi-Layer Agent Guardrails**:
+  - **Input Guardrails**: Protects against prompt injection attacks embedded in PR comments or code comments, and prevents token exhaustion DoS attacks with automatic size bounding.
+  - **Deterministic Safety Overrides**: Prevents LLM hallucinations from approving code when deterministic `CRITICAL` or `HIGH` vulnerabilities exist.
+  - **Output Guardrails**: Enforces score-to-verdict consistency, clamps risk scores between 0–100, and automatically redacts raw credentials from generated review comments.
+- **Intelligent LLM Reasoning**: Powered by Google Gemini (`gemini-flash-latest`), evaluating complex architectural patterns, edge cases, error handling, and code maintainability.
 - **Dependency Provenance Checks**: Audits additions to `requirements.txt` and `package.json` to flag unpinned or suspicious packages.
 - **Multi-Source Ingestion**:
   - Live GitHub Pull Requests via URL or `owner/repo#number`
@@ -135,6 +139,9 @@ python3 main.py --diff sample_diffs/vulnerable_pr.diff
 
 # Review a clean sample diff
 python3 main.py --diff sample_diffs/clean_pr.diff
+
+# Test Prompt Injection Guardrail (verifies adversarial attack interception)
+python3 main.py --diff sample_diffs/prompt_injection_pr.diff
 ```
 
 ### 2. Review a live GitHub Pull Request
