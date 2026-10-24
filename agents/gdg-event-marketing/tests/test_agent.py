@@ -1,3 +1,4 @@
+import queue
 import unittest
 from contextlib import ExitStack, redirect_stdout
 from io import StringIO
@@ -14,7 +15,9 @@ from agent import (
     fetch_upcoming_events,
     main,
 )
-from ui import run_demo_generation, run_live_generation
+from campaign import build_campaign_ics, build_event_campaign
+from creative import build_carousel_slides, render_carousel_html
+from ui import EventMarketingApp, run_demo_generation, run_live_generation
 
 
 class GDGEventMarketingAgentTests(unittest.TestCase):
@@ -26,6 +29,32 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
             set(assets),
             {"linkedin", "twitter", "email_newsletter"},
         )
+
+    def test_ui_demo_generation_returns_only_selected_channels(self):
+        event, assets = run_demo_generation(channels=["twitter"])
+
+        self.assertIn("fictional", event["chapter_id"])
+        self.assertEqual(set(assets), {"twitter"})
+
+    def test_ui_worker_reports_unexpected_live_errors_without_exposing_api_key(self):
+        app = EventMarketingApp.__new__(EventMarketingApp)
+        app.results = queue.Queue()
+
+        with patch(
+            "ui.genai.Client",
+            side_effect=OSError("Request failed using secret-test-key"),
+        ):
+            app._worker(
+                "generate",
+                run_live_generation,
+                ("", "secret-test-key", "model", {}, {}),
+            )
+
+        action, result_type, message = app.results.get_nowait()
+        self.assertEqual((action, result_type), ("generate", "error"))
+        self.assertIn("Unexpected OSError", message)
+        self.assertIn("[redacted API key]", message)
+        self.assertNotIn("secret-test-key", message)
 
     def test_ui_live_generation_uses_agent_and_returns_drafts(self):
         event = {"title": "Upcoming event"}
@@ -60,6 +89,102 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
         )
         self.assertTrue(all(event["title"] in draft for draft in assets.values()))
         self.assertTrue(all("fictional" in draft.lower() for draft in assets.values()))
+        self.assertTrue(all(event["url"] in draft for draft in assets.values()))
+        self.assertIn("📅", assets["linkedin"])
+        self.assertIn("Preheader:", assets["email_newsletter"])
+        self.assertLessEqual(len(assets["twitter"]), 280)
+
+    def test_visual_carousel_uses_event_draft_and_escapes_user_content(self):
+        event = {
+            "title": "A <curious> event",
+            "date_time": "2026-11-10 18:00 UTC",
+            "location": "Online",
+            "speakers": "Community team",
+            "url": "https://example.test/event?a=1&b=2",
+        }
+        draft = (
+            "Curious about open source?\n\n"
+            "Explore practical ideas with your community.\n\n"
+            "Join us here: https://example.test/event?a=1&b=2\n\n"
+            "#Community"
+        )
+
+        slides = build_carousel_slides(event, draft)
+        page = render_carousel_html(event, draft)
+
+        self.assertEqual(len(slides), 4)
+        self.assertIn("Curious about open source?", slides[0]["body"])
+        self.assertIn("Explore practical ideas", slides[1]["body"])
+        self.assertIn("2026-11-10 18:00 UTC", slides[2]["body"])
+        self.assertIn("https://example.test/event?a=1&b=2", slides[3]["body"])
+        self.assertIn("Download this card as PNG", page)
+        self.assertIn("Print / Save as PDF", page)
+        self.assertIn("A &lt;curious&gt; event", page)
+        self.assertNotIn("<curious>", page)
+        self.assertNotIn('src="https://', page)
+        self.assertIn('aria-label="Carousel cover for A &lt;curious&gt; event"', page)
+
+    def test_campaign_plan_builds_event_anchored_stages_and_calendar_reminders(self):
+        event = {
+            "title": "Community AI Night",
+            "date_time": "2026-11-07T17:00:00+05:30",
+            "location": "Bengaluru",
+            "description": "A community session about practical AI tools.",
+            "url": "https://example.test/event",
+        }
+
+        campaign = build_event_campaign(event)
+        calendar = build_campaign_ics(event, campaign)
+
+        self.assertEqual(
+            [item["stage"] for item in campaign],
+            [
+                "Announcement",
+                "Topic spotlight",
+                "One-day reminder",
+                "Post-event follow-up",
+            ],
+        )
+        self.assertEqual(
+            [item["offset_days"] for item in campaign],
+            [-14, -7, -1, 1],
+        )
+        self.assertTrue(all(event["title"] in item["copy"] for item in campaign))
+        self.assertIn("real moment", campaign[-1]["copy"])
+        self.assertEqual(calendar.count("BEGIN:VEVENT"), 4)
+        self.assertEqual(calendar.count("END:VEVENT"), 4)
+        self.assertIn("Review and manually publish", calendar)
+        self.assertIn("nothing will be posted automatically", calendar)
+        self.assertIn("DTSTART:", calendar)
+        self.assertNotIn("ATTENDEE:", calendar)
+
+    def test_campaign_plan_requires_timezone_and_valid_event_details(self):
+        event = {
+            "title": "Community AI Night",
+            "date_time": "2026-11-07 17:00",
+            "description": "A community session about practical AI tools.",
+        }
+        with self.assertRaisesRegex(ValueError, "time-zone offset"):
+            build_event_campaign(event)
+
+        event["date_time"] = "not a date"
+        with self.assertRaisesRegex(ValueError, "ISO 8601"):
+            build_event_campaign(event)
+
+    def test_campaign_calendar_escapes_user_event_title(self):
+        event = {
+            "title": "Community Night\r\nATTENDEE:mailto:unexpected@example.test",
+            "date_time": "2026-11-07T17:00:00Z",
+            "description": "A community event.",
+        }
+
+        calendar = build_campaign_ics(event, build_event_campaign(event))
+        unfolded_calendar = calendar.replace("\r\n ", "")
+
+        self.assertNotIn("\r\nATTENDEE:", calendar)
+        self.assertIn(
+            r"\nATTENDEE:mailto:unexpected@example.test", unfolded_calendar
+        )
 
     def test_demo_mode_runs_without_network_or_gemini(self):
         output = StringIO()
@@ -170,6 +295,7 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
             self.assertEqual(call.kwargs["model"], "test-model")
             self.assertIsInstance(call.kwargs["config"], types.GenerateContentConfig)
             self.assertIn("Community AI Night", call.kwargs["contents"])
+            self.assertIn("Do not imply", call.kwargs["config"].system_instruction)
 
     def test_generate_content_supports_selected_channels_and_preferences(self):
         models = Mock()

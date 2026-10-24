@@ -22,20 +22,74 @@ review and edit.
 - Lists upcoming events so organizers can choose the right event.
 - Lets organizers edit event facts before generating, or use a fully custom event.
 - Generates LinkedIn, X, and email newsletter drafts with Gemini.
+- Uses channel-specific copywriting guidance for stronger hooks, scannable
+  event details, useful calls to action, and fact-checked, non-generic messaging.
 - Adds audience, tone, call-to-action, extra guidance, and channel-selection controls.
 - Provides editable drafts, per-channel regeneration, word/character counts,
   copy-to-clipboard, and Markdown/text export.
+- Turns the selected LinkedIn draft into a locally generated, four-card visual
+  carousel with accessible descriptions, individual PNG downloads, and PDF
+  printing; the cards reuse draft/event facts instead of inventing new claims.
+- Builds an event-aware campaign timeline (announcement, topic spotlight,
+  one-day reminder, and post-event follow-up) and exports review reminders as
+  an `.ics` calendar file. It does not publish or schedule posts with social
+  networks.
+- Adds a Google Developer Groups bracket-mark header with a clear notice that
+  this is an independent community project, not an official Google product.
+- Uses a Google-inspired light theme with familiar blue, red, yellow, and green
+  accents, readable card-like surfaces, and a prominent primary action.
 - Keeps network work off the UI thread and presents actionable validation/errors.
 - Includes offline demo mode with fictional event data; no credentials or network
   are needed to explore the interface.
-- Never publishes content to social media or writes drafts to files.
+- Never publishes content; files are created only after an explicit export action.
 
 ### UI Preview
 
-![GDG Event Marketing desktop UI showing fictional demo drafts](screenshots/ui-demo.png)
+![Updated UI preview showing Google Developer Groups branding and the event campaign timeline](screenshots/ui-demo.png)
 
-The screenshot is from offline demo mode. The chapter, speaker, event, and link
-shown are fictional; demo output is not live API-generated content.
+This visual preview uses fictional offline-demo details. The chapter, speaker,
+event, and link are fictional; no live API-generated content or real organizer
+information is shown.
+
+---
+
+## Social media manager comparison and project scope
+
+Buffer's official product pages describe publishing and a multi-channel
+calendar, an AI content assistant and idea organization, community comment
+management, analytics, collaboration/approvals, and Start Page. This project
+focuses on the part most relevant to volunteer-led GDG events: turning verified
+event facts into a complete campaign package.
+
+| Product area | This project |
+| :--- | :--- |
+| Platform-specific drafting and AI copy refinement | LinkedIn, X, and newsletter drafts with Gemini, editable by organizers. |
+| Publishing calendar and planning | Event-relative campaign plan plus local `.ics` reminders for manual review. No social-account publishing or queue integration. |
+| Content organization and repurposing | Event draft editing, channel variants, and a four-card downloadable visual carousel. |
+| Team collaboration and approvals | Human review is supported in the app; there are no accounts, shared workspace, or multi-user approval system. |
+| Community inbox and replies | Not included; this app does not connect to social accounts or access comments. |
+| Analytics and reporting | Not included; the app does not collect reach, engagement, or follower data. |
+| Start Page / link-in-bio | Not included. |
+
+**Event-specific differentiators:** the campaign timeline is anchored to the
+event date; the follow-up explicitly asks organizers to add a real takeaway
+instead of inventing attendance or outcomes; and the visual carousel is created
+locally from the selected draft and event facts. These are differentiators of
+this project's workflow, not a claim that no other product offers similar
+capabilities.
+
+The UI header uses Google's Developer bracket mark as a community identifier.
+This is an independent open-source project and is not affiliated with or
+endorsed by Google. See the [Google Developers community page](https://developers.google.com/community)
+for the mark's source context.
+
+Feature research checked on 2026-10-24 against Buffer's public
+[overview](https://buffer.com/), [Publish](https://buffer.com/publish),
+[Create](https://buffer.com/create), [AI Assistant](https://buffer.com/ai-assistant),
+[Community](https://buffer.com/community), [Insights](https://buffer.com/insights),
+[Collaborate](https://buffer.com/collaborate), and
+[Start Page](https://buffer.com/start-page) pages. Product capabilities can
+change; consult Buffer's current pages for the latest details.
 
 ---
 
@@ -53,17 +107,18 @@ shown are fictional; demo output is not live API-generated content.
 ## Architecture & Data Flow
 
 Live mode reads local configuration, requests published events for the selected
-chapter, filters out past events, and sends the nearest upcoming event details
-to Gemini for three separate drafts. The UI runs the request away from the main
-window thread, presents each draft in a tab, and supports copying a selected
-draft. It does not publish or persist generated content.
+chapter, filters out past events, and sends the upcoming event details to Gemini
+for selected channel drafts. The UI runs requests away from the main window
+thread and supports editing, copying, and explicit export. Event campaign plans
+and calendar reminders are generated locally. The app does not publish content.
 
 ```text
 Local chapter ID ──> GDG Community event API ──> nearest upcoming event
                                                   │
-Local Gemini key ─────────────────────────────────┴─> Gemini ──> 3 drafts
+Local Gemini key ─────────────────────────────────┴─> Gemini ──> channel drafts
                                                                     │
-                                                    UI tabs / terminal output
+                                           UI drafts / visual carousel
+Event time + facts ──> local campaign timeline ──> optional .ics reminders
 ```
 
 Offline demo mode bypasses both APIs and displays clearly labeled fictional
@@ -173,8 +228,16 @@ enter a chapter ID and Gemini key (or configure them in `.env`), then click
 custom event** to enter one manually. Edit the fetched event details, select
 channels, set a tone, audience, and call to action, then click **Generate
 drafts**. Edit drafts in-place, regenerate a selected channel, copy it, or save
-all drafts as Markdown/text. Review generated copy before using it; the app
-never posts content.
+all drafts as Markdown/text. Click **Create visual carousel** after generating
+a LinkedIn draft to save and open a four-card local preview. Navigate the cards,
+download each as a PNG, or print the full carousel to PDF. Review generated
+copy and visuals before using them; the app never posts content.
+
+Open **Campaign timeline** and click **Build event timeline** to create
+announcement, topic spotlight, one-day reminder, and post-event follow-up copy.
+For this feature, custom event date/time must be ISO 8601 with a timezone, such
+as `2026-11-07T17:00:00+05:30`. Exporting calendar reminders creates an `.ics`
+file for manual review; it does not schedule posts with a social network.
 
 ### Offline CLI demo
 
@@ -282,7 +345,7 @@ copy button without using network access or credentials.
 
 - [ ] Add localization and chapter-specific brand voice profiles.
 - [ ] Add more social channels and configurable platform limits.
-- [ ] Add scheduled campaign calendars and opt-in reminders.
+- [ ] Add optional integrations for publishing and performance analytics.
 
 ---
 

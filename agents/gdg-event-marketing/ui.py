@@ -3,6 +3,7 @@ import os
 import queue
 import threading
 import tkinter as tk
+import webbrowser
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
@@ -12,6 +13,8 @@ import requests
 
 from dotenv import load_dotenv
 from google import genai
+from campaign import build_campaign_ics, build_event_campaign
+from creative import render_carousel_html
 
 from agent import (
     CHANNEL_PROMPTS,
@@ -21,6 +24,19 @@ from agent import (
     build_demo_event,
     fetch_upcoming_events,
 )
+
+GOOGLE_COLORS = {
+    "blue": "#4285F4",
+    "red": "#EA4335",
+    "yellow": "#FBBC04",
+    "green": "#34A853",
+    "background": "#F8FAFD",
+    "surface": "#FFFFFF",
+    "text": "#202124",
+    "muted": "#5F6368",
+    "border": "#DADCE0",
+    "pale_blue": "#E8F0FE",
+}
 
 CHANNEL_LABELS = {
     "linkedin": "LinkedIn",
@@ -44,9 +60,17 @@ EVENT_FIELDS = (
 )
 
 
-def run_demo_generation(event: Optional[dict] = None) -> tuple[dict, dict]:
+def run_demo_generation(
+    event: Optional[dict] = None, channels: Optional[List[str]] = None
+) -> tuple[dict, dict]:
     selected_event = event or build_demo_event()
-    return selected_event, build_demo_content(selected_event)
+    assets = build_demo_content(selected_event)
+    if channels is not None:
+        invalid_channels = set(channels) - set(assets)
+        if invalid_channels:
+            raise ValueError(f"Unsupported channels: {', '.join(sorted(invalid_channels))}")
+        assets = {channel: assets[channel] for channel in channels}
+    return selected_event, assets
 
 
 def run_live_generation(
@@ -92,9 +116,13 @@ class EventMarketingApp:
         self.char_counts: dict[str, tk.StringVar] = {}
         self.events: list[dict] = []
         self.current_event: dict = {}
+        self.campaign_plan: list[dict] = []
+        self.campaign_event: Optional[dict] = None
+        self.campaign_text: Optional[ScrolledText] = None
         self.busy = False
         self.closed = False
         self._load_configuration()
+        self._configure_theme()
         self._build_layout()
         self._load_event(build_demo_event())
         self.root.after(100, self._process_results)
@@ -103,22 +131,202 @@ class EventMarketingApp:
         load_dotenv(Path(__file__).with_name(".env"))
         self.chapter_id.set(os.getenv("GDG_CHAPTER_ID", ""))
 
+    def _configure_theme(self) -> None:
+        colors = GOOGLE_COLORS
+        self.root.configure(background=colors["background"])
+        style = ttk.Style(self.root)
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+
+        style.configure(".", background=colors["background"], foreground=colors["text"])
+        style.configure("TFrame", background=colors["background"])
+        style.configure("Card.TFrame", background=colors["surface"])
+        style.configure("Header.TFrame", background=colors["surface"])
+        style.configure("TLabel", background=colors["background"], foreground=colors["text"])
+        style.configure("Header.TLabel", background=colors["surface"], foreground=colors["text"])
+        style.configure(
+            "Muted.TLabel", background=colors["surface"], foreground=colors["muted"]
+        )
+        style.configure(
+            "Title.TLabel",
+            background=colors["surface"],
+            foreground=colors["text"],
+            font=("Segoe UI", 21, "bold"),
+        )
+        style.configure(
+            "Section.TLabel",
+            background=colors["background"],
+            foreground=colors["text"],
+            font=("Segoe UI", 12, "bold"),
+        )
+        style.configure(
+            "TLabelframe",
+            background=colors["background"],
+            bordercolor=colors["border"],
+            relief="solid",
+        )
+        style.configure(
+            "TLabelframe.Label",
+            background=colors["background"],
+            foreground=colors["muted"],
+            font=("Segoe UI", 9, "bold"),
+        )
+        style.configure(
+            "TEntry",
+            fieldbackground=colors["surface"],
+            foreground=colors["text"],
+            insertcolor=colors["text"],
+            bordercolor=colors["border"],
+            padding=6,
+        )
+        style.map(
+            "TEntry",
+            bordercolor=[("focus", colors["blue"])],
+            lightcolor=[("focus", colors["blue"])],
+        )
+        style.configure(
+            "TCombobox",
+            fieldbackground=colors["surface"],
+            background=colors["surface"],
+            foreground=colors["text"],
+            arrowcolor=colors["muted"],
+            bordercolor=colors["border"],
+            padding=5,
+        )
+        style.map(
+            "TCombobox",
+            fieldbackground=[("readonly", colors["surface"])],
+            selectbackground=[("readonly", colors["pale_blue"])],
+            selectforeground=[("readonly", colors["text"])],
+        )
+        style.configure(
+            "TButton",
+            background=colors["surface"],
+            foreground=colors["text"],
+            bordercolor=colors["border"],
+            padding=(10, 6),
+            font=("Segoe UI", 9, "bold"),
+        )
+        style.map(
+            "TButton",
+            background=[("pressed", colors["pale_blue"]), ("active", colors["pale_blue"])],
+            foreground=[("disabled", colors["muted"])],
+        )
+        style.configure(
+            "Primary.TButton",
+            background=colors["blue"],
+            foreground=colors["surface"],
+            bordercolor=colors["blue"],
+            padding=(14, 7),
+            font=("Segoe UI", 9, "bold"),
+        )
+        style.map(
+            "Primary.TButton",
+            background=[
+                ("disabled", colors["border"]),
+                ("pressed", "#3367D6"),
+                ("active", "#3367D6"),
+            ],
+            foreground=[("disabled", colors["muted"]), ("!disabled", colors["surface"])],
+        )
+        style.configure(
+            "TCheckbutton", background=colors["background"], foreground=colors["text"]
+        )
+        style.map("TCheckbutton", background=[("active", colors["background"])])
+        style.configure(
+            "TNotebook",
+            background=colors["background"],
+            bordercolor=colors["border"],
+            tabmargins=(0, 2, 0, 0),
+        )
+        style.configure(
+            "TNotebook.Tab",
+            background=colors["surface"],
+            foreground=colors["muted"],
+            padding=(14, 7),
+            font=("Segoe UI", 9, "bold"),
+        )
+        style.map(
+            "TNotebook.Tab",
+            background=[("selected", colors["pale_blue"]), ("active", colors["surface"])],
+            foreground=[("selected", colors["blue"]), ("active", colors["text"])],
+        )
+        style.configure("TPanedwindow", background=colors["background"])
+
     def _build_layout(self) -> None:
         outer = ttk.Frame(self.root, padding=12)
         outer.pack(fill=tk.BOTH, expand=True)
         outer.rowconfigure(1, weight=1)
         outer.columnconfigure(0, weight=1)
 
-        header = ttk.Frame(outer)
+        header = ttk.Frame(outer, style="Header.TFrame", padding=(16, 12))
         header.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        accent = tk.Frame(header, height=4, background=GOOGLE_COLORS["surface"])
+        accent.pack(fill=tk.X, pady=(0, 10))
+        for color in ("blue", "red", "yellow", "green"):
+            tk.Frame(accent, height=4, background=GOOGLE_COLORS[color]).pack(
+                side=tk.LEFT, fill=tk.X, expand=True
+            )
+        brand = ttk.Frame(header, style="Header.TFrame")
+        brand.pack(fill=tk.X)
+        logo = tk.Canvas(
+            brand,
+            width=48,
+            height=38,
+            background=GOOGLE_COLORS["surface"],
+            highlightthickness=0,
+        )
+        logo.pack(side=tk.LEFT, padx=(0, 10))
+        logo_scale = 1.15
+        logo_x, logo_y = 4, 9
+        bracket_paths = (
+            (
+                GOOGLE_COLORS["red"],
+                ((1.33, 5.94), (8.84, 0.60), (13.30, 1.32), (12.57, 5.74), (5.06, 11.09), (0.60, 10.36)),
+            ),
+            (
+                GOOGLE_COLORS["blue"],
+                ((0.60, 6.64), (5.06, 5.91), (12.57, 11.26), (13.30, 15.68), (8.84, 16.40), (1.33, 11.05)),
+            ),
+            (
+                GOOGLE_COLORS["yellow"],
+                ((18.70, 1.33), (23.16, 0.60), (30.67, 5.95), (31.40, 10.37), (26.94, 11.10), (19.43, 5.75)),
+            ),
+            (
+                GOOGLE_COLORS["green"],
+                ((19.43, 11.25), (26.94, 5.90), (31.40, 6.63), (30.67, 11.05), (23.16, 16.40), (18.70, 15.67)),
+            ),
+        )
+        for color, points in bracket_paths:
+            coordinates = [
+                coordinate * logo_scale + (logo_x if index % 2 == 0 else logo_y)
+                for point in points
+                for index, coordinate in enumerate(point)
+            ]
+            logo.create_polygon(
+                coordinates,
+                fill=color,
+                outline=color,
+                smooth=True,
+                splinesteps=12,
+            )
+        title_block = ttk.Frame(brand, style="Header.TFrame")
+        title_block.pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Label(
-            header, text="GDG Event Marketing Studio", font=("Segoe UI", 21, "bold")
+            title_block, text="Google Developer Groups", style="Title.TLabel"
         ).pack(anchor="w")
         ttk.Label(
-            header,
+            title_block,
+            text="EVENT MARKETING STUDIO · INDEPENDENT COMMUNITY PROJECT",
+            wraplength=1000,
+            style="Muted.TLabel",
+        ).pack(anchor="w", pady=(3, 0))
+        ttk.Label(
+            title_block,
             text="One event in. Platform-ready drafts out. You stay in control of what gets published.",
             wraplength=1000,
-        ).pack(anchor="w", pady=(3, 0))
+            style="Muted.TLabel",
+        ).pack(anchor="w", pady=(4, 0))
 
         content = ttk.Panedwindow(outer, orient=tk.VERTICAL)
         content.grid(row=1, column=0, sticky="nsew")
@@ -192,7 +400,22 @@ class EventMarketingApp:
         ttk.Label(settings, text="Description").grid(
             row=3, column=0, sticky="nw", pady=3
         )
-        self.description_text = ScrolledText(settings, height=3, wrap=tk.WORD)
+        self.description_text = ScrolledText(
+            settings,
+            height=3,
+            wrap=tk.WORD,
+            background=GOOGLE_COLORS["surface"],
+            foreground=GOOGLE_COLORS["text"],
+            insertbackground=GOOGLE_COLORS["text"],
+            selectbackground=GOOGLE_COLORS["pale_blue"],
+            selectforeground=GOOGLE_COLORS["text"],
+            relief=tk.FLAT,
+            padx=8,
+            pady=6,
+            highlightthickness=1,
+            highlightbackground=GOOGLE_COLORS["border"],
+            highlightcolor=GOOGLE_COLORS["blue"],
+        )
         self.description_text.grid(
             row=3, column=1, columnspan=3, sticky="ew", pady=3
         )
@@ -245,9 +468,17 @@ class EventMarketingApp:
         parent.rowconfigure(1, weight=1)
         toolbar = ttk.Frame(parent)
         toolbar.grid(row=0, column=0, sticky="ew", pady=(0, 6))
-        ttk.Label(toolbar, text="2. Drafts", font=("Segoe UI", 12, "bold")).pack(side=tk.LEFT)
+        ttk.Label(toolbar, text="2. Drafts", style="Section.TLabel").pack(side=tk.LEFT)
+        ttk.Button(
+            toolbar,
+            text="Create visual carousel",
+            command=self._create_visual_carousel,
+        ).pack(side=tk.LEFT, padx=(12, 0))
         self.generate_button = ttk.Button(
-            toolbar, text="Generate drafts", command=self._start_generation
+            toolbar,
+            text="Generate drafts",
+            command=self._start_generation,
+            style="Primary.TButton",
         )
         self.generate_button.pack(side=tk.RIGHT)
         ttk.Button(toolbar, text="Save all…", command=self._save_all).pack(
@@ -273,7 +504,23 @@ class EventMarketingApp:
             panel = ttk.Frame(self.tabs, padding=5)
             panel.rowconfigure(0, weight=1)
             panel.columnconfigure(0, weight=1)
-            output = ScrolledText(panel, wrap=tk.WORD, font=("Segoe UI", 10), undo=True)
+            output = ScrolledText(
+                panel,
+                wrap=tk.WORD,
+                font=("Segoe UI", 10),
+                undo=True,
+                background=GOOGLE_COLORS["surface"],
+                foreground=GOOGLE_COLORS["text"],
+                insertbackground=GOOGLE_COLORS["text"],
+                selectbackground=GOOGLE_COLORS["pale_blue"],
+                selectforeground=GOOGLE_COLORS["text"],
+                relief=tk.FLAT,
+                padx=12,
+                pady=10,
+                highlightthickness=1,
+                highlightbackground=GOOGLE_COLORS["border"],
+                highlightcolor=GOOGLE_COLORS["blue"],
+            )
             output.grid(row=0, column=0, sticky="nsew")
             output.bind("<KeyRelease>", lambda _event, key=channel: self._update_count(key))
             footer = ttk.Frame(panel)
@@ -289,8 +536,53 @@ class EventMarketingApp:
             selected.pack(side=tk.RIGHT)
             self.output_widgets[channel] = output
             self.tabs.add(panel, text=title)
+        self._build_campaign_tab()
         self.tabs.bind("<<NotebookTabChanged>>", self._tab_changed)
         self._set_draft_actions(False)
+
+    def _build_campaign_tab(self) -> None:
+        panel = ttk.Frame(self.tabs, padding=8)
+        panel.columnconfigure(0, weight=1)
+        panel.rowconfigure(1, weight=1)
+        controls = ttk.Frame(panel)
+        controls.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        ttk.Button(
+            controls,
+            text="Build event timeline",
+            command=self._create_campaign_plan,
+            style="Primary.TButton",
+        ).pack(side=tk.LEFT)
+        ttk.Button(
+            controls,
+            text="Export calendar reminders…",
+            command=self._export_campaign_calendar,
+        ).pack(side=tk.LEFT, padx=(8, 0))
+        self.campaign_text = ScrolledText(
+            panel,
+            wrap=tk.WORD,
+            font=("Segoe UI", 10),
+            undo=True,
+            background=GOOGLE_COLORS["surface"],
+            foreground=GOOGLE_COLORS["text"],
+            insertbackground=GOOGLE_COLORS["text"],
+            selectbackground=GOOGLE_COLORS["pale_blue"],
+            selectforeground=GOOGLE_COLORS["text"],
+            relief=tk.FLAT,
+            padx=12,
+            pady=10,
+            highlightthickness=1,
+            highlightbackground=GOOGLE_COLORS["border"],
+            highlightcolor=GOOGLE_COLORS["blue"],
+        )
+        self.campaign_text.grid(row=1, column=0, sticky="nsew")
+        self.campaign_text.insert(
+            "1.0",
+            "Create a locally planned event campaign with an announcement, "
+            "topic spotlight, one-day reminder, and post-event follow-up.\n\n"
+            "The planner does not publish posts. You can edit the copy here and "
+            "export calendar reminders for manual review.",
+        )
+        self.tabs.add(panel, text="Campaign timeline")
 
     def _mode_changed(self, _event=None) -> None:
         self._update_mode_controls()
@@ -312,6 +604,13 @@ class EventMarketingApp:
 
     def _load_event(self, event: dict) -> None:
         self.current_event = dict(event)
+        self.campaign_plan = []
+        self.campaign_event = None
+        if self.campaign_text is not None:
+            self.campaign_text.delete("1.0", tk.END)
+            self.campaign_text.insert(
+                "1.0", "Event changed. Build a new timeline to refresh the plan."
+            )
         for field, _label in EVENT_FIELDS:
             self.event_vars[field].set(str(event.get(field, "")))
         self.description_text.delete("1.0", tk.END)
@@ -419,6 +718,13 @@ class EventMarketingApp:
             self.results.put((action, "success", result))
         except (requests.RequestException, genai.errors.APIError, ValueError, RuntimeError) as exc:
             self.results.put((action, "error", str(exc)))
+        except Exception as exc:
+            error = str(exc)
+            if function is run_live_generation and len(args) > 1 and args[1]:
+                error = error.replace(args[1], "[redacted API key]")
+            self.results.put(
+                (action, "error", f"Unexpected {type(exc).__name__}: {error}")
+            )
 
     def _process_results(self) -> None:
         if self.closed:
@@ -480,7 +786,8 @@ class EventMarketingApp:
         if not self.tabs.select():
             return None
         index = self.tabs.index(self.tabs.select())
-        return tuple(CHANNEL_LABELS)[index]
+        channels = tuple(CHANNEL_LABELS)
+        return channels[index] if index < len(channels) else None
 
     def _tab_changed(self, _event=None) -> None:
         self.regenerate_button.configure(
@@ -539,6 +846,92 @@ class EventMarketingApp:
             messagebox.showerror("Could not save drafts", str(exc))
             return
         self.status.set(f"Saved {len(drafts)} draft(s) to the selected file.")
+
+    def _create_campaign_plan(self) -> None:
+        try:
+            event = self._read_event()
+            self.campaign_plan = build_event_campaign(event)
+        except ValueError as exc:
+            messagebox.showerror("Cannot build campaign timeline", str(exc))
+            return
+
+        self.campaign_event = dict(event)
+        sections = []
+        for item in self.campaign_plan:
+            scheduled_at = item["scheduled_at"]
+            sections.append(
+                "{} · {} · {}\n{}\n".format(
+                    item["stage"],
+                    scheduled_at.strftime("%a, %b %d, %Y · %I:%M %p %Z"),
+                    "event day {:+d}".format(item["offset_days"]),
+                    item["copy"],
+                )
+            )
+        self.campaign_text.delete("1.0", tk.END)
+        self.campaign_text.insert("1.0", "\n---\n\n".join(sections))
+        self.status.set(
+            "Event campaign planned locally. Review and edit each post; nothing was published."
+        )
+
+    def _export_campaign_calendar(self) -> None:
+        if not self.campaign_plan:
+            messagebox.showinfo(
+                "Campaign timeline required",
+                "Build an event timeline before exporting calendar reminders.",
+            )
+            return
+        if self.campaign_event != self._read_event():
+            messagebox.showinfo(
+                "Campaign plan is out of date",
+                "Event details changed. Build a new timeline before exporting reminders.",
+            )
+            return
+        path = filedialog.asksaveasfilename(
+            title="Export manual campaign review reminders",
+            defaultextension=".ics",
+            filetypes=(("Calendar file", "*.ics"),),
+            initialfile="gdg-event-campaign-reminders.ics",
+        )
+        if not path:
+            return
+        try:
+            calendar = build_campaign_ics(self._read_event(), self.campaign_plan)
+            with open(path, "w", encoding="utf-8", newline="") as output:
+                output.write(calendar)
+        except (OSError, ValueError) as exc:
+            messagebox.showerror("Could not export reminders", str(exc))
+            return
+        self.status.set(
+            "Calendar reminders exported. They are reminders only; posts are never auto-published."
+        )
+
+    def _create_visual_carousel(self) -> None:
+        draft = self.output_widgets["linkedin"].get("1.0", "end-1c").strip()
+        if not draft:
+            messagebox.showinfo(
+                "LinkedIn draft required",
+                "Generate a LinkedIn draft first, then turn it into a visual carousel.",
+            )
+            return
+        path = filedialog.asksaveasfilename(
+            title="Save event visual carousel",
+            defaultextension=".html",
+            filetypes=(("HTML visual carousel", "*.html"),),
+            initialfile="gdg-event-visual-carousel.html",
+        )
+        if not path:
+            return
+        try:
+            page = render_carousel_html(self._read_event(), draft)
+            output_path = Path(path)
+            output_path.write_text(page, encoding="utf-8")
+            webbrowser.open(output_path.resolve().as_uri())
+        except OSError as exc:
+            messagebox.showerror("Could not create visual carousel", str(exc))
+            return
+        self.status.set(
+            "Visual carousel saved and opened locally. Review each card before sharing."
+        )
 
     def _set_busy(self, busy: bool, message: Optional[str] = None) -> None:
         self.busy = busy

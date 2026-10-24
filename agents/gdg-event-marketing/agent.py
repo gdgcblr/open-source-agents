@@ -43,31 +43,50 @@ def build_demo_event() -> dict:
 
 
 def build_demo_content(event: dict) -> dict:
-    """Return sample drafts without making Gemini or network requests."""
+    """Return polished, clearly fictional samples without API requests."""
+    try:
+        parsed_date = datetime.fromisoformat(
+            event["date_time"].replace("Z", "+00:00")
+        ).astimezone(timezone.utc)
+        event_date = parsed_date.strftime("%a, %b %d, %Y · %I:%M %p UTC")
+    except (KeyError, ValueError):
+        event_date = event.get("date_time", "Date to be announced")
+
     return {
         "linkedin": (
-            f"Curious about AI for research? Join us for {event['title']}!\n\n"
-            f"{event['description']}\n\n"
-            f"When: {event['date_time']}\n"
-            f"Where: {event['location']}\n"
-            f"With: {event['speakers']}\n\n"
-            f"Demo registration link (fictional): {event['url']}\n\n"
-            "#AIForScience #GDG #Community"
+            "What could you explore if machine learning became part of your "
+            "research toolkit?\n\n"
+            f"Join us for {event['title']}—a fictional, hands-on event "
+            "for anyone curious about AI and research workflows. "
+            "Bring a laptop and your curiosity.\n\n"
+            f"📅 {event_date}\n"
+            f"📍 {event['location']}\n"
+            f"🎤 {event['speakers']}\n\n"
+            "Want to explore the sample event? "
+            f"Fictional event link: {event['url']}\n\n"
+            "#AIForScience #GDG #DeveloperCommunity"
         ),
         "twitter": (
-            f"Explore AI for research at {event['title']}! "
-            f"{event['date_time']} | {event['location']}. "
-            f"Fictional demo event: {event['url']} #AIForScience"
+            f"Curious about AI for research? Join the fictional "
+            f"{event['title']}. {event_date} · {event['location']}. "
+            f"Sample link: {event['url']} #AIForScience"
         ),
         "email_newsletter": (
-            f"Subject: Join us for {event['title']}\n\n"
-            f"Hello!\n\n{event['description']}\n\n"
-            f"When: {event['date_time']}\n"
-            f"Where: {event['location']}\n"
-            f"Speaker: {event['speakers']}\n\n"
-            f"Demo registration link (fictional): {event['url']}\n\n"
-            "We hope to see you there!\n\n"
-            "The GDG Community (fictional demo)"
+            f"Subject: Put AI to work in your research workflow\n"
+            f"Preheader: A fictional hands-on community workshop to explore "
+            f"machine learning for research.\n\n"
+            "Hello,\n\n"
+            "Curious about where machine learning could fit into research? "
+            f"{event['title']} is a fictional, hands-on introduction to using "
+            "machine learning for research workflows. Bring a laptop and "
+            "your curiosity.\n\n"
+            f"WHEN  {event_date}\n"
+            f"WHERE  {event['location']}\n"
+            f"WITH  {event['speakers']}\n\n"
+            "Interested in exploring the sample? "
+            f"Fictional event link: {event['url']}\n\n"
+            "Hope to see you there,\n"
+            "The fictional GDG community demo team"
         ),
     }
 
