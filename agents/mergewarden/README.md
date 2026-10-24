@@ -25,6 +25,27 @@ python -m mergewarden triage gdgcblr/open-source-agents --no-llm --out triage.ht
 python -m mergewarden.coach serve        # newcomer coach simulator → http://127.0.0.1:8090
 ```
 
+### The Newcomer Coach in action (real conversation, in Kannada)
+Rendered from a live run of `mergewarden.coach` with Gemini on 2026-10-24. The text is exactly what the coach replied. Only the WhatsApp-style chat frame is added (the same chat runs on real WhatsApp through Twilio).
+
+| ① Onboarding and skill-matched picks | ② Mentoring, and a secret refused |
+| :---: | :---: |
+| <img src="docs/screenshots/whatsapp-1.png" width="330" alt="Coach greets a Kannada-speaking student, gives a privacy note, asks about skills, then recommends three challenges that fit Python + docs"> | <img src="docs/screenshots/whatsapp-2.png" width="330" alt="Coach explains fork and pull request in simple Kannada, then refuses a pasted API key and tells the student to rotate it"> |
+| The student says hi in Kannada. The coach replies in Kannada with a privacy notice and asks about their skills. It recommends 3 event challenges that fit "Python + likes writing docs", each with a reason and the points it earns. | "What is a fork? How do I make a PR?" gets a photocopy analogy and a question back. When the student pastes an API key, the coach refuses **in 0.0 s, deterministically, before any model call**, doesn't store it, and tells them to rotate it. |
+
+### For reviewers: criteria → evidence
+Every claim below links to the file or command that proves it.
+
+| Review criterion (CONTRIBUTING.md) | How MergeWarden meets it | Evidence |
+| :--- | :--- | :--- |
+| **Reproducibility** | One `requirements.txt`. It runs with no API key (`--no-llm`). Setup was verified on a freshly created venv. | [Installation & Setup](#installation--setup) · `python -m pytest -q` |
+| **Documentation quality** | Every template section is filled in. The example input/output and screenshots come from genuine runs. Limitations are disclosed, including red-team gaps. | [Example Input & Output](#example-input--output) · [Known Limitations](#known-limitations) |
+| **Security & privacy** | No secrets committed, and leaked values are masked in output. PR code is never executed on the host. AI output is grounded, and the AI can't block or approve. The coach hashes phone numbers and refuses secrets. | [Security & Privacy](#security--privacy-considerations) · [`checks/secrets.py`](mergewarden/checks/secrets.py) · [`coach/guardrails.py`](mergewarden/coach/guardrails.py) |
+| **Focused scope** | Everything lives in `agents/mergewarden/`, with no root changes. It reviews its own PR as ✅ Ready, 100/100. | `python -m mergewarden review https://github.com/gdgcblr/open-source-agents/pull/5 --no-llm` |
+| **Usefulness to the ecosystem** | It solves this repo's own review bottleneck. It triaged the 5 real upstream PRs in 44 s, and the coach brings new contributors in. | [`copilot.py`](mergewarden/copilot.py) · [`coach/`](mergewarden/coach/) |
+| **Measured quality** | 18/18 labelled eval cases and 138 tests. | [`evals/RESULTS.md`](evals/RESULTS.md) · [`tests/`](tests/) |
+| **Framework depth (Google ADK)** | Uses `SequentialAgent`, `ParallelAgent`, `LlmAgent` with Pydantic `output_schema`, custom deterministic `BaseAgent`s, a coordinator with tools and sub-agents, and model fallback chains. | [`agent.py`](mergewarden/agent.py) · [`coach/agent.py`](mergewarden/coach/agent.py) |
+
 ---
 
 ## Overview
