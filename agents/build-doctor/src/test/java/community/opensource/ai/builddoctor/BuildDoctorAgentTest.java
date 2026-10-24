@@ -13,6 +13,7 @@ class BuildDoctorAgentTest {
     assertEquals("build_doctor", agent.name());
     assertTrue(agent.toolsUnion().size() >= 2);
     assertTrue(agent.instruction().toString().contains("Verification is pending"));
+    assertTrue(agent.instruction().toString().contains("deterministic tool output as authoritative evidence"));
   }
 
   @Test
