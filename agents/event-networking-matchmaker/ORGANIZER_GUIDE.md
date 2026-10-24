@@ -1,94 +1,69 @@
-# BuildBuddy organizer guide
+# Organizer guide: make confirmed attendees discoverable
 
-You operate one shared server. Attendees use a browser; they do not install the agent or receive the response spreadsheet.
+Upload your selected, confirmed attendee list, give each person private access, and keep the list current. Attendees use the shared BuildBuddy website—not the spreadsheet.
 
-For the quickest hosted evaluator URL and confirmation-email buttons, follow [DEPLOY.md](DEPLOY.md). New token exports include per-attendee `invite_url` values. Send each privately using your existing email sender; clicking opens matches before the event without falsely marking venue arrival.
+Before starting, obtain the working website link and your private organizer key from the person managing BuildBuddy. Never share the organizer key with attendees.
 
-## 1. Prepare a private deployment
+## 1. Prepare the confirmed-attendee XLSX
 
-Follow README installation. Test with `python app.py --demo` and fictional data first. Use a separate database and omit `--demo` for a real event.
+Create a separate export containing **only selected, confirmed attendees**. Filtering or hiding rows is not enough: remove unselected, waitlisted and cancelled registrations from the upload copy. BuildBuddy does not interpret registration-status columns.
 
-Generate a secret organizer key:
+Include only people who explicitly agreed to appear in networking matches. Event confirmation is **not** networking consent; never change a person's answer to Yes on their behalf.
 
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
+Use these column headings in the first row:
 
-Put it in `.env` as `BUILDBUDDY_ADMIN_KEY`. Set `BUILDBUDDY_DB` to a persistent private file and `BUILDBUDDY_ALLOWED_HOSTS` to the exact hostname you will share. Bind with `python app.py --host 0.0.0.0` behind an HTTPS reverse proxy. Forward the original Host and HTTPS scheme correctly; same-origin checks intentionally reject mismatched origins. Keep the service port private behind the proxy. Localhost is for the host machine only, not attendees’ phones.
+| Column | What to include |
+| --- | --- |
+| Attendee ID | Unique, stable code such as P001; retain it on future uploads |
+| Display name | The name the attendee wants others to see |
+| Skills I can help with | Comma-separated skills they offered |
+| What I want help with | Their learning needs or collaboration goals |
+| Interests | Topics they want to discuss; optional |
+| What I am building | Short project description; optional |
+| Available networking window | Event windows such as Lunch, After talks or Anytime |
+| Allow my profile to appear in event matches | The attendee's explicit consent; Yes for an affirmative response |
 
-Use HTTPS when handling real tokens. Secure backups and restrict database-directory access. The app restricts database file permissions on Unix, but does not encrypt the disk or backups. See PRIVACY.md.
+Use [the sample workbook](sample/form-responses.xlsx) as a format reference, replacing its fictional rows with your confirmed list. IDs must be unique, up to 32 letters, digits, hyphens or underscores. Do not renumber them after sorting. Use plain values, not formulas.
 
-Local semantic matching: install `requirements-semantic.txt`, run `setup_model.py`, put its printed model path in `.env`, restart, and confirm the UI says **Local semantic NLP**. No Gemini API key is needed. Lexical NLP remains available without the model.
+Save as `.xlsx`, with responses on the first worksheet or a sheet named `Form Responses 1`. Keep private contact details out of profile fields. Email and unknown columns are ignored, but text in recognized profile fields may be shown to attendees. Keep the email delivery list separate.
 
-## 2. Create the Google Form
+## 2. Upload the list
 
-Use these exact question titles for automatic import mapping:
+1. Open BuildBuddy and choose **Organizer workspace**.
+2. Enter your organizer key, the event name, and 1–10 comma-separated venue meeting spots, such as `Table A, Table B, Community desk`.
+3. Select the XLSX, acknowledge that it is the complete event list, and upload it.
+4. Check the imported and skipped counts against your confirmed, consenting list. Resolve unexpected differences before sending invitations. Blank/No consent and previously withdrawn attendees are excluded.
+5. **Download new private access tokens immediately.** Each entry includes the attendee ID, private token and personal `invite_url`. Lost access must be replaced; you cannot retrieve the original tokens later.
 
-| Question / column | Suggested type | Example |
-| --- | --- | --- |
-| Display name | Short answer, required | Priya |
-| Skills I can help with | Checkboxes, required | Flutter; design; deployment |
-| What I want help with | Checkboxes with Other | Python; API |
-| Interests | Checkboxes with Other | open source; accessibility |
-| What I am building | Short paragraph | Mobile accessibility reader |
-| Available networking window | Checkboxes, required | Lunch; After talks; Anytime |
-| Allow my profile to appear in event matches | Yes/No, required | Yes |
-| Attendee ID | Organizer-managed sheet column | P002 |
+The uploaded profiles are now available for matching within the event. Uploading does **not** send confirmation emails automatically.
 
-Use a shared vocabulary for skill and interest checkboxes where possible. Good profile data matters more than model complexity. Keep project descriptions short and avoid private contact details. “Anytime” is a networking-window label, not a live check-in.
+## 3. Give attendees access and verify it works
 
-Assign stable unique IDs in the linked response spreadsheet. IDs use 1–32 letters, digits, `_`, or `-`; they are normalized to uppercase. Paste values rather than row-number formulas. Do not renumber attendees after sorting or re-exporting. Do not reuse withdrawn IDs.
+Match each downloaded credential to the correct confirmed attendee using their stable ID. In your existing confirmation-email process, add a **See my event matches** button linked to **that person's `invite_url`**.
 
-Suggested consent explanation, adapted to your event and retention period:
+- Send invitations individually. Never share the complete token file or another person's invitation.
+- Ask your email sender to preserve the complete link and disable click tracking for this button. Test it in your actual email tool first.
+- Clicking opens pre-event matches; it does **not** announce arrival at the venue.
+- If the button does not work, privately provide the website link, event name and that attendee's token for manual sign-in.
+- Tell attendees not to forward invitations: anyone holding a link can use their access until it is replaced or withdrawn.
 
-> If you choose Yes, your display name, offered skills, learning needs, interests, project description, and networking window may be shown to signed-in attendees of this event. You can optionally share a short-lived meeting spot. Matching runs on the organizer’s server. You can remove your profile in BuildBuddy. Contact the organizer to delete your original form response. We will remove event data after [your stated retention date].
+Ask two consenting attendees to confirm that their invitations open the correct profiles and event, and that their goals produce relevant matches. Include the [attendee guide](ATTENDEE_GUIDE.md) in the confirmation email. Keep your organizer key and downloaded credentials private.
 
-Keep email/contact collection separate from public profile fields. Email and unrecognized columns are ignored by the importer; text placed inside a recognized profile field may be shown to participants.
+## 4. Keep matches current
 
-## 3. Export and import
+For additions, cancellations or corrections, upload the **complete updated confirmed-attendee list** under the **same event name**, retaining stable IDs. Do not upload only new rows: people missing from the new file are removed from the event.
 
-Export the response spreadsheet as `.xlsx`. Put headers in row 1, on `Form Responses 1` or the first worksheet. Do not include formulas in profile fields.
+Existing invitations remain valid unless an attendee's display name changes. A name correction creates replacement access and clears their check-in/met history; send the new invitation privately. New attendees also receive credentials in the download.
 
-1. Open **Organizer workspace** in BuildBuddy.
-2. Enter your organizer key.
-3. Enter a stable event name and 1–10 comma-separated meeting spots approved for your venue.
-4. Upload the XLSX and acknowledge the full-snapshot update.
-5. Check the imported/skipped counts.
-6. Download the new private access tokens immediately. They are not recoverable from the database because only hashes are stored.
+Withdrawn attendees remain excluded even if an old spreadsheet still says Yes. Update your source records too. If someone explicitly opts back in later, assign a new ID. An upload with no consenting profiles is rejected without changing the existing event; use **Delete event data** if you intend to remove the whole event.
 
-Accepted header aliases: `id`/`attendee code`; `name`/`full name`; `offers`/`skills`; `needs`/`help needed`; `topics of interest`; `project`/`what I'm building`; `availability`/`window`; `consent`. Headers are case-insensitive and whitespace-normalized. Duplicate mapped headers or attendee IDs are rejected—even if one duplicate row opts out.
+## 5. Help people meet and close the event
 
-Consent must be an explicit `Yes`, `True`, or `I agree`. No/blank/unrecognized values are excluded. If the entire file has no consenting profiles, import is rejected to avoid accidentally clearing a real event; use explicit event deletion if that is your intention.
+Put clear signs at the configured meeting spots. Ask attendees to check in only when they are there and available. Check-ins expire after the selected duration; attendees should end them when leaving. A networking window is not a booked appointment.
 
-## 4. Distribute access safely
+Public badge IDs help people identify each other. **Never put private tokens on badges or signs.**
 
-Verify each attendee’s identity using your registration process. Privately provide the app URL, event name, and **only that attendee’s token**. Never post the complete token JSON or send it to all participants. Treat the download as a credential file and delete it when no longer needed.
-
-Public badge IDs such as P002 are safe to display on a badge or phone. They are not login credentials. Do not print private tokens on public badges or meeting-spot signs.
-
-Ask attendees to open the app on their own browser, select the event, enter their token, and read the attendee guide. Refreshing the page requires signing in again because tokens are held only in memory.
-
-## 5. Operate the event
-
-Put recognizable signs at configured meeting spots. Explain that a check-in is voluntary and temporary; it does not reserve a meeting or continuously track a person. Attendees can end check-ins or mark people as met themselves.
-
-For updated registration data, import the complete fresh response export using the same event name and stable IDs. Missing/non-consenting profiles are removed. Existing tokens are preserved unless the display name associated with an ID changes; that change revokes the old token and clears its meeting history/check-in to prevent accidental identity reassignment. Distribute the replacement token after a legitimate name correction.
-
-An in-app withdrawal stays excluded on reimport, even if the source spreadsheet still contains Yes. Update the original form/response record separately. A participant who later explicitly reconsents needs a new attendee ID.
-
-Lost or exposed token: open **Manage event access and retention**, enter organizer key, event, and attendee ID, then choose **Replace attendee token**. Verify the person before sharing the replacement. The old token stops working immediately.
-
-## 6. End the event and apply retention
-
-Use **Delete event data** with the organizer key and exact event name after your announced retention period. The confirmation explains that this removes BuildBuddy profiles, locations, met history, tokens, and withdrawal markers for that event.
-
-Separately handle the Google Form/Sheet, XLSX exports, private-token downloads, logs outside this application, and backups. Database deletion cannot erase copies outside the app or guarantee forensic erasure from physical storage. Do not reimport a deleted event unless you have a legitimate new purpose and consent.
-
-## Troubleshooting
-
-- **Invalid host / cross-origin error:** configure the exact public hostname; preserve host and HTTPS scheme through your proxy. Do not solve this by enabling wildcard CORS or bypassing HTTPS.
-- **Missing columns:** compare headers against the table above; form wording is not freely interchangeable unless listed as an alias.
-- **No matches:** check profile quality, time windows, met history, offered-only and available-now filters. A participant’s shared interest is not the same as an offered skill.
-- **Semantic model unavailable:** check installation/path and restart. Local lexical NLP still works and is labeled accurately.
-- **Request limit reached:** wait one minute. The limiter is per token and per process; production abuse protection should also be configured at the host.
-- **Performance:** start with the documented sample and a representative copy of consenting data. A 200-profile functional test does not prove capacity for 200 simultaneous requests.
+- **Lost/shared invitation:** verify identity, open **Manage event access and retention**, enter your organizer key, event and attendee ID, then choose **Replace attendee token**. Privately provide the replacement token with the website link and event name. The old invitation stops working.
+- **No matches:** check imported profile details and availability. Ask the attendee to relax available-now or offered-skills-only filters. Shared interests do not establish expertise.
+- **Website unavailable:** contact the person managing the app; do not distribute the full spreadsheet as a workaround.
+- **Retention:** after the period communicated to attendees, use **Delete event data** for the correct event. Separately manage source responses, XLSX copies, invitation exports and backups under the same policy.
