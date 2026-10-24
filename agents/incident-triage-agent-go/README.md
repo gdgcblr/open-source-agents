@@ -2,6 +2,8 @@
 
 > An ADK-Go agent that takes a firing alert, pulls metrics from Prometheus and logs from Loki, checks them against known baselines, and drafts a root-cause report in which every claim cites the query that proves it.
 
+**Live system, not recordings:** break a running service and watch the agent find the cause. **Runs fully offline** on a 4B open model in ~14 s per incident, or on Gemini. **Measured:** 3/4 injected faults diagnosed correctly ([results](examples/EVAL.md)), 26 unit-test cases. A real report and its full audit trail are in [`examples/`](examples/).
+
 ---
 
 ## Overview
@@ -150,41 +152,39 @@ go run . triage "Triage the alerts that are firing right now."
 ```
 
 ### Example Output
-A real run on a local `qwen3:4b-instruct` (Apple M4 Pro), latency fault injected into `payments`. Both services were alerting:
+A real run from the final `eval.sh` pass: local `qwen3:4b-instruct` on an Apple M4 Pro, latency fault injected into `payments`, **both** services alerting. Full report: [`examples/latency-report.md`](examples/latency-report.md). Every tool call and result: [`examples/latency-trace.json`](examples/latency-trace.json).
 
 ```text
 ▶ triage started (model openai/qwen3:4b-instruct, timeout 4m0s)
-  [   3s] → get_firing_alerts {}
-  [   3s] → service_health {}
-  [   3s] → recent_changes {"minutes":30}
-  [   3s] → known_baselines {}
-■ done in 10.7s · 4 tool calls · 4033 in / 527 out tokens
+  → get_firing_alerts · service_health · recent_changes · known_baselines
+■ done in 13.7s · 4 tool calls · 4630 in / 738 out tokens
 ```
 
 ```markdown
 ## Most likely root cause
-payments: p99 latency 25x baseline. Confidence: high.
+payments: p99 latency 9.9x baseline. Confidence: high.
 
 ## Evidence
-- `p99_latency_seconds` for payments is 2.485s (ABNORMAL: 25.2x baseline) — observed in service_health.
-- `downstream_p99_seconds (calls to payments)` for checkout is 2.485s (ABNORMAL: 25.2x baseline) — observed in service_health.
-- `p99_latency_seconds` for checkout is 2.485s (ABNORMAL: 24.9x baseline) — observed in service_health.
-- No recent deploys or restarts in the last 30 minutes — confirmed by recent_changes.
+- payments p99 latency is ABNORMAL: 9.9x baseline (from 0.098 to 0.977 seconds), verified by
+  `histogram_quantile(0.99, sum by (service, le) (rate(http_request_duration_seconds_bucket[1m])))`
+- checkout's calls to payments have downstream_p99_seconds ABNORMAL: 9.9x baseline (from 0.098 to 0.978 seconds),
+  verified by `histogram_quantile(0.99, sum by (service, target, le) (rate(downstream_request_duration_seconds_bucket[1m])))`
 
 ## Ruled out
-- No version changes or restarts in the last 30 minutes, so a deploy is not the cause.
-- The "card declined" and "exchange-rate refresh failed" logs are known baselines — background noise.
-- Memory RSS is stable (normal) in both services — memory leak or OOM crash is ruled out.
+- Checkout version changes: recent_changes shows deploys of checkout between 13:43 and 13:54, but no deploy
+  occurred immediately before the symptom (14:02).
+- Checkout's own p99 latency is high, but it is a downstream effect of payments' failure, not the root cause.
 ```
 
-Checkout alerted too, but the agent identified it as the victim: its slowness is entirely its calls to payments.
+Checkout alerted too, but the agent identified it as the victim: its slowness is entirely its calls to payments. It also ruled out earlier deploys by timing rather than blaming the most recent change.
 
 ---
 
 ## How to Test
 
 ```bash
-./eval.sh            # all four scenarios, about 4 minutes each
+go test ./...        # 7 tests, 26 cases: guardrails, redaction, verdicts, change points (no lab or model needed)
+./eval.sh            # end-to-end: all four fault scenarios against the lab
 ./eval.sh latency    # a single scenario
 ```
 
@@ -193,7 +193,7 @@ For each scenario `eval.sh` resets the lab, waits for alerts to clear, injects t
 ---
 
 ## Known Limitations
-- The lab's `compare_to_baseline` default (30 min back) needs the lab running for 35+ minutes. On a fresh lab, ask for a shorter offset.
+- `service_health` compares against the median of the previous hour; on a lab started minutes ago it uses whatever history exists, so verdicts are less reliable in the first ~10 minutes.
 - `recent_changes` infers deploys from a `build_info{version=…}` metric. Services without one only show restarts.
 - Small local models (≤8B) follow the procedure less reliably than Gemini Flash.
 - Logs must be JSON with a `msg` field for `log_patterns` to group them. Other formats need a different LogQL parser stage.

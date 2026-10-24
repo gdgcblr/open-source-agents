@@ -47,3 +47,4 @@ agents/<project-slug>/
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
 | *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`incident-triage-agent-go`](incident-triage-agent-go/) | Triages a firing alert from live Prometheus metrics and Loki logs; evidence-backed root cause, guardrails, scored eval | Go, ADK-Go, Gemini / Ollama | @pradeep1112lanka |

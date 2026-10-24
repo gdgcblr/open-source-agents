@@ -1,0 +1,14 @@
+=== latency: expect payments + /latenc|slow/
+  PASS  payments: p99 latency 9.9x baseline. Confidence: high.
+  ■ done in 13.7s · 4 tool calls · 4630 in / 738 out tokens
+=== pool: expect checkout + /pool|connection/
+  PASS  checkout: db connection pool exhausted (max=10) (NEW in this window). Confidence: high.
+  ■ done in 14.3s · 4 tool calls · 4686 in / 688 out tokens
+=== bad-deploy: expect checkout + /v1\.4\.0|deploy/
+  FAIL  root cause was: checkout: panic recovered: nil pointer dereference in applyCoupon. Confidence: high. 
+  ■ done in 16.2s · 4 tool calls · 4717 in / 920 out tokens
+=== leak: expect checkout + /memory|leak|oom/
+  PASS  checkout: memory_rss_mb 2.2x baseline. Confidence: high.
+  ■ done in 10.3s · 4 tool calls · 4532 in / 550 out tokens
+=== score: 3/4
+exit=0
