@@ -21,6 +21,19 @@ Built for riders and for **app builders** who want reusable escalate / act / eva
 - Policy file: add or remove gates and evals without editing the agent loop.
 - Runs locally (Ollama or rules-only). No cloud API keys.
 
+### Open-source use (app builders)
+
+Closed models guess quietly. This repo is a **harness**, not a trainer: you run *your* model through the same gates and evals and get a labeled trace (`ESCALATE` / `PASS` / `FAIL` + evidence).
+
+Typical loop:
+
+1. Point `LLM_PROVIDER` / `OLLAMA_MODEL` at the model you are testing (or wrap `CommuteAgent` in your app).
+2. Run a fixed set of asks (vague, full trip, “no metro”, off-topic).
+3. Keep JSON traces: gate decision, tool JSON, model text, eval scores.
+4. Improve the **prompt**, **tools**, or **policy** until FAIL rate drops. Those traces can also feed later preference / eval datasets — this project does not fine-tune weights itself.
+
+Swap the commute tools for your domain; keep `policy.yaml` as the checklist.
+
 ---
 
 ## Technical Stack
