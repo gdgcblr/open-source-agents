@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_failure, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
+from build_doctor_mcp.server import analyze_alert, analyze_failure, inspect_project, inspect_test_reports, summarize_diagnosis, verify_resolution
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -43,6 +43,38 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
 
         self.assertEqual("test-failure", result["diagnosis"]["failure_type"])
         self.assertIn("go.mod", result["project"]["manifests"])
+
+    def test_normalizes_latency_alert_without_claiming_a_root_cause(self):
+        payload = json.dumps({
+            "type": "latency",
+            "service_name": "payments-api",
+            "environment": "production",
+            "metric_name": "p95_latency_ms",
+            "current_value": 1200,
+            "threshold": 500,
+            "unit": "ms",
+            "alert_id": "alert-123",
+        })
+
+        result = json.loads(analyze_alert("new-relic", payload))
+
+        self.assertEqual("runtime-or-api", result["diagnosis"]["failure_type"])
+        self.assertTrue(result["trigger"]["breached"])
+        self.assertEqual("unconfirmed", result["diagnosis"]["root_cause_status"])
+        self.assertEqual("notify_and_collect_evidence_only", result["action_policy"])
+
+    def test_does_not_treat_an_unbreached_alert_as_a_production_incident(self):
+        payload = json.dumps({"event_type": "error_rate", "value": 1, "threshold": 5, "condition": "above"})
+
+        result = json.loads(analyze_alert("cubeapm", payload))
+
+        self.assertFalse(result["trigger"]["breached"])
+        self.assertEqual("low", result["diagnosis"]["confidence"])
+
+    def test_alert_adapter_rejects_non_json_provider_payloads(self):
+        result = json.loads(analyze_alert("custom-webhook", "not-json"))
+
+        self.assertIn("error", result)
 
     def test_parses_structured_test_report_evidence(self):
         report = """<testsuite name=\"unit\" tests=\"2\" failures=\"1\" errors=\"0\" skipped=\"0\">

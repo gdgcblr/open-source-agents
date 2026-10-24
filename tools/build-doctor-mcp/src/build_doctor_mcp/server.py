@@ -332,6 +332,118 @@ def analyze_failure(log: str) -> str:
     return json.dumps(_diagnosis(log), indent=2)
 
 
+def _find_value(payload: Any, names: set[str]) -> Any:
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key.lower().replace("-", "_") in names and isinstance(value, (str, int, float, bool)):
+                return value
+        for value in payload.values():
+            found = _find_value(value, names)
+            if found is not None:
+                return found
+    elif isinstance(payload, list):
+        for value in payload:
+            found = _find_value(value, names)
+            if found is not None:
+                return found
+    return None
+
+
+def _normalize_alert(provider: str, payload: dict[str, Any]) -> dict[str, Any]:
+    event_type = str(_find_value(payload, {"event_type", "event", "type", "alert_type", "condition_type"}) or "unknown").lower()
+    metric = str(_find_value(payload, {"metric", "metric_name", "signal", "policy_name", "condition_name"}) or "unknown")
+    normalized = {
+        "provider": provider or "unknown",
+        "event_type": event_type,
+        "service": _find_value(payload, {"service", "service_name", "entity", "application", "app_name"}),
+        "environment": _find_value(payload, {"environment", "env", "stage"}),
+        "metric": metric,
+        "value": _find_value(payload, {"value", "observed_value", "current_value", "actual"}),
+        "threshold": _find_value(payload, {"threshold", "threshold_value", "critical_threshold", "limit"}),
+        "unit": _find_value(payload, {"unit", "units"}),
+        "condition": str(_find_value(payload, {"condition", "operator", "comparison"}) or "above").lower(),
+        "timestamp": _find_value(payload, {"timestamp", "occurred_at", "opened_at", "created_at"}),
+        "correlation_id": _find_value(payload, {"correlation_id", "trace_id", "incident_id", "alert_id"}),
+    }
+    return {key: _redact(str(value)) if value is not None else None for key, value in normalized.items()}
+
+
+def _alert_breached(alert: dict[str, Any]) -> bool | None:
+    try:
+        value = float(alert["value"])
+        threshold = float(alert["threshold"])
+    except (TypeError, ValueError):
+        return None
+    condition = alert.get("condition", "above")
+    if condition in {"above", "greater_than", ">"}:
+        return value > threshold
+    if condition in {"at_or_above", "greater_than_or_equal", ">="}:
+        return value >= threshold
+    if condition in {"below", "less_than", "<"}:
+        return value < threshold
+    if condition in {"at_or_below", "less_than_or_equal", "<="}:
+        return value <= threshold
+    return None
+
+
+@mcp.tool()
+def analyze_alert(provider: str, payload: str, supporting_log: str = "") -> str:
+    """Normalize an observability alert and return deterministic evidence collection guidance."""
+    bounded_payload, truncated = _bounded_log(payload)
+    try:
+        parsed = json.loads(bounded_payload)
+    except json.JSONDecodeError:
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "payload must be valid JSON", "guardrails": ["No provider API was called."]})
+    if not isinstance(parsed, dict):
+        return json.dumps({"schema_version": SCHEMA_VERSION, "error": "payload must be a JSON object", "guardrails": ["No provider API was called."]})
+    alert = _normalize_alert(provider, parsed)
+    event_type = alert["event_type"]
+    category_map = {
+        "latency": ("runtime-or-api", "alert-latency-threshold", "Latency crossed a configured threshold; the alert does not identify the causal component."),
+        "error_rate": ("runtime-or-api", "alert-error-rate-threshold", "Error rate crossed a configured threshold; correlate requests and deployments before choosing a cause."),
+        "availability": ("runtime-or-api", "alert-availability-threshold", "Availability breached a threshold; determine whether the cause is dependency, network, deployment, or capacity related."),
+        "saturation": ("resource-exhaustion", "alert-resource-saturation", "A resource saturation signal breached a threshold; identify the constrained resource and workload."),
+        "deployment": ("container-or-ci", "alert-deployment-change", "A deployment event is present and may be a change correlation point, not proof of causation."),
+        "security": ("permissions-or-access", "alert-security-event", "A security or access alert requires identity, resource, and policy evidence before remediation."),
+        "certificate": ("network-or-tls", "alert-certificate-expiry", "A certificate signal requires endpoint and certificate-chain evidence."),
+        "queue_lag": ("resource-exhaustion", "alert-queue-lag", "Queue lag indicates a throughput or consumer-capacity problem until corroborated."),
+    }
+    failure_type, signal_id, statement = category_map.get(event_type, ("unknown", "alert-unknown-type", "The alert type is not recognized; do not infer a root cause from provider metadata alone."))
+    breach = _alert_breached(alert)
+    log_result = _diagnosis(supporting_log) if supporting_log else None
+    evidence = [f"Alert provider: {provider or 'unknown'}", f"Alert event type: {event_type}", f"Metric: {alert['metric']}"]
+    if breach is not None:
+        evidence.append(f"Threshold comparison: value {alert['value']} {alert['condition']} threshold {alert['threshold']} = {breach}.")
+    if log_result and log_result["evidence"]:
+        evidence.extend(f"Supporting log: {line}" for line in log_result["evidence"])
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "alert_contract_version": "1.0",
+        "alert": alert,
+        "trigger": {"breached": breach, "signal_id": signal_id},
+        "diagnosis": {
+            "failure_type": failure_type,
+            "statement": statement,
+            "confidence": "low" if failure_type == "unknown" or breach is not True else "moderate",
+            "evidence": evidence,
+            "root_cause_status": "unconfirmed",
+            "missing_evidence": ["Correlated traces, logs, deployment changes, and dependency health are required before root-cause attribution."],
+        },
+        "next_evidence": [
+            "Collect a bounded time window of correlated traces and structured logs.",
+            "Compare the alert window with deployment/configuration changes.",
+            "Check dependent service health and resource saturation using the observability provider.",
+        ],
+        "action_policy": "notify_and_collect_evidence_only",
+        "input_truncated": truncated,
+        "guardrails": [
+            "Provider-neutral webhook analysis; no provider API was called.",
+            "No production command, remediation, rollback, or alert mutation is performed.",
+            "A threshold breach is not proof of a root cause.",
+        ],
+    }, indent=2)
+
+
 @mcp.tool()
 def inspect_project(project_path: str) -> str:
     """Read bounded, redacted metadata from root project manifests without executing code."""
