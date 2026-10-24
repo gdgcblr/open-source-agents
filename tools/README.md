@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`adk-memshield`](adk-memshield/) | Drop-in Google ADK `BaseMemoryService` on PostgreSQL `pgvector` with `FORCE ROW LEVEL SECURITY` tenant, user and clearance isolation (on PyPI) | Library / Google ADK memory service | [@aalishan001](https://github.com/aalishan001) |

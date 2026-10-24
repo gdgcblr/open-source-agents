@@ -1,0 +1,45 @@
+name: adk-memshield
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: adk_memshield_db
+    ports:
+      - "54329:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_admin_pass
+      POSTGRES_DB: memshield
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d:ro
+      - adk_memshield_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d memshield"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: adk-memshield-runner:0.1.0
+    container_name: adk_memshield_test
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MEMSHIELD_DB_DSN: postgresql://memshield_app:memshield_pass@db:5432/memshield
+      MEMSHIELD_ADMIN_DSN: postgresql://postgres:postgres_admin_pass@db:5432/memshield
+      FASTEMBED_CACHE_PATH: /opt/fastembed_cache
+      PYTHONPATH: /app/src
+    volumes:
+      - .:/app
+
+volumes:
+  adk_memshield_pgdata:
+    name: adk_memshield_pgdata
+
+networks:
+  default:
+    name: adk_memshield_net

@@ -1,0 +1,82 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "adk-memshield"
+version = "0.1.0"
+description = "Zero-trust multi-tenant semantic memory service for Google ADK backed by PostgreSQL pgvector and Row-Level Security (RLS)."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [
+    { name = "Aalishan" }
+]
+keywords = [
+    "google-adk",
+    "agents",
+    "memory",
+    "pgvector",
+    "postgresql",
+    "row-level-security",
+    "multi-tenant",
+    "ai-security",
+    "memleak"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Framework :: AsyncIO",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "google-adk>=2.12.0,<3",
+    "psycopg[binary,pool]>=3.1.0",
+    "fastembed>=0.3.0",
+    "pydantic>=2.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aalishan001/adk-memshield"
+Repository = "https://github.com/aalishan001/adk-memshield"
+Issues = "https://github.com/aalishan001/adk-memshield/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "build>=1.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/adk_memshield"]
+
+# Ship the production schema inside the wheel so `pip install` users can apply it.
+# The benchmark-only baseline table (sql/02_benchmark_baseline.sql) is deliberately excluded.
+[tool.hatch.build.targets.wheel.force-include]
+"sql/01_schema.sql" = "adk_memshield/sql/01_schema.sql"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/sql",
+    "/tests",
+    "/benchmarks",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
