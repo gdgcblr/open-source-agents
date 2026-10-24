@@ -46,4 +46,5 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| pr-review-assistant | Generates concise PR review comments using LLMs. | Node.js (or Python) | @saiprasanna56 |
+
