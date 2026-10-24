@@ -179,6 +179,16 @@ def _diagnosis(log: str) -> dict[str, Any]:
     missing = list(dict.fromkeys(signal["missing"] for signal in top_signals))
     if tied:
         missing.append("Multiple failure categories have equal deterministic scores; provide more context before choosing a fix.")
+    independent_support = len(top_signals) >= 2 and len(evidence) >= 2 and not tied
+    evidence_assessment = {
+        "conclusion": "probable_cause" if independent_support else "observed_failure_only",
+        "root_cause_status": "unconfirmed",
+        "root_cause_confidence": "moderate" if independent_support else "low",
+        "sources": ["failure_log"],
+        "independent_signal_count": len(top_signals),
+        "evidence_line_count": len(evidence),
+        "basis": "Multiple matching signals support a probable cause, but only a follow-up result can verify recovery." if independent_support else "The output supports the failure category but does not independently establish its root cause.",
+    }
     return _result(
         top_type,
         f"The strongest deterministic evidence indicates a {top_type} failure.",
@@ -189,6 +199,7 @@ def _diagnosis(log: str) -> dict[str, Any]:
         missing,
         truncated,
         {"matched_signals": [signal["signal_id"] for signal in matches], "scores": {key: sum(signal["weight"] for signal in value) for key, value in ranked}},
+        evidence_assessment,
     )
 
 
@@ -202,7 +213,15 @@ def _result(
     missing_evidence: list[str],
     truncated: bool,
     scoring: dict[str, Any] | None = None,
+    evidence_assessment: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    assessment = evidence_assessment or {
+        "conclusion": "insufficient_evidence" if failure_type == "unknown" else "observed_failure_only",
+        "root_cause_status": "unconfirmed",
+        "root_cause_confidence": "low",
+        "sources": ["failure_log"] if evidence else [],
+        "basis": "A failure signal is not proof of its root cause.",
+    }
     return {
         "schema_version": SCHEMA_VERSION,
         "failure_type": failure_type,
@@ -211,6 +230,7 @@ def _result(
         "evidence": evidence,
         "hypotheses": hypotheses,
         "scoring": scoring or {"matched_signals": [], "scores": {}},
+        "evidence_assessment": assessment,
         "remediation_plan": remediation,
         "missing_evidence": missing_evidence,
         "verification": {
@@ -276,6 +296,30 @@ def summarize_diagnosis(log: str, project_path: str = "") -> str:
     """Combine scored failure analysis and optional project metadata as JSON."""
     project = json.loads(inspect_project(project_path)) if project_path else {"schema_version": SCHEMA_VERSION, "manifests": [], "content": ""}
     return json.dumps({"schema_version": SCHEMA_VERSION, "diagnosis": _diagnosis(log), "project": project}, indent=2)
+
+
+@mcp.tool()
+def verify_resolution(before_log: str, after_log: str) -> str:
+    """Compare supplied before/after output without executing a command or claiming unsupported success."""
+    before = _diagnosis(before_log)
+    after = _diagnosis(after_log)
+    after_clean = _redact(after_log or "")
+    success_signal = bool(re.search(r"(?i)(build\s+(?:success|passed)|tests?\s+passed|exit(?:ed)?\s+with\s+(?:code\s+)?0|http\s+(?:200|201|204))", after_clean))
+    resolved = before["failure_type"] != "unknown" and success_signal and after["failure_type"] == "unknown"
+    status = "verified" if resolved else "inconclusive"
+    reason = (
+        "The before output contained a supported failure and the after output contains a success signal without a supported failure."
+        if resolved
+        else "The supplied before/after evidence does not prove recovery; inspect the remaining failure or provide a clearer success result."
+    )
+    return json.dumps({
+        "schema_version": SCHEMA_VERSION,
+        "status": status,
+        "reason": reason,
+        "before": {"failure_type": before["failure_type"], "scoring": before["scoring"]},
+        "after": {"failure_type": after["failure_type"], "success_signal": success_signal, "scoring": after["scoring"]},
+        "guardrails": ["Comparison only; no commands or fixes were executed.", "Verification requires explicit before and after evidence."],
+    }, indent=2)
 
 
 def main() -> None:

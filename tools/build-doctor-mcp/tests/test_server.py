@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_doctor_mcp.server import analyze_failure, inspect_project, summarize_diagnosis
+from build_doctor_mcp.server import analyze_failure, inspect_project, summarize_diagnosis, verify_resolution
 
 
 class BuildDoctorMcpToolsTest(unittest.TestCase):
@@ -19,6 +19,8 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
         self.assertGreaterEqual(result["scoring"]["scores"]["compilation"], 4)
         self.assertTrue(result["remediation_plan"])
         self.assertEqual("pending", result["verification_status"])
+        self.assertEqual("observed_failure_only", result["evidence_assessment"]["conclusion"])
+        self.assertEqual("unconfirmed", result["evidence_assessment"]["root_cause_status"])
 
     def test_inspects_multiple_language_manifests_without_running_commands(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -47,6 +49,16 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
 
         self.assertEqual("low", result["confidence"])
         self.assertIn("Multiple failure categories", " ".join(result["missing_evidence"]))
+
+    def test_verifies_only_a_supported_before_after_recovery(self):
+        result = json.loads(verify_resolution("error: cannot find symbol", "BUILD SUCCESS"))
+
+        self.assertEqual("verified", result["status"])
+
+    def test_does_not_verify_when_after_output_still_fails(self):
+        result = json.loads(verify_resolution("error: cannot find symbol", "error: syntax error"))
+
+        self.assertEqual("inconclusive", result["status"])
 
     def test_rejects_missing_project_path(self):
         result = json.loads(inspect_project("/path/that/does/not/exist"))
