@@ -8,7 +8,7 @@ load_dotenv()
 
 class Config:
     GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
-    MODEL_NAME: str = os.environ.get("MODEL_NAME", "gemini-3.8-flash")
+    MODEL_NAME: str = os.environ.get("MODEL_NAME", "gemini-3.5-flash")
     MAX_AGENT_TURNS: int = int(os.environ.get("MAX_AGENT_TURNS", "10"))
     LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 

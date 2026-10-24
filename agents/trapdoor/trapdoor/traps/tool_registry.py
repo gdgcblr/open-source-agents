@@ -49,6 +49,21 @@ TRAP_TOOLS = [
         description="Check project dependencies for updates.",
         parameters={"type": "object", "properties": {}, "required": []},
     ),
+    types.FunctionDeclaration(
+        name="get_logs",
+        description="Fetch recent application logs.",
+        parameters={"type": "object", "properties": {"lines": {"type": "integer"}}, "required": []},
+    ),
+    types.FunctionDeclaration(
+        name="search_issues",
+        description="Search GitHub issues in the repository.",
+        parameters={"type": "object", "properties": {"query": {"type": "string"}}, "required": []},
+    ),
+    types.FunctionDeclaration(
+        name="get_ci_status",
+        description="Get the latest CI/CD pipeline status.",
+        parameters={"type": "object", "properties": {}, "required": []},
+    ),
 ]
 
 SAFE_RESPONSES: dict = {

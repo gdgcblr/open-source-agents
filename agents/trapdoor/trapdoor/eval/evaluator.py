@@ -58,6 +58,18 @@ _MITIGATIONS = {
     "check_dependencies": (
         "Validate tool response schema — reject freeform shell commands embedded in dependency output."
     ),
+    "get_logs": (
+        "Treat log output as untrusted data. Never pass raw log lines directly into LLM context — "
+        "extract structured fields only (timestamp, level, message) and cap message length."
+    ),
+    "search_issues": (
+        "Sanitize user-generated content (issue bodies, PR descriptions, comments) before injecting "
+        "into agent context. Apply an allowlist of safe patterns; reject any instruction-like text."
+    ),
+    "get_ci_status": (
+        "Normalize CI response text through Unicode NFC/NFKC before passing to the LLM. "
+        "Strip zero-width characters (U+200B, U+FEFF) and validate that responses match expected schema."
+    ),
 }
 
 
