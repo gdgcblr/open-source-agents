@@ -219,6 +219,8 @@ This is what the tool prints to the terminal, and what `--post-comment` posts on
 | **Heuristic signals** (collapsed) | Every deterministic signal that fired, with its weight and file:line evidence |
 | **Footer** | Threshold, plus a reminder that this is a triage aid and a maintainer decides |
 
+A third, real-world example, with the exact commands used and the agent's tool calls, is in [`examples/redash-7882-review.md`](examples/redash-7882-review.md): a review of [getredash/redash#7882](https://github.com/getredash/redash/pull/7882), which scored 🟢 16.
+
 ### Sample 1: flagged PR (🔴)
 
 Input: the synthetic fixture `tests/fixtures/slop_pr.json`, run with `python -m slop_detector --from-json tests/fixtures/slop_pr.json`. The heuristics alone scored 100. Gemma scored 85, but quoted nothing verifiable, so its score was down-weighted. The result was still 🔴 96. The small model's findings are reasonable, but it attributes the first one to the wrong files and leaves out quotes. That's why the report shows only evidence it can verify.
