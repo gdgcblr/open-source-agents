@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "policy-exception-triage"
+version = "0.1.0"
+description = "A policy-grounded agent for reviewing exception requests with human oversight."
+requires-python = ">=3.10"
+dependencies = ["python-dotenv>=1.0,<2"]
+
+[project.scripts]
+policy-triage = "policy_triage.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

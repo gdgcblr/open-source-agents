@@ -1,0 +1,611 @@
+{
+  "notice": "Synthetic review candidates only. Candidate decisions and citations are unreviewed suggestions derived from the fictional sample policy. A policy owner must adjudicate every case before it is promoted into reviewed-cases.json. Contains no real customer data.",
+  "cases": [
+    {
+      "case_id": "candidate-standard-day-0",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-standard-day-0",
+        "summary": "Synthetic unused item refund on delivery day",
+        "facts": {
+          "days_since_delivery": 0,
+          "delivery_delay_days": 0,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-standard-window"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 0,
+        "delivery_delay_days": 0,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-standard-day-7",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-standard-day-7",
+        "summary": "Synthetic defective item at standard refund boundary",
+        "facts": {
+          "days_since_delivery": 7,
+          "delivery_delay_days": 0,
+          "item_condition": "defective"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-standard-window"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 7,
+        "delivery_delay_days": 0,
+        "item_condition": "defective"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-standard-day-8",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-standard-day-8",
+        "summary": "Synthetic unused item one day outside standard window",
+        "facts": {
+          "days_since_delivery": 8,
+          "delivery_delay_days": 0,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 8,
+        "delivery_delay_days": 0,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-standard-day-4-defective",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-standard-day-4-defective",
+        "summary": "Synthetic defective item inside standard window",
+        "facts": {
+          "days_since_delivery": 4,
+          "delivery_delay_days": 0,
+          "item_condition": "defective"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-standard-window"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 4,
+        "delivery_delay_days": 0,
+        "item_condition": "defective"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-standard-without-delay",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-standard-without-delay",
+        "summary": "Synthetic defective item with no delivery-delay fact",
+        "facts": {
+          "days_since_delivery": 4,
+          "item_condition": "defective"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-standard-window"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 4,
+        "item_condition": "defective"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-delay-day-8",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-delay-day-8",
+        "summary": "Synthetic late request with qualifying delivery delay",
+        "facts": {
+          "days_since_delivery": 8,
+          "delivery_delay_days": 5,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-delivery-delay-exception"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 8,
+        "delivery_delay_days": 5,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-delay-day-9-defective",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-delay-day-9-defective",
+        "summary": "Synthetic defective item with a five-day delivery delay",
+        "facts": {
+          "days_since_delivery": 9,
+          "delivery_delay_days": 5,
+          "item_condition": "defective"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-delivery-delay-exception"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 9,
+        "delivery_delay_days": 5,
+        "item_condition": "defective"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-delay-day-14-boundary",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-delay-day-14-boundary",
+        "summary": "Synthetic delayed delivery at exception-window boundary",
+        "facts": {
+          "days_since_delivery": 14,
+          "delivery_delay_days": 5,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": ["refund-delivery-delay-exception"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 14,
+        "delivery_delay_days": 5,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-delay-below-threshold",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-delay-below-threshold",
+        "summary": "Synthetic late refund with four-day delivery delay",
+        "facts": {
+          "days_since_delivery": 9,
+          "delivery_delay_days": 4,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 9,
+        "delivery_delay_days": 4,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-delay-missing-fact",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-delay-missing-fact",
+        "summary": "Synthetic late request missing delivery-delay evidence",
+        "facts": {
+          "days_since_delivery": 9,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 9,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-outside-day-15",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-outside-day-15",
+        "summary": "Synthetic eligible item outside exception period",
+        "facts": {
+          "days_since_delivery": 15,
+          "delivery_delay_days": 0,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "deny",
+      "candidate_citations": ["refund-outside-eligible-windows"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 15,
+        "delivery_delay_days": 0,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-outside-day-20-delayed",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-outside-day-20-delayed",
+        "summary": "Synthetic eligible item outside exception window despite delay",
+        "facts": {
+          "days_since_delivery": 20,
+          "delivery_delay_days": 7,
+          "item_condition": "defective"
+        }
+      },
+      "candidate_decision": "deny",
+      "candidate_citations": ["refund-outside-eligible-windows"],
+      "candidate_expected_facts": {
+        "days_since_delivery": 20,
+        "delivery_delay_days": 7,
+        "item_condition": "defective"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-ineligible-opened-item",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-ineligible-opened-item",
+        "summary": "Synthetic opened item in the standard window",
+        "facts": {
+          "days_since_delivery": 3,
+          "delivery_delay_days": 0,
+          "item_condition": "opened"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 3,
+        "delivery_delay_days": 0,
+        "item_condition": "opened"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-ineligible-delayed-item",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-ineligible-delayed-item",
+        "summary": "Synthetic opened item with delayed delivery",
+        "facts": {
+          "days_since_delivery": 9,
+          "delivery_delay_days": 5,
+          "item_condition": "opened"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 9,
+        "delivery_delay_days": 5,
+        "item_condition": "opened"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-missing-condition",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-missing-condition",
+        "summary": "Synthetic request missing item-condition evidence",
+        "facts": {
+          "days_since_delivery": 4,
+          "delivery_delay_days": 0
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 4,
+        "delivery_delay_days": 0
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-missing-days",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-missing-days",
+        "summary": "Synthetic request missing delivery date interval",
+        "facts": {
+          "delivery_delay_days": 5,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "delivery_delay_days": 5,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-missing-two-facts",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-missing-two-facts",
+        "summary": "Synthetic request missing delivery timing and condition",
+        "facts": {
+          "delivery_delay_days": 0
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "delivery_delay_days": 0
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-standard-delayed-both-rules",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-standard-delayed-both-rules",
+        "summary": "Synthetic standard-window request matching two approving rules",
+        "facts": {
+          "days_since_delivery": 5,
+          "delivery_delay_days": 5,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "approve",
+      "candidate_citations": [
+        "refund-standard-window",
+        "refund-delivery-delay-exception"
+      ],
+      "candidate_expected_facts": {
+        "days_since_delivery": 5,
+        "delivery_delay_days": 5,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-null-delay",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-null-delay",
+        "summary": "Synthetic request explicitly containing a null delay value",
+        "facts": {
+          "days_since_delivery": 9,
+          "delivery_delay_days": null,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 9,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-unknown-condition",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-unknown-condition",
+        "summary": "Synthetic request with an unknown item-condition category",
+        "facts": {
+          "days_since_delivery": 6,
+          "delivery_delay_days": 0,
+          "item_condition": "unknown"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 6,
+        "delivery_delay_days": 0,
+        "item_condition": "unknown"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-negative-delay",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-negative-delay",
+        "summary": "Synthetic request with impossible negative delivery delay",
+        "facts": {
+          "days_since_delivery": 9,
+          "delivery_delay_days": -1,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": 9,
+        "delivery_delay_days": -1,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    },
+    {
+      "case_id": "candidate-negative-days",
+      "review_status": "candidate_not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "",
+      "policy_sha256": "",
+      "request": {
+        "case_id": "candidate-negative-days",
+        "summary": "Synthetic request with impossible negative days since delivery",
+        "facts": {
+          "days_since_delivery": -2,
+          "delivery_delay_days": 0,
+          "item_condition": "unused"
+        }
+      },
+      "candidate_decision": "escalate",
+      "candidate_citations": [],
+      "candidate_expected_facts": {
+        "days_since_delivery": -2,
+        "delivery_delay_days": 0,
+        "item_condition": "unused"
+      },
+      "human_decision": null,
+      "expected_citations": [],
+      "expected_facts": {},
+      "baseline_seconds": null,
+      "assisted_seconds": null
+    }
+  ]
+}

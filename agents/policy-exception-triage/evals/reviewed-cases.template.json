@@ -1,0 +1,30 @@
+{
+  "notice": "Do not label cases reviewed until the policy owner has adjudicated them. Remove all personal data and use pseudonymous reviewer IDs.",
+  "cases": [
+    {
+      "case_id": "replace-with-pseudonymous-case-id",
+      "review_status": "not_reviewed",
+      "candidate_only": true,
+      "reviewer_id": "reviewer-pseudonym",
+      "policy_sha256": "replace-with-loaded-policy-sha256",
+      "request": {
+        "case_id": "replace-with-pseudonymous-case-id",
+        "summary": "Synthetic or minimized case summary",
+        "facts": {
+          "days_since_delivery": 9,
+          "delivery_delay_days": 5,
+          "item_condition": "unused"
+        }
+      },
+      "human_decision": "approve",
+      "expected_citations": ["refund-delivery-delay-exception"],
+      "expected_facts": {
+        "days_since_delivery": 9,
+        "delivery_delay_days": 5,
+        "item_condition": "unused"
+      },
+      "baseline_seconds": 300,
+      "assisted_seconds": 180
+    }
+  ]
+}

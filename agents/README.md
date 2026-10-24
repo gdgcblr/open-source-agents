@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`policy-exception-triage`](policy-exception-triage/) | Human-reviewed exception recommendations grounded in explicit policy rules, with agent, tool, and memory evaluations. | Python, SQLite | — |

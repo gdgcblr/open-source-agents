@@ -1,0 +1,17 @@
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+
+# Local case memory and evaluation output
+*.sqlite3
+*.db
+evaluation-results.json

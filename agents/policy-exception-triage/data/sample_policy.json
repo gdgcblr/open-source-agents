@@ -1,0 +1,62 @@
+{
+  "name": "Sample Retail Refund Policy",
+  "version": "1.0",
+  "notice": "Fictional demonstration policy. Replace with an organization's approved policy before use.",
+  "fact_constraints": {
+    "days_since_delivery": {
+      "minimum": 0,
+      "integer": true
+    },
+    "delivery_delay_days": {
+      "minimum": 0,
+      "integer": true
+    }
+  },
+  "rules": [
+    {
+      "id": "refund-standard-window",
+      "when": [
+        { "field": "days_since_delivery", "operator": "lte", "value": 7 },
+        { "field": "item_condition", "operator": "in", "value": ["unused", "defective"] }
+      ],
+      "recommendation": "approve",
+      "rationale": "The request is within the 7-day standard window and the item condition is eligible."
+    },
+    {
+      "id": "refund-delivery-delay-exception",
+      "when": [
+        { "field": "days_since_delivery", "operator": "lte", "value": 14 },
+        { "field": "delivery_delay_days", "operator": "gte", "value": 5 },
+        { "field": "item_condition", "operator": "in", "value": ["unused", "defective"] }
+      ],
+      "recommendation": "approve",
+      "rationale": "The request is within 14 days, the delivery was delayed by at least 5 days, and the item condition is eligible."
+    },
+    {
+      "id": "refund-outside-eligible-windows",
+      "when": [
+        { "field": "days_since_delivery", "operator": "gt", "value": 14 },
+        { "field": "item_condition", "operator": "in", "value": ["unused", "defective"] }
+      ],
+      "recommendation": "deny",
+      "rationale": "The request is outside the sample policy's standard and delivery-delay exception windows."
+    }
+  ],
+  "clauses": [
+    {
+      "id": "clause-standard-window",
+      "text": "Eligible unused or defective items may be refunded within 7 days of delivery.",
+      "tags": ["refund", "standard", "days", "unused", "defective"]
+    },
+    {
+      "id": "clause-delivery-delay",
+      "text": "A delivery delay of 5 or more days may qualify for an exception when the request is within 14 days of delivery.",
+      "tags": ["refund", "delivery", "delay", "exception", "late", "days"]
+    },
+    {
+      "id": "clause-outside-window",
+      "text": "Requests outside the stated refund windows require human review before any final decision.",
+      "tags": ["refund", "outside", "window", "review", "late"]
+    }
+  ]
+}
