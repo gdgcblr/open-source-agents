@@ -1,0 +1,12 @@
+version: 1
+servers:
+  old:
+    command: python
+    args: [toy_server.py, v1]
+  new:
+    command: python
+    args: [toy_server.py, v2]
+calls:
+  - {id: add-basic, tool: add, arguments: {a: 2, b: 3}, read_only: true}
+  - {id: greet-world, tool: greet, arguments: {name: World}, read_only: true}
+  - {id: leak-check, tool: leak, read_only: true}
