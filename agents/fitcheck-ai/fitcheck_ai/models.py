@@ -13,6 +13,7 @@ Everything is driven by env vars; see .env.example.
 
 from __future__ import annotations
 
+import logging
 import os
 
 from google.adk.models.gemma_llm import Gemma
@@ -20,6 +21,8 @@ from google.adk.models.google_llm import Gemini
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.models.llm_request import LlmRequest
 from google.genai import types
+
+logger = logging.getLogger("fitcheck")
 
 HOSTED_DEFAULT = "gemma-4-26b-a4b-it"   # MoE: fast & cheap, strong enough for styling
 LOCAL_DEFAULT = "ollama_chat/gemma3:4b"
@@ -60,11 +63,32 @@ class _SafeGemma3(Gemma):
         return await super()._preprocess_request(llm_request)
 
 
+class _GemmaOnGeminiAPI(Gemini):
+    """Gemma 4 on the Gemini API. If the API ever rejects our thinking setting
+    (400 mentioning "thinking"), drop it and retry once instead of failing."""
+
+    async def generate_content_async(self, llm_request: LlmRequest, stream: bool = False):
+        from google.genai import errors as genai_errors
+
+        try:
+            async for resp in super().generate_content_async(llm_request, stream):
+                yield resp
+        except genai_errors.ClientError as exc:
+            cfg = llm_request.config
+            if exc.code == 400 and "thinking" in str(exc).lower() and cfg and cfg.thinking_config:
+                logger.warning("Gemini API rejected thinking_config (%s) — retrying without it.", exc)
+                cfg.thinking_config = None
+                async for resp in super().generate_content_async(llm_request, stream):
+                    yield resp
+            else:
+                raise
+
+
 def build_model(model_id: str):
     if model_id.startswith("gemma-3"):
         return _SafeGemma3(model=model_id, retry_options=RETRY)
     if is_hosted(model_id):
-        return Gemini(model=model_id, retry_options=RETRY)
+        return _GemmaOnGeminiAPI(model=model_id, retry_options=RETRY)
     return LiteLlm(model=model_id)
 
 

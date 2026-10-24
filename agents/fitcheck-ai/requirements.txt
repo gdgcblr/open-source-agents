@@ -2,6 +2,7 @@ google-adk>=2.13
 litellm>=1.50
 fastapi>=0.110
 uvicorn>=0.29
+watchfiles>=0.21
 pillow>=10.0
 numpy>=1.26
 python-dotenv>=1.0

@@ -222,4 +222,12 @@ app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server:app", host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")))
+
+    # Auto-reload on code changes (FITCHECK_RELOAD=0 to disable). Only the app
+    # code is watched — never .venv — so it stays light.
+    reload = os.getenv("FITCHECK_RELOAD", "1") != "0"
+    root = Path(__file__).parent
+    uvicorn.run("server:app", host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")),
+                reload=reload,
+                reload_dirs=[str(root / "fitcheck_ai"), str(root / "static")] if reload else None,
+                reload_includes=["*.py", "*.html", "*.json"] if reload else None)

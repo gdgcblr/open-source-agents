@@ -38,7 +38,7 @@ def test_factory_picks_right_adk_class(monkeypatch):
     g4 = models.build_model("gemma-4-26b-a4b-it")
     g3 = models.build_model("gemma-3-27b-it")
     local = models.build_model("ollama_chat/gemma3:4b")
-    assert type(g4) is Gemini and g4.retry_options.attempts >= 3
+    assert isinstance(g4, Gemini) and g4.retry_options.attempts >= 3
     assert 429 in g4.retry_options.http_status_codes
     assert isinstance(g3, models._SafeGemma3)
     assert isinstance(local, LiteLlm)
@@ -184,3 +184,32 @@ def test_error_messages_are_classified_correctly(monkeypatch):
     assert "quota" in server.explain_error(errors.ClientError(429, {"error": {"message": "Resource exhausted"}}))
     assert "isn't available" in server.explain_error(errors.ClientError(404, {"error": {"message": "models/x not found"}}))
     assert "API key" in server.explain_error(errors.ClientError(400, {"error": {"message": "API key not valid", "status": "INVALID_ARGUMENT"}}))
+
+
+def test_thinking_rejected_falls_back(monkeypatch):
+    import asyncio
+    from google.genai import errors
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    fake = FakeGenAI()
+    seen = []
+
+    async def gen(model, contents, config):
+        seen.append(config.thinking_config)
+        if config.thinking_config is not None:
+            raise errors.ClientError(400, {"error": {"message": "thinking_level is not supported", "status": "INVALID_ARGUMENT"}})
+        return await FakeGenAI._gen(fake, model, contents, config)
+
+    fake.aio.models.generate_content = gen
+    m = models.build_model("gemma-4-26b-a4b-it")
+    m.client = fake
+    req = LlmRequest(model="gemma-4-26b-a4b-it",
+                     contents=[types.Content(role="user", parts=[types.Part(text="hi")])],
+                     config=models.generation_config("gemma-4-26b-a4b-it", 0.5))
+    req.config.system_instruction = "You are the PERSONAL STYLIST"
+
+    async def run():
+        return [r async for r in m.generate_content_async(req)]
+
+    out = asyncio.run(run())
+    assert seen[0] is not None and seen[-1] is None
+    assert any(p.text and "SCORE" in p.text for r in out for p in r.content.parts)
