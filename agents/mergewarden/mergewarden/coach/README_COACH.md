@@ -92,10 +92,16 @@ From `agents/mergewarden/` with the project venv and a Gemini key in `.env` (`GO
   own language, which WhatsApp always uses). It has chat bubbles, a language tag on every reply,
   a 🎤 button that records a voice note in the browser, points/badge toasts, and draft files as attachments.
   "New student" starts a fresh identity. No accounts needed.
-- **▶ Demo** plays a sample student, Priya (2nd-year CSE, Python basics, empty GitHub, curious about AI). Her
+- The simulator looks like a WhatsApp Business chat (header with avatar and "Business account", doodle
+  wallpaper, bubbles with tails and ticks, "typing…" in the header, mic/send button like the app). New student,
+  Leaderboard and the demo live in the **⋮** menu.
+- **Demo:** a sample student, Priya (2nd-year CSE, Python basics, empty GitHub, curious about AI), whose
   messages type themselves out while every coach reply comes live from the real agent: onboarding, matched
-  picks, "what is open source?", mentoring, FIX_PLAN.md with a Copilot prompt, PR steps for Windows, and the
-  leaderboard. Click it again to stop.
+  picks, "what is open source?", mentoring, FIX_PLAN.md with a Copilot prompt, PR steps for Windows and the
+  leaderboard. While it plays, New student and Leaderboard are hidden.
+  - For a presentation, open `http://localhost:8090/?demo=1`: the chat starts empty and the demo begins when
+    you type **hello** (or hi / hey), just like a student opening the chat on WhatsApp.
+  - Or start it any time from **⋮ → ▶ Play demo student**; the same menu item stops it.
 - When a review finishes, the simulator picks it up from `/api/inbox` (polled every 4 s) and shows a
   verdict chip on the message. Over WhatsApp it is sent through the Twilio REST API. In `chat` it is printed.
 - `http://localhost:8090/leaderboard` is the public leaderboard (GitHub handles or pseudonyms only).

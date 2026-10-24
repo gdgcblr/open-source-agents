@@ -3,121 +3,162 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#008069">
 <title>Namma Commit</title>
 <style>
   :root {
-    --bg: #efeae2; --panel: #f0f2f5; --header: #008069; --header-ink: #fff;
-    --me: #d9fdd3; --them: #ffffff; --ink: #111b21; --muted: #667781;
-    --accent: #00a884; --chip: #ffffff; --toast: #111b21; --toast-ink: #fff; --doc: #f5f6f6;
-    --pattern: rgba(0,0,0,.035);
+    --app: #d1d7db; --header: #008069; --header-ink: #fff; --header-sub: rgba(255,255,255,.82);
+    --wall: #efeae2; --doodle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='%23000' stroke-opacity='.045' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 30h22a6 6 0 0 1 6 6v10a6 6 0 0 1-6 6H32l-8 6v-6h-4a6 6 0 0 1-6-6V36a6 6 0 0 1 6-6z'/%3E%3Ccircle cx='110' cy='40' r='10'/%3E%3Cpath d='M104 38h.01M116 38h.01M105 44c2 2.5 8 2.5 10 0'/%3E%3Cpath d='M180 24l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z'/%3E%3Cpath d='M40 120c0-6 8-9 12-3 4-6 12-3 12 3 0 8-12 14-12 14s-12-6-12-14z'/%3E%3Crect x='96' y='104' width='30' height='22' rx='4'/%3E%3Cpath d='M101 112h20M101 118h12'/%3E%3Cpath d='M170 110l10 10-10 10M190 130h12'/%3E%3Cpath d='M30 190a14 14 0 0 1 28 0M44 176v-6'/%3E%3Ccircle cx='120' cy='186' r='5'/%3E%3Cpath d='M120 170v6M120 196v6M104 186h6M130 186h6'/%3E%3Cpath d='M176 176h24v20h-24zM182 176v-5h12v5'/%3E%3C/svg%3E");
+    --in: #ffffff; --out: #d9fdd3; --ink: #111b21; --muted: #667781; --tick: #53bdeb;
+    --panel: #f0f2f5; --field: #ffffff; --icon: #54656f; --accent: #00a884; --link: #027eb5;
+    --chip: #ffffff; --chip-ink: #008069; --day: #ffffff; --day-ink: #54656f;
+    --notice: #ffeecd; --notice-ink: #54656f; --menu: #ffffff; --menu-hover: #f5f6f6;
+    --shadow: 0 1px .5px rgba(11,20,26,.13); --toast: #111b21; --toast-ink: #fff; --doc: rgba(0,0,0,.04);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0b141a; --panel: #202c33; --header: #202c33; --header-ink: #e9edef;
-      --me: #005c4b; --them: #202c33; --ink: #e9edef; --muted: #8696a0;
-      --accent: #00a884; --chip: #202c33; --toast: #e9edef; --toast-ink: #111b21; --doc: #1d282f;
-      --pattern: rgba(255,255,255,.025);
+      --app: #0c1317; --header: #202c33; --header-ink: #e9edef; --header-sub: #8696a0;
+      --wall: #0b141a; --doodle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='%23fff' stroke-opacity='.03' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 30h22a6 6 0 0 1 6 6v10a6 6 0 0 1-6 6H32l-8 6v-6h-4a6 6 0 0 1-6-6V36a6 6 0 0 1 6-6z'/%3E%3Ccircle cx='110' cy='40' r='10'/%3E%3Cpath d='M104 38h.01M116 38h.01M105 44c2 2.5 8 2.5 10 0'/%3E%3Cpath d='M180 24l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z'/%3E%3Cpath d='M40 120c0-6 8-9 12-3 4-6 12-3 12 3 0 8-12 14-12 14s-12-6-12-14z'/%3E%3Crect x='96' y='104' width='30' height='22' rx='4'/%3E%3Cpath d='M101 112h20M101 118h12'/%3E%3Cpath d='M170 110l10 10-10 10M190 130h12'/%3E%3Cpath d='M30 190a14 14 0 0 1 28 0M44 176v-6'/%3E%3Ccircle cx='120' cy='186' r='5'/%3E%3Cpath d='M120 170v6M120 196v6M104 186h6M130 186h6'/%3E%3Cpath d='M176 176h24v20h-24zM182 176v-5h12v5'/%3E%3C/svg%3E");
+      --in: #202c33; --out: #005c4b; --ink: #e9edef; --muted: #8696a0; --tick: #53bdeb;
+      --panel: #202c33; --field: #2a3942; --icon: #aebac1; --accent: #00a884; --link: #53bdeb;
+      --chip: #202c33; --chip-ink: #00a884; --day: #182229; --day-ink: #8696a0;
+      --notice: #182229; --notice-ink: #ffd279; --menu: #233138; --menu-hover: #182229;
+      --shadow: 0 1px .5px rgba(11,20,26,.4); --toast: #e9edef; --toast-ink: #111b21; --doc: rgba(0,0,0,.18);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0b141a; --panel: #202c33; --header: #202c33; --header-ink: #e9edef;
-    --me: #005c4b; --them: #202c33; --ink: #e9edef; --muted: #8696a0;
-    --accent: #00a884; --chip: #202c33; --toast: #e9edef; --toast-ink: #111b21; --doc: #1d282f;
-    --pattern: rgba(255,255,255,.025);
+    --app: #0c1317; --header: #202c33; --header-ink: #e9edef; --header-sub: #8696a0; --wall: #0b141a;
+    --in: #202c33; --out: #005c4b; --ink: #e9edef; --muted: #8696a0; --panel: #202c33; --field: #2a3942;
+    --icon: #aebac1; --link: #53bdeb; --chip: #202c33; --chip-ink: #00a884; --day: #182229; --day-ink: #8696a0;
+    --notice: #182229; --notice-ink: #ffd279; --menu: #233138; --menu-hover: #182229;
+    --toast: #e9edef; --toast-ink: #111b21; --doc: rgba(0,0,0,.18);
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body {
-    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Kannada", "Noto Sans Devanagari", sans-serif;
-    background: var(--bg); color: var(--ink); display: flex; justify-content: center;
+    font: 14.2px/1.38 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Noto Sans",
+      "Noto Sans Devanagari", "Noto Sans Kannada", "Noto Sans Malayalam", sans-serif;
+    background: var(--app); color: var(--ink); display: flex; justify-content: center;
   }
-  .app { width: 100%; max-width: 760px; height: 100dvh; display: flex; flex-direction: column; background: var(--bg); }
-  header {
-    background: var(--header); color: var(--header-ink); display: flex; align-items: center; gap: 12px;
-    padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
-  }
-  .avatar { width: 40px; height: 40px; border-radius: 50%; background: #25d366; display: grid; place-items: center; font-size: 22px; flex: none; }
-  .who { flex: 1; min-width: 0; }
-  .who b { display: block; font-size: 16px; }
-  .who span { font-size: 12.5px; opacity: .85; }
-  header a, header button {
-    color: var(--header-ink); background: none; border: 1px solid currentColor; border-radius: 16px;
-    padding: 4px 10px; font-size: 12.5px; text-decoration: none; cursor: pointer; opacity: .9; white-space: nowrap;
-  }
-  #chat {
-    flex: 1; overflow-y: auto; padding: 14px 16px 8px;
-    background-image: radial-gradient(var(--pattern) 1px, transparent 1px); background-size: 18px 18px;
-  }
-  .notice {
-    margin: 0 auto 12px; max-width: 90%; text-align: center; font-size: 12.5px; color: var(--muted);
-    background: var(--chip); padding: 6px 10px; border-radius: 8px;
-  }
-  .row { display: flex; margin: 4px 0; }
+  svg { display: block; }
+  [hidden] { display: none !important; }  /* never let a display rule un-hide an element */
+  .app { position: relative; width: 100%; max-width: 900px; height: 100dvh; display: flex; flex-direction: column;
+    background: var(--wall); box-shadow: 0 0 0 1px rgba(0,0,0,.06); overflow: hidden; }
+
+  /* Header (WhatsApp Business chat) */
+  header { display: flex; align-items: center; gap: 6px; background: var(--header); color: var(--header-ink);
+    padding: 8px 6px 8px 4px; padding-top: max(8px, env(safe-area-inset-top)); min-height: 60px; z-index: 3; }
+  .icon-btn { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%;
+    background: transparent; color: inherit; cursor: pointer; }
+  .icon-btn:hover { background: rgba(255,255,255,.1); }
+  .avatar { width: 40px; height: 40px; flex: none; border-radius: 50%; background: #25d366; display: grid; place-items: center;
+    font-size: 21px; }
+  .who { flex: 1; min-width: 0; padding-left: 6px; }
+  .who b { display: block; font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who span { display: block; font-size: 13px; color: var(--header-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who span.typing { color: var(--header-ink); }
+  .menu { position: absolute; top: 56px; right: 8px; min-width: 200px; background: var(--menu); color: var(--ink);
+    border-radius: 6px; padding: 8px 0; box-shadow: 0 2px 5px rgba(11,20,26,.26), 0 2px 10px rgba(11,20,26,.16); z-index: 6; }
+  .menu[hidden] { display: none; }
+  .menu button, .menu a { display: block; width: 100%; padding: 11px 22px; border: 0; background: none; color: inherit;
+    font: inherit; font-size: 14.5px; text-align: left; text-decoration: none; cursor: pointer; }
+  .menu button:hover, .menu a:hover { background: var(--menu-hover); }
+  .menu [hidden] { display: none; }
+
+  /* Chat */
+  #chat { flex: 1; overflow-y: auto; padding: 12px 5% 8px; background-color: var(--wall); background-image: var(--doodle);
+    background-size: 220px 220px; }
+  .day { margin: 4px auto 10px; width: fit-content; padding: 5px 12px; border-radius: 7.5px; background: var(--day);
+    color: var(--day-ink); font-size: 12.5px; box-shadow: var(--shadow); text-transform: uppercase; letter-spacing: .02em; }
+  .notice { margin: 0 auto 12px; max-width: 520px; padding: 6px 12px; border-radius: 7.5px; background: var(--notice);
+    color: var(--notice-ink); font-size: 12.5px; text-align: center; box-shadow: var(--shadow); }
+  .row { display: flex; margin: 2px 0 6px; }
   .row.me { justify-content: flex-end; }
-  .bubble {
-    max-width: min(82%, 520px); padding: 7px 10px 6px; border-radius: 10px; box-shadow: 0 1px .5px rgba(0,0,0,.13);
-    background: var(--them); white-space: pre-wrap; overflow-wrap: anywhere;
-  }
-  .me .bubble { background: var(--me); border-top-right-radius: 2px; }
-  .them .bubble { border-top-left-radius: 2px; }
-  .bubble a { color: #027eb5; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bubble a { color: #53bdeb; } }
-  :root[data-theme="dark"] .bubble a { color: #53bdeb; }
-  .bubble code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; background: rgba(127,127,127,.15); padding: 1px 4px; border-radius: 4px; }
-  .meta { display: flex; gap: 6px; justify-content: flex-end; align-items: center; margin-top: 3px; font-size: 11px; color: var(--muted); }
-  .lang { border: 1px solid var(--muted); border-radius: 8px; padding: 0 5px; }
+  .bubble { position: relative; max-width: min(78%, 560px); padding: 6px 8px 8px 9px; border-radius: 7.5px;
+    background: var(--in); box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .me .bubble { background: var(--out); }
+  .them .bubble { border-top-left-radius: 0; }
+  .me .bubble { border-top-right-radius: 0; }
+  .them .bubble::before, .me .bubble::before { content: ""; position: absolute; top: 0; width: 8px; height: 13px; }
+  .them .bubble::before { left: -8px; background: var(--in); clip-path: polygon(0 0, 100% 0, 100% 100%); }
+  .me .bubble::before { right: -8px; background: var(--out); clip-path: polygon(0 0, 100% 0, 0 100%); }
+  .bubble a { color: var(--link); }
+  .bubble code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; background: rgba(127,127,127,.16);
+    padding: 1px 4px; border-radius: 4px; }
+  .meta { float: right; display: inline-flex; align-items: center; gap: 3px; margin: 8px 0 -4px 12px; font-size: 11px;
+    color: var(--muted); line-height: 1; white-space: nowrap; }
+  .meta .ticks { color: var(--tick); }
+  .lang { border: 1px solid var(--muted); border-radius: 6px; padding: 1px 4px; margin-right: 4px; }
   .heard { font-size: 12.5px; color: var(--muted); font-style: italic; margin-top: 4px; }
-  .doc {
-    display: flex; align-items: center; gap: 10px; margin-top: 6px; padding: 8px 10px; border-radius: 8px;
-    background: var(--doc); color: var(--ink); text-decoration: none;
-  }
-  .doc .ic { font-size: 22px; }
-  .typing .bubble { color: var(--muted); }
-  .review { display: flex; width: fit-content; align-items: center; gap: 8px; margin-bottom: 6px; padding: 4px 10px; border-radius: 12px;
-    font-weight: 600; font-size: 13px; background: rgba(127,127,127,.15); }
+  .doc { display: flex; align-items: center; gap: 10px; margin: 6px 0 2px; padding: 10px; border-radius: 6px;
+    background: var(--doc); color: var(--ink); text-decoration: none; }
+  .doc .ext { width: 30px; height: 36px; flex: none; border-radius: 3px; background: #6f7d86; color: #fff; display: grid;
+    place-items: end center; padding-bottom: 5px; font-size: 9px; font-weight: 700; letter-spacing: .02em; }
+  .doc .ext.py { background: #3d7bd9; } .doc .ext.md { background: #4a5a64; }
+  .doc small { display: block; color: var(--muted); font-size: 11.5px; }
+  .review { display: flex; width: fit-content; align-items: center; gap: 8px; margin-bottom: 6px; padding: 4px 10px;
+    border-radius: 12px; font-weight: 600; font-size: 13px; background: rgba(127,127,127,.15); }
   .review.ready { background: rgba(0,168,132,.18); }
-  .review.changes_requested { background: rgba(245,179,1,.2); }
+  .review.changes_requested { background: rgba(245,179,1,.22); }
   .review.blocked { background: rgba(229,57,53,.2); }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 16px; }
+
+  /* Quick replies */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 6px 5% 8px; background: transparent; }
   .chips[hidden] { display: none; }
-  .chips button {
-    background: var(--chip); color: var(--ink); border: 1px solid rgba(127,127,127,.25); border-radius: 16px;
-    padding: 6px 12px; font: inherit; font-size: 13.5px; cursor: pointer;
-  }
-  form {
-    display: flex; gap: 8px; align-items: flex-end; padding: 8px 10px; background: var(--panel);
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
-  }
-  textarea {
-    flex: 1; min-width: 0; resize: none; border: none; outline: none; border-radius: 20px; padding: 10px 14px;
-    font: inherit; background: var(--them); color: var(--ink); max-height: 120px;
-  }
-  .round {
-    width: 44px; height: 44px; flex: none; border-radius: 50%; border: none; background: var(--accent); color: #fff;
-    font-size: 20px; cursor: pointer; display: grid; place-items: center;
-  }
-  .round.rec { background: #e53935; animation: pulse 1s infinite; }
-  @keyframes pulse { 50% { transform: scale(1.08); } }
-  #rec-time { font-size: 12px; color: var(--muted); align-self: center; min-width: 34px; }
-  #toast {
-    position: fixed; left: 50%; top: 76px; transform: translate(-50%, -20px); opacity: 0; transition: .3s;
-    background: var(--toast); color: var(--toast-ink); padding: 10px 16px; border-radius: 20px; font-weight: 600;
-    pointer-events: none; max-width: calc(100% - 32px); text-align: center; z-index: 5;
-  }
+  .chips button { background: var(--chip); color: var(--chip-ink); border: 0; border-radius: 18px; padding: 8px 14px;
+    font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; box-shadow: var(--shadow); }
+
+  /* Composer */
+  form { display: flex; gap: 6px; align-items: flex-end; padding: 6px 8px; background: var(--panel);
+    padding-bottom: max(6px, env(safe-area-inset-bottom)); z-index: 2; }
+  .field { flex: 1; min-width: 0; display: flex; align-items: flex-end; gap: 2px; background: var(--field);
+    border-radius: 24px; padding: 2px 6px; color: var(--icon); }
+  .field .icon-btn { width: 38px; height: 42px; color: var(--icon); }
+  .field .icon-btn:hover { background: transparent; color: var(--ink); }
+  textarea { flex: 1; min-width: 0; resize: none; border: none; outline: none; background: transparent; color: var(--ink);
+    font: inherit; font-size: 15px; padding: 11px 4px; max-height: 120px; }
+  textarea::placeholder { color: var(--muted); }
+  #rec-time { flex: 1; padding: 11px 6px; color: #e53935; font-size: 15px; font-variant-numeric: tabular-nums; }
+  #rec-time[hidden] { display: none; }
+  .send { width: 48px; height: 48px; flex: none; border: 0; border-radius: 50%; background: var(--accent); color: #fff;
+    display: grid; place-items: center; cursor: pointer; }
+  .send.rec { background: #e53935; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.06); } }
+
+  #toast { position: absolute; left: 50%; top: 72px; transform: translate(-50%, -16px); opacity: 0; transition: .25s;
+    background: var(--toast); color: var(--toast-ink); padding: 9px 16px; border-radius: 20px; font-weight: 600;
+    pointer-events: none; max-width: calc(100% - 32px); text-align: center; z-index: 7; font-size: 13.5px; }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
-  @media (max-width: 420px) { header a.hide-sm { display: none; } }
+  @media (max-width: 480px) { #chat, .chips { padding-left: 10px; padding-right: 10px; } .bubble { max-width: 86%; }
+    .hide-xs { display: none; } }
 </style>
 </head>
 <body>
 <div class="app">
   <header>
+    <button class="icon-btn" type="button" aria-label="Back" tabindex="-1">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
+    </button>
     <div class="avatar" aria-hidden="true">🤝</div>
-    <div class="who"><b>Namma Commit</b><span id="status">your first PR, in your language · simulator</span></div>
-    <a href="/leaderboard" target="_blank" rel="noopener" class="hide-sm">🏆 Leaderboard</a>
-    <button id="newuser" type="button" title="Start as a new student">New student</button>
+    <div class="who"><b>Namma Commit</b><span id="status">Business account</span></div>
+    <button class="icon-btn hide-xs" type="button" data-nocall aria-label="Video call">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="6.5" width="13" height="11" rx="2.5"/><path d="M15.5 10.5l6-3.5v10l-6-3.5z"/></svg>
+    </button>
+    <button class="icon-btn hide-xs" type="button" data-nocall aria-label="Voice call">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5.5 3.5h3.2l1.8 4.6-2.3 1.6a11.5 11.5 0 0 0 6.1 6.1l1.6-2.3 4.6 1.8v3.2a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 3.5 5.7a2 2 0 0 1 2-2.2z"/></svg>
+    </button>
+    <button class="icon-btn" id="more" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+    </button>
   </header>
+  <div class="menu" id="menu" role="menu" hidden>
+    <button type="button" id="demo" role="menuitem">▶ Play demo student</button>
+    <button type="button" id="newuser" role="menuitem">New student</button>
+    <a href="/leaderboard" id="board" target="_blank" rel="noopener" role="menuitem">Leaderboard</a>
+  </div>
   <div id="chat" aria-live="polite">
-    <div class="notice">🔒 This is a simulator of the WhatsApp chat. Type, or tap 🎤 to record a voice note (tap again to send).</div>
+    <div class="day">Today</div>
+    <div class="notice">🔒 Simulator of the Namma Commit WhatsApp chat. Messages are processed by Google Gemini. No WhatsApp account needed.</div>
   </div>
   <div class="chips" id="chips">
     <button type="button">What is open source?</button>
@@ -128,41 +169,42 @@
     <button type="button">review again</button>
   </div>
   <form id="f" autocomplete="off">
-    <textarea id="t" rows="1" placeholder="Message" aria-label="Message"></textarea>
-    <span id="rec-time" hidden></span>
-    <button class="round" id="mic" type="button" title="Record a voice note (tap to start / stop)" aria-label="Record voice note">🎤</button>
-    <button class="round" id="send" type="submit" title="Send" aria-label="Send">➤</button>
+    <div class="field">
+      <button class="icon-btn" type="button" id="emoji" aria-label="Emoji">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5s1.3 2 3.5 2 3.5-2 3.5-2"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="2.6"/></svg>
+      </button>
+      <textarea id="t" rows="1" placeholder="Message" aria-label="Message"></textarea>
+      <span id="rec-time" hidden></span>
+      <button class="icon-btn" type="button" data-noattach aria-label="Attach">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5l-8.2 8.2a5.2 5.2 0 0 1-7.4-7.4l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>
+      </button>
+      <button class="icon-btn hide-xs" type="button" data-noattach aria-label="Camera">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7.5h3l1.6-2.5h6.8L17 7.5h3a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5z"/><circle cx="12" cy="13" r="3.6"/></svg>
+      </button>
+    </div>
+    <button class="send" id="act" type="button" aria-label="Record voice note">
+      <svg id="ic-mic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11.5" rx="3" fill="currentColor"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
+      <svg id="ic-send" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" hidden><path d="M3.4 20.4l17.4-7.5a1 1 0 0 0 0-1.8L3.4 3.6a.7.7 0 0 0-1 .8L4.6 11l9 1-9 1-2.2 6.6a.7.7 0 0 0 1 .8z"/></svg>
+      <svg id="ic-stop" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+    </button>
   </form>
+  <div id="toast" role="status"></div>
 </div>
-<div id="toast" role="status"></div>
 <script>
 (() => {
-  const chat = document.getElementById('chat'), form = document.getElementById('f'), t = document.getElementById('t');
-  const mic = document.getElementById('mic'), recTime = document.getElementById('rec-time'), toast = document.getElementById('toast');
+  const $ = id => document.getElementById(id);
+  const chat = $('chat'), form = $('f'), t = $('t'), act = $('act'), recTime = $('rec-time'), toast = $('toast');
+  const statusEl = $('status'), menu = $('menu'), more = $('more'), chipsEl = $('chips');
   const MAX_SECONDS = 120;
 
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
   function newId() { return 'sim-' + Math.random().toString(36).slice(2, 10); }
   let uid = store('coach-uid') || newId(); store('coach-uid', uid);
+  // ?demo=1 arms the demo: a fresh, empty chat that starts when you type "hello" (or hi / hey).
+  let demoArmed = new URLSearchParams(location.search).get('demo') === '1';
+  if (demoArmed) { uid = newId(); store('coach-uid', uid); }
 
-  // Brand-new students are greeted with the onboarding questions straight away (no "hi" needed).
-  async function welcome() {
-    try {
-      const fd = new FormData(); fd.append('user_id', uid);
-      const j = await (await fetch('/api/welcome', {method: 'POST', body: fd})).json();
-      if (j.message) showReply(j.message);
-    } catch (e) { /* the student can still type to start */ }
-  }
-
-  document.getElementById('newuser').onclick = () => {
-    uid = newId(); store('coach-uid', uid);
-    chat.querySelectorAll('.row').forEach(r => r.remove());
-    document.getElementById('chips').hidden = false;
-    showToast('👋 New student session');
-    welcome();
-  };
-
-  function esc(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function fmt(s) {
     return esc(s)
       .replace(/```([\s\S]*?)```/g, (_, c) => '<code>' + c.trim() + '</code>')
@@ -171,7 +213,8 @@
       .replace(/(^|\s)\*([^*\n]+)\*/g, '$1<b>$2</b>')
       .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   }
-  function now() { return new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}); }
+  function now() { return new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}).toLowerCase(); }
+  const TICKS = '<svg class="ticks" width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l3 3 6-7.5M6.5 8.6l.9.9 6-7.5"/></svg>';
 
   function bubble(who, html, extra = {}) {
     const row = document.createElement('div'); row.className = 'row ' + who;
@@ -179,37 +222,28 @@
     if (extra.review) {
       const icon = {ready: '✅', changes_requested: '🛠️', blocked: '⛔'}[extra.review.verdict] || '🔍';
       const r = document.createElement('div'); r.className = 'review ' + extra.review.verdict;
-      r.textContent = icon + ' Gatekeeper review · ' + String(extra.review.verdict).replace('_', ' ') + ' · ' + extra.review.score + '/100';
+      r.textContent = icon + ' MergeWarden review · ' + String(extra.review.verdict).replace('_', ' ') + ' · ' + extra.review.score + '/100';
       b.prepend(r);
     }
     if (extra.heard) { const h = document.createElement('div'); h.className = 'heard'; h.textContent = '🎙️ heard: ' + extra.heard; b.appendChild(h); }
     for (const a of extra.attachments || []) {
+      const ext = (a.name.split('.').pop() || 'txt').toLowerCase().slice(0, 4);
       const d = document.createElement('a'); d.className = 'doc'; d.href = a.url; d.target = '_blank'; d.rel = 'noopener';
-      d.innerHTML = '<span class="ic">📄</span><span>' + esc(a.name) + '</span>'; b.appendChild(d);
+      d.innerHTML = '<span class="ext ' + esc(ext) + '">' + esc(ext.toUpperCase()) + '</span><span>' + esc(a.name) +
+        '<small>' + esc(ext.toUpperCase()) + ' · Document</small></span>';
+      b.appendChild(d);
     }
-    const m = document.createElement('div'); m.className = 'meta';
-    m.innerHTML = (extra.lang ? '<span class="lang">' + esc(extra.lang) + '</span>' : '') + '<span>' + now() + (who === 'me' ? ' ✓✓' : '') + '</span>';
+    const m = document.createElement('span'); m.className = 'meta';
+    const lang = extra.lang && extra.lang !== 'English' ? '<span class="lang">' + esc(extra.lang) + '</span>' : '';
+    m.innerHTML = lang + '<span>' + now() + '</span>' + (who === 'me' ? TICKS : '');
     b.appendChild(m); row.appendChild(b); chat.appendChild(row); chat.scrollTop = chat.scrollHeight;
     return row;
   }
-  function typing() { const r = bubble('them typing', 'typing…'); return r; }
-  function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(showToast.t); showToast.t = setTimeout(() => toast.classList.remove('show'), 3500); }
-
-  async function send({text = '', audio = null, mime = ''}) {
-    if (!text && !audio) return;
-    document.getElementById('chips').hidden = true;
-    bubble('me', audio ? '🎙️ Voice note' + (text ? '\n' + fmt(text) : '') : fmt(text));
-    const fd = new FormData(); fd.append('user_id', uid); fd.append('text', text);
-    if (audio) fd.append('audio', audio, 'voice.' + (mime.includes('ogg') ? 'ogg' : mime.includes('mp4') ? 'm4a' : 'webm'));
-    const tp = typing();
-    try {
-      const r = await fetch('/api/message', {method: 'POST', body: fd});
-      const j = await r.json();
-      tp.remove();
-      if (!r.ok) throw new Error(j.detail || r.status);
-      showReply(j);
-    } catch (e) { tp.remove(); bubble('them', '⚠️ Could not reach the coach: ' + esc(String(e.message || e))); }
+  function setTyping(on) {  // WhatsApp shows "typing…" in the header, not in the chat
+    statusEl.textContent = on ? 'typing…' : 'Business account';
+    statusEl.classList.toggle('typing', on);
   }
+  function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(showToast.t); showToast.t = setTimeout(() => toast.classList.remove('show'), 3500); }
 
   function showReply(j) {
     bubble('them', fmt(j.text), {lang: j.language, attachments: j.attachments, heard: j.transcript, review: j.review});
@@ -219,7 +253,38 @@
     if (bits.length) showToast(bits.join('  '));
   }
 
-  // Replies that arrive later (the gatekeeper review of a PR) wait in a server inbox.
+  async function send({text = '', audio = null, mime = ''}) {
+    if (!text && !audio) return;
+    chipsEl.hidden = true;
+    bubble('me', audio ? '🎙️ Voice message' + (text ? '\n' + fmt(text) : '') : fmt(text));
+    const fd = new FormData(); fd.append('user_id', uid); fd.append('text', text);
+    if (audio) fd.append('audio', audio, 'voice.' + (mime.includes('ogg') ? 'ogg' : mime.includes('mp4') ? 'm4a' : 'webm'));
+    setTyping(true);
+    try {
+      const r = await fetch('/api/message', {method: 'POST', body: fd});
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.detail || r.status);
+      showReply(j);
+    } catch (e) { bubble('them', '⚠️ Could not reach the coach: ' + esc(String(e.message || e))); }
+    finally { setTyping(false); }
+  }
+
+  // Brand-new students are greeted with the onboarding questions straight away (no "hi" needed).
+  async function welcome() {
+    try {
+      const fd = new FormData(); fd.append('user_id', uid);
+      const j = await (await fetch('/api/welcome', {method: 'POST', body: fd})).json();
+      if (j.message) showReply(j.message);
+    } catch (e) { /* the student can still type to start */ }
+  }
+  function newStudent() {
+    uid = newId(); store('coach-uid', uid);
+    chat.querySelectorAll('.row').forEach(r => r.remove());
+    chipsEl.hidden = false;
+    welcome();
+  }
+
+  // Replies that arrive later (the MergeWarden review of a PR) wait in a server inbox.
   async function poll() {
     if (document.hidden) return;
     try {
@@ -228,12 +293,96 @@
     } catch (e) { /* offline: try again next tick */ }
   }
   setInterval(poll, 4000);
-  welcome();
+  if (demoArmed) chipsEl.hidden = true; else welcome();
 
-  form.onsubmit = e => { e.preventDefault(); const v = t.value.trim(); t.value = ''; t.style.height = ''; send({text: v}); };
-  t.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
-  t.addEventListener('input', () => { t.style.height = ''; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; });
-  document.querySelectorAll('#chips button').forEach(b => b.onclick = () => send({text: b.textContent}));
+  // ⋮ menu: demo, new student, leaderboard
+  function closeMenu() { menu.hidden = true; more.setAttribute('aria-expanded', 'false'); }
+  more.onclick = e => { e.stopPropagation(); menu.hidden = !menu.hidden; more.setAttribute('aria-expanded', String(!menu.hidden)); };
+  document.addEventListener('click', e => { if (!menu.contains(e.target)) closeMenu(); });
+  $('newuser').onclick = () => { closeMenu(); newStudent(); showToast('👋 New student'); };
+  $('board').onclick = () => closeMenu();
+  document.querySelectorAll('[data-nocall]').forEach(b => b.onclick = () => showToast('Calls aren’t available in the simulator'));
+  document.querySelectorAll('[data-noattach]').forEach(b => b.onclick = () => showToast('Send text or a voice note'));
+  $('emoji').onclick = () => { t.value += '🙂'; t.focus(); syncComposer(); };
+
+  // Demo: a scripted student types her side; every coach reply is live from the real agent.
+  const DEMO_STUDENT = [
+    "Hi! I'm Priya, a 2nd-year CSE student in Bengaluru. I know Python basics and a bit of HTML/CSS. " +
+      "I made my GitHub last month but it's empty, and I don't have LinkedIn yet. I'm really curious about AI, " +
+      "and I have about 4 hours a week.",
+    "Honestly, what is open source? Why would maintainers want help from a beginner like me?",
+    "That makes sense! I'd like to try the event challenge about adding a test for the README placeholder check.",
+    "What exactly is a placeholder here, and how would the check find it?",
+    "I think I'd add a new test in tests/test_checks.py. It would create a small contribution whose README " +
+      "still says [Project Name], run the checks, and assert that a readme.placeholders finding comes back.",
+    "Nice! How do I open the pull request? I'm on Windows.",
+    "Done, I forked it!",
+    "leaderboard",
+  ];
+  let demoRun = 0, demoOn = false;
+  const pause = ms => new Promise(r => setTimeout(r, ms));
+  function setDemo(on) {  // a clean screen while the demo plays: no New student / Leaderboard controls
+    demoOn = on;
+    $('demo').textContent = on ? '■ Stop demo' : '▶ Play demo student';
+    $('newuser').hidden = on; $('board').hidden = on;
+    if (on) chipsEl.hidden = true;
+    t.readOnly = on;
+  }
+  async function typeOut(text, run) {
+    t.value = '';
+    for (const ch of text) {
+      if (run !== demoRun) return false;
+      t.value += ch; syncComposer();
+      await pause(text.length > 120 ? 8 : 22);
+    }
+    return run === demoRun;
+  }
+  function stopDemo(msg) { demoRun++; setDemo(false); t.value = ''; syncComposer(); if (msg) showToast(msg); }
+  async function runDemo(greeting) {
+    const run = ++demoRun;
+    demoArmed = false;
+    setDemo(true);
+    if (greeting) {  // the presenter's "hello" opens the chat, then the coach's welcome arrives
+      bubble('me', fmt(greeting));
+      setTyping(true); await pause(1200); await welcome(); setTyping(false);
+      await pause(2000);
+    } else {
+      newStudent();
+      await pause(2500);
+    }
+    for (const line of DEMO_STUDENT) {
+      if (!(await typeOut(line, run))) return;
+      await pause(500);
+      t.value = ''; syncComposer();
+      await send({text: line});
+      if (run !== demoRun) return;
+      await pause(1800);  // a moment to read the coach's reply
+    }
+    stopDemo('🎬 Demo finished: start your own chat from ⋮ → New student');
+  }
+  $('demo').onclick = () => { closeMenu(); if (demoOn) stopDemo('Demo stopped'); else runDemo(); };
+
+  // Composer: the green button is the mic when empty and the send arrow once you type (like WhatsApp).
+  function syncComposer() {
+    t.style.height = ''; t.style.height = Math.min(t.scrollHeight, 120) + 'px';
+    const typing = t.value.trim().length > 0;
+    // SVG elements have no .hidden property: toggle the attribute itself.
+    $('ic-send').toggleAttribute('hidden', !typing || !!rec);
+    $('ic-mic').toggleAttribute('hidden', typing || !!rec);
+    $('ic-stop').toggleAttribute('hidden', !rec);
+    act.setAttribute('aria-label', rec ? 'Stop and send voice note' : typing ? 'Send' : 'Record voice note');
+  }
+  function submitText() {
+    if (demoOn) return;
+    const v = t.value.trim(); t.value = ''; syncComposer();
+    if (demoArmed && /^(hello|hi|hey)\b/i.test(v)) { runDemo(v); return; }
+    send({text: v});
+  }
+  form.onsubmit = e => { e.preventDefault(); submitText(); };
+  t.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitText(); } });
+  t.addEventListener('input', syncComposer);
+  chipsEl.querySelectorAll('button').forEach(b => b.onclick = () => send({text: b.textContent}));
+  act.onclick = () => { if (demoOn) return; if (rec) rec.stop(); else if (t.value.trim()) submitText(); else startRec(); };
 
   // Voice notes: MediaRecorder -> multipart POST. Max 2 minutes, enforced again on the server.
   let rec = null, chunks = [], started = 0, timer = null;
@@ -253,21 +402,22 @@
     rec.ondataavailable = e => e.data.size && chunks.push(e.data);
     rec.onstop = () => {
       stream.getTracks().forEach(tr => tr.stop());
-      clearInterval(timer); recTime.hidden = true; mic.classList.remove('rec'); mic.textContent = '🎤';
+      clearInterval(timer); recTime.hidden = true; t.hidden = false; act.classList.remove('rec');
       const type = (rec.mimeType || 'audio/webm').split(';')[0];
       const blob = new Blob(chunks, {type});
-      if (blob.size > 0 && (Date.now() - started) > 600) send({audio: blob, mime: type, text: t.value.trim()}), t.value = '';
-      rec = null;
+      rec = null; syncComposer();
+      if (blob.size > 0 && (Date.now() - started) > 600) send({audio: blob, mime: type});
     };
     rec.start(250); started = Date.now();
-    mic.classList.add('rec'); mic.textContent = '■'; recTime.hidden = false; recTime.textContent = '0:00';
+    act.classList.add('rec'); t.hidden = true; recTime.hidden = false; recTime.textContent = '● 0:00';
+    syncComposer();
     timer = setInterval(() => {
       const s = Math.floor((Date.now() - started) / 1000);
-      recTime.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+      recTime.textContent = '● ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
       if (s >= MAX_SECONDS) rec && rec.stop();
     }, 250);
   }
-  mic.onclick = () => rec ? rec.stop() : startRec();
+  syncComposer();
 })();
 </script>
 </body>
