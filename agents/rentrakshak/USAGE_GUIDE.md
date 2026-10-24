@@ -45,13 +45,22 @@ python main.py --listing @tests/fixtures/suspicious_listing.txt
 python main.py --listing @tests/fixtures/clean_listing.txt
 ```
 
-## 4. Streamlit UI (full product demo)
+## 4. HTML web demo (recommended UI)
+
+```bash
+cd agents/rentrakshak
+pip install fastapi uvicorn
+./scripts/run_web_demo.sh
+# open http://127.0.0.1:8080
+```
+
+Dark-themed HTML/CSS/JS frontend → same Python services via REST API.
+
+## 4b. Streamlit (legacy / optional)
 
 ```bash
 streamlit run ui/streamlit_app.py
 ```
-
-Open the URL shown (usually http://localhost:8501).
 
 | Tab | What to try |
 |-----|-------------|

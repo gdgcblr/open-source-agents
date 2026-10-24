@@ -350,7 +350,8 @@ python scripts/seed_demo_data.py
 | **Docker safety report** | `docker compose run --rm cli` |
 | **Prove safeguards (local)** | `pytest -q` → 32 passed, offline |
 | **No-key demo (local)** | `python main.py --listing @tests/fixtures/suspicious_listing.txt` |
-| **Product UI** | `streamlit run ui/streamlit_app.py` (optional; polish later) |
+| **HTML web demo** | `./scripts/run_web_demo.sh` → http://127.0.0.1:8080 |
+| **Streamlit** | `streamlit run ui/streamlit_app.py` (optional) |
 | **ADK + Gemini** | `export GOOGLE_API_KEY=... && adk web adk_agent` |
 | **Reset demo DB** | `rm -f data/rentrakshak.db && python scripts/seed_demo_data.py` |
 

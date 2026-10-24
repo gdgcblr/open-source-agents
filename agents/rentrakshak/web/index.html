@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RentRakshak — Demo</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <span>RentRakshak</span>
+    </div>
+    <p class="tagline">Rent smarter. Stay safer. Help the next tenant.</p>
+    <button type="button" id="btn-seed" class="btn btn-ghost">Load demo data</button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-panel="analyze" type="button">Check listing</button>
+    <button class="tab" data-panel="community" type="button">Tenant stories</button>
+    <button class="tab" data-panel="vacating" type="button">Vacating rooms</button>
+    <button class="tab" data-panel="checklist" type="button">Checklist</button>
+  </nav>
+
+  <main class="container">
+    <section id="panel-analyze" class="panel active">
+      <div class="card">
+        <h2>Analyze before you pay deposit</h2>
+        <p class="muted">Same engine as <code>main.py</code> — deterministic rules, no API key.</p>
+        <div class="row">
+          <button type="button" class="btn btn-ghost" id="load-scam">Scam sample</button>
+          <button type="button" class="btn btn-ghost" id="load-clean">Normal sample</button>
+        </div>
+        <label>Listing</label>
+        <textarea id="listing" rows="8" placeholder="Paste listing…"></textarea>
+        <label>Chat (optional)</label>
+        <textarea id="chat" rows="4" placeholder="Broker messages…"></textarea>
+        <label>Locality hint</label>
+        <input type="text" id="locality" placeholder="e.g. Koramangala" />
+        <button type="button" class="btn btn-primary" id="run-check">Run safety check</button>
+      </div>
+      <div id="report-out" class="card hidden"></div>
+    </section>
+
+    <section id="panel-community" class="panel">
+      <div class="card">
+        <h2>Anonymous experiences</h2>
+        <div class="row">
+          <input type="text" id="comm-loc" value="Koramangala" placeholder="Locality" />
+          <button type="button" class="btn btn-primary" id="comm-search">Search</button>
+        </div>
+        <div id="comm-list" class="list"></div>
+      </div>
+    </section>
+
+    <section id="panel-vacating" class="panel">
+      <div class="card">
+        <h2>Rooms vacating soon</h2>
+        <div class="row">
+          <input type="text" id="vac-loc" value="Whitefield" placeholder="Locality" />
+          <button type="button" class="btn btn-primary" id="vac-search">Search</button>
+        </div>
+        <div id="vac-list" class="list"></div>
+      </div>
+    </section>
+
+    <section id="panel-checklist" class="panel">
+      <div class="card">
+        <h2>Karnataka rental checklist</h2>
+        <div id="checklist-list" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer muted">
+    Not legal advice. Not affiliated with Google or Karnataka government. User posts are unverified.
+  </footer>
+  <div id="toast" class="toast hidden"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
