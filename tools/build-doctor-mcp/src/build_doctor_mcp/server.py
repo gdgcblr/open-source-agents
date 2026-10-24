@@ -28,7 +28,7 @@ _MAX_FILE_BYTES = min(max(int(os.getenv("BUILD_DOCTOR_MAX_FILE_BYTES", "200000")
 _MAX_LOG_CHARS = min(max(int(os.getenv("BUILD_DOCTOR_MAX_LOG_CHARS", "200000")), 1), 1000000)
 _SECRET_PATTERNS = (
     (re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[^\s,;]+"), r"\1[REDACTED]"),
-    (re.compile(r"(?i)(api[_-]?key|token|password|secret|client_secret)\s*[:=]\s*[^\s,;]+"), r"\1=[REDACTED]"),
+    (re.compile(r'''(?i)(["']?(?:api[_-]?key|token|password|secret|client_secret)["']?\s*[:=]\s*["']?)[^"'\s,;}]+'''), r"\1[REDACTED]"),
     (re.compile(r"(?i)(-----BEGIN [A-Z ]+ PRIVATE KEY-----).*?(-----END [A-Z ]+ PRIVATE KEY-----)", re.S), r"\1[REDACTED]\2"),
 )
 

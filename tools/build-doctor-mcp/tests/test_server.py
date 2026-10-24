@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -59,6 +60,32 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
 
         self.assertIn("guardrails", result)
         self.assertEqual([], result["manifests"])
+
+    def test_enforces_workspace_allowlist(self):
+        with tempfile.TemporaryDirectory() as allowed, tempfile.TemporaryDirectory() as outside:
+            previous = os.environ.get("BUILD_DOCTOR_ALLOWED_ROOT")
+            os.environ["BUILD_DOCTOR_ALLOWED_ROOT"] = allowed
+            try:
+                result = json.loads(inspect_project(outside))
+            finally:
+                if previous is None:
+                    os.environ.pop("BUILD_DOCTOR_ALLOWED_ROOT", None)
+                else:
+                    os.environ["BUILD_DOCTOR_ALLOWED_ROOT"] = previous
+
+        self.assertIn("outside BUILD_DOCTOR_ALLOWED_ROOT", result["error"])
+
+    def test_redacts_manifest_secrets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "package.json").write_text(
+                '{"apiKey":"not-for-output"}\n', encoding="utf-8"
+            )
+
+            result = inspect_project(str(root))
+
+        self.assertNotIn("not-for-output", result)
+        self.assertIn("[REDACTED]", result)
 
 
 if __name__ == "__main__":
