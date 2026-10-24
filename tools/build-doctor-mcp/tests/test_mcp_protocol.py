@@ -35,6 +35,19 @@ class McpProtocolIntegrationTest(unittest.TestCase):
         self.assertEqual("compilation", result["failure_type"])
         self.assertEqual("1.1", result["schema_version"])
 
+    def test_unavailable_server_fails_initialization(self):
+        async def exercise_failure():
+            parameters = StdioServerParameters(
+                command=sys.executable,
+                args=["-c", "raise SystemExit(7)"],
+            )
+            async with stdio_client(parameters) as (read_stream, write_stream):
+                async with ClientSession(read_stream, write_stream) as session:
+                    await session.initialize()
+
+        with self.assertRaises(Exception):
+            asyncio.run(exercise_failure())
+
 
 if __name__ == "__main__":
     unittest.main()

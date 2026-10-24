@@ -117,6 +117,8 @@ The ADK entry point is `BuildDoctorAgent.create()`. An ADK-compatible runner or 
 
 The MCP path is tested independently over real stdio initialization, tool discovery, and `analyze_failure` invocation. The Java factory itself is not a standalone process; an ADK runner or application must own the agent lifecycle and call `close()` so the MCP toolset is released.
 
+For a no-model connection check, run `BuildDoctorApplication` with `BUILD_DOCTOR_PYTHON` pointing to the Python environment that has `build-doctor-mcp` installed. It starts the MCP child process, discovers the tools, prints their names, and closes the agent without sending a Gemini request.
+
 ## Example Input & Output
 
 ### Example Input
@@ -149,6 +151,8 @@ mvn test
 ```
 
 The tests cover compilation, dependency, test, and unknown failure signatures, common non-Java manifest inspection, ADK agent construction, and tool registration.
+
+The opt-in cross-language discovery test requires `BUILD_DOCTOR_PYTHON` and `BUILD_DOCTOR_MCP_PYTHONPATH`; it starts the real Python server over stdio and verifies discovery and cleanup.
 
 ## Known Limitations
 

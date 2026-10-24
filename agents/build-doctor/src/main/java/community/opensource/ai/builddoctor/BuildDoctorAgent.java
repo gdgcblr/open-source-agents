@@ -3,7 +3,9 @@ package community.opensource.ai.builddoctor;
 import com.google.adk.agents.LlmAgent;
 import com.google.adk.tools.mcp.McpToolset;
 import com.google.adk.tools.mcp.StdioServerParameters;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class BuildDoctorAgent {
   private BuildDoctorAgent() {}
@@ -17,9 +19,15 @@ public final class BuildDoctorAgent {
   }
 
   public static LlmAgent createWithMcp(String pythonExecutable) {
+    Map<String, String> environment = new HashMap<>(System.getenv());
+    String pythonPath = System.getenv("BUILD_DOCTOR_MCP_PYTHONPATH");
+    if (pythonPath != null && !pythonPath.isBlank()) {
+      environment.put("PYTHONPATH", pythonPath);
+    }
     StdioServerParameters server = StdioServerParameters.builder()
         .command(pythonExecutable)
         .args(List.of("-m", "build_doctor_mcp.server"))
+        .env(environment)
         .build();
     return baseBuilder()
         .tools(new McpToolset(server.toServerParameters()))
