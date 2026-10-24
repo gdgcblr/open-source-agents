@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [cloud-run-launch-doctor](cloud-run-launch-doctor/) | Local static checks for common Cloud Run deployment blockers | Python CLI | — |
