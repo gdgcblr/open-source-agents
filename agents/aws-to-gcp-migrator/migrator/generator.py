@@ -1,14 +1,16 @@
 """
-Generates idiomatic GCP Terraform configurations and comprehensive Migration Reports.
+Generates idiomatic GCP Terraform configurations, Markdown reports, and interactive HTML dashboards.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from .parser import AWSResource
 from .mapper import get_service_mapping, get_gcp_region
+from .topology_agent import TopologyGraph
+from .finops_agent import FinOpsReport
 
 
 class MigrationGenerator:
-    """Generates GCP Terraform files and Markdown reports."""
+    """Generates GCP Terraform files, Markdown reports, and HTML presentation dashboards."""
 
     def __init__(self, project_id: str = "my-gcp-project", region: str = "us-central1"):
         self.project_id = project_id
@@ -72,7 +74,48 @@ resource "google_project_service" "enabled_apis" {{
     def _translate_resource(self, res: AWSResource) -> str:
         clean_name = res.resource_name.replace("-", "_")
 
-        if res.resource_type == "aws_s3_bucket":
+        if res.resource_type == "aws_vpc":
+            return f"""# Migrated from AWS Regional VPC to Google Cloud Global VPC
+resource "google_compute_network" "{clean_name}" {{
+  name                    = "{clean_name.replace('_', '-')}-vpc"
+  auto_create_subnetworks = false
+  description             = "Global VPC migrated from AWS VPC {clean_name}"
+
+  depends_on = [google_project_service.enabled_apis]
+}}
+"""
+
+        elif res.resource_type == "aws_subnet":
+            cidr = res.attributes.get("cidr_block", "10.0.1.0/24")
+            return f"""# Migrated from AWS Subnet to Google Cloud Subnetwork
+resource "google_compute_subnetwork" "{clean_name}" {{
+  name                     = "{clean_name.replace('_', '-')}-subnet"
+  ip_cidr_range            = "{cidr}"
+  region                   = "{self.region}"
+  network                  = google_compute_network.main_vpc.id
+  private_ip_google_access = true
+
+  depends_on = [google_project_service.enabled_apis]
+}}
+"""
+
+        elif res.resource_type == "aws_security_group":
+            return f"""# Migrated from AWS Security Group to Google Cloud Firewall Rule
+resource "google_compute_firewall" "{clean_name}" {{
+  name    = "allow-{clean_name.replace('_', '-')}"
+  network = google_compute_network.main_vpc.name
+
+  allow {{
+    protocol = "tcp"
+    ports    = ["80", "443", "8080"]
+  }}
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["{clean_name.replace('_', '-')}"]
+}}
+"""
+
+        elif res.resource_type == "aws_s3_bucket":
             bucket_name = res.attributes.get("bucket", f"{res.resource_name}-{self.project_id}")
             return f"""# Migrated from: {res.raw_block.splitlines()[0]}
 resource "google_storage_bucket" "{clean_name}" {{
@@ -99,7 +142,7 @@ resource "google_storage_bucket" "{clean_name}" {{
             return f"""# Migrated from AWS Lambda: {func_name}
 # Translated to Google Cloud Functions (2nd Gen / Cloud Run)
 resource "google_service_account" "{clean_name}_sa" {{
-  account_id   = "{clean_name[:28]}-sa"
+  account_id   = "{clean_name[:28].replace('_', '-')}-sa"
   display_name = "Execution Service Account for {func_name}"
 }}
 
@@ -232,8 +275,14 @@ resource "google_firestore_database" "{clean_name}" {{
 # Architecture note: {mapping['rationale']}
 """
 
-    def generate_report(self, resources: List[AWSResource], llm_insights: str = "") -> str:
-        """Constructs a comprehensive Markdown migration report."""
+    def generate_report(
+        self,
+        resources: List[AWSResource],
+        topology: Optional[TopologyGraph] = None,
+        finops: Optional[FinOpsReport] = None,
+        llm_insights: str = ""
+    ) -> str:
+        """Constructs a comprehensive Markdown migration report with diagrams and FinOps data."""
         mapping_rows = []
         required_apis = set()
 
@@ -248,78 +297,349 @@ resource "google_firestore_database" "{clean_name}" {{
 
         apis_command = " ".join(sorted(required_apis))
 
-        report = f"""# AWS to Google Cloud Platform Migration Report
+        report_lines = [
+            "# AWS to Google Cloud Platform Migration Report",
+            "",
+            "> Generated automatically by `aws-to-gcp-migrator` (Three-Agent Orchestration)",
+            f"> **Target GCP Project:** `{self.project_id}` | **Target Region:** `{self.region}`",
+            "",
+            "---",
+            "",
+            "## 1. Executive Summary & Architecture Topology",
+            "",
+            "This report details the automated translation of your AWS infrastructure into modern, idiomatic Google Cloud Platform architecture.",
+            ""
+        ]
 
-> Generated automatically by `aws-to-gcp-migrator`
-> **Target GCP Project:** `{self.project_id}` | **Target Region:** `{self.region}`
+        if topology:
+            report_lines.extend([
+                "### AWS Source Topology",
+                "```mermaid",
+                topology.aws_mermaid,
+                "```",
+                "",
+                "### Target GCP Modernized Topology",
+                "```mermaid",
+                topology.gcp_mermaid,
+                "```",
+                ""
+            ])
 
----
+        report_lines.extend([
+            "### Architecture Resource Mapping",
+            "| AWS Resource | GCP Target Service | Rationale |",
+            "| :--- | :--- | :--- |",
+            "\n".join(mapping_rows),
+            "",
+            "---",
+            "",
+            "## 2. FinOps Predictor: Total Cost of Ownership (TCO) Delta",
+            ""
+        ])
 
-## 1. Executive Summary
+        if finops:
+            report_lines.extend([
+                f"- **Projected AWS Monthly Cost:** `${finops.total_aws_cost:.2f}`",
+                f"- **Projected GCP Monthly Cost:** `${finops.total_gcp_cost:.2f}`",
+                f"- **Monthly Net Savings:** `${finops.total_savings:.2f}` (**{finops.savings_percentage}% savings** on Google Cloud)",
+                "",
+                "| Service Category | AWS Resource | Est. AWS/mo | Est. GCP/mo | Net Savings | Free Tier Impact |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- |"
+            ])
+            for item in finops.items:
+                report_lines.append(
+                    f"| {item.service_name} | `{item.aws_resource}` | ${item.aws_monthly_cost:.2f} | ${item.gcp_monthly_cost:.2f} | ${item.savings:.2f} | {item.free_tier_impact} |"
+                )
+            report_lines.append("")
 
-This report outlines the automated translation of your AWS infrastructure into modern, idiomatic Google Cloud Platform architecture. The target configuration leverages GCP-native serverless primitives, unified object storage, and managed IAM security.
-
-### Architecture Resource Mapping
-| AWS Resource | GCP Target Service | Rationale |
-| :--- | :--- | :--- |
-{chr(10).join(mapping_rows)}
-
----
-
-## 2. Google Cloud Service Enablement
-
-Before applying the generated Terraform, activate the required Google Cloud APIs:
-
-```bash
-gcloud config set project {self.project_id}
-gcloud services enable {apis_command}
-```
-
----
-
-## 3. Cost & Free-Tier Optimization Benefits
-
-Migrating to Google Cloud provides immediate free-tier advantages:
-- **Cloud Functions (2nd Gen) & Cloud Run**: 2,000,000 free invocations and 360,000 GB-seconds per month.
-- **Cloud Storage**: 5 GB free regional storage in US regions per month.
-- **Cloud Pub/Sub**: First 10 GB of monthly throughput free of charge.
-- **Network Egress**: 100 GB free internet egress per month from North American regions.
-
----
-
-## 4. Security & IAM Posture Recommendations
-
-1. **Uniform Bucket-Level Access**: Enabled by default on Google Cloud Storage buckets to eliminate risky object ACLs.
-2. **Workload Identity Federation**: Replace static long-lived credentials by using GCP Workload Identity with GitHub Actions or AWS OIDC.
-3. **Dedicated Service Accounts**: Each serverless workload (Cloud Functions / Cloud Run) uses an isolated service account adhering to the principle of least privilege.
-
----
-
-## 5. Next Steps for Deployment
-
-1. **Review Generated Terraform**:
-   Inspect `main.tf` in the output directory.
-
-2. **Authenticate with Google Cloud**:
-   ```bash
-   gcloud auth application-default login
-   ```
-
-3. **Initialize and Apply**:
-   ```bash
-   terraform init
-   terraform plan -out=tfplan
-   terraform apply tfplan
-   ```
-"""
+        report_lines.extend([
+            "---",
+            "",
+            "## 3. Google Cloud Service Enablement",
+            "",
+            "Before applying the generated Terraform, activate the required Google Cloud APIs:",
+            "",
+            "```bash",
+            f"gcloud config set project {self.project_id}",
+            f"gcloud services enable {apis_command}",
+            "```",
+            "",
+            "---",
+            "",
+            "## 4. Security & IAM Posture Recommendations",
+            "",
+            "1. **Global VPC Architecture**: Single unified VPC spanning all Google regions without complex cross-region peering.",
+            "2. **Uniform Bucket-Level Access**: Eliminates risky object-level ACLs across Cloud Storage buckets.",
+            "3. **Workload Identity Federation**: Eliminates long-lived static keys; authenticates workloads via OIDC tokens.",
+            "4. **Isolated Service Accounts**: Dedicated least-privilege service accounts for each serverless and containerized component.",
+            "",
+            "---",
+            "",
+            "## 5. Next Steps for Deployment",
+            "",
+            "1. **Review Generated Terraform**: Inspect `main.tf` in the output directory.",
+            "2. **Authenticate with Google Cloud**:",
+            "   ```bash",
+            "   gcloud auth application-default login",
+            "   ```",
+            "3. **Initialize and Apply**:",
+            "   ```bash",
+            "   terraform init",
+            "   terraform plan -out=tfplan",
+            "   terraform apply tfplan",
+            "   ```"
+        ])
 
         if llm_insights:
-            report += f"""
----
+            report_lines.extend([
+                "",
+                "---",
+                "",
+                "## 6. AI Agent Synthesis & Deep-Dive Insights",
+                "",
+                llm_insights
+            ])
 
-## 6. AI Agent Synthesis & Deep-Dive Insights
+        return "\n".join(report_lines)
 
-{llm_insights}
+    def generate_dashboard_html(
+        self,
+        resources: List[AWSResource],
+        topology: TopologyGraph,
+        finops: FinOpsReport,
+        llm_insights: str = ""
+    ) -> str:
+        """Constructs an interactive, visually impressive HTML dashboard for live hackathon demos."""
+        table_rows = []
+        for item in finops.items:
+            table_rows.append(f"""
+            <tr>
+              <td><strong>{item.service_name}</strong></td>
+              <td><code>{item.aws_resource}</code></td>
+              <td>${item.aws_monthly_cost:.2f}</td>
+              <td class="gcp-highlight">${item.gcp_monthly_cost:.2f}</td>
+              <td class="savings-text">+${item.savings:.2f}</td>
+              <td><span class="badge-free">{item.free_tier_impact}</span></td>
+            </tr>
+            """)
+
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS to GCP Migration Agent - GDG DevFest</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({{ startOnLoad: true, theme: 'dark' }});</script>
+  <style>
+    :root {{
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #4285F4;
+      --accent-green: #34A853;
+      --accent-yellow: #FBBC05;
+      --accent-red: #EA4335;
+      --border: #334155;
+    }}
+    body {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }}
+    .container {{
+      max-width: 1200px;
+      margin: 0 auto;
+    }}
+    header {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }}
+    .title-group h1 {{
+      margin: 0;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }}
+    .badge {{
+      background: rgba(66, 133, 244, 0.2);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }}
+    .grid-kpi {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }}
+    .kpi-card {{
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }}
+    .kpi-label {{
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }}
+    .kpi-val {{
+      font-size: 28px;
+      font-weight: 700;
+    }}
+    .text-green {{ color: var(--accent-green); }}
+    .text-blue {{ color: var(--accent); }}
+    .text-yellow {{ color: var(--accent-yellow); }}
+
+    .card {{
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }}
+    h2 {{
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }}
+    .diagrams-grid {{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }}
+    @media (max-width: 800px) {{
+      .diagrams-grid {{ grid-template-columns: 1fr; }}
+    }}
+    table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }}
+    th, td {{
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }}
+    th {{
+      color: var(--text-muted);
+      font-weight: 600;
+    }}
+    .gcp-highlight {{
+      color: var(--accent);
+      font-weight: 600;
+    }}
+    .savings-text {{
+      color: var(--accent-green);
+      font-weight: 700;
+    }}
+    .badge-free {{
+      background: rgba(52, 168, 83, 0.15);
+      color: var(--accent-green);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }}
+    pre {{
+      background: #0b1120;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      color: #38bdf8;
+    }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>AWS to GCP Migration Agent</h1>
+        <span class="badge">GDG DevFest 2026 Edition</span>
+      </div>
+      <div>
+        <span style="color: var(--text-muted); font-size: 13px;">Target Project: <strong>{self.project_id}</strong> ({self.region})</span>
+      </div>
+    </header>
+
+    <div class="grid-kpi">
+      <div class="kpi-card">
+        <div class="kpi-label">Projected Monthly Savings</div>
+        <div class="kpi-val text-green">${finops.total_savings:.2f} <span style="font-size: 16px;">({finops.savings_percentage}%)</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">AWS Monthly Baseline</div>
+        <div class="kpi-val text-yellow">${finops.total_aws_cost:.2f}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">GCP Target Monthly</div>
+        <div class="kpi-val text-blue">${finops.total_gcp_cost:.2f}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Migrated Resources</div>
+        <div class="kpi-val">{len(resources)} Units</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Architecture Topology Transpilation</h2>
+      <div class="diagrams-grid">
+        <div>
+          <h4 style="color: var(--text-muted); margin: 0 0 12px 0;">AWS Source Topology</h4>
+          <div class="mermaid">
+{topology.aws_mermaid}
+          </div>
+        </div>
+        <div>
+          <h4 style="color: var(--accent); margin: 0 0 12px 0;">Google Cloud Modernized Topology</h4>
+          <div class="mermaid">
+{topology.gcp_mermaid}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>FinOps TCO & Free Tier Optimization Delta</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Source AWS Resource</th>
+            <th>AWS Est.</th>
+            <th>GCP Est.</th>
+            <th>Net Savings</th>
+            <th>Free Tier Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {''.join(table_rows)}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>AI Architecture Insights & Modernization Critique</h2>
+      <div style="line-height: 1.6; color: #cbd5e1;">
+        {llm_insights.replace(chr(10), '<br/>')}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
 """
-
-        return report
+        return html

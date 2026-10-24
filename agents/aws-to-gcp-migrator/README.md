@@ -1,29 +1,33 @@
 # AWS-to-GCP Migration Agent (`aws-to-gcp-migrator`)
 
-> An autonomous AI agent that ingests AWS Infrastructure-as-Code (Terraform & architecture definitions) and converts them into production-ready, idiomatic Google Cloud Platform (GCP) configurations and architectural migration reports.
+> An autonomous AI agent powered by a **Three-Agent Orchestration Engine** that transpiles AWS Infrastructure-as-Code (Terraform & architecture definitions) into production-ready, idiomatic Google Cloud Platform (GCP) configurations, architecture graphs, and FinOps TCO savings reports.
 
 ---
 
 ## Overview
 
 ### Problem Statement & Intended Users
-- **Problem**: Enterprises and cloud developers actively seeking to migrate workloads to Google Cloud lack automated tools to translate complex AWS infrastructure (Terraform, Lambda functions, S3 policies, SQS, ECS Fargate) into Google Cloud native equivalents. Manual translation is time-consuming, error-prone, and often fails to leverage GCP-specific advantages like Cloud Run request concurrency or Uniform Bucket-Level Access.
+- **Problem**: Enterprises and cloud developers actively seeking to migrate workloads to Google Cloud lack automated tools to translate complex AWS infrastructure (Terraform, Lambda functions, S3 policies, SQS, ECS Fargate, VPCs) into Google Cloud native equivalents. Manual translation is time-consuming, error-prone, and fails to leverage GCP-specific advantages like Global VPCs, Cloud Run request concurrency, and Free Tier benefits.
 - **Intended Users**: Cloud architects, DevOps/SRE engineers, platform teams, and developers migrating applications from AWS to Google Cloud.
 
 ### Key Features
-- **Automated Resource Translation**: Automatically maps AWS resources (`aws_s3_bucket`, `aws_lambda_function`, `aws_sqs_queue`, `aws_ecs_task_definition`, `aws_db_instance`, `aws_iam_role`) into idiomatic GCP resources (`google_storage_bucket`, `google_cloudfunctions2_function`, `google_pubsub_topic`, `google_cloud_run_v2_service`, `google_sql_database_instance`, `google_service_account`).
-- **AI-Powered Architectural Synthesis**: Uses Google Gemini 2.5 Flash to critique architectures, recommend concurrency/networking improvements, and optimize resource sizing.
+- **Three-Agent Orchestration Architecture**:
+  1. **Agent 1 (Topology Parser)**: Automatically parses AWS infrastructure and builds the full dependency graph (connecting compute, storage, messaging, and databases).
+  2. **Agent 2 (GCP Refactoring Engine)**: Uses Google Gemini 2.5 Flash (or deterministic offline rule-engine) to transpile regional AWS resources into idiomatic GCP resources (`google_storage_bucket`, `google_cloudfunctions2_function`, `google_pubsub_topic`, `google_cloud_run_v2_service`, `google_compute_network`, `google_service_account`).
+  3. **Agent 3 (FinOps Predictor)**: Calculates baseline AWS monthly cost vs. target GCP monthly cost, factoring in Google Cloud Free Tier allowances and computing the net TCO savings delta.
+- **Interactive Presentation Dashboard (`dashboard.html`)**: Generates a self-contained, dark-mode visual command center with live Mermaid.js side-by-side architecture diagrams and FinOps KPI cards.
 - **100% Free & Zero-Cost Offline Mode**: Built-in deterministic rule engine allows complete execution and testing with `--mock` without requiring any API keys or incurring costs.
-- **Actionable Migration Reports**: Generates a comprehensive `migration_report.md` detailing architecture mappings, required Google Cloud APIs to enable (`gcloud services enable`), and free-tier cost benefits.
-- **Security & IAM Hardening**: Enforces Google Cloud best practices by default, including Uniform Bucket-Level Access, isolated service accounts, and Workload Identity guidance.
+- **Actionable Migration Reports**: Generates a comprehensive `migration_report.md` detailing architecture mappings, required Google Cloud APIs to enable (`gcloud services enable`), and security recommendations.
+- **Security & IAM Hardening**: Enforces Google Cloud best practices by default, including Global VPCs, Uniform Bucket-Level Access, isolated service accounts, and Workload Identity guidance.
 
 ---
 
 ## Technical Stack
 
 - **Language & Runtime**: Python 3.10+ (tested on Python 3.13)
-- **Agent Framework / Core Library**: Custom Agent Architecture with Google GenAI SDK (`google-genai`)
+- **Agent Framework / Core Library**: Custom Three-Agent Orchestration Pipeline with Google GenAI SDK (`google-genai`)
 - **Models**: Google Gemini 2.5 Flash / Gemini 1.5 Flash (via Google AI Studio Free Tier) with deterministic rule-engine fallback
+- **Visualization**: Mermaid.js & HTML5/CSS3 Responsive Dashboard
 - **Dependencies**: `google-genai`, `python-dotenv`, `pytest`
 - **Infrastructure Target**: Terraform Google Cloud Provider (`hashicorp/google >= 5.0`)
 
@@ -32,30 +36,37 @@
 ## Architecture & Data Flow
 
 ```
-+--------------------------+
-|  AWS Terraform / HCL     |
-| (Lambda, S3, SQS, ECS)   |
-+--------------------------+
-             |
-             v
-+--------------------------+
-|   TerraformParser        |  --> Extracts resource blocks, types & attributes
-+--------------------------+
-             |
-             v
-+--------------------------+
-|   MigrationAgent         |
-| (Gemini 2.5 Flash /      |  <-- Analyzes architecture, modernizes serverless,
-|  Offline Rule Engine)    |      synthesizes security & IAM recommendations
-+--------------------------+
-             |
-             +------------------------------+
-             |                              |
-             v                              v
-+--------------------------+   +--------------------------+
-|       main.tf            |   |   migration_report.md    |
-| (Production GCP HCL)     |   | (Executive Audit & APIs) |
-+--------------------------+   +--------------------------+
++-------------------------------------------------------------+
+|                     AWS Terraform Input                     |
+|            (Lambda, S3, SQS, ECS, VPC, RDS, IAM)            |
++-------------------------------------------------------------+
+                              |
+                              v
++-------------------------------------------------------------+
+|            AGENT 1: The Topology Graph Parser               |
+|   - Maps infrastructure dependency graph                    |
+|   - Generates AWS Source Topology Mermaid Diagram           |
++-------------------------------------------------------------+
+                              |
+              +---------------+---------------+
+              |                               |
+              v                               v
++-----------------------------+ +-----------------------------+
+|   AGENT 3: FinOps Predictor | | AGENT 2: GCP Refactor Engine|
+| - Computes AWS vs GCP TCO   | | - Transpiles to Global VPC  |
+| - Applies GCP Free Tier     | | - Gemini 2.5 Flash synthesis|
+| - Calculates Net $ Savings  | | - Produces main.tf HCL      |
++-----------------------------+ +-----------------------------+
+              |                               |
+              +---------------+---------------+
+                              |
+                              v
++-------------------------------------------------------------+
+|                   Tri-Artifact Delivery                     |
+|  1. main.tf             : Deployable GCP Terraform HCL      |
+|  2. migration_report.md : Full Executive Audit & Roadmap    |
+|  3. dashboard.html      : Interactive Presentation Demo     |
++-------------------------------------------------------------+
 ```
 
 ---
@@ -186,20 +197,12 @@ resource "google_cloudfunctions2_function" "processor" {
 }
 ```
 
-### Example Generated Migration Report (`output/migration_report.md`)
-```markdown
-# AWS to Google Cloud Platform Migration Report
-> Target GCP Project: `devfest-demo-2026` | Region: `us-central1`
-
-## Architecture Resource Mapping
-| AWS Resource | GCP Target Service | Rationale |
-| :--- | :--- | :--- |
-| `aws_s3_bucket` | Cloud Storage | Uniform bucket-level access & soft delete |
-| `aws_sqs_queue` | Cloud Pub/Sub | Native global routing without region peering |
-| `aws_lambda_function` | Cloud Functions 2nd Gen | High concurrency (up to 1000 requests/instance) |
-
-## Required Google Cloud Service Enablement
-gcloud services enable cloudfunctions.googleapis.com pubsub.googleapis.com storage.googleapis.com
+### Example FinOps TCO Savings Output
+```
+[*] FinOps Summary:
+    - Baseline AWS Cost : $77.50 / month
+    - Target GCP Cost   : $35.40 / month
+    - Net Monthly Saving: $42.10 / month (54.3% savings)
 ```
 
 ---
@@ -216,12 +219,14 @@ pytest tests/ -v
 Expected test output:
 ```
 tests/test_migrator.py::test_mapper_region_and_services PASSED
+tests/test_migrator.py::test_topology_agent_graph PASSED
+tests/test_migrator.py::test_finops_predictor_agent PASSED
 tests/test_migrator.py::test_generator_terraform_and_report PASSED
-tests/test_migrator.py::test_agent_mock_mode PASSED
+tests/test_migrator.py::test_agent_three_agent_pipeline PASSED
 tests/test_parser.py::test_parse_simple_s3 PASSED
 tests/test_parser.py::test_parse_multiple_resources PASSED
 
-===== 5 passed in 0.17s =====
+===== 7 passed in 0.08s =====
 ```
 
 ---

@@ -19,6 +19,30 @@ REGION_MAP = {
 
 # AWS to GCP Resource and Architecture Mapping Catalog
 SERVICE_CATALOG: Dict[str, Dict[str, Any]] = {
+    "aws_vpc": {
+        "gcp_service": "Virtual Private Cloud (Global VPC)",
+        "gcp_resource": "google_compute_network",
+        "required_api": "compute.googleapis.com",
+        "rationale": "GCP VPC is natively Global rather than Regional. A single VPC spans all Google regions worldwide without needing complex inter-region VPC peering.",
+        "cost_benefit": "Zero inter-region VPC peering overhead on Google's private fiber network.",
+        "security_note": "Centralized global firewall policies and Cloud Armor integration.",
+    },
+    "aws_subnet": {
+        "gcp_service": "Cloud Subnetwork",
+        "gcp_resource": "google_compute_subnetwork",
+        "required_api": "compute.googleapis.com",
+        "rationale": "Regional subnets within the Global VPC with Private Google Access enabled by default.",
+        "cost_benefit": "Cross-subnet traffic flows over private Google backbone avoiding public internet charges.",
+        "security_note": "Enforce Private Google Access to reach APIs without public IPs.",
+    },
+    "aws_security_group": {
+        "gcp_service": "Cloud Firewall Rules",
+        "gcp_resource": "google_compute_firewall",
+        "required_api": "compute.googleapis.com",
+        "rationale": "Stateful firewall rules applied globally across instances and clusters using service accounts or network tags.",
+        "cost_benefit": "Included free with Google Cloud VPC networking.",
+        "security_note": "Deny by default ingress; allow egress with hierarchical firewall policies.",
+    },
     "aws_s3_bucket": {
         "gcp_service": "Cloud Storage",
         "gcp_resource": "google_storage_bucket",

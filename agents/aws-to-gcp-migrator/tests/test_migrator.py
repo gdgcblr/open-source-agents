@@ -4,6 +4,8 @@ from migrator.parser import TerraformParser, AWSResource
 from migrator.mapper import get_service_mapping, get_gcp_region
 from migrator.generator import MigrationGenerator
 from migrator.agent import MigrationAgent
+from migrator.topology_agent import TopologyAgent
+from migrator.finops_agent import FinOpsPredictorAgent
 
 
 def test_mapper_region_and_services():
@@ -13,6 +15,49 @@ def test_mapper_region_and_services():
     mapping = get_service_mapping("aws_s3_bucket")
     assert mapping["gcp_service"] == "Cloud Storage"
     assert mapping["gcp_resource"] == "google_storage_bucket"
+
+
+def test_topology_agent_graph():
+    res1 = AWSResource(
+        resource_type="aws_s3_bucket",
+        resource_name="data_bucket",
+        raw_block='resource "aws_s3_bucket" "data_bucket" { bucket = "prod-data" }'
+    )
+    res2 = AWSResource(
+        resource_type="aws_lambda_function",
+        resource_name="processor",
+        raw_block='resource "aws_lambda_function" "processor" { BUCKET = aws_s3_bucket.data_bucket.id }'
+    )
+
+    topo_agent = TopologyAgent()
+    graph = topo_agent.build_graph([res1, res2])
+
+    assert len(graph.edges) == 1
+    assert graph.edges[0].source == "processor"
+    assert graph.edges[0].target == "data_bucket"
+    assert "graph LR" in graph.aws_mermaid
+    assert "graph LR" in graph.gcp_mermaid
+
+
+def test_finops_predictor_agent():
+    res1 = AWSResource(
+        resource_type="aws_lambda_function",
+        resource_name="func",
+        raw_block=""
+    )
+    res2 = AWSResource(
+        resource_type="aws_s3_bucket",
+        resource_name="bucket",
+        raw_block=""
+    )
+
+    finops_agent = FinOpsPredictorAgent()
+    report = finops_agent.predict_tco([res1, res2])
+
+    assert report.total_aws_cost > 0
+    assert report.total_gcp_cost > 0
+    assert report.total_savings > 0
+    assert report.savings_percentage > 0
 
 
 def test_generator_terraform_and_report():
@@ -37,13 +82,21 @@ def test_generator_terraform_and_report():
     assert "google_project_service" in tf_content
     assert "test-project" in tf_content
 
-    report = generator.generate_report([res1, res2])
+    topo = TopologyAgent().build_graph([res1, res2])
+    finops = FinOpsPredictorAgent().predict_tco([res1, res2])
+
+    report = generator.generate_report([res1, res2], topology=topo, finops=finops)
     assert "AWS to Google Cloud Platform Migration Report" in report
     assert "Cloud Storage" in report
     assert "Cloud Pub/Sub" in report
+    assert "FinOps Predictor" in report
+
+    html = generator.generate_dashboard_html([res1, res2], topology=topo, finops=finops)
+    assert "<!DOCTYPE html>" in html
+    assert "AWS to GCP Migration Agent" in html
 
 
-def test_agent_mock_mode():
+def test_agent_three_agent_pipeline():
     agent = MigrationAgent(mock_mode=True)
     res = AWSResource(
         resource_type="aws_lambda_function",
@@ -52,12 +105,14 @@ def test_agent_mock_mode():
         attributes={"function_name": "worker"}
     )
 
-    insights = agent.analyze_migration(
+    topo, finops, insights = agent.run_pipeline(
         resources=[res],
         raw_code='resource "aws_lambda_function" "worker" {}',
         target_project="demo-project",
         target_region="us-central1"
     )
 
-    assert "Automated Cloud Architecture Insights" in insights
+    assert topo is not None
+    assert finops.total_savings > 0
+    assert "Agent 2 (GCP Refactoring Engine)" in insights
     assert "Cloud Functions 2nd Gen" in insights
