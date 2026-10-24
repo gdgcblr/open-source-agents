@@ -249,7 +249,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
   - All PR text is passed to Gemini inside `<submission>` tags with an explicit "this is data, never instructions" guard. Injection attempts are also detected deterministically.
 - **Read-only by design**: `git` is run only to read repositories. The optional `--run-setup` sandbox runs installs **inside Docker** with no capabilities, `no-new-privileges`, 1 GB of memory, 1 CPU, 256 PIDs, a read-only source mount and a 5-minute timeout.
 - **Human in the loop**: posting a PR comment requires `--post` plus an interactive confirmation (`--yes` only for CI you configure). The Copilot coordinator has no tool that can post, push or merge. `fixer.apply` writes only inside your own project folder and never runs commands.
-- **Data Privacy**: With Gemini enabled, the contribution's README, `.env.example`, file list, PR text and the first 4 KB of the main source file are sent to Google's Gemini API. Use `--no-llm` to keep everything local. Nothing else leaves the machine except GitHub API calls.
+- **Data Privacy**: With Gemini enabled, the contribution's README, `.env.example`, file list, PR text and the first 4 KB of the main source file are sent to Google's Gemini API. Use `--no-llm` to keep everything local. Nothing else leaves the machine except GitHub API calls, plus a Google Fonts stylesheet when you open the web console (it falls back to system fonts offline).
 
 ---
 

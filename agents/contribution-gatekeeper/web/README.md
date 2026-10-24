@@ -1,6 +1,6 @@
-# Gatekeeper web console
+# MergeWarden web console
 
-A browser front end for the gatekeeper: review a PR or a local folder, browse findings with their fix commands and rule citations, preview the PR comment, and triage many PRs on one board.
+A browser front end for MergeWarden (the contribution gatekeeper): review a PR or a local folder, browse findings with their fix commands and rule citations, preview the PR comment, and triage many PRs on one board.
 
 ```bash
 # from agents/contribution-gatekeeper, with the project's venv active
