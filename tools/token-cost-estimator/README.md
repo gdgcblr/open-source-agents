@@ -1,21 +1,23 @@
 # token-cost-estimator
 
-> A CLI tool that counts tokens and estimates the API cost of a prompt across Gemini models before you make a single API call.
+> A CLI tool that counts tokens and estimates the API cost of a prompt across Gemini models before you make a single API call — no surprise bills.
 
 ---
 
 ## Overview
 
 ### Problem Statement & Intended Users
-- **Problem**: Developers using Gemini APIs have no easy way to know how many tokens a prompt will consume or what it will cost before sending it — leading to surprise bills and wasted budget.
+- **Problem**: Before sending a prompt to the Gemini API, developers have no way to know how many tokens it will consume or how much it will cost. The bill only shows up after the call completes — which is especially painful for long prompts like video generation scripts, research documents, or large context windows.
 - **Intended Users**: Developers and AI engineers building with the Google Gemini API who want to estimate token usage and cost during development.
 
 ### Key Features
-- Accurate token counting using Google's `count_tokens` API endpoint
+- Accurate token counting using Google's `count_tokens` API endpoint (free, no generation)
 - Cost estimation for both input and output tokens across current Gemini models
 - Supports prompt input via CLI argument, file path, or stdin
 - `--all-models` flag to compare cost across every supported model at once
 - `--list-models` flag to view current pricing and token counting support at a glance
+- `--json` flag for machine-readable output — pipe into scripts or save to file
+- `--budget` flag to warn when estimated cost exceeds a set limit
 
 ---
 
@@ -35,15 +37,15 @@
         |
         v
 [main.py argument parser]
-                         |
+        |
         v
 [Google Gemini count_tokens API] --> returns exact input token count
-                         |
+        |
         v
 [Cost calculator] --> applies per-model pricing
         |
         v
-[Formatted report printed to stdout]
+[Formatted report or JSON printed to stdout]
 ```
 
 ---
@@ -64,16 +66,16 @@
    ```
 
 2. **Create and activate a virtual environment:**
-     ```bash
+   ```bash
    python3 -m venv .venv
    source .venv/bin/activate      # macOS/Linux
    .venv\Scripts\activate         # Windows
-     ```
+   ```
 
 3. **Install dependencies:**
-     ```bash
+   ```bash
    pip install -r requirements.txt
-     ```
+   ```
 
 4. **Configure your API key:**
    ```bash
@@ -111,21 +113,27 @@ python main.py "Translate this paragraph to Spanish" --all-models
 
 # List all supported models and their pricing
 python main.py --list-models
+
+# Output results as JSON (great for scripting)
+python main.py "Explain what a neural network is" --json
+
+# Warn if estimated cost exceeds a budget (in USD)
+python main.py "Explain what a neural network is" --budget 0.01
+
+# Combine: all models + budget check
+python main.py "Explain what a neural network is" --all-models --budget 0.001
 ```
 
 ---
 
 ## Example Input & Output
 
-### Example Input
+### Basic estimate
 ```bash
-python main.py "Explain what a neural network is" --model gemini-3.8-flash
+python main.py "Explain what a neural network is"
 ```
-
-### Example Output
 ```
 Model    : gemini-3.8-flash
-Prompt   : Explain what a neural network is
 --------------------------------------------------
 Input tokens   : 7
 Output tokens  : 500 (estimated)
@@ -133,6 +141,37 @@ Input cost     : $0.000001
 Output cost    : $0.000200
 Total cost     : $0.000201
 --------------------------------------------------
+```
+
+### With `--json`
+```bash
+python main.py "Explain what a neural network is" --json
+```
+```json
+{
+  "model": "gemini-3.8-flash",
+  "input_tokens": 7,
+  "output_tokens": 500,
+  "input_cost": 1e-06,
+  "output_cost": 0.0002,
+  "total_cost": 0.000201
+}
+```
+
+### With `--budget`
+```bash
+python main.py "Explain what a neural network is" --budget 1.0
+```
+```
+Total cost     : $0.000201
+OK: Estimated cost is within budget of $1.000000
+```
+```bash
+python main.py "Explain what a neural network is" --budget 0.000001
+```
+```
+Total cost     : $0.000201
+WARNING: Estimated cost $0.000201 exceeds budget of $0.000001
 ```
 
 ### With `--all-models`
@@ -141,23 +180,13 @@ python main.py "Explain what a neural network is" --all-models
 ```
 ```
 Model    : gemini-3.8-flash
-Prompt   : Explain what a neural network is
 --------------------------------------------------
-Input tokens   : 7
-Output tokens  : 500 (estimated)
-Input cost     : $0.000001
-Output cost    : $0.000200
-Total cost     : $0.000201
+Input tokens   : 7, Total cost : $0.000201
 --------------------------------------------------
 
 Model    : gemini-3.8-flash-lite
-Prompt   : Explain what a neural network is
 --------------------------------------------------
-Input tokens   : 7
-Output tokens  : 500 (estimated)
-Input cost     : $0.000001
-Output cost    : $0.000150
-Total cost     : $0.000151
+Input tokens   : 7, Total cost : $0.000151
 --------------------------------------------------
 ```
 
@@ -179,13 +208,22 @@ gemini-3.8-flash-lite          $   0.075 $   0.300  via gemini-3.8-flash
 # 1. List models (no API call made)
 python main.py --list-models
 
-# 2. Test with a short inline prompt
+# 2. Test basic estimate
 python main.py "Hello world" --model gemini-3.8-flash
 
-# 3. Test all models at once
+# 3. Test JSON output and verify it is valid
+python main.py "Explain what a neural network is" --json | python3 -m json.tool
+
+# 4. Test budget pass
+python main.py "Explain what a neural network is" --budget 1.0
+
+# 5. Test budget warning
+python main.py "Explain what a neural network is" --budget 0.000001
+
+# 6. Test all models
 python main.py "Explain what a neural network is" --all-models
 
-# 4. Test file input
+# 7. Test file input
 echo "Explain machine learning in simple terms." > test_prompt.txt
 python main.py --file test_prompt.txt
 ```
@@ -197,7 +235,7 @@ python main.py --file test_prompt.txt
 - Output token count is an estimate provided by the user via `--output-tokens` (default 500). The tool cannot predict actual output length — only input tokens are counted precisely.
 - `gemini-3.8-flash-lite` does not natively support the `count_tokens` endpoint; token count is approximated using `gemini-3.8-flash` (tokenizers are compatible).
 - Pricing data is hardcoded based on Google's published rates and may drift if Google updates pricing. Check https://ai.google.dev/gemini-api/docs/pricing for the latest.
-- Tested on macOS. Windows support via `.venv\Scripts\activate` should work but is not fully verified.
+- Tested on macOS (Apple Silicon, Python 3.14). Windows support via `.venv\Scripts\activate` should work but is not fully verified.
 
 ---
 
@@ -212,9 +250,8 @@ python main.py --file test_prompt.txt
 ## Future Improvements
 
 - [ ] Support Anthropic and OpenAI models
-- [ ] Add a `--json` flag for machine-readable output
 - [ ] Cache pricing data from a remote source to stay current automatically
-- [ ] Add a `--budget` flag that warns when estimated cost exceeds a threshold
+- [ ] Add a `--budget` per-model breakdown when used with `--all-models`
 
 ---
 
