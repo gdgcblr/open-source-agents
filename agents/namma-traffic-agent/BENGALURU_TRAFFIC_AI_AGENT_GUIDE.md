@@ -174,9 +174,13 @@ python -m pytest tests/
 - **The Bengaluru Reality:** Leaving your tech park in Bellandur or Manyata at 5:45 PM results in a 110-minute crawl. Leaving at 4:15 PM or 8:15 PM takes only 35 minutes.
 - **How the Agent Solves It:** The agent models the **Congestion Curve** over a 3-hour window (-60m, -30m, 0, +30m, +60m) and highlights the exact departure slot that saves maximum commute time.
 
-### 5. 💰 Ride-Hailing Surge Protection
-- **The Bengaluru Reality:** During rain and peak rush hours, cab aggregators apply 1.5x–2.5x dynamic multipliers, turning everyday commutes into expensive ordeals.
-- **How the Agent Solves It:** The agent estimates dynamic surge multipliers and directly compares them with fixed-fare alternatives (Namma Metro, BMTC Vajra, or shared transit).
+### 6. 🚌 BMTC Bus Network & Transparent Fare Structure
+- **The Bengaluru Reality:** Taking a cab through the Outer Ring Road costs ₹750–₹900 during peak hours. High-frequency BMTC bus lanes (such as routes 500-D and 500-CA) run every 5 minutes along dedicated bus corridors.
+- **How the Agent Solves It:** The agent lists exact BMTC bus numbers, boarding and deboarding stops, and fare structures: **Ordinary BMTC (₹25)** vs **AC Vajra Volvo (₹45)** vs **Airport Vayu Vajra (₹260)**, highlighting savings of over **₹780 per trip**!
+
+### 7. 🌦️ Real-Time Weather & Monsoon Early Warning Radar
+- **The Bengaluru Reality:** A 20-minute thunderstorm can disrupt an entire evening commute, causing severe waterlogging and 2.2x cab surge multipliers.
+- **How the Agent Solves It:** Real-time weather monitoring tracks temperature, rainfall intensity, humidity, and IMD thunderstorm warnings, providing actionable advisories before commuters get stranded.
 
 ---
 

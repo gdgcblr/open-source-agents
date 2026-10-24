@@ -66,10 +66,56 @@ flowchart TD
 ## ⚡ Key Features
 
 - **Multimodal Metro vs Cab Comparator:** Directly compares road travel times and surge taxi fares against Namma Metro (Purple, Green, and Yellow Lines), highlighting saved minutes and rupees.
+- **🚌 BMTC Bus Routes & Fare Breakdown:** Integrates exact BMTC bus routes (500-D, 500-CA, 335-E, KIA-9) with Ordinary (₹25) and AC Vajra Volvo (₹45) fares, stops, and frequencies.
+- **🌦️ Real-Time Weather & Monsoon Radar:** Live temperature, rainfall status, thunderstorm warnings, and waterlogging impact index on roads and underpasses.
+- **🛰️ High-Resolution Satellite Map Interface:** Full-screen satellite imagery with road network overlays, pulsing chokepoints, and colored congestion polylines.
 - **Bengaluru Chokepoint Intelligence:** Live congestion scores, delay estimates, and internal bypass routes for Silk Board, Tin Factory, Hebbal Flyover, Marathahalli Bridge, Ecospace ORR, and Goraguntepalya.
 - **Monsoon & Underpass Alerts:** Tracks waterlogging risks in notorious low-lying underpasses (Kadubeesanahalli, Okalipuram, Panathur RUB).
 - **Golden Departure Optimizer:** Computes congestion curves across a 3-hour window to recommend the single best time to leave.
 - **100% Out-of-the-Box Reproducibility:** Operates with full functionality in local heuristic mode even without an external API key; enhanced by Gemini 2.5 Flash when `GEMINI_API_KEY` is supplied.
+
+---
+
+## 🆚 Google Maps vs. Namma Traffic AI Agent
+
+| Feature | 🗺️ Google Maps | 🚦 Namma Traffic AI Agent |
+| :--- | :---: | :---: |
+| **Core Philosophy** | **Reactive Navigation:** Tells you where traffic is and guides you into it. | **Proactive Strategist:** Tells you how to *bypass* traffic and *save money*. |
+| **Multimodal Comparison** | ❌ **Fragmented:** Metro, bus, and driving are hidden in separate tabs without cost comparison. | ✅ **Integrated Side-by-Side:** Automatically compares Road Cab vs Namma Metro vs BMTC Bus on a single screen. |
+| **Ride-Hail Surge & Cost Savings** | ❌ **No surge prediction:** Does not show ride-hail surge multipliers or ₹ savings. | ✅ **Calculates Exact ₹ Saved:** Shows how taking Metro/Bus saves **₹700+ per trip** over surge cabs. |
+| **BMTC Bus & Metro Fares** | ❌ Limited schedule info, no smart card vs token breakdown. | ✅ **Detailed Fares:** Ordinary (₹25), Vajra AC (₹45), Metro QR Ticket (₹57), Token (₹60). |
+| **Hyper-Local Bengaluru Bypasses** | ❌ **Generic rerouting:** Often routes cars into narrow dead-end gullies or trapped service roads. | ✅ **Local Chokepoint Knowledge:** Knows specific bypasses for Central Silk Board, Tin Factory, Hebbal, and Marathahalli Bridge. |
+| **Monsoon Underpass Flood Alerts** | ❌ **Delayed/Reactive:** Flags road closures only after vehicles are already stranded. | ✅ **Proactive Flood Radar:** Alerts commuters about waterlogged railway underpasses (*Kadubeesanahalli, Okalipuram, Panathur*) before they enter. |
+| **Golden Departure Window** | ❌ Shows generic historical bar graphs. | ✅ **Autonomous Timing Curve:** Analyzes travel times across a 3-hour window to recommend the single best time to leave. |
+| **Interface & Interaction** | ❌ Search box accepts only locations (point A to B). | ✅ **Natural Language AI Copilot:** Ask questions like *"Is Silk Board jammed?"* or *"Indiranagar to Airport: cab or bus?"*. |
+| **Developer Open-Source Access** | ❌ **Closed proprietary API:** Costs $5–$10 per 1,000 requests on Google Cloud. | ✅ **100% Open-Source & Reproducible:** MIT licensed, runs locally without mandatory paid API keys. |
+
+### 🚗 Real-World Commute Example: Koramangala ➡️ Whitefield (Friday 6:00 PM)
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        WHAT GOOGLE MAPS DOES                           │
+├────────────────────────────────────────────────────────────────────────┤
+│ • Suggests driving via Outer Ring Road (ORR).                          │
+│ • Shows a 19 km route in deep red: "130 mins (severe delays)".         │
+│ • Commuter books an Uber/Ola: hits 1.6x surge fare = ₹832.             │
+│ • Commuter crawls bumper-to-bumper through Marathahalli for 2+ hours.  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+*vs.*
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                    WHAT NAMMA TRAFFIC AI AGENT DOES                    │
+├────────────────────────────────────────────────────────────────────────┤
+│ • Evaluates all transit modes instantly:                               │
+│     🚖 Road Cab: 130 mins, ₹832 (1.6x surge active)                    │
+│     🚇 Namma Metro: 78 mins door-to-door, ₹87                          │
+│     🚌 BMTC 500-D Vajra AC: 65 mins, ₹45                               │
+│ • Recommends Metro Purple Line: saves 52 minutes and ₹745!             │
+│ • Identifies the Golden Departure Window: leaving at 4:00 PM           │
+│   cuts commute time down to 67 minutes and eliminates cab surge!      │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
