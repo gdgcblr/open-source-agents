@@ -1,0 +1,68 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1">
+      <stop offset="0%" stop-color="#071d2a"/>
+      <stop offset="100%" stop-color="#0a1d29"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" x2="1">
+      <stop offset="0%" stop-color="#0d2435"/>
+      <stop offset="100%" stop-color="#0b1f2b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1">
+      <stop offset="0%" stop-color="#72f3b3"/>
+      <stop offset="100%" stop-color="#51d3ac"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="900" fill="url(#bg)"/>
+  <circle cx="260" cy="190" r="220" fill="#0a3346" opacity="0.45"/>
+  <circle cx="1180" cy="710" r="260" fill="#0a3346" opacity="0.35"/>
+
+  <rect x="80" y="50" width="1240" height="800" rx="32" fill="url(#panel)" stroke="#3a4d60" stroke-width="2" filter="url(#shadow)"/>
+
+  <rect x="120" y="80" width="64" height="64" rx="18" fill="#1a3f4d"/>
+  <rect x="136" y="98" width="32" height="32" rx="8" fill="#66e0c6"/>
+  <text x="210" y="112" font-size="22" font-family="Segoe UI, Arial, sans-serif" fill="#8db5c3" letter-spacing="3">AGRI ADVISORY</text>
+  <text x="210" y="150" font-size="52" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#EAF6FF">Kannada Agri Assistant</text>
+
+  <rect x="1130" y="90" width="136" height="48" rx="24" fill="#1a4d45"/>
+  <circle cx="1160" cy="114" r="8" fill="#72f3b3"/>
+  <text x="1178" y="120" font-size="24" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#D4FBEA">LIVE</text>
+
+  <rect x="120" y="190" width="1160" height="560" rx="28" fill="#0f2433" stroke="#3a4d60"/>
+
+  <text x="155" y="246" font-size="22" font-family="Segoe UI, Arial, sans-serif" fill="#8aa8b7" letter-spacing="3">SMART FARMING GUIDANCE</text>
+
+  <text x="155" y="335" font-size="62" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#F0F8FF">
+    Ask about crop loss, storage, drying, packaging and
+  </text>
+  <text x="155" y="405" font-size="62" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#F0F8FF">
+    better harvest practices.
+  </text>
+
+  <rect x="155" y="460" width="1090" height="120" rx="18" fill="#0c1d28" stroke="#3a4d60"/>
+  <text x="182" y="530" font-size="30" font-family="Segoe UI, Arial, sans-serif" fill="#dfeef7" opacity="0.9">
+    ವಸ್ತುಗಳ ಸಂಗ್ರಹಣೆ ಹೇಗೆ ಮಾಡಬೇಕು?
+  </text>
+
+  <g>
+    <rect x="155" y="610" width="180" height="52" rx="16" fill="url(#accent)"/>
+    <text x="210" y="646" text-anchor="middle" font-size="28" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#071d2a">Ask assistant</text>
+
+    <rect x="365" y="610" width="150" height="52" rx="16" fill="#132a36" stroke="#3a4d60"/>
+    <text x="440" y="646" text-anchor="middle" font-size="28" font-family="Segoe UI, Arial, sans-serif" fill="#EAF6FF">Clear</text>
+  </g>
+
+  <text x="155" y="710" font-size="30" font-family="Segoe UI, Arial, sans-serif" fill="#EAF6FF" font-weight="700">Answer</text>
+
+  <rect x="155" y="728" width="1090" height="120" rx="18" fill="#0b1d2a" stroke="#3a4d60"/>
+  <text x="182" y="782" font-size="25" font-family="Segoe UI, Arial, sans-serif" fill="#dfeef7" opacity="0.9">
+    ಸಜ್ಜಾತದ ಸಂಗ್ರಹಣೆಯ ಸಮಯದಲ್ಲಿ ಆಹಾರವನ್ನು ಒಣಗಿಸಿ, ತೇವವು ಕಡಿಮೆ ಮಾಡಿ ಮತ್ತು ಸ್ವಚ್ಛತೆಗೆ ಗಮನ ಕೊಡಿ.
+  </text>
+  <text x="182" y="821" font-size="25" font-family="Segoe UI, Arial, sans-serif" fill="#dfeef7" opacity="0.9">
+    ಇದರಿಂದ ಧಾನ್ಯಗಳ ხარისხ ಮತ್ತು ಆಯ διάρκεια ಹೆಚ್ಚಾಗುತ್ತದೆ.
+  </text>
+</svg>

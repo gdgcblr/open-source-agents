@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kannada Agri Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="bg-orb orb-one"></div>
+      <div class="bg-orb orb-two"></div>
+
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-icon">🌾</div>
+          <div>
+            <p class="eyebrow">Agri advisory</p>
+            <h1>Kannada Agri Assistant</h1>
+          </div>
+        </div>
+        <span class="status-pill">Live</span>
+      </header>
+
+      <main class="card">
+        <section class="hero">
+          <div>
+            <p class="hero-tag">Smart farming guidance</p>
+            <h2>Ask about crop loss, storage, drying, packaging and better harvest practices.</h2>
+          </div>
+        </section>
+
+        <section class="input-panel">
+          <label for="questionInput">Your question</label>
+          <textarea id="questionInput" rows="5" placeholder="Example: ಕೃಷಿಯಲ್ಲಿ ಪೋಸ್ಟ್ ಹಾರ್ವೆಸ್ಟ್ ನಷ್ಟ ಎಂದರೇನು?"></textarea>
+
+          <div class="quick-questions">
+            <button class="chip" type="button">ಪೋಸ್ಟ್ ಹಾರ್ವೆಸ್ಟ್ ನಷ್ಟ ಎಂದರೇನು?</button>
+            <button class="chip" type="button">ಸಮರ್ಪಕ ಸಂಗ್ರಹಣೆ ಹೇಗೆ ಮಾಡಬೇಕು?</button>
+            <button class="chip" type="button">ಗೋದಾಮಿನಲ್ಲಿ ಧಾನ್ಯಗಳನ್ನು ಸರಿಯಾಗಿ ಹೇಗೆ ಇಡಬೇಕು?</button>
+          </div>
+
+          <div class="actions">
+            <button id="askButton" class="primary-btn" type="button">Ask assistant</button>
+            <button id="clearButton" class="secondary-btn" type="button">Clear</button>
+          </div>
+        </section>
+
+        <section class="output-panel">
+          <div class="output-header">
+            <h3>Answer</h3>
+            <span id="loadingBadge" class="hidden">Thinking...</span>
+          </div>
+          <div id="responseBox" class="response-box empty">
+            Your answer will appear here.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

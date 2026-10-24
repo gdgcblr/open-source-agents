@@ -1,0 +1,4 @@
+langchain
+
+flask
+python-dotenv
