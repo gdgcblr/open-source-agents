@@ -19,8 +19,6 @@ MODELS = {
     },
 }
 
-COUNT_TOKENS_MODEL = "gemini-3.8-flash"
-
 PRICE_PER_MILLION = 1_000_000
 
 
@@ -34,7 +32,8 @@ def count_tokens(prompt: str, model: str) -> int:
         result = client.models.count_tokens(model=model, contents=prompt)
         return result.total_tokens
     # Fallback: use the supported model to count tokens (tokenizers are compatible)
-    result = client.models.count_tokens(model=COUNT_TOKENS_MODEL, contents=prompt)
+    fallback = next(m for m, v in MODELS.items() if v["supports_count_tokens"])
+    result = client.models.count_tokens(model=fallback, contents=prompt)
     return result.total_tokens
 
 
@@ -106,7 +105,8 @@ def main():
         print(f"{'Model':<30} {'Input':>10} {'Output':>10}  {'Token Count API'}")
         print("-" * 65)
         for name, price in MODELS.items():
-            native = "native" if price["supports_count_tokens"] else "via gemini-3.8-flash"
+            fallback = next(m for m, v in MODELS.items() if v["supports_count_tokens"])
+            native = "native" if price["supports_count_tokens"] else f"via {fallback}"
             print(f"{name:<30} ${price['input']:>8.3f} ${price['output']:>8.3f}  {native}")
         print()
         sys.exit(0)
