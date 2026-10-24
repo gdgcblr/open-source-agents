@@ -1,0 +1,183 @@
+{
+  "id": "search-crashloop",
+  "title": "Search service crash-looping after deploy",
+  "alert": {
+    "service": "search-api",
+    "platform": "Cloud Run (europe-west1)",
+    "fired_at": "2026-10-20T07:15:00Z",
+    "policy": "uptime check failing in 3 regions",
+    "observed": "0 healthy instances; container exits within 2s of start; 100% 503 at load balancer",
+    "severity": "SEV-1"
+  },
+  "deploys": [
+    {
+      "sha": "5d9a0f3",
+      "author": "dependabot[bot]",
+      "deployed_at": "2026-10-20T07:09:00Z",
+      "revision": "search-api-00210-ruk",
+      "message": "build(deps): bump the python-minor group with 4 updates",
+      "files": [
+        "requirements.lock"
+      ]
+    },
+    {
+      "sha": "b81e6c7",
+      "author": "dev-kiran",
+      "deployed_at": "2026-10-19T18:20:00Z",
+      "revision": "search-api-00209-pel",
+      "message": "perf: raise min-instances to 2 for morning traffic",
+      "files": [
+        "deploy/service.yaml"
+      ]
+    }
+  ],
+  "diffs": {
+    "5d9a0f3": "--- a/requirements.lock\n+++ b/requirements.lock\n@@ -12,11 +12,11 @@\n-fastapi==0.110.3\n+fastapi==0.115.2\n-pydantic==1.10.17\n+pydantic==2.9.2\n-uvicorn==0.29.0\n+uvicorn==0.31.1\n-httpx==0.27.0\n+httpx==0.27.2\n",
+    "b81e6c7": "--- a/deploy/service.yaml\n+++ b/deploy/service.yaml\n@@ -9,3 +9,3 @@\n-        autoscaling.knative.dev/minScale: \"1\"\n+        autoscaling.knative.dev/minScale: \"2\"\n"
+  },
+  "logs": [
+    {
+      "ts": "2026-10-20T07:09:41Z",
+      "severity": "ERROR",
+      "revision": "search-api-00210-ruk",
+      "message": "Traceback (most recent call last):\n  File \"/app/search/settings.py\", line 3, in <module>\n    from pydantic import BaseSettings\npydantic.errors.PydanticImportError: `BaseSettings` has been moved to the `pydantic-settings` package."
+    },
+    {
+      "ts": "2026-10-20T07:09:42Z",
+      "severity": "ERROR",
+      "revision": "search-api-00210-ruk",
+      "message": "Container called exit(1)."
+    },
+    {
+      "ts": "2026-10-20T07:10:15Z",
+      "severity": "WARNING",
+      "revision": "search-api-00210-ruk",
+      "message": "Default STARTUP TCP probe failed 1 time consecutively for container \"search\" on port 8080."
+    },
+    {
+      "ts": "2026-10-20T07:11:02Z",
+      "severity": "ERROR",
+      "revision": "search-api-00210-ruk",
+      "message": "Container called exit(1)."
+    },
+    {
+      "ts": "2026-10-19T18:25:00Z",
+      "severity": "INFO",
+      "revision": "search-api-00209-pel",
+      "message": "Application startup complete. Uvicorn running on http://0.0.0.0:8080"
+    }
+  ],
+  "metrics": {
+    "healthy_instances": {
+      "before": 2,
+      "after": 0,
+      "changed_at": "2026-10-20T07:10:00Z"
+    },
+    "container_startup_latency_ms": {
+      "before": 1900,
+      "after": null,
+      "changed_at": "2026-10-20T07:09:40Z"
+    },
+    "cold_starts_per_min": {
+      "before": 0.1,
+      "after": 14.0,
+      "changed_at": "2026-10-20T07:10:00Z"
+    },
+    "memory_utilization_pct": {
+      "before": 40,
+      "after": 8,
+      "changed_at": "2026-10-20T07:10:00Z"
+    },
+    "cpu_utilization_pct": {
+      "before": 25,
+      "after": 6,
+      "changed_at": "2026-10-20T07:10:00Z"
+    }
+  },
+  "config_revisions": [
+    {
+      "revision": "search-api-00210-ruk",
+      "changes": [],
+      "note": "image-only change (sha 5d9a0f3)"
+    },
+    {
+      "revision": "search-api-00209-pel",
+      "changes": [
+        {
+          "key": "minScale",
+          "from": "1",
+          "to": "2"
+        }
+      ],
+      "note": "served traffic healthily for 13 hours"
+    }
+  ],
+  "dependencies": {
+    "changes": [
+      {
+        "package": "pydantic",
+        "from": "1.10.17",
+        "to": "2.9.2",
+        "major_bump": true
+      },
+      {
+        "package": "fastapi",
+        "from": "0.110.3",
+        "to": "0.115.2",
+        "major_bump": false
+      },
+      {
+        "package": "uvicorn",
+        "from": "0.29.0",
+        "to": "0.31.1",
+        "major_bump": false
+      },
+      {
+        "package": "httpx",
+        "from": "0.27.0",
+        "to": "0.27.2",
+        "major_bump": false
+      }
+    ],
+    "note": "dependabot group update merged with green CI; CI runs unit tests only and never imports search/settings.py"
+  },
+  "traffic": {
+    "requests_per_min": {
+      "before": 300,
+      "after": 310
+    },
+    "note": "Normal Monday morning ramp.",
+    "top_endpoints_after": [
+      {
+        "path": "/v1/search",
+        "share_pct": 88
+      }
+    ]
+  },
+  "database": {
+    "engine": "Elasticsearch 8 (managed)",
+    "cpu_pct": {
+      "before": 18,
+      "after": 3
+    },
+    "active_connections": {
+      "before": 20,
+      "after": 0,
+      "max": 500
+    },
+    "top_queries_after": [],
+    "schema_migrations": []
+  },
+  "expected": {
+    "culprit": "5d9a0f3",
+    "culprit_aliases": [
+      "pydantic"
+    ],
+    "root_category": "dependencies",
+    "red_herrings": [
+      "config"
+    ],
+    "injection_expected": false,
+    "redaction_expected": false
+  }
+}

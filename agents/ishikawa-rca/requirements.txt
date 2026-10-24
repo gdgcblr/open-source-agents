@@ -1,0 +1,6 @@
+google-adk==2.13.0
+fastapi==0.162.0
+uvicorn==0.54.0
+python-dotenv==1.2.4
+mcp==2.3.0
+pytest==9.1.1

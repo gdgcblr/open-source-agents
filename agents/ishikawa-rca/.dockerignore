@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+reports/
+tests/
+examples/
+docs/
+evals/
+*.md

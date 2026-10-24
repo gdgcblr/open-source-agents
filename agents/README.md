@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`ishikawa-rca`](ishikawa-rca/) | Fishbone root-cause analysis for cloud incidents: 6 parallel investigators + a Skeptic that falsifies red herrings, producing the culprit, a fix command and a 5-Whys postmortem | Google ADK, Gemini, FastAPI | [@Likhith-BlueLotus](https://github.com/Likhith-BlueLotus) |

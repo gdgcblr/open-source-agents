@@ -1,0 +1,23 @@
+flowchart LR
+  subgraph IN["① Untrusted evidence in"]
+    direction TB
+    EV["Logs · commits · diffs<br/>metrics · config · deps"]
+    IG["🛡 Input guardrails<br/>redact secrets & PII<br/>quarantine injection<br/>per-agent tool budgets"]
+    EV --> IG
+  end
+  subgraph AG["② Agents · Gemini via Google ADK"]
+    direction TB
+    TR["Triage"]
+    FB["Fishbone · ParallelAgent<br/>code · config · infra<br/>deps · data · traffic"]
+    SK["Skeptic<br/>timing · counterfactual · mechanism"]
+    SC["Scribe<br/>RCAReport schema"]
+    TR --> FB --> SK --> SC
+  end
+  subgraph OUT["③ Verified decision out"]
+    direction TB
+    OG["🛡 Output guardrails<br/>fix allowlist + rollback<br/>evidence grounding<br/>confidence gates"]
+    HU{"Human<br/>approval"}
+    UI["Live UI · CLI · MCP<br/>postmortem · audit trail"]
+    OG --> HU --> UI
+  end
+  IN ==> AG ==> OUT

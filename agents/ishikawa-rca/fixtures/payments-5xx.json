@@ -1,0 +1,175 @@
+{
+  "id": "payments-5xx",
+  "title": "Payments API 5xx spike",
+  "alert": {
+    "service": "payments-api",
+    "platform": "Cloud Run (us-central1)",
+    "fired_at": "2026-10-22T14:07:00Z",
+    "policy": "5xx ratio > 2% for 3 minutes",
+    "observed": "5xx ratio 23% (baseline 0.1%); p95 latency 5,000ms (timeout ceiling)",
+    "severity": "SEV-1"
+  },
+  "deploys": [
+    {
+      "sha": "e44b7a1",
+      "author": "dev-meera",
+      "deployed_at": "2026-10-22T13:58:00Z",
+      "revision": "payments-api-00042-tex",
+      "message": "docs: fix typos in refund error messages",
+      "files": [
+        "app/errors.py",
+        "README.md"
+      ]
+    },
+    {
+      "sha": "infra-8812",
+      "author": "terraform-ci",
+      "deployed_at": "2026-10-22T14:01:00Z",
+      "revision": "payments-api-00043-vow",
+      "message": "infra: right-size payments env vars (PR #8812 'reduce idle db connections to save cost')",
+      "files": [
+        "infra/payments/cloudrun.tf"
+      ]
+    }
+  ],
+  "diffs": {
+    "e44b7a1": "--- a/app/errors.py\n+++ b/app/errors.py\n@@ -3,4 +3,4 @@\n-REFUND_TOO_LARGE = \"Refund ammount exceeds captured value\"\n+REFUND_TOO_LARGE = \"Refund amount exceeds captured value\"\n",
+    "infra-8812": "--- a/infra/payments/cloudrun.tf\n+++ b/infra/payments/cloudrun.tf\n@@ -41,7 +41,7 @@ resource \"google_cloud_run_v2_service\" \"payments\" {\n         env {\n           name  = \"DB_POOL_MAX\"\n-          value = \"20\"\n+          value = \"2\"\n         }\n"
+  },
+  "logs": [
+    {
+      "ts": "2026-10-22T14:01:44Z",
+      "severity": "INFO",
+      "revision": "payments-api-00043-vow",
+      "message": "db pool initialised max=2 idle_timeout=30s"
+    },
+    {
+      "ts": "2026-10-22T14:02:30Z",
+      "severity": "ERROR",
+      "revision": "payments-api-00043-vow",
+      "message": "TimeoutError: QueuePool limit of size 2 overflow 0 reached, connection timed out, timeout 5.00"
+    },
+    {
+      "ts": "2026-10-22T14:03:10Z",
+      "severity": "ERROR",
+      "revision": "payments-api-00043-vow",
+      "message": "POST /v1/charge 503 db connection unavailable"
+    },
+    {
+      "ts": "2026-10-22T14:04:55Z",
+      "severity": "ERROR",
+      "revision": "payments-api-00043-vow",
+      "message": "TimeoutError: QueuePool limit of size 2 overflow 0 reached, connection timed out, timeout 5.00"
+    },
+    {
+      "ts": "2026-10-22T13:59:20Z",
+      "severity": "INFO",
+      "revision": "payments-api-00042-tex",
+      "message": "POST /v1/charge 200 in 120ms"
+    },
+    {
+      "ts": "2026-10-22T14:05:12Z",
+      "severity": "WARNING",
+      "revision": "payments-api-00043-vow",
+      "message": "upstream psp webhook retry scheduled (attempt 2)"
+    }
+  ],
+  "metrics": {
+    "http_5xx_ratio_pct": {
+      "before": 0.1,
+      "after": 23.0,
+      "changed_at": "2026-10-22T14:02:00Z"
+    },
+    "latency_p95_ms": {
+      "before": 210,
+      "after": 5000,
+      "changed_at": "2026-10-22T14:02:00Z"
+    },
+    "cpu_utilization_pct": {
+      "before": 30,
+      "after": 12,
+      "changed_at": "2026-10-22T14:02:00Z"
+    },
+    "memory_utilization_pct": {
+      "before": 46,
+      "after": 44,
+      "changed_at": null
+    },
+    "container_instance_count": {
+      "before": 8,
+      "after": 8,
+      "changed_at": null
+    },
+    "db_connections_per_instance": {
+      "before": 9,
+      "after": 2,
+      "changed_at": "2026-10-22T14:01:30Z"
+    }
+  },
+  "config_revisions": [
+    {
+      "revision": "payments-api-00043-vow",
+      "changes": [
+        {
+          "key": "DB_POOL_MAX",
+          "from": "20",
+          "to": "2"
+        }
+      ],
+      "note": "applied by terraform-ci from infra PR #8812"
+    },
+    {
+      "revision": "payments-api-00042-tex",
+      "changes": [],
+      "note": "image-only change (sha e44b7a1)"
+    }
+  ],
+  "dependencies": {
+    "changes": [],
+    "note": "no lockfile changes in last 14 days"
+  },
+  "traffic": {
+    "requests_per_min": {
+      "before": 900,
+      "after": 940
+    },
+    "note": "Traffic within normal daily band.",
+    "top_endpoints_after": [
+      {
+        "path": "/v1/charge",
+        "share_pct": 61
+      },
+      {
+        "path": "/v1/refund",
+        "share_pct": 9
+      }
+    ]
+  },
+  "database": {
+    "engine": "Cloud SQL Postgres 15",
+    "cpu_pct": {
+      "before": 41,
+      "after": 15
+    },
+    "active_connections": {
+      "before": 72,
+      "after": 16,
+      "max": 200
+    },
+    "top_queries_after": [],
+    "schema_migrations": []
+  },
+  "expected": {
+    "culprit": "DB_POOL_MAX",
+    "culprit_aliases": [
+      "infra-8812"
+    ],
+    "root_category": "config",
+    "red_herrings": [
+      "code",
+      "traffic"
+    ],
+    "injection_expected": false,
+    "redaction_expected": false
+  }
+}
