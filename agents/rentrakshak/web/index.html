@@ -3,79 +3,222 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RentRakshak — Demo</title>
+  <title>RentRakshak — Bengaluru Rental Safety</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="dot"></span>
-      <span>RentRakshak</span>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-icon">🏠</div>
+        <div>
+          <strong>RentRakshak</strong>
+          <small>Rental Safety Companion</small>
+        </div>
+      </div>
+      <nav class="side-nav">
+        <button type="button" class="nav-item active" data-view="home">Home</button>
+        <button type="button" class="nav-item" data-view="analyze">Analyze Listing</button>
+        <button type="button" class="nav-item" data-view="rent">Rent Estimates</button>
+        <button type="button" class="nav-item" data-view="community">Community</button>
+        <button type="button" class="nav-item" data-view="vacating">Vacating / Rooms</button>
+        <button type="button" class="nav-item" data-view="checklist">Rental Checklist</button>
+        <button type="button" class="nav-item" data-view="submit">Share Experience</button>
+        <button type="button" class="nav-item" data-view="about">About &amp; Roadmap</button>
+      </nav>
+      <div class="sidebar-foot">
+        <small>ನಮ್ಮ ಬೆಂಗಳೂರು · Namma Bengaluru</small>
+        <button type="button" class="btn btn-sm btn-primary" id="btn-seed">Load demo data</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="search-wrap">
+          <input type="search" id="global-search" placeholder="Search localities or jump to Community…" />
+        </div>
+        <div class="topbar-meta">
+          <span class="pill">📍 Bengaluru</span>
+          <span class="pill muted">ADK + Gemma ready</span>
+        </div>
+      </header>
+
+      <div class="content-grid">
+        <div class="primary">
+          <!-- HOME -->
+          <section class="view active" id="view-home">
+            <div class="hero">
+              <h1>Before you pay that deposit, talk to RentRakshak</h1>
+              <p>Check rental red flags, understand local rents, and learn from Bengaluru's tenant community.</p>
+              <div class="hero-actions">
+                <button type="button" class="btn btn-primary" data-goto="analyze">Analyze a Listing</button>
+                <button type="button" class="btn btn-outline" data-goto="community">Explore Community</button>
+              </div>
+            </div>
+            <div class="feature-grid">
+              <article class="feature-card" data-goto="analyze"><h3>Analyse Listings</h3><p>Red flags in listings &amp; landlord chats — evidence-based rules.</p></article>
+              <article class="feature-card" data-goto="rent"><h3>Rent Estimates</h3><p>Fair rent ranges by locality from transparent demo data.</p></article>
+              <article class="feature-card" data-goto="checklist"><h3>Rental Checklist</h3><p>Karnataka guidance — no invented legal caps.</p></article>
+              <article class="feature-card" data-goto="community"><h3>Anonymous Community</h3><p>Rent paid, escalations, deposits — real tenant patterns.</p></article>
+            </div>
+            <h2 class="section-title">Popular localities</h2>
+            <div id="locality-cards" class="locality-scroll"></div>
+          </section>
+
+          <!-- ANALYZE -->
+          <section class="view" id="view-analyze">
+            <h2>Analyse a Rental Listing</h2>
+            <p class="lead">Paste from NoBroker, 99acres, MagicBricks, WhatsApp — or upload a <code>.txt</code> export.</p>
+            <div class="subtabs">
+              <button type="button" class="subtab active" data-tab="listing-pane">Listing</button>
+              <button type="button" class="subtab" data-tab="chat-pane">Landlord chat</button>
+              <button type="button" class="subtab" data-tab="props-pane">Property details</button>
+            </div>
+            <div id="listing-pane" class="tab-pane active">
+              <textarea id="listing" maxlength="5000" rows="8" placeholder="Paste listing description…"></textarea>
+              <div class="upload-row">
+                <label class="upload-btn">Upload file (TXT / JPG / PNG / PDF)
+                  <input type="file" id="file-upload" accept=".txt,.pdf,.png,.jpg,.jpeg" hidden />
+                </label>
+                <span id="upload-status" class="muted"></span>
+              </div>
+            </div>
+            <div id="chat-pane" class="tab-pane">
+              <textarea id="chat" rows="6" placeholder="Optional broker/owner chat…"></textarea>
+            </div>
+            <div id="props-pane" class="tab-pane">
+              <div class="form-grid">
+                <label>Locality<select id="prop-locality"></select></label>
+                <label>BHK<input type="text" id="prop-bhk" placeholder="2 BHK" /></label>
+                <label>Monthly rent (₹)<input type="number" id="prop-rent" /></label>
+                <label>Deposit (₹)<input type="number" id="prop-deposit" /></label>
+                <label>Furnishing<select id="prop-furnishing"><option value="">—</option><option>furnished</option><option>semi-furnished</option><option>unfurnished</option></select></label>
+                <label>Type<select id="prop-type"><option value="">—</option><option>apartment</option><option>pg</option><option>shared room</option></select></label>
+              </div>
+            </div>
+            <div class="row">
+              <button type="button" class="btn btn-ghost" id="load-scam">Scam sample</button>
+              <button type="button" class="btn btn-ghost" id="load-clean">Normal sample</button>
+            </div>
+            <button type="button" class="btn btn-primary btn-wide" id="run-check">Analyse with RentRakshak</button>
+            <p class="muted small">Powered by deterministic tools + optional Google ADK (Gemini / Ollama Gemma).</p>
+            <div id="report-out" class="card-result hidden"></div>
+          </section>
+
+          <!-- RENT -->
+          <section class="view" id="view-rent">
+            <h2>Rent estimates</h2>
+            <div class="form-grid">
+              <label>Locality<select id="rent-locality"></select></label>
+              <label>BHK<input type="text" id="rent-bhk" placeholder="2 BHK" /></label>
+              <label>Furnishing<select id="rent-furnishing"><option value="">Any</option><option>furnished</option><option>semi-furnished</option><option>unfurnished</option></select></label>
+            </div>
+            <button type="button" class="btn btn-primary" id="run-rent">Get estimate</button>
+            <div id="rent-out" class="card-result"></div>
+          </section>
+
+          <!-- COMMUNITY -->
+          <section class="view" id="view-community">
+            <h2>Anonymous tenant community</h2>
+            <div class="form-grid">
+              <label>Locality<select id="comm-locality"></select></label>
+              <label>Category<select id="comm-category">
+                <option value="">All</option>
+                <option>Deposit and refund</option>
+                <option>Maintenance</option>
+                <option>Unexpected charges</option>
+                <option>Communication</option>
+                <option>Agreement clarity</option>
+                <option>Move-out experience</option>
+                <option>General rental experience</option>
+              </select></label>
+              <label>Sentiment<select id="comm-sentiment"><option value="">All</option><option>positive</option><option>neutral</option><option>negative</option></select></label>
+              <label>Property type<select id="comm-ptype"><option value="">All</option><option>apartment</option><option>pg</option><option>shared room</option></select></label>
+            </div>
+            <button type="button" class="btn btn-primary" id="comm-search">Search feed</button>
+            <div id="comm-stats" class="muted"></div>
+            <div id="comm-list" class="feed"></div>
+          </section>
+
+          <!-- VACATING -->
+          <section class="view" id="view-vacating">
+            <h2>Vacating / available rooms</h2>
+            <div class="row">
+              <select id="vac-locality"></select>
+              <input type="number" id="vac-max-rent" placeholder="Max rent ₹" />
+              <button type="button" class="btn btn-primary" id="vac-search">Search</button>
+            </div>
+            <div id="vac-list" class="feed"></div>
+          </section>
+
+          <!-- CHECKLIST -->
+          <section class="view" id="view-checklist">
+            <h2>Karnataka rental checklist</h2>
+            <div id="checklist-list" class="feed"></div>
+            <h3>Legal references</h3>
+            <div id="legal-list" class="feed"></div>
+          </section>
+
+          <!-- SUBMIT -->
+          <section class="view" id="view-submit">
+            <h2>Share your experience</h2>
+            <p class="lead">Rent you pay, escalations, deposit issues — no name or phone. Min 20 characters.</p>
+            <div class="form-grid">
+              <label>Locality<select id="sub-locality"></select></label>
+              <label>Property type<select id="sub-ptype"><option>apartment</option><option>pg</option><option>shared room</option></select></label>
+              <label>Rent band (optional)<input type="text" id="sub-rent" placeholder="e.g. 22k-28k" /></label>
+              <label>Category<select id="sub-cat">
+                <option>Unexpected charges</option>
+                <option>Deposit and refund</option>
+                <option>Maintenance</option>
+                <option>Communication</option>
+                <option>Agreement clarity</option>
+                <option>Move-out experience</option>
+                <option>General rental experience</option>
+              </select></label>
+              <label>Sentiment<select id="sub-sent"><option>positive</option><option>neutral</option><option>negative</option></select></label>
+              <label>Maintenance rating (1-5)<input type="number" min="1" max="5" id="sub-r-maint" /></label>
+              <label>Communication rating (1-5)<input type="number" min="1" max="5" id="sub-r-comm" /></label>
+            </div>
+            <label>Your story<textarea id="sub-text" rows="5" placeholder="Include escalations, rent changes, what you verified…"></textarea></label>
+            <button type="button" class="btn btn-primary" id="sub-submit">Submit anonymously</button>
+            <div id="sub-result" class="card-result hidden"></div>
+          </section>
+
+          <!-- ABOUT -->
+          <section class="view" id="view-about">
+            <h2>About &amp; UI roadmap</h2>
+            <p>This web demo implements the core hackathon features. The purple dashboard mockup (sidebar, metro hero, screenshot OCR) is tracked in <code>UI_ROADMAP.md</code>.</p>
+            <ul class="roadmap">
+              <li>✅ Listing + chat + property fields analysis</li>
+              <li>✅ File upload (.txt extracted; image OCR planned)</li>
+              <li>✅ Locality rent cards &amp; detailed estimate API</li>
+              <li>✅ Community feed with filters &amp; rent bands</li>
+              <li>✅ Vacating board + demo seed</li>
+              <li>✅ Checklist + deterministic Ask helper</li>
+              <li>🔜 Full ADK chat widget in-page</li>
+              <li>🔜 OCR for listing screenshots (Gemma vision)</li>
+              <li>🔜 My Posts (edit token management)</li>
+            </ul>
+          </section>
+        </div>
+
+        <aside class="rail">
+          <div class="rail-card">
+            <h3>Ask RentRakshak</h3>
+            <p class="muted small">Quick hints (deterministic). Use ADK for full chat.</p>
+            <input type="text" id="ask-q" placeholder="Deposit limit in Karnataka?" />
+            <button type="button" class="btn btn-primary btn-sm" id="ask-btn">Ask</button>
+            <div id="ask-ans" class="ask-ans"></div>
+          </div>
+          <div class="rail-card">
+            <h3>Recent experiences</h3>
+            <div id="rail-feed" class="rail-feed muted small">Load demo data to see feed.</div>
+          </div>
+        </aside>
+      </div>
     </div>
-    <p class="tagline">Rent smarter. Stay safer. Help the next tenant.</p>
-    <button type="button" id="btn-seed" class="btn btn-ghost">Load demo data</button>
-  </header>
-
-  <nav class="tabs" role="tablist">
-    <button class="tab active" data-panel="analyze" type="button">Check listing</button>
-    <button class="tab" data-panel="community" type="button">Tenant stories</button>
-    <button class="tab" data-panel="vacating" type="button">Vacating rooms</button>
-    <button class="tab" data-panel="checklist" type="button">Checklist</button>
-  </nav>
-
-  <main class="container">
-    <section id="panel-analyze" class="panel active">
-      <div class="card">
-        <h2>Analyze before you pay deposit</h2>
-        <p class="muted">Same engine as <code>main.py</code> — deterministic rules, no API key.</p>
-        <div class="row">
-          <button type="button" class="btn btn-ghost" id="load-scam">Scam sample</button>
-          <button type="button" class="btn btn-ghost" id="load-clean">Normal sample</button>
-        </div>
-        <label>Listing</label>
-        <textarea id="listing" rows="8" placeholder="Paste listing…"></textarea>
-        <label>Chat (optional)</label>
-        <textarea id="chat" rows="4" placeholder="Broker messages…"></textarea>
-        <label>Locality hint</label>
-        <input type="text" id="locality" placeholder="e.g. Koramangala" />
-        <button type="button" class="btn btn-primary" id="run-check">Run safety check</button>
-      </div>
-      <div id="report-out" class="card hidden"></div>
-    </section>
-
-    <section id="panel-community" class="panel">
-      <div class="card">
-        <h2>Anonymous experiences</h2>
-        <div class="row">
-          <input type="text" id="comm-loc" value="Koramangala" placeholder="Locality" />
-          <button type="button" class="btn btn-primary" id="comm-search">Search</button>
-        </div>
-        <div id="comm-list" class="list"></div>
-      </div>
-    </section>
-
-    <section id="panel-vacating" class="panel">
-      <div class="card">
-        <h2>Rooms vacating soon</h2>
-        <div class="row">
-          <input type="text" id="vac-loc" value="Whitefield" placeholder="Locality" />
-          <button type="button" class="btn btn-primary" id="vac-search">Search</button>
-        </div>
-        <div id="vac-list" class="list"></div>
-      </div>
-    </section>
-
-    <section id="panel-checklist" class="panel">
-      <div class="card">
-        <h2>Karnataka rental checklist</h2>
-        <div id="checklist-list" class="list"></div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer muted">
-    Not legal advice. Not affiliated with Google or Karnataka government. User posts are unverified.
-  </footer>
+  </div>
   <div id="toast" class="toast hidden"></div>
   <script src="/static/app.js"></script>
 </body>
