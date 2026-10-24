@@ -1,0 +1,2 @@
+# Optional: NVIDIA integrate API smoke script (scripts/nvidia_smoke.py)
+openai>=1.0.0
