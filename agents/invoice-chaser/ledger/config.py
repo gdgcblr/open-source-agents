@@ -1,6 +1,16 @@
 import os
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
+
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+
+
+def db_path() -> Path:
+    """INVOICE_CHASER_DB, with relative paths resolved against the project folder so the
+    CLI, the MCP server and `adk web` always open the same file."""
+    path = Path(os.getenv("INVOICE_CHASER_DB") or "data/ledger.db")
+    return path if path.is_absolute() else PROJECT_DIR / path
 
 
 @dataclass(frozen=True)
