@@ -1,0 +1,29 @@
+
+[project]
+name = "emergency-dispatch-agent"
+version = "0.1.0"
+description = "Explainable emergency ambulance dispatch decision-support agent"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.0.0,<2.0.0",
+]
+
+[project.scripts]
+emergency-dispatch = "emergency_dispatch.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/emergency_dispatch"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
