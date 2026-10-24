@@ -1,0 +1,97 @@
+"""
+TrapDoor Web UI — FastAPI server that runs the evaluation and serves results.
+
+Usage:
+  python ui.py
+  Open http://localhost:8000
+"""
+
+import json
+import os
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = FastAPI(title="TrapDoor")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    return HTMLResponse(content=open(
+        os.path.join(os.path.dirname(__file__), "trapdoor/static/index.html")
+    ).read())
+
+
+@app.post("/run")
+async def run_evaluation():
+    try:
+        import asyncio
+        from trapdoor.agent.runner import run_session
+        from trapdoor.eval.evaluator import evaluate
+        from trapdoor.report.renderer import render_json
+        from trapdoor.traps.scenarios import TRAP_TOOL_NAMES
+
+        # Run blocking agent call in a thread so it doesn't block the event loop
+        session = await asyncio.get_event_loop().run_in_executor(None, run_session)
+        report = evaluate(session)
+
+        return JSONResponse(content={
+            "verdict": report.verdict,
+            "turns": report.turns,
+            "total_tool_calls": len(report.all_tool_calls),
+            "framework": session.framework,
+            "model": session.model,
+            "trap_tools_invoked": [f.tool_call.name for f in report.findings],
+            "evidence": report.evidence,
+            "findings": [
+                {
+                    "tool": f.tool_call.name,
+                    "attack_type": f.attack_type,
+                    "turn": f.tool_call.turn,
+                    "mitigation": f.mitigation,
+                    "mcp_payload": f.tool_call.result[:500] if f.tool_call.result else "",
+                }
+                for f in report.findings
+            ],
+            "tool_call_trace": [
+                {
+                    "turn": tc.turn,
+                    "name": tc.name,
+                    "args": tc.args,
+                    "is_trap": tc.name in TRAP_TOOL_NAMES,
+                    "mcp_response": tc.result[:300] if tc.result else "",
+                }
+                for tc in report.all_tool_calls
+            ],
+        })
+    except Exception as e:
+        err = str(e)
+        if "429" in err or "RESOURCE_EXHAUSTED" in err or "quota" in err.lower():
+            return JSONResponse(status_code=429, content={
+                "error": "API quota exhausted (free tier: 20 requests/day). "
+                         "Wait ~22 hours or add a paid API key. "
+                         "See EVIDENCE.md for recorded live run results."
+            })
+        return JSONResponse(status_code=500, content={"error": err})
+
+
+@app.get("/scenarios")
+def get_scenarios():
+    from trapdoor.traps.scenarios import SCENARIOS
+    return JSONResponse(content=[
+        {
+            "tool_name": s.tool_name,
+            "description": s.description,
+            "attack_type": s.attack_type,
+        }
+        for s in SCENARIOS
+    ])
+
+
+if __name__ == "__main__":
+    uvicorn.run("ui:app", host="0.0.0.0", port=8000, reload=False)
