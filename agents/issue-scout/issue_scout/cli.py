@@ -75,6 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
     brief.add_argument("--json", action="store_true")
 
     sub.add_parser("mcp", help="Run the MCP server over stdio (for Gemini CLI, Claude Code, Cursor...).")
+    sub.add_parser("doctor", help="Check Python, dependencies, .env, and that your GitHub and Gemini keys work.")
     return parser
 
 
@@ -87,6 +88,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         serve()
         return 0
+    if args.command == "doctor":
+        return doctor()
 
     scout = Scout()
     try:
@@ -158,6 +161,75 @@ def _brief(scout: Scout, args) -> int:
         if note:
             print("\n_Note: %s_" % note)
     return 0
+
+
+def doctor() -> int:
+    """Check the setup step by step. Read-only; uses no API quota (GitHub /rate_limit and Gemini
+    model listing are free). Exit code 0 means the core works; warnings only limit extras."""
+    ok, warn, fail = "[ok]  ", "[warn]", "[FAIL]"
+    failed = False
+
+    def line(mark, text):
+        print("%s %s" % (mark, text))
+
+    version = sys.version_info
+    if version >= (3, 11):
+        line(ok, "Python %d.%d.%d" % version[:3])
+    elif version >= (3, 9):
+        line(warn, "Python %d.%d: the CLI core works, but ADK and MCP need 3.11+" % version[:2])
+    else:
+        line(fail, "Python %d.%d is too old (need 3.9+, recommended 3.11+)" % version[:2])
+        failed = True
+
+    for module, purpose in (("google.adk", "Gemini briefs, adk web/run"), ("mcp", "MCP server")):
+        try:
+            __import__(module)
+            line(ok, "%s installed (%s)" % (module, purpose))
+        except ImportError:
+            line(warn, "%s not installed: run `pip install -r requirements.txt` for %s" % (module, purpose))
+
+    env_file = PROJECT_DIR / ".env"
+    line(ok if env_file.is_file() else warn,
+         ".env found at %s" % env_file if env_file.is_file() else "no .env (optional): cp .env.example .env")
+
+    client_token = os.environ.get("GITHUB_TOKEN")
+    try:
+        from .github import GitHubClient
+
+        limits = GitHubClient().get("/rate_limit")["resources"]
+        core, search = limits["core"], limits["search"]
+        if client_token:
+            line(ok, "GitHub token works: %d/%d core requests, %d/%d searches left"
+                 % (core["remaining"], core["limit"], search["remaining"], search["limit"]))
+        else:
+            line(warn, "no GITHUB_TOKEN: anonymous limit %d/%d requests left this hour; code pointers need a token"
+                 % (core["remaining"], core["limit"]))
+    except GitHubError as exc:
+        line(fail, "GitHub check failed: %s" % exc)
+        failed = True
+
+    key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    model = os.environ.get("ISSUE_SCOUT_MODEL", "gemini-3.5-flash")
+    if not key:
+        line(warn, "no GOOGLE_API_KEY: Gemini briefs and the chat agent are off; everything else works")
+    else:
+        try:
+            from google import genai
+
+            gemini = genai.Client(api_key=key)  # keep a reference: the pager needs an open client
+            names = {m.name.replace("models/", "") for m in gemini.models.list()}
+            if model in names:
+                line(ok, "Gemini key works; model %s is available" % model)
+            else:
+                line(warn, "Gemini key works, but model %s is not available to it; set ISSUE_SCOUT_MODEL" % model)
+        except ImportError:
+            line(warn, "GOOGLE_API_KEY set, but google-genai is not installed")
+        except Exception as exc:  # invalid key, network, ...
+            line(fail, "Gemini key check failed: %s" % _short_error(exc))
+            failed = True
+
+    print("\nResult: %s" % ("problems found, see [FAIL] lines" if failed else "ready to use"))
+    return 1 if failed else 0
 
 
 def _short_error(exc: Exception) -> str:

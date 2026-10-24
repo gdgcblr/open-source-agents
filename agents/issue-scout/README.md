@@ -59,7 +59,7 @@ python -m issue_scout find --lang python --hours 3        # or: --user <your-git
 | Installs in three commands, works with **no API keys** | [Installation & Setup](#installation--setup); verified from a fresh clone in an empty directory |
 | Fits how people already work: CLI, a Google ADK chat agent (`adk web`), and an MCP server for Gemini CLI, Claude Code and Cursor | [How to Run](#how-to-run) |
 | Built on Google's stack | Google ADK 2.13 agents with Gemini, structured output and ADK guardrail callbacks |
-| Tested | 123 offline tests, including the real ADK runner; live runs against GitHub and Gemini ([How to Test](#how-to-test)) |
+| Tested | 125 offline tests, including the real ADK runner; live runs against GitHub and Gemini ([How to Test](#how-to-test)) |
 | Accuracy is measured | A held-out eval: every detector had 100% precision ([Detector accuracy](#detector-accuracy-evals)) |
 | Safe for a newcomer to run | Read-only; never comments, claims or opens PRs; guardrails against prompt injection, query injection, leaked secrets, invented links and runaway loops ([Guardrails](#guardrails)) |
 | Honest about limits | Pattern-based detectors miss some terse claims (57% recall), and every flag links to its source so you can judge ([Known Limitations](#known-limitations)) |
@@ -138,36 +138,83 @@ Every verdict comes from deterministic code and links to its evidence. Gemini su
 
 ## Prerequisites
 
-- Python 3.11+ (3.12 tested) for the full project; Python 3.9+ is enough for the CLI core
-- pip
-- Optional: a GitHub token (raises the API limit from 60 to 5,000 requests per hour)
-- Optional: a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), used for Gemini briefs and the ADK chat agent
+| You need | Why | How to check / install |
+| :--- | :--- | :--- |
+| **Python 3.11+** (3.12 tested) | Google ADK and MCP need 3.11+. Python 3.9–3.10 runs the CLI core only | `python3 --version`. Install: macOS `brew install python@3.12` · Ubuntu/Debian `sudo apt install python3.12 python3.12-venv` · Windows `winget install Python.Python.3.12` or [python.org](https://www.python.org/downloads/) |
+| **git** | To get the code | `git --version` |
+| GitHub token *(optional, recommended)* | Raises GitHub's limit from 60 to 5,000 requests per hour; needed for code pointers (GitHub code search) | Created in step 3 below |
+| Gemini API key *(optional)* | Gemini starter briefs and the ADK chat agent | Created in step 3 below |
+
+No keys are needed to try it: `find`, `inspect`, `related`, `brief --no-ai` and the MCP server all work on GitHub's public API.
 
 ---
 
 ## Installation & Setup
 
-1. **Navigate to the project directory:**
-   ```bash
-   cd agents/issue-scout
-   ```
+**1. Get the code**
+```bash
+git clone https://github.com/gdgcblr/open-source-agents.git
+cd open-source-agents
 
-2. **Set up the virtual environment / install dependencies:**
-   ```bash
-   python3.12 -m venv .venv
-   # Windows:
-   .venv\Scripts\activate
-   # Linux/macOS:
-   source .venv/bin/activate
+# Only while the pull request is still open:
+git fetch origin pull/37/head:issue-scout && git checkout issue-scout
 
-   pip install -r requirements.txt
-   ```
+cd agents/issue-scout
+```
 
-3. **Configure Environment Variables (optional):**
-   ```bash
-   cp .env.example .env
-   # then uncomment and fill in GITHUB_TOKEN and/or GOOGLE_API_KEY
-   ```
+**2. Create a virtual environment and install**
+
+macOS / Linux:
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+Windows (PowerShell):
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+This installs `google-adk`, `mcp` and `pytest`. The core uses only the standard library. Every command below assumes the virtual environment is active and you are in `agents/issue-scout`.
+
+**3. Add your keys (optional, recommended)**
+- **GitHub token:** on github.com go to *Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token*. Choose *Public repositories (read-only)*; no extra permissions are needed.
+- **Gemini key:** at [Google AI Studio](https://aistudio.google.com/apikey), choose *Create API key*.
+
+Copy the template, then uncomment and fill in the lines you need:
+```bash
+cp .env.example .env          # Windows: copy .env.example .env
+```
+```bash
+# .env
+GITHUB_TOKEN=your_github_token_here
+GOOGLE_API_KEY=your_gemini_api_key_here
+```
+`.env` is git-ignored. The CLI, the ADK agent and the MCP server all read it automatically.
+
+**4. Check your setup**
+```bash
+python -m issue_scout doctor
+```
+It's read-only and uses no API quota. With both keys set, you should see:
+```
+[ok]   Python 3.12.15
+[ok]   google.adk installed (Gemini briefs, adk web/run)
+[ok]   mcp installed (MCP server)
+[ok]   .env found at .../agents/issue-scout/.env
+[ok]   GitHub token works: 4790/5000 core requests, 30/30 searches left
+[ok]   Gemini key works; model gemini-3.5-flash is available
+
+Result: ready to use
+```
+Missing keys show as `[warn]` (those features are off). A key that doesn't work shows as `[FAIL]` and the command exits with code 1.
+
+**5. First run**
+```bash
+python -m issue_scout find --lang python --hours 3
+```
 
 ---
 
@@ -392,18 +439,56 @@ Here are 3 open Python issues matched to your 3-hour window.
 
 ## How to Test
 
+### 1. Offline test suite (no network, no keys)
 ```bash
-pytest
+pytest -q
 ```
+Expected: `125 passed`. On Python 3.9–3.10 without ADK installed, the ADK test file is skipped automatically.
 
-- 123 offline tests: no network, no API keys. GitHub is replaced by a fake client.
-- Covered: claim, "already fixed" and maintainer-policy detection; timeline and PR parsing; repo merge statistics; scoring and verdicts; related-issue search; CONTRIBUTING parsing; likely-file ranking; the full `find` pipeline including rate-limit fallbacks; the GitHub client (search pacing, secondary-rate-limit retries, error messages); every guardrail; code pointers, next steps and the legwork receipt; the CLI; and the tool layer.
-- `tests/test_adk_agent.py` drives the **real ADK runner** with a scripted model. It checks three things:
-  - `root_agent` calls Issue Scout's tools and receives their results.
-  - Gemini briefs are validated against `StarterBrief`.
-  - The untrusted-content instruction reaches the model.
-  It is skipped automatically if `google-adk` isn't installed.
-- **Manual check:** `python -m issue_scout inspect https://github.com/Significant-Gravitas/AutoGPT/issues/9416` should flag the "already exists" comment and the closed PR #10324. These are public, so results can change if the thread changes.
+- **Offline by design:** GitHub is replaced by a fake client, and Gemini by a scripted model, so results are deterministic.
+- **Covered:**
+  - claim, "already fixed" and maintainer-policy detection;
+  - timeline and PR parsing, repo merge statistics, scoring and verdicts;
+  - related-issue search, CONTRIBUTING parsing and likely-file ranking;
+  - code pointers, next steps and the legwork receipt;
+  - the full `find` pipeline, including rate-limit fallbacks;
+  - the GitHub client: search pacing, secondary-rate-limit retries and error messages;
+  - every guardrail, the CLI, `doctor` and the tool layer.
+- **The real ADK runner:** `tests/test_adk_agent.py` runs ADK with a scripted model. It checks that `root_agent` calls Issue Scout's tools, that briefs are validated against `StarterBrief`, and that every ADK guardrail callback fires: the tool budget, the unverified-link note, secret masking and dropping invented files.
+
+### 2. Accuracy evals (no network, no keys)
+```bash
+python evals/run_evals.py
+```
+Prints precision and recall for each detector on the dev and held-out sets. See [Detector accuracy](#detector-accuracy-evals) for the expected numbers.
+
+### 3. Live smoke tests (real GitHub, and Gemini where noted)
+GitHub data changes constantly, so exact issues and numbers will differ. The *kind* of output should match.
+
+| # | Command | Needs | What you should see |
+| :--- | :--- | :--- | :--- |
+| 1 | `python -m issue_scout doctor` | nothing | `Result: ready to use` |
+| 2 | `python -m issue_scout inspect https://github.com/Significant-Gravitas/AutoGPT/issues/9416` | nothing | `CAUTION`, a link to the "already exists on master" comment, and closed PR #10324 |
+| 3 | `python -m issue_scout find --lang python --hours 3` | nothing (token recommended) | Ranked picks with READY/CAUTION, `Filtered out N dead ends`, and `Legwork done for you: ...` |
+| 4 | `python -m issue_scout brief brekkylab/backlot#988 --no-ai` | token | **Next step** with a drafted comment, and **Code pointers** linking `backlot/routers/atlassian.py:1583` (`_storage`), `:1590` and `:1598` |
+| 5 | `python -m issue_scout brief brekkylab/backlot#988` | token + Gemini | As in #4, plus **Summary** and **Suggested approach** citing `path:line` |
+| 6 | `python -m issue_scout find --lang 'python repo:evil/x'` | nothing | `error: Invalid language ...`, exit code 1 (a guardrail) |
+| 7 | `adk web adk_agents`, then open <http://localhost:8000>, pick `issue_scout_agent` and ask *"I know Python and have 3 hours, find me something"* | Gemini (token recommended) | The agent calls `find_issues` and lists picks with evidence links. Ask *"make me a plan for #1"* and it calls `starter_brief_facts` and shows the next step and code pointers |
+| 8 | Add the MCP server to your assistant ([How to Run](#how-to-run)) and ask it to *"use issue-scout to check brekkylab/backlot#988"* | token in `.env` | The assistant calls `inspect_issue` and reports the verdict |
+
+### 4. Troubleshooting
+
+| Symptom | Fix |
+| :--- | :--- |
+| `python3.12: command not found` | Install Python 3.11+ (see [Prerequisites](#prerequisites)), or use the version you have, e.g. `python3.11 -m venv .venv` |
+| `ModuleNotFoundError: No module named 'google.adk'` | Activate the virtual environment (`source .venv/bin/activate`) and run `pip install -r requirements.txt` |
+| `GitHub rate limit reached ... Set GITHUB_TOKEN` | You used the anonymous 60 requests per hour. Add `GITHUB_TOKEN` to `.env`, or wait for the reset time shown |
+| `GitHub's abuse protection (secondary rate limit) ...` | Too many searches in a short burst (several runs back to back). Wait a few minutes. The results shown are still valid, just partial |
+| `Gemini brief failed (503 ...)` | The model is overloaded. `brief` already tried the fallback models; retry later. The facts-only brief is still printed |
+| `[FAIL] Gemini key check failed: 400: API key not valid` | Create a new key in Google AI Studio and update `.env` |
+| The MCP server behaves as if there is no token | MCP hosts don't pass your shell's environment variables to the server. Put the token in `agents/issue-scout/.env` |
+| No **Code pointers** section in a brief | Code pointers need `GITHUB_TOKEN` (code search), and the issue must name code in backticks |
+| `adk web` lists no agent | Run it from `agents/issue-scout`, and pass the folder: `adk web adk_agents` |
 
 ### Detector accuracy (evals)
 

@@ -216,3 +216,33 @@ def test_brief_facts_degrade_when_extras_fail():
     from issue_scout.report import render_brief
 
     assert "Related issues unavailable" in render_brief(facts, NOW)
+
+
+def _fake_limits(self, path, params=None):
+    assert path == "/rate_limit"
+    return {"resources": {"core": {"remaining": 42, "limit": 60}, "search": {"remaining": 9, "limit": 10}}}
+
+
+def test_doctor_passes_without_keys(monkeypatch, capsys):
+    from issue_scout.github import GitHubClient as RealClient
+
+    for name in ("GITHUB_TOKEN", "GOOGLE_API_KEY", "GEMINI_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(RealClient, "get", _fake_limits)
+    assert cli.doctor() == 0
+    out = capsys.readouterr().out
+    assert "anonymous limit 42/60" in out and "Result: ready to use" in out
+
+
+def test_doctor_fails_when_github_rejects_the_token(monkeypatch, capsys):
+    from issue_scout.github import GitHubClient as RealClient
+
+    def bad(self, path, params=None):
+        raise GitHubError("GitHub API error 401: Bad credentials", 401)
+
+    monkeypatch.setenv("GITHUB_TOKEN", "wrong")
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setattr(RealClient, "get", bad)
+    assert cli.doctor() == 1
+    assert "[FAIL] GitHub check failed: GitHub API error 401" in capsys.readouterr().out
