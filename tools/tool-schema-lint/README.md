@@ -2,6 +2,23 @@
 
 > A zero-dependency linter that catches broken, provider-incompatible, or poorly described LLM tool definitions (MCP, OpenAI, Gemini, Anthropic) before they fail at runtime or quietly degrade your agent.
 
+**Quick start (about 2 minutes, no API keys):**
+```bash
+git clone https://github.com/gdgcblr/open-source-agents.git
+cd open-source-agents/tools/tool-schema-lint
+
+# Runs immediately, no install needed (use python3 on Linux/macOS if python is not found)
+python -m tool_schema_lint examples/calendar_mcp_broken.json --target gemini   # finds 7 errors
+python -m tool_schema_lint examples/calendar_mcp_fixed.json --target all       # no problems found
+
+# Run the test suite
+python -m venv .venv
+.venv\Scripts\activate          # Windows; on Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+python -m pytest                # expected: 105 passed
+```
+Full details: [Installation & Setup](#installation--setup), [How to Run](#how-to-run), [How to Test](#how-to-test).
+
 ---
 
 ## Overview
@@ -60,10 +77,12 @@ Before running this project, ensure you have:
 
 ## Installation & Setup
 
-1. **Navigate to the project directory:**
+1. **Get the code and navigate to the project directory:**
    ```bash
-   cd tools/tool-schema-lint
+   git clone https://github.com/gdgcblr/open-source-agents.git
+   cd open-source-agents/tools/tool-schema-lint
    ```
+   If you already have the repository, just `cd tools/tool-schema-lint` from its root.
 
 2. **Set up the virtual environment / install dependencies:**
    ```bash
