@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secret-scanner-llm"
+version = "0.1.0"
+description = "Secret scanner: deterministic detection + local Gemma (Ollama) triage, with a Google ADK agent wrapper."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+# Google ADK agent wrapper (`adk web` / `adk run`). LiteLLM comes from the [extensions] extra.
+adk = [
+    "google-adk[extensions,eval]==2.13.0",  # eval extra is needed by `adk eval`
+    "mcp==2.3.0",  # imported by litellm at call time; not pulled in by the extra
+]
+dev = [
+    "pytest==9.1.1",
+]
+
+[project.scripts]
+secret-scanner = "secret_scanner.cli:main"
+
+[tool.setuptools]
+packages = ["secret_scanner", "secret_scanner_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "eval"]
+markers = ["live: needs a running Ollama server and RUN_LIVE_AGENT_TESTS=1"]

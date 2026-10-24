@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`secret-scanner-llm`](secret-scanner-llm/) | Secret scanner: deterministic detection + local Gemma (Ollama) triage with redaction, plus a Google ADK agent wrapper | Python, Ollama (Gemma), Google ADK, LiteLLM | *(add your GitHub handle)* |
