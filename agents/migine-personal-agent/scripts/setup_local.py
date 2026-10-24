@@ -1,7 +1,9 @@
 """Prepare native app access and the configured local Ollama models."""
 
+import argparse
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -11,16 +13,34 @@ from dotenv import load_dotenv, set_key
 from migine.config import Settings
 
 
+def prepare_helper(project: Path, rebuild=False):
+    helper = project / "build/MigineConnector.app/Contents/MacOS/MigineConnector"
+    if rebuild:
+        subprocess.run(
+            ["sh", str(project / "scripts/build-mac-helper.sh")], check=True, stdout=sys.stderr
+        )
+    configured = os.getenv("MIGINE_MAC_HELPER")
+    if configured and Path(configured).expanduser().is_file():
+        return Path(configured).expanduser().resolve()
+    if not helper.is_file():
+        subprocess.run(
+            ["sh", str(project / "scripts/build-mac-helper.sh")], check=True, stdout=sys.stderr
+        )
+    if not helper.is_file():
+        raise RuntimeError("Native helper build did not produce an executable.")
+    set_key(project / ".env", "MIGINE_MAC_HELPER", str(helper))
+    os.environ["MIGINE_MAC_HELPER"] = str(helper)
+    print("Saved a valid native helper path in .env.", file=sys.stderr)
+    return helper
+
+
 def configure(project: Path):
     load_dotenv(project / ".env", override=False)
     settings = Settings.load()
     if settings.connector_url:
         raise ValueError("Unset MIGINE_MAC_CONNECTOR_URL for native local setup.")
 
-    subprocess.run(["sh", str(project / "scripts/build-mac-helper.sh")], check=True)
-    helper = project / "build/MigineConnector.app/Contents/MacOS/MigineConnector"
-    if not os.getenv("MIGINE_MAC_HELPER"):
-        set_key(project / ".env", "MIGINE_MAC_HELPER", str(helper))
+    prepare_helper(project, rebuild=True)
 
     with httpx.Client(timeout=2, trust_env=False) as client:
 
@@ -60,4 +80,17 @@ def configure(project: Path):
 
 if __name__ == "__main__":
     os.umask(0o077)
-    configure(Path(__file__).resolve().parents[1])
+    parser = argparse.ArgumentParser(description="Prepare Migine for local use.")
+    parser.add_argument(
+        "--helper-path",
+        action="store_true",
+        help="Check or repair the native helper and print its path.",
+    )
+    args = parser.parse_args()
+    project = Path(__file__).resolve().parents[1]
+    if args.helper_path:
+        load_dotenv(project / ".env", override=False)
+        settings = Settings.load()
+        print("" if settings.connector_url else prepare_helper(project))
+    else:
+        configure(project)

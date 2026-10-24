@@ -20,7 +20,8 @@ sh scripts/run-local.sh
 ```
 
 Setup installs locked dependencies, prepares `.env`, builds the Mac helper, starts
-Ollama if needed, and downloads missing configured models. Existing settings are preserved.
+Ollama if needed, and downloads missing configured models. Valid settings are preserved.
+The launch script repairs invalid helper paths before starting ADK Web.
 
 Open [ADK Web](http://127.0.0.1:8000), select `migine_web`, and ask:
 “What is on my calendar for the next seven days?” Allow Calendar access when requested.

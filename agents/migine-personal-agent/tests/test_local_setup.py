@@ -12,10 +12,19 @@ from migine.config import Settings
 
 
 @pytest.mark.parametrize("embedding_installed", [True, False])
-@pytest.mark.parametrize("custom_helper", [None, "/custom/MigineConnector"])
+@pytest.mark.parametrize("helper_state", ["unset", "valid", "invalid"])
 def test_setup_preserves_settings_and_pulls_only_missing_models(
-    tmp_path, monkeypatch, embedding_installed, custom_helper
+    tmp_path, monkeypatch, embedding_installed, helper_state
 ):
+    custom_helper = (
+        str(tmp_path / "custom-helper")
+        if helper_state == "valid"
+        else "/absolute/project/path/MigineConnector"
+        if helper_state == "invalid"
+        else None
+    )
+    if helper_state == "valid":
+        Path(custom_helper).write_text("test helper")
     path = Path(__file__).parents[1] / "scripts/setup_local.py"
     spec = importlib.util.spec_from_file_location("setup_local", path)
     module = importlib.util.module_from_spec(spec)
@@ -39,7 +48,15 @@ def test_setup_preserves_settings_and_pulls_only_missing_models(
     if custom_helper:
         monkeypatch.setenv("MIGINE_MAC_HELPER", custom_helper)
     calls = []
-    monkeypatch.setattr(module.subprocess, "run", lambda args, **kwargs: calls.append(args))
+
+    def fake_run(args, **kwargs):
+        calls.append(args)
+        if args[0] == "sh":
+            built = tmp_path / "build/MigineConnector.app/Contents/MacOS/MigineConnector"
+            built.parent.mkdir(parents=True, exist_ok=True)
+            built.write_text("test helper")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
 
     class Client:
         def __init__(self, **_kwargs):
@@ -66,7 +83,9 @@ def test_setup_preserves_settings_and_pulls_only_missing_models(
     saved = dotenv_values(tmp_path / ".env")
     assert saved["MIGINE_TIMEZONE"] == "Asia/Kolkata"
     assert saved["MIGINE_MAC_HELPER"] == (
-        custom_helper or str(tmp_path / "build/MigineConnector.app/Contents/MacOS/MigineConnector")
+        custom_helper
+        if helper_state == "valid"
+        else str(tmp_path / "build/MigineConnector.app/Contents/MacOS/MigineConnector")
     )
     pulls = [command for command in calls if command[:2] == ["ollama", "pull"]]
     assert pulls == ([] if embedding_installed else [["ollama", "pull", "embeddinggemma"]])
@@ -84,7 +103,12 @@ def test_run_script_starts_local_web_from_project_directory(tmp_path):
     commands = tmp_path / "commands"
     commands.mkdir()
     uv = commands / "uv"
-    uv.write_text('#!/bin/sh\npwd\nprintf "%s\\n" "$@"\n')
+    uv.write_text(
+        '#!/bin/sh\nif [ "$3" = python ]; then\n'
+        'printf "%s/build/MigineConnector.app/Contents/MacOS/MigineConnector\\n" "$PWD"\n'
+        'exit 0\nfi\npwd\nprintf "HELPER=%s\\n" "$MIGINE_MAC_HELPER"\n'
+        'printf "%s\\n" "$@"\n'
+    )
     uv.chmod(0o755)
     response = subprocess.run(
         ["sh", str(run)],
@@ -97,4 +121,8 @@ def test_run_script_starts_local_web_from_project_directory(tmp_path):
     assert str(project) in response.stdout
     assert "run\n--frozen\nadk\nweb\nexamples/web\n--host\n127.0.0.1" in response.stdout
     assert "--max_llm_calls\n8" in response.stdout
+    assert (
+        f"HELPER={project}/build/MigineConnector.app/Contents/MacOS/MigineConnector"
+        in response.stdout
+    )
     assert "demo" not in response.stdout

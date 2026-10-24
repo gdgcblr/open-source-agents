@@ -5,9 +5,10 @@ Locked ADK version: 2.13.0 (ADK 2.x).
 
 | Check | Result |
 |---|---|
-| Automated tests | 71 passed |
+| Automated tests | 73 passed |
 | Clean project setup | New environment installed from uv.lock; 71 tests and helper build passed |
 | Local setup scripts | Settings preserved, only missing models downloaded, and local Web launch verified with stubs |
+| Actual local launch | `sh scripts/run-local.sh` started ADK Web; a live `/run` request returned 9 Calendar events without a helper error |
 | Ruff checks | Passed |
 | Python source package and wheel | Built |
 | Native Calendar/Contacts helper | Compiled and ad-hoc signed |
@@ -54,6 +55,11 @@ and real subscription totals remain unverified. No records were auto-accepted. S
 vectors, and any candidates stay in ignored local storage; this report contains no email
 subjects, addresses, amounts, event titles, or contact details. The live model proxy test
 used synthetic financial records. Contacts and live app writes were not called in this pass.
+
+The actual launcher check found an invalid placeholder in `MIGINE_MAC_HELPER`. Setup
+and launch now repair missing/invalid helper paths and export the checked path to ADK Web.
+Regression tests cover unset, valid custom, and invalid helper paths. The live check used
+the real local server and Calendar; no Contacts requests or app write actions ran.
 
 The clean setup check copied only staged project files, created a new Python environment,
 and installed locked dependencies from the local uv cache. It did not copy private data,

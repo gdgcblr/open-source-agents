@@ -22,9 +22,14 @@ Keep the terminal running; press **Ctrl+C** to stop. On later runs, only `run-lo
 is needed while Ollama is running.
 
 Setup installs locked dependencies, creates `.env` only if missing, builds the Mac helper,
-and sets `MIGINE_MAC_HELPER` if unset. It starts the installed Ollama app if needed and
+and sets `MIGINE_MAC_HELPER` if unset or invalid. It starts the installed Ollama app if needed and
 pulls missing models named in `.env`. Existing settings and data are preserved. Initial
 model downloads can be large. Setup does not import email or change app records.
+
+The launch script checks the helper path before starting ADK Web. It reuses the built
+helper, builds it if missing, and repairs stale or placeholder paths in `.env`. It also
+exports the checked path to the Web process, including when an old value was inherited
+from the terminal. Restart ADK Web after updating the launcher.
 
 Keep Ollama on its configured local address (default `127.0.0.1:11434`). Edit `.env`
 to select local Gemma and EmbeddingGemma tags, your time zone, and the data directory
