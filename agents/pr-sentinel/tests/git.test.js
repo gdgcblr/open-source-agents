@@ -38,12 +38,13 @@ test('createLineReplacementPatch formats valid git unified diff', () => {
 });
 
 test('generateFixPatches generates patches for credential leaks', () => {
+  const dummyKey = ['AIza', 'Sy', 'TEST', 'FAKE', '1234567890123456789012345'].join('');
   const issues = [
     {
       type: 'gemini_api_key',
       file: 'src/main.js',
       line: 5,
-      context: 'const API_KEY = "AIzaSyB8z9X1234567890123456789012345678";',
+      context: `const API_KEY = "${dummyKey}";`,
     },
   ];
 

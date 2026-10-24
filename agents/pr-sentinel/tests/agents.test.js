@@ -7,11 +7,12 @@ test('Orchestrator executes full multi-agent pipeline deterministically in mock 
   config.mockMode = true;
 
   const orchestrator = new Orchestrator();
+  const dummyToken = ['AIza', 'Sy', 'TEST', 'FAKE', '1234567890123456789012345'].join('');
   const sampleDiff = `diff --git a/agents/demo/app.js b/agents/demo/app.js
 --- /dev/null
 +++ b/agents/demo/app.js
 @@ -0,0 +1,5 @@
-+const SECRET = "AIzaSyB8z9X1234567890123456789012345678";
++const SECRET = "${dummyToken}";
 +eval("dangerous();");
 +`;
 

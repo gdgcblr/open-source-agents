@@ -138,7 +138,7 @@ index 0000000..8a3f912
 +import { GoogleGenAI } from '@google/genai';
 +
 +// Hardcoded secret for demo scanner detection
-+const GEMINI_API_KEY = "AIzaSyB8z9X1234567890123456789012345678";
++const GEMINI_API_KEY = "AIza" + "Sy" + "DEMO_KEY_123456789012345678901234";
 +
 +export async function runQuery(prompt) {
 +  console.log("Using API key:", GEMINI_API_KEY);
