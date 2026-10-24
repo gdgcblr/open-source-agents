@@ -117,7 +117,17 @@ The ADK entry point is `BuildDoctorAgent.create()`. An ADK-compatible runner or 
 
 The MCP path is tested independently over real stdio initialization, tool discovery, and `analyze_failure` invocation. The Java factory itself is not a standalone process; an ADK runner or application must own the agent lifecycle and call `close()` so the MCP toolset is released.
 
-For a no-model connection check, run `BuildDoctorApplication` with `BUILD_DOCTOR_PYTHON` pointing to the Python environment that has `build-doctor-mcp` installed. It starts the MCP child process, discovers the tools, prints their names, and closes the agent without sending a Gemini request.
+For validating the MCP connection and running diagnoses over the live MCP toolset without requiring Gemini API credentials, use `BuildDoctorApplication`:
+
+```bash
+# Check MCP connection and discover tools
+java -cp "target/classes:$(mvn dependency:build-classpath | grep -v '\[INFO\]' | tr '\n' ':')" community.opensource.ai.builddoctor.BuildDoctorApplication --check
+
+# Run diagnosis over live MCP toolset
+java -cp "target/classes:$(mvn dependency:build-classpath | grep -v '\[INFO\]' | tr '\n' ':')" community.opensource.ai.builddoctor.BuildDoctorApplication --diagnose /path/to/failure.log /path/to/project
+```
+
+It manages the complete stdio child process lifecycle: it discovers the tools, invokes diagnosis, formats the result, and guarantees process termination in a finally block.
 
 ## Example Input & Output
 
