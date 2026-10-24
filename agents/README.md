@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`autonomous-code-healer`](./autonomous-code-healer/) | Autonomous test-driven code healer with AST safety guardrails, sandboxed execution, atomic rollback, and MCP server | Python / Gemini 2.5 Flash / FastMCP | [@PavaS279](https://github.com/PavaS279) |
