@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`contribution-review-agent`](contribution-review-agent/README.md) | Reviews a submission (local folder or PR URL) against this repo's rules and returns a scored report with fixes. | Google ADK (TypeScript), Gemini Flash-Lite | [@abhisekmishra1709](https://github.com/abhisekmishra1709) |
