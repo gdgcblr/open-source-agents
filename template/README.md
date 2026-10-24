@@ -1,175 +1,85 @@
-# [Project Name]
+# 🌍 Global Outdoor Event Planner Agent
 
-> [One-sentence summary of what this project does and the value it provides.]
+An intelligent, multi-tool AI Agent system designed to analyze real-time and forecasted weather telemetry across global cities to determine optimal locations for hosting outdoor events.
 
----
-
-## Overview
-
-### Problem Statement & Intended Users
-- **Problem**: Explain what specific problem or challenge this project addresses.
-- **Intended Users**: Who is this tool or agent built for? (e.g., developers, researchers, operations engineers).
-
-### Key Features
-- Feature 1: Brief description of the capability.
-- Feature 2: Brief description of the capability.
-- Feature 3: Brief description of the capability.
+Built following open-source agent patterns, this system evaluates meteorological parameters—such as ambient temperature, precipitation risk, wind gusts, and humidity—against customizable safety and comfort heuristics for event production.
 
 ---
 
-## Technical Stack
+## 📌 Features
 
-List the primary frameworks, languages, models, and external services used:
-- **Language & Runtime**: e.g., Python 3.11+ / Node.js 20+ / TypeScript
-- **Agent Framework / Core Library**: e.g., Google ADK / LangGraph / CrewAI / OpenAI Agents SDK / Model Context Protocol (MCP) / Vanilla script
-- **Models**: e.g., Gemini 2.5 Flash / GPT-4o / Claude 3.5 Sonnet / Local model (e.g., Ollama)
-- **External APIs / Tools**: e.g., Tavily Search / GitHub API / SQLite
+- **Global City Geocoding & Weather Telemetry:** Real-time data retrieval via Open-Meteo API (no API keys required).
+- **Multi-Factor Decision Engine:** Assesses temperature, precipitation, and wind speeds against safe event thresholds.
+- **Structured Tool Execution:** Follows clean Python agent patterns for tool binding, state orchestration, and schema generation.
+- **Modular Architecture:** Designed to easily integrate additional skills like venue discovery, timezone adjustment, and calendar booking.
 
 ---
 
-## Architecture & Data Flow
+## 🛠️ Project Structure
 
-Provide a brief explanation or diagram showing how components interact (e.g., input -> agent reasoning -> tool execution -> output):
-
-```
-[User Input] --> [Agent / Runner] --> [LLM / Reasoning Loop]
-                         |
-                         +--> [Tool / External API / MCP Server]
-                         |
-[Structured Output] <-- [Agent Response]
+```text
+├── README.md           # Project overview and quickstart
+├── architecture.md     # System design and component diagrams
+├── skills.md           # Specification of tools and agent competencies
+└── plan.md             # Development roadmap and enhancement strategy
 ```
 
-*(Note: For simple scripts or single utilities, replace this diagram with a short paragraph describing the execution flow.)*
-
 ---
 
-## Prerequisites
+## 🚀 Quickstart
 
-Before running this project, ensure you have:
-- [Language Runtime, e.g., Python 3.10+ or Node.js 18+]
-- [Package manager, e.g., pip / uv / npm / pnpm]
-- [Required API keys or service accounts]
+### Prerequisites
 
----
-
-## Installation & Setup
-
-1. **Navigate to the project directory:**
-   ```bash
-   cd agents/<project-slug>   # or tools/<project-slug>
-   ```
-
-2. **Set up the virtual environment / install dependencies:**
-   - For Python:
-     ```bash
-     python -m venv .venv
-     # Windows:
-     .venv\Scripts\activate
-     # Linux/macOS:
-     source .venv/bin/activate
-
-     pip install -r requirements.txt
-     ```
-   - For Node.js / TypeScript:
-     ```bash
-     npm install
-     ```
-
-3. **Configure Environment Variables:**
-   Copy the example environment file and fill in your keys:
-   ```bash
-   cp .env.example .env
-   ```
-
----
-
-## Configuration & Environment Variables
-
-| Variable Name | Required | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `API_KEY` | Yes | *None* | API key for the primary LLM provider |
-| `MODEL_NAME` | No | `gemini-2.5-flash` | Identifier for the LLM model to use |
-| `LOG_LEVEL` | No | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`) |
-
-*(Add any additional variables your project requires. Never publish actual secrets or default private tokens here.)*
-
----
-
-## How to Run
-
-Provide the exact command(s) to run the agent or tool:
+- Python 3.9+
+- `requests` library
 
 ```bash
-# Example for Python:
-python main.py
-
-# Example with arguments:
-python main.py --query "Summarize the latest release notes"
-
-# Example for Node.js / TypeScript:
-npm start
+pip install requests
 ```
 
----
+### Running the Agent
 
-## Example Input & Output
-
-### Example Input
-```
-"Analyze the repository structure of gdgcblr/open-source-agents and list the core directories."
-```
-
-### Example Output
-```
-Analysis completed:
-- agents/: Contains community AI agents.
-- tools/: Contains shared developer utilities and MCP servers.
-- template/: Standardized documentation and environment templates.
-```
-
----
-
-## How to Test
-
-Explain how another developer or reviewer can verify that the project functions as intended:
+Run the main execution script to evaluate candidates across global hubs:
 
 ```bash
-# Example: Run automated test suite
-pytest
-
-# Or manual verification steps:
-# 1. Run python main.py --test-mode
-# 2. Verify that mock output returns successfully without API errors
+python weather_agent_node.py
 ```
 
 ---
 
-## Known Limitations
+## 📊 Sample Agent Output
 
-Be honest about constraints, edge cases, and failure modes:
-- e.g., Rate limits on free-tier APIs may cause retries to fail.
-- e.g., Currently only tested on text files smaller than 10MB.
-- e.g., Does not maintain conversation memory across separate process restarts.
+```json
+{
+    "status": "success",
+    "total_analyzed": 5,
+    "shortlisted_count": 2,
+    "top_candidates": [
+        "Tokyo, Japan",
+        "San Francisco, United States"
+    ],
+    "detailed_telemetry": [
+        {
+            "city": "Tokyo, Japan",
+            "temperature_celsius": 19.5,
+            "precipitation_mm": 0.0,
+            "wind_speed_kmh": 8.2,
+            "condition": "Clear / Sunny",
+            "outdoor_event_suitable": true,
+            "recommendation_reason": "Optimal outdoor conditions: Comfortable temperature, zero rain risk, calm winds."
+        }
+    ]
+}
+```
 
 ---
 
-## Security & Privacy Considerations
+## 📜 License
 
-- **Secrets Handling**: How are credentials loaded and protected?
-- **Data Privacy**: Is any prompt or file data transmitted to external services or third parties?
-- **Safety**: Does the agent execute arbitrary shell commands or code? If so, what sandboxing or user confirmations are enforced?
+MIT License. Open for community contributions!
 
----
+## Developer
+Sheetal G
+Sheetal G
 
-## Future Improvements
-
-- [ ] Add caching for external API responses.
-- [ ] Support local models via Ollama.
-- [ ] Add streaming responses.
-
----
-
-## License
-
-Specify the license for this subproject if different from the parent repository, or state:
-*This project is contributed under the repository's open-source license.*
+https://linkedin.com/in/techsheetal
