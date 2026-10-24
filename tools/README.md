@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [personal-lab-tracker](personal-lab-tracker/README.md) | Local lab-PDF log with sign-in, range meters, and optional Local or OpenAI extraction and summaries | Personal health utility / local-first | gautamchitnis |

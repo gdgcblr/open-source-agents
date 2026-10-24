@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Settings · Personal lab tracker{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<p class="lede">Choose where each task runs, and which model it uses. An extraction model receives the PDF text as printed, including names and contact details. A summary model receives only the fact sheet.</p>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="/settings" class="card">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <h2>Connections</h2>
+  <label for="local_base_url">Local base URL</label>
+  <input id="local_base_url" name="local_base_url" value="{{ llm.local_base_url }}" required>
+  <p class="hint">OpenAI-compatible server on this machine. Ollama’s default is http://127.0.0.1:11434/v1.</p>
+
+  <label for="openai_api_key">OpenAI API key</label>
+  <input id="openai_api_key" name="openai_api_key" type="password" autocomplete="off" placeholder="{% if llm.key_saved %}A key is saved. Enter a new one to replace it.{% else %}sk-...{% endif %}">
+  {% if llm.key_saved %}
+  <label class="check"><input type="checkbox" name="clear_openai_key"> Remove the saved OpenAI key</label>
+  {% endif %}
+  <p class="hint">The key stays in the local database. It is not shown again and is not written into a prompt.</p>
+  {% if not llm.local_stays_on_machine %}
+  <p class="hint warn">That local base URL is not on this machine. A task set to Local will send its prompt there.</p>
+  {% endif %}
+
+  <h2>Report data extraction</h2>
+  <div class="pair">
+    <div>
+      <label for="extraction_provider">Provider</label>
+      <select id="extraction_provider" name="extraction_provider">
+        <option value="local" {% if llm.extraction_provider == 'local' %}selected{% endif %}>Local</option>
+        <option value="openai" {% if llm.extraction_provider == 'openai' %}selected{% endif %}>OpenAI</option>
+      </select>
+    </div>
+    <div>
+      <label for="extraction_model">Model</label>
+      <input id="extraction_model" name="extraction_model" list="model-names" value="{{ llm.extraction_model }}" placeholder="Leave blank for the built-in reader">
+    </div>
+  </div>
+  <p class="hint warn">With a model filled in, every uploaded PDF is read by that model. The report text is sent as printed, including names, emails, phones, and record ids. OpenAI sends it to OpenAI. Local sends it to the base URL above. Leave the model blank to use the built-in reader, which only understands the demo table layout and drops identifier lines before storing rows.</p>
+
+  <h2>Summary generation</h2>
+  <div class="pair">
+    <div>
+      <label for="summary_provider">Provider</label>
+      <select id="summary_provider" name="summary_provider">
+        <option value="local" {% if llm.summary_provider == 'local' %}selected{% endif %}>Local</option>
+        <option value="openai" {% if llm.summary_provider == 'openai' %}selected{% endif %}>OpenAI</option>
+      </select>
+    </div>
+    <div>
+      <label for="summary_model">Model</label>
+      <input id="summary_model" name="summary_model" list="model-names" value="{{ llm.summary_model }}" placeholder="Leave blank to skip">
+    </div>
+  </div>
+  <datalist id="model-names">
+    {% for name in local_models %}<option value="{{ name }}">{% endfor %}
+    {% for name in openai_models %}<option value="{{ name }}">{% endfor %}
+  </datalist>
+  <p class="hint">Summary calls send the fact sheet only. Names, emails, phones, and record ids are not on that sheet. OpenAI still sends the sheet off this machine.</p>
+  <button type="submit">Save settings</button>
+</form>
+{% endblock %}

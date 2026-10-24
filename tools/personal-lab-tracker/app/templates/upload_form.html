@@ -1,0 +1,16 @@
+<form method="post" action="/upload" enctype="multipart/form-data">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label for="report">Digital lab PDF</label>
+  <input id="report" name="report" type="file" accept="application/pdf,.pdf" required>
+  <button type="submit">Review rows</button>
+</form>
+{% if extraction_model %}
+{% if extraction_provider == "openai" %}
+<p class="hint warn">Review rows sends this PDF’s text, including names, emails, phones, and record ids printed on it, to OpenAI.</p>
+{% else %}
+<p class="hint warn">Review rows sends this PDF’s text, including names, emails, phones, and record ids printed on it, to the local model server.</p>
+{% endif %}
+{% else %}
+<p class="hint">No extraction model is selected, so only a PDF with a collection date and a pipe-separated results table can be read. Choose a model in Settings to read any other digital PDF. That sends the PDF text to the provider you pick.</p>
+{% endif %}
+<p class="hint">You confirm the table before anything is saved.</p>
