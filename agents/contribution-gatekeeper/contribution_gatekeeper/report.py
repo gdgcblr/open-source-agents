@@ -69,10 +69,14 @@ def markdown(rep: Report, intro: str | None = None, strengths: list[str] | None 
 def to_json(rep: Report) -> dict:
     s = rep.submission
     return {
+        # Nested shape read by the web report UI (web/).
+        "submission": {"url": s.url, "title": s.title, "author": s.author, "number": s.number,
+                       "project_dir": s.project_dir, "changed_files": s.changed_files},
+        # Flat keys kept for the triage board and existing JSON consumers.
         "url": s.url, "number": s.number, "title": s.title, "author": s.author,
         "project": s.project_dir, "verdict": rep.verdict.value, "score": rep.score(),
         "scores": rep.scores(), "llm_used": rep.llm_used, "sandbox": rep.sandbox,
-        "findings": [f.to_dict() for f in rep.findings],
+        "notes": rep.notes, "findings": [f.to_dict() for f in rep.findings],
     }
 
 
