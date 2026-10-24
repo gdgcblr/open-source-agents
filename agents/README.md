@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [oss-pulse-agent](./oss-pulse-agent/) | Evidence-driven repository health & intelligence agent | Google Gemini 3.8 Flash + Python + FastAPI | [@PatilRohit03](https://github.com/PatilRohit03) |
