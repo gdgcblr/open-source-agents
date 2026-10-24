@@ -97,7 +97,10 @@ SIGNALS: tuple[Signal, ...] = (
 
 
 def redact(text: str) -> str:
-    result = text
+    result = re.sub(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(?:-----END [A-Z ]*PRIVATE KEY-----|\Z)", "[REDACTED_PRIVATE_KEY]", text, flags=re.S)
+    result = re.sub(r'''(?i)((?:["']?)(?:password|passwd|pwd|api[_-]?key|access[_-]?token|refresh[_-]?token|secret|authorization|cookie|set-cookie)(?:["']?)\s*[:=]\s*)(["'])(.*?)\2''', r'\1"[REDACTED]"', result)
+    result = re.sub(r"(?im)(\b(?:cookie|set-cookie):\s*)[^\r\n]+", r"\1[REDACTED]", result)
+    result = re.sub(r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b", "[REDACTED_JWT]", result)
     for index, pattern in enumerate(_REDACTIONS):
         if index == 2:
             result = pattern.sub("[REDACTED_AWS_KEY]", result)
@@ -111,6 +114,14 @@ def redact(text: str) -> str:
 def _timestamp(line: str) -> str | None:
     m = re.search(r"\b(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:[.,]\d{1,6})?(?:Z|[+-]\d{2}:?\d{2})?)\b", line)
     return m.group(1) if m else None
+
+
+def redacted_lines(text: str) -> list[str]:
+    """Suppress whole private-key blocks while preserving original line indices."""
+    safe = re.sub(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?(?:-----END [A-Z ]*PRIVATE KEY-----|\Z)",
+                  lambda m: "\n".join("[REDACTED_PRIVATE_KEY]" for _ in m.group().splitlines()),
+                  text, flags=re.S)
+    return [redact(line) for line in safe.splitlines()]
 
 
 def _severity(lines: list[str]) -> str:
@@ -132,10 +143,14 @@ def analyze_logs(log_text: str) -> dict:
         raise TypeError("log_text must be a string")
     if len(log_text.encode("utf-8")) > MAX_BYTES:
         raise ValueError(f"Log text exceeds {MAX_BYTES} bytes")
+    if any(ord(c) < 32 and c not in "\r\n\t" for c in log_text):
+        raise ValueError("Unsupported control characters; use UTF-8 text logs")
     lines = log_text.splitlines()
     if len(lines) > MAX_LINES:
         raise ValueError(f"Log text exceeds {MAX_LINES} lines")
 
+    # Redact before excerpt slicing, including multiline key material.
+    safe_lines = redacted_lines(log_text)
     signal_results = []
     timeline = []
     for signal in SIGNALS:
@@ -143,7 +158,7 @@ def analyze_logs(log_text: str) -> dict:
         if not hits:
             continue
         examples = [
-            {"line": n, "timestamp": _timestamp(line), "excerpt": redact(line[:MAX_EXCERPT])}
+            {"line": n, "timestamp": _timestamp(line), "excerpt": safe_lines[n - 1][:MAX_EXCERPT]}
             for n, line in hits[:3]
         ]
         signal_results.append({
@@ -155,7 +170,7 @@ def analyze_logs(log_text: str) -> dict:
         first_number, first_line = hits[0]
         timeline.append({
             "line": first_number, "timestamp": _timestamp(first_line),
-            "signal": signal.id, "excerpt": redact(first_line[:MAX_EXCERPT]),
+            "signal": signal.id, "excerpt": safe_lines[first_number - 1][:MAX_EXCERPT],
         })
     signal_results.sort(key=lambda s: (-s["priority"], -s["count"]))
     timeline.sort(key=lambda t: t["line"])
@@ -183,7 +198,16 @@ def read_log_file(path: Path) -> str:
         raise ValueError("Not a regular file or file does not exist")
     if path.stat().st_size > MAX_BYTES:
         raise ValueError(f"File exceeds {MAX_BYTES} bytes")
-    return path.read_text(encoding="utf-8", errors="replace")
+    if path.suffix.lower() not in {".log", ".txt", ".jsonl"}:
+        raise ValueError("Unsupported file format; use .log, .txt, or .jsonl UTF-8 text")
+    with path.open("rb") as stream:
+        data = stream.read(MAX_BYTES + 1)
+    if len(data) > MAX_BYTES:
+        raise ValueError(f"File exceeds {MAX_BYTES} bytes")
+    try:
+        return data.decode("utf-8-sig")
+    except UnicodeError:
+        raise ValueError("Unsupported encoding; use UTF-8 text") from None
 
 
 def get_runbook(signal_id: str) -> dict:

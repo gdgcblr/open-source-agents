@@ -9,6 +9,12 @@ __pycache__/
 venv/
 *.log
 !samples/spring-boot-incident.log
+!samples/php-critical.log
+!samples/node-patched.log
+!samples/node-suspicious.log
+.adk/
+*.db
+*.sqlite*
 .DS_Store
 .idea/
 .vscode/

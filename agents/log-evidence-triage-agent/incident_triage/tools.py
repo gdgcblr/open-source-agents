@@ -2,6 +2,8 @@
 import os
 from pathlib import Path
 from .engine import analyze_logs, read_log_file, get_runbook
+from .config import log_root
+from .investigation import investigate
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _DEFAULT_LOG_ROOT = _PROJECT_ROOT / "samples"
@@ -40,8 +42,31 @@ def triage_log_file(filename: str) -> dict:
         result = analyze_logs(text)
         result["source_file"] = target.name
         return result
-    except (ValueError, OSError, UnicodeError) as exc:
-        return {"error": str(exc)}
+    except (ValueError, OSError, UnicodeError):
+        return {"error": "Cannot read approved UTF-8 log file; check filename, permissions, format, and size limits."}
+
+
+def read_approved_file(filename: str) -> str:
+    """Read only within the configured allowlist, including resolved symlinks."""
+    root = log_root()
+    target = (root / filename).resolve()
+    if not target.is_relative_to(root) or target == root:
+        raise ValueError("Path is outside the allowed log directory")
+    return read_log_file(target)
+
+
+def investigate_request(request: dict) -> dict:
+    """Validate a structured ADK request before reading logs or making AI calls."""
+    allowed = {"log_text", "filename", "product", "version", "internet_facing", "production"}
+    if not isinstance(request, dict) or set(request) - allowed:
+        raise ValueError("Use only log_text or filename, product, version, internet_facing, production")
+    if ("log_text" in request) == ("filename" in request):
+        raise ValueError("Provide exactly one of log_text or filename")
+    if "filename" in request and not isinstance(request["filename"], str):
+        raise ValueError("filename must be a string")
+    text = read_approved_file(request["filename"]) if "filename" in request else request["log_text"]
+    return investigate(text, request.get("product", ""), request.get("version", ""),
+                       request.get("internet_facing", False), request.get("production", False))
 
 
 def incident_runbook(signal_id: str) -> dict:

@@ -1,41 +1,60 @@
-"""Offline CLI; does not import ADK and does not need an API key."""
+"""Offline CLI with optional validated AI selection; no SDK import by default."""
 import argparse
+import asyncio
 import json
 import sys
 from pathlib import Path
-from .engine import analyze_logs, read_log_file
+
+from .credibility import citations_valid
+from .engine import read_log_file
+from .investigation import investigate
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="TraceTriage: offline log incident triage")
+    parser = argparse.ArgumentParser(description="TraceGuard AI: evidence-driven incident investigation")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--file", type=Path, help="Local UTF-8 log file")
+    group.add_argument("--file", type=Path, help="Local UTF-8 .log, .txt, or .jsonl file")
     group.add_argument("--text", help="Paste a short log excerpt")
     parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument("--product", choices=("php", "nodejs"), default="")
+    parser.add_argument("--version", default="")
+    parser.add_argument("--internet-facing", action="store_true")
+    parser.add_argument("--production", action="store_true")
+    parser.add_argument("--ai", action="store_true", help="Optional Gemini/ADK selection with offline fallback")
     args = parser.parse_args()
     try:
+        if args.ai:
+            try:
+                from dotenv import load_dotenv
+                from .config import PROJECT_ROOT
+                load_dotenv(PROJECT_ROOT / ".env")
+            except ImportError:
+                pass
         contents = read_log_file(args.file) if args.file is not None else args.text
-        result = analyze_logs(contents)
+        result = investigate(contents, args.product, args.version, args.internet_facing, args.production)
+        if not citations_valid(result):
+            raise ValueError("Internal evidence validation failed")
+        if args.ai:
+            from .ai import enhance
+            result = asyncio.run(enhance(result))
     except (ValueError, OSError, UnicodeError) as exc:
-        print(f"TraceTriage error: {exc}", file=sys.stderr)
+        message = str(exc) if isinstance(exc, ValueError) else "Cannot read input; check file permissions and UTF-8 encoding."
+        print(f"TraceGuard error: {message}", file=sys.stderr)
         return 2
     if args.format == "json":
         print(json.dumps(result, indent=2))
         return 0
-    print("=== TraceTriage | Evidence-first incident report ===")
-    print(f"Log lines: {result['processed_lines']} | Severity: {result['severity']}")
-    print(f"Hypothesis: {result['probable_root_cause'] or 'No recognized failure pattern'}")
-    print(f"Verification: {result['root_cause_status']}")
-    if result["top_signals"]:
-        print("\nEvidence:")
-        for s in result["top_signals"][:3]:
-            print(f"  - {s['title']} ({s['count']} matching lines)")
-            for e in s["evidence"][:2]:
-                print(f"      L{e['line']}: {e['excerpt']}")
-    print("\nSuggested checks:")
-    for check in result["suggested_checks"]:
-        print(f"  - {check}")
-    print("\nNote: Hypotheses are not confirmed; sensitive data redaction is best-effort.")
+    print(f"=== TraceGuard AI | {result['mode']} ===")
+    print(result["summary"])
+    for finding in result["findings"]:
+        print(f"- {finding['text']} [{', '.join(finding['evidence_refs'])}]")
+    for unknown in result["unknowns"]:
+        print(f"Unknown: {unknown}")
+    if "fallback_reason" in result:
+        print(result["fallback_reason"])
+    print("Required human decision: " + result["escalation"]["required_human_decision"])
+    for step in result["next_steps"] + result["analysis"]["suggested_checks"]:
+        print(f"Next: {step}")
     return 0
 
 

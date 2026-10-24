@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-24",
+  "records": [
+    {
+      "cve": "CVE-2026-109618", "product": "php", "severity": "critical",
+      "published": "2026-10-21", "verified": true,
+      "source_url": "https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w",
+      "ranges": [
+        {"introduced": "8.2.0", "fixed": "8.2.35", "branch_end": "8.3.0"},
+        {"introduced": "8.3.0", "fixed": "8.3.36", "branch_end": "8.4.0"},
+        {"introduced": "8.4.0", "fixed": "8.4.27", "branch_end": "8.5.0"},
+        {"introduced": "8.5.0", "fixed": "8.5.12", "branch_end": "8.6.0"}
+      ]
+    },
+    {
+      "cve": "CVE-2026-109619", "product": "php", "severity": "critical",
+      "published": "2026-10-21", "verified": true,
+      "source_url": "https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp",
+      "ranges": [
+        {"introduced": "8.2.0", "fixed": "8.2.35", "branch_end": "8.3.0"},
+        {"introduced": "8.3.0", "fixed": "8.3.36", "branch_end": "8.4.0"},
+        {"introduced": "8.4.0", "fixed": "8.4.27", "branch_end": "8.5.0"},
+        {"introduced": "8.5.0", "fixed": "8.5.12", "branch_end": "8.6.0"}
+      ]
+    },
+    {
+      "cve": "CVE-2026-111497", "product": "nodejs", "severity": "high",
+      "published": "2026-10-21", "verified": true,
+      "source_url": "https://nodejs.org/en/blog/vulnerability/october-2026-security-releases",
+      "ranges": [
+        {"introduced": "22.0.0", "fixed": "22.23.4", "branch_end": "23.0.0"},
+        {"introduced": "24.0.0", "fixed": "24.22.1", "branch_end": "25.0.0"},
+        {"introduced": "26.0.0", "fixed": "26.12.1", "branch_end": "27.0.0"}
+      ]
+    }
+  ],
+  "notices": [
+    {
+      "product": "php", "published": "2026-10-23",
+      "source_url": "https://www.php.net/archive/2026.php",
+      "note": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
+    }
+  ]
+}

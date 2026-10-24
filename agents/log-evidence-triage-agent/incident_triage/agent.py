@@ -1,32 +1,33 @@
-"""Google ADK interactive agent. Run: adk run incident_triage"""
-import os
-from pathlib import Path
+"""ADK entry point emitting only validated reports, including on API failure."""
+import json
+
 from dotenv import load_dotenv
-from google.adk import Agent
-from .tools import triage_log_file, triage_log_text, incident_runbook
+from google.adk.agents import BaseAgent
+from google.adk.events import Event
+from google.genai import types
 
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+from .ai import enhance
+from .config import PROJECT_ROOT
+from .engine import MAX_BYTES
+from .tools import investigate_request
 
-root_agent = Agent(
-    name="incident_evidence_triage",
-    model=os.getenv("MODEL_NAME", "gemini-2.5-flash"),
-    description="Evidence-first application incident investigator using safe local log tools.",
-    instruction="""You are TraceTriage, an evidence-first SRE incident investigation assistant.
+load_dotenv(PROJECT_ROOT / ".env")
 
-When a user supplies logs, call triage_log_text. When they provide a filename,
-call triage_log_file (which only reads within the configured directory).
-Use incident_runbook if they want deeper checks for an identified signal.
 
-Rules:
-- Cite actual log line numbers from tool evidence; never fabricate lines or timestamps.
-- Present your root cause as a HYPOTHESIS, not a proven diagnosis.
-- Distinguish likely trigger from subsequent symptoms (e.g. database pool exhaustion
-  can lead to request timeouts and 503s).
-- If evidence is insufficient, say so clearly. Do not invent dependencies or topology.
-- Give a concise incident summary, severity, timeline, top 1-3 hypotheses,
-  specific evidence, safe next checks, and unknowns.
-- The tools provide best-effort redaction only. Do not request user secrets.
-- Never suggest destructive changes or execute code/commands against user systems.
-""",
-    tools=[triage_log_file, triage_log_text, incident_runbook],
-)
+class TraceGuardAgent(BaseAgent):
+    async def _run_async_impl(self, ctx):
+        try:
+            # Use only this invocation, never a previous session's ledger.
+            message = "".join(p.text or "" for p in ctx.user_content.parts or [])
+            if len(message.encode("utf-8")) > MAX_BYTES + 10_000:
+                raise ValueError("Input exceeds the size limit")
+            request = json.loads(message) if message.lstrip().startswith("{") else {"log_text": message}
+            report = investigate_request(request)
+            report = await enhance(report)
+        except (ValueError, TypeError, OSError, UnicodeError):
+            report = {"decision": "HOLD", "mode": "offline_deterministic",
+                      "error": "Invalid request or unreadable file. Provide JSON with log_text or approved filename, product, exact version, and boolean exposure flags. Limits: UTF-8, 1 MB, 5000 lines."}
+        yield Event(author=self.name, content=types.Content(role="model", parts=[types.Part(text=json.dumps(report))]))
+
+
+root_agent = TraceGuardAgent(name="traceguard_ai", description="Evidence-driven PHP/Node.js investigation with deterministic human escalation.")

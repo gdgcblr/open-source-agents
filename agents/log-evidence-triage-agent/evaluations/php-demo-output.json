@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "mode": "offline_deterministic",
+  "decision": "ESCALATE",
+  "summary": "ESCALATE: scoped runtime assessment AFFECTED; compromise is not confirmed.",
+  "runtime": {
+    "status": "AFFECTED",
+    "matches": [
+      {
+        "cve": "CVE-2026-109618",
+        "product": "php",
+        "severity": "critical",
+        "published": "2026-10-21",
+        "verified": true,
+        "source_url": "https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w",
+        "ranges": [
+          {
+            "introduced": "8.2.0",
+            "fixed": "8.2.35",
+            "branch_end": "8.3.0"
+          },
+          {
+            "introduced": "8.3.0",
+            "fixed": "8.3.36",
+            "branch_end": "8.4.0"
+          },
+          {
+            "introduced": "8.4.0",
+            "fixed": "8.4.27",
+            "branch_end": "8.5.0"
+          },
+          {
+            "introduced": "8.5.0",
+            "fixed": "8.5.12",
+            "branch_end": "8.6.0"
+          }
+        ],
+        "matched_range": {
+          "introduced": "8.4.0",
+          "fixed": "8.4.27",
+          "branch_end": "8.5.0"
+        },
+        "status": "AFFECTED"
+      },
+      {
+        "cve": "CVE-2026-109619",
+        "product": "php",
+        "severity": "critical",
+        "published": "2026-10-21",
+        "verified": true,
+        "source_url": "https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp",
+        "ranges": [
+          {
+            "introduced": "8.2.0",
+            "fixed": "8.2.35",
+            "branch_end": "8.3.0"
+          },
+          {
+            "introduced": "8.3.0",
+            "fixed": "8.3.36",
+            "branch_end": "8.4.0"
+          },
+          {
+            "introduced": "8.4.0",
+            "fixed": "8.4.27",
+            "branch_end": "8.5.0"
+          },
+          {
+            "introduced": "8.5.0",
+            "fixed": "8.5.12",
+            "branch_end": "8.6.0"
+          }
+        ],
+        "matched_range": {
+          "introduced": "8.4.0",
+          "fixed": "8.4.27",
+          "branch_end": "8.5.0"
+        },
+        "status": "AFFECTED"
+      }
+    ],
+    "issues": [],
+    "scope": "Only the curated CVEs and explicitly listed upstream branches; never a security clearance.",
+    "verified_on": "2026-10-24",
+    "notices": [
+      {
+        "product": "php",
+        "published": "2026-10-23",
+        "source_url": "https://www.php.net/archive/2026.php",
+        "note": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
+      }
+    ]
+  },
+  "severity": "critical",
+  "findings": [
+    {
+      "id": "F1",
+      "kind": "runtime",
+      "text": "Curated snapshot: php 8.4.26 is AFFECTED for CVE-2026-109618 only; this does not establish exploitation or overall safety.",
+      "evidence_refs": [
+        "R1",
+        "A:CVE-2026-109618"
+      ]
+    },
+    {
+      "id": "F2",
+      "kind": "runtime",
+      "text": "Curated snapshot: php 8.4.26 is AFFECTED for CVE-2026-109619 only; this does not establish exploitation or overall safety.",
+      "evidence_refs": [
+        "R1",
+        "A:CVE-2026-109619"
+      ]
+    },
+    {
+      "id": "F3",
+      "kind": "coverage_gap",
+      "text": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases.",
+      "evidence_refs": [
+        "N1"
+      ]
+    },
+    {
+      "id": "F4",
+      "kind": "operational_hypothesis",
+      "text": "The process or runtime may have exceeded its available memory. This is an unverified operational hypothesis.",
+      "evidence_refs": [
+        "L2"
+      ]
+    }
+  ],
+  "evidence": {
+    "R1": {
+      "kind": "user_metadata",
+      "product": "php",
+      "version": "8.4.26",
+      "internet_facing": true,
+      "production": true,
+      "trust": "User supplied; deployed binary and configuration require human verification."
+    },
+    "A:CVE-2026-109618": {
+      "kind": "advisory",
+      "cve": "CVE-2026-109618",
+      "product": "php",
+      "severity": "critical",
+      "published": "2026-10-21",
+      "verified": true,
+      "source_url": "https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w",
+      "ranges": [
+        {
+          "introduced": "8.2.0",
+          "fixed": "8.2.35",
+          "branch_end": "8.3.0"
+        },
+        {
+          "introduced": "8.3.0",
+          "fixed": "8.3.36",
+          "branch_end": "8.4.0"
+        },
+        {
+          "introduced": "8.4.0",
+          "fixed": "8.4.27",
+          "branch_end": "8.5.0"
+        },
+        {
+          "introduced": "8.5.0",
+          "fixed": "8.5.12",
+          "branch_end": "8.6.0"
+        }
+      ],
+      "matched_range": {
+        "introduced": "8.4.0",
+        "fixed": "8.4.27",
+        "branch_end": "8.5.0"
+      },
+      "status": "AFFECTED"
+    },
+    "A:CVE-2026-109619": {
+      "kind": "advisory",
+      "cve": "CVE-2026-109619",
+      "product": "php",
+      "severity": "critical",
+      "published": "2026-10-21",
+      "verified": true,
+      "source_url": "https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp",
+      "ranges": [
+        {
+          "introduced": "8.2.0",
+          "fixed": "8.2.35",
+          "branch_end": "8.3.0"
+        },
+        {
+          "introduced": "8.3.0",
+          "fixed": "8.3.36",
+          "branch_end": "8.4.0"
+        },
+        {
+          "introduced": "8.4.0",
+          "fixed": "8.4.27",
+          "branch_end": "8.5.0"
+        },
+        {
+          "introduced": "8.5.0",
+          "fixed": "8.5.12",
+          "branch_end": "8.6.0"
+        }
+      ],
+      "matched_range": {
+        "introduced": "8.4.0",
+        "fixed": "8.4.27",
+        "branch_end": "8.5.0"
+      },
+      "status": "AFFECTED"
+    },
+    "N1": {
+      "kind": "publisher_notice",
+      "product": "php",
+      "published": "2026-10-23",
+      "source_url": "https://www.php.net/archive/2026.php",
+      "note": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
+    },
+    "L2": {
+      "kind": "log",
+      "line": 2,
+      "timestamp": "2026-10-24T10:00:02Z",
+      "excerpt": "2026-10-24T10:00:02Z ERROR out of memory while handling synthetic upload request",
+      "trust": "Untrusted log statement."
+    }
+  },
+  "unknowns": [
+    "Publisher follow-up has no complete curated version ranges; manual advisory verification is required."
+  ],
+  "assumptions": [
+    "Runtime and exposure metadata are user assertions.",
+    "Log authenticity is not established.",
+    "Snapshot coverage is partial; FIXED refers only to listed CVEs."
+  ],
+  "compromise": "NOT_CONFIRMED",
+  "next_steps": [
+    "Verify the deployed runtime, vendor backports, exposure, and publisher advisories.",
+    "Preserve relevant logs and correlate request IDs with host, identity, and network telemetry.",
+    "Have an authorized responder decide containment and patching; no action or incident closure is automated."
+  ],
+  "escalation": {
+    "required": true,
+    "summary": "Urgent human review required.",
+    "severity": "critical",
+    "rationale": [
+      "An affected runtime has an officially high or critical advisory; urgent human review is required to assess applicability and exposure."
+    ],
+    "evidence_refs": [
+      "A:CVE-2026-109618",
+      "A:CVE-2026-109619",
+      "R1"
+    ],
+    "unknowns": [
+      "Publisher follow-up has no complete curated version ranges; manual advisory verification is required."
+    ],
+    "assumptions": [
+      "Runtime and exposure metadata are user assertions.",
+      "Log authenticity is not established.",
+      "Snapshot coverage is partial; FIXED refers only to listed CVEs."
+    ],
+    "next_steps": [
+      "Verify the deployed runtime, vendor backports, exposure, and publisher advisories.",
+      "Preserve relevant logs and correlate request IDs with host, identity, and network telemetry.",
+      "Have an authorized responder decide containment and patching; no action or incident closure is automated."
+    ],
+    "required_human_decision": "Assess incident scope, containment, credential handling, and remediation priority."
+  },
+  "credibility": {
+    "valid": true,
+    "rejected_claims": 0
+  },
+  "evidence_examples_truncated": false,
+  "analysis": {
+    "status": "signals_detected",
+    "processed_lines": 2,
+    "severity": "error",
+    "probable_root_cause": "The process or runtime may have exceeded its available memory.",
+    "root_cause_status": "Unverified hypothesis; requires investigation",
+    "top_signals": [
+      {
+        "id": "out_of_memory",
+        "title": "Memory pressure / out-of-memory",
+        "count": 1,
+        "priority": 95,
+        "hypothesis": "The process or runtime may have exceeded its available memory.",
+        "evidence": [
+          {
+            "line": 2,
+            "timestamp": "2026-10-24T10:00:02Z",
+            "excerpt": "2026-10-24T10:00:02Z ERROR out of memory while handling synthetic upload request"
+          }
+        ],
+        "suggested_checks": [
+          "Inspect heap/RSS and container memory limits around the incident.",
+          "Check GC pauses, heap dumps, and allocation trends.",
+          "Investigate memory leaks before increasing limits."
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "line": 2,
+        "timestamp": "2026-10-24T10:00:02Z",
+        "signal": "out_of_memory",
+        "excerpt": "2026-10-24T10:00:02Z ERROR out of memory while handling synthetic upload request"
+      }
+    ],
+    "suggested_checks": [
+      "Inspect heap/RSS and container memory limits around the incident.",
+      "Check GC pauses, heap dumps, and allocation trends.",
+      "Investigate memory leaks before increasing limits."
+    ],
+    "privacy_note": "Returned excerpts are best-effort redacted; review before sharing. No log contents are sent by the offline CLI."
+  }
+}
