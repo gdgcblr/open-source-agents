@@ -1,0 +1,43 @@
+# Event configuration, edited by organisers.
+# Copy to config/event.yaml and point EVENT_CONFIG at it.
+
+event:
+  name: "Road to DevFest 2026 - FORK. BUILD. MERGE."
+  room_size: 5          # people per room; rooms come out as room_size or room_size - 1
+  walk_minutes: 3       # head start given to walk to a spot
+  meetup_minutes: 10    # how long a group holds a spot
+  max_wait_minutes: 30  # if no spot frees up within this window, the group is told to retry
+
+# Physical meeting points. Capacity is in people and must be >= room_size.
+# x / y place the spot on the virtual map (tile coordinates) for the UI.
+spots:
+  - id: coffee-corner
+    name: "Coffee Corner"
+    description: "Next to the coffee counter, ground floor"
+    capacity: 15
+    x: 4
+    y: 3
+  - id: stage-left
+    name: "Stage Left"
+    description: "Left of the main stage, by the banner"
+    capacity: 20
+    x: 12
+    y: 2
+  - id: sponsor-alley
+    name: "Sponsor Alley"
+    description: "Between the sponsor booths"
+    capacity: 20
+    x: 18
+    y: 8
+  - id: hallway-couches
+    name: "Hallway Couches"
+    description: "The couches outside hall B"
+    capacity: 10
+    x: 6
+    y: 10
+  - id: terrace
+    name: "Terrace"
+    description: "Open terrace, first floor"
+    capacity: 25
+    x: 14
+    y: 13
