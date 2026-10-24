@@ -184,6 +184,8 @@ The response is JSON with this shape:
 
 Classification is deterministic: matching rules emit stable signal IDs and weights, categories are ranked by total score, and confidence is capped when evidence is weak or categories tie. A probable cause requires multiple matching signals; root-cause status remains unconfirmed until a follow-up result. The model may explain the returned result, but it is not allowed to invent evidence or promote a pending verification to success.
 
+For an ADK client, an optional smaller explanation model can be configured with `MODEL_NAME=gemma-3-4b-it` when the selected provider exposes Gemma 3 4B. The MCP server itself does not call a model: deterministic tools remain the authority, while Gemini or Gemma only explain their returned evidence.
+
 ## How to Test
 
 ```bash

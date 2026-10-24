@@ -88,6 +88,8 @@ The `.env.example` file documents configuration. Java does not automatically loa
 | `GEMINI_API_KEY` | Only for ADK | Gemini API key used by the model-driven agent |
 | `MODEL_NAME` | No | Gemini model name; defaults to `gemini-2.5-flash` |
 
+The default model is used only to explain deterministic tool results. If your ADK model provider exposes Gemma 3 4B, you can set `MODEL_NAME=gemma-3-4b-it` for a smaller explanation model. Model availability and authentication depend on the provider; the deterministic diagnosis and verification rules do not.
+
 ## How to Run
 
 Build the project:
@@ -135,7 +137,7 @@ Next steps:
 Verification: pending: no verification run was supplied
 ```
 
-The analyzer reports what deterministic rules and evidence support. One signal establishes an observed failure, not a root cause. A suggested fix remains unconfirmed until a new result is supplied and verified.
+The analyzer reports what deterministic rules and evidence support. One signal establishes an observed failure, not a root cause. A suggested fix remains unconfirmed until a new result is supplied and verified. The language model, including optional Gemma 3 4B, may summarize this result but cannot override it.
 
 ## How to Test
 
