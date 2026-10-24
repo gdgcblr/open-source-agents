@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`card-rewards-optimizer`](card-rewards-optimizer/) | Grounded agent that maximizes Indian credit-card reward value and warns before points expire; all figures are deterministic, the LLM only narrates. | Python · Gemini (function calling) | [@jaymendiratta](https://github.com/jaymendiratta) |

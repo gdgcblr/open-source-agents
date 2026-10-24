@@ -1,0 +1,4 @@
+google-genai>=1.0
+PyYAML>=6.0
+python-dotenv>=1.0
+pytest>=8.0
