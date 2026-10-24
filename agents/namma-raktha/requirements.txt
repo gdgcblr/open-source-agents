@@ -1,0 +1,9 @@
+# Core Dependencies for NammaRaktha
+pydantic>=2.0.0
+rich>=13.0.0
+requests>=2.28.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+
+# Optional Gemini SDK (works with direct REST API fallback if not installed)
+# google-genai>=0.1.0

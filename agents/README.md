@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`namma-raktha`](namma-raktha/) | Bengaluru Emergency Blood & Platelet Donor Agent with clinical compatibility, 24/7 bank routing, and bilingual SOS broadcasts | Python / Gemini 2.5 Flash / Rich / Tailwind | Khagesh Patel |
