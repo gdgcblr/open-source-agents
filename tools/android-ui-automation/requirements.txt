@@ -1,0 +1,6 @@
+# No third-party runtime dependencies: the tool uses only the Python (3.9+)
+# standard library plus the `adb` executable from Android platform-tools.
+#
+# Optional development tools:
+# pytest>=7
+# mypy>=1.8

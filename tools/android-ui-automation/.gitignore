@@ -1,0 +1,20 @@
+# Environment / secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Artifacts produced by the tool
+*.png
+window_dump.xml
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

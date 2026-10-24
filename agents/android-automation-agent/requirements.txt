@@ -1,0 +1,6 @@
+# Google Agent Development Kit (pulls in google-genai for Gemini access).
+# Requires Python 3.10+.
+google-adk>=1.0.0
+
+# The Android/ADB layer (tools/android-ui-automation) uses only the Python
+# standard library plus the `adb` executable, so nothing else is needed here.

@@ -1,0 +1,25 @@
+# Secrets / credentials
+.env
+*.key
+*.pem
+service-account*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ADK local state
+.adk/
+
+# Artifacts produced during runs
+*.png
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
