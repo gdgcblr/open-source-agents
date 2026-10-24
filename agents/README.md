@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`github-pr-reviewer`](github-pr-reviewer/) | Automated PR triage, security vulnerability detection, and code review suggestions. | Python, Google Gemini, Static Heuristics | [@Mourya-N](https://github.com/Mourya-N) |
