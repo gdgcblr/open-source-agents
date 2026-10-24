@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`adk-leak-arena`](adk-leak-arena/) | Red-team harness and live SQL/RLS telemetry console comparing an unprotected `pgvector` ADK memory against `adk-memshield` RLS across 6 leak scenarios | Evaluation & Benchmarking / Google ADK | [@aalishan001](https://github.com/aalishan001) |

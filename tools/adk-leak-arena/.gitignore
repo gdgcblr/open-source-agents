@@ -1,0 +1,39 @@
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.eggs/
+.ruff_cache/
+.mypy_cache/
+
+# Benchmark reports (regenerate with `leak-arena eval --format json`)
+*-report.json
+
+# FastEmbed model cache (only if FASTEMBED_CACHE_PATH points inside the project)
+.fastembed_cache/
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
