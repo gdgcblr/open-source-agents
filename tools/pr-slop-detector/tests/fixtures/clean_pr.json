@@ -1,0 +1,36 @@
+{
+  "repo": "example-org/user-service",
+  "number": 102,
+  "title": "Return None for missing users instead of raising",
+  "body": "Fixes #88. `fetch_user` raised `HTTPError` on 404, which crashed the admin page when a user was soft-deleted. Now 404 maps to `None`; other errors still raise. Added a timeout while here (same value as the rest of the client).\n\nTested with `pytest tests/test_api.py` (new test for the 404 case).",
+  "author": {
+    "login": "regular-maintainer",
+    "account_created_at": "2019-03-02T00:00:00Z",
+    "association": "CONTRIBUTOR",
+    "recent_pr_count": 3,
+    "recent_pr_repo_count": 1
+  },
+  "files": [
+    {
+      "filename": "user_service/api.py",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 1,
+      "patch": "@@ -10,7 +10,12 @@ def fetch_user(user_id):\n-    return api.get(f\"/users/{user_id}\")\n+    resp = api.get(f\"/users/{user_id}\", timeout=REQUEST_TIMEOUT)\n+    if resp.status_code == 404:\n+        # The upstream returns 404 for soft-deleted users too; treat both as \"not found\".\n+        return None\n+    resp.raise_for_status()\n+    return resp.json()"
+    },
+    {
+      "filename": "tests/test_api.py",
+      "status": "modified",
+      "additions": 8,
+      "deletions": 0,
+      "patch": "@@ -30,0 +31,8 @@\n+def test_fetch_user_404_returns_none(mock_api):\n+    mock_api.get.return_value.status_code = 404\n+    assert fetch_user(7) is None\n+\n+\n+def test_fetch_user_500_raises(mock_api):\n+    mock_api.get.return_value.raise_for_status.side_effect = HTTPError\n+    with pytest.raises(HTTPError):\n+        fetch_user(7)"
+    }
+  ],
+  "commit_messages": [
+    "Return None for 404 in fetch_user\n\nSoft-deleted users return 404 upstream; the admin page crashed on them.",
+    "Add tests for fetch_user error paths"
+  ],
+  "manifests": {
+    "requirements.txt": "requests>=2.31\npytest>=8\n"
+  }
+}
