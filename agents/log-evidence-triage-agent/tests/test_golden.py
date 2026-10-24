@@ -23,7 +23,8 @@ def golden_check(case, metric):
         def run():
             with patch.dict("os.environ", {}, clear=True):
                 return investigate(case["log"], case["product"], case["version"], case.get("internet_facing", False),
-                                   catalog_path=Path("does-not-exist.json") if case.get("missing_catalog") else None, today=TODAY)
+                                   catalog_path=Path("does-not-exist.json") if case.get("missing_catalog") else None,
+                                   today=date.fromisoformat(case["as_of"]) if "as_of" in case else TODAY)
         report = run()
         if metric == "version_match":
             self.assertEqual(report["runtime"]["status"], case["status"])
@@ -48,12 +49,22 @@ def golden_check(case, metric):
             self.assertIn(case["kind"], [f["kind"] for f in report["findings"]])
         elif metric == "secret_redaction":
             self.assertNotIn(case["secret"], json.dumps(report))
+        elif metric == "overall_security_unknown":
+            self.assertEqual(report["runtime"]["overall_security"], "OVERALL_SECURITY_UNKNOWN")
+            self.assertIn("OVERALL_SECURITY_UNKNOWN", report["summary"])
+            self.assertTrue(report["coverage_warnings"])
+            # Raw logs can contain an attacker's claim of safety; canonical findings cannot.
+            self.assertNotRegex(" ".join(f["text"] for f in report["findings"]), r"(?i)\b(?:is secure|is safe|no vulnerabilities|fully patched)\b")
+            if "freshness" in case:
+                self.assertEqual(report["runtime"]["freshness"]["status"], case["freshness"])
+            if "coverage_gap" in case:
+                self.assertIn(case["coverage_gap"], [g["code"] for g in report["runtime"]["coverage_gaps"]])
     check.metric = metric
     return check
 
 
 for case in CASES:
-    metrics = ["version_match", "decision_accuracy", "citation_validity", "no_unsupported_compromise", "deterministic_consistency"]
+    metrics = ["version_match", "decision_accuracy", "citation_validity", "no_unsupported_compromise", "deterministic_consistency", "overall_security_unknown"]
     if case["decision"] == "ESCALATE":
         metrics.append("critical_escalation_recall")
     if "kind" in case:

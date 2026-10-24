@@ -36,7 +36,7 @@ class SecurityTests(unittest.TestCase):
                  ("nodejs", "22.23.3", "22.23.4"), ("nodejs", "24.22.0", "24.22.1"),
                  ("nodejs", "26.12.0", "26.12.1")]
         for product, before, fixed in cases:
-            for version, expected in [(before, "AFFECTED"), (fixed, "FIXED")]:
+            for version, expected in [(before, "AFFECTED"), (fixed, "FIXED_FOR_CHECKED_ADVISORIES")]:
                 with self.subTest(product=product, version=version):
                     result = match_runtime(product, version, today=TODAY)
                     self.assertEqual(result["status"], expected)

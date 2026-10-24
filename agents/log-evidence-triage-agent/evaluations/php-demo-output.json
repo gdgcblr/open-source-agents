@@ -1,8 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "mode": "offline_deterministic",
   "decision": "ESCALATE",
-  "summary": "ESCALATE: scoped runtime assessment AFFECTED; compromise is not confirmed.",
+  "summary": "ESCALATE: scoped runtime assessment AFFECTED; OVERALL_SECURITY_UNKNOWN; compromise is not confirmed.",
+  "coverage_warnings": [
+    "Only a curated advisory subset is evaluated; other advisories and configuration risks remain unevaluated.",
+    "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
+  ],
   "runtime": {
     "status": "AFFECTED",
     "matches": [
@@ -80,6 +84,33 @@
       }
     ],
     "issues": [],
+    "overall_security": "OVERALL_SECURITY_UNKNOWN",
+    "freshness": {
+      "status": "FRESH",
+      "evaluated_on": "2026-10-24",
+      "verified_on": "2026-10-24",
+      "age_days": 0,
+      "max_age_days": 7
+    },
+    "checked_advisory_ids": [
+      "CVE-2026-109618",
+      "CVE-2026-109619"
+    ],
+    "coverage_gaps": [
+      {
+        "code": "PARTIAL_CATALOG",
+        "message": "Only a curated advisory subset is evaluated; other advisories and configuration risks remain unevaluated.",
+        "requires_hold": false
+      },
+      {
+        "code": "UNEVALUATED_NOTICE",
+        "message": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases.",
+        "requires_hold": true,
+        "published": "2026-10-23",
+        "source_url": "https://www.php.net/archive/2026.php",
+        "newer_than_curated_advisories": true
+      }
+    ],
     "scope": "Only the curated CVEs and explicitly listed upstream branches; never a security clearance.",
     "verified_on": "2026-10-24",
     "notices": [
@@ -121,6 +152,14 @@
     },
     {
       "id": "F4",
+      "kind": "coverage",
+      "text": "OVERALL_SECURITY_UNKNOWN: fixes apply only to checked advisories; the local dataset has incomplete coverage.",
+      "evidence_refs": [
+        "D1"
+      ]
+    },
+    {
+      "id": "F5",
       "kind": "operational_hypothesis",
       "text": "The process or runtime may have exceeded its available memory. This is an unverified operational hypothesis.",
       "evidence_refs": [
@@ -218,6 +257,35 @@
       "source_url": "https://www.php.net/archive/2026.php",
       "note": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
     },
+    "D1": {
+      "kind": "coverage_metadata",
+      "freshness": {
+        "status": "FRESH",
+        "evaluated_on": "2026-10-24",
+        "verified_on": "2026-10-24",
+        "age_days": 0,
+        "max_age_days": 7
+      },
+      "checked_advisory_ids": [
+        "CVE-2026-109618",
+        "CVE-2026-109619"
+      ],
+      "coverage_gaps": [
+        {
+          "code": "PARTIAL_CATALOG",
+          "message": "Only a curated advisory subset is evaluated; other advisories and configuration risks remain unevaluated.",
+          "requires_hold": false
+        },
+        {
+          "code": "UNEVALUATED_NOTICE",
+          "message": "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases.",
+          "requires_hold": true,
+          "published": "2026-10-23",
+          "source_url": "https://www.php.net/archive/2026.php",
+          "newer_than_curated_advisories": true
+        }
+      ]
+    },
     "L2": {
       "kind": "log",
       "line": 2,
@@ -227,7 +295,7 @@
     }
   },
   "unknowns": [
-    "Publisher follow-up has no complete curated version ranges; manual advisory verification is required."
+    "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
   ],
   "assumptions": [
     "Runtime and exposure metadata are user assertions.",
@@ -253,7 +321,7 @@
       "R1"
     ],
     "unknowns": [
-      "Publisher follow-up has no complete curated version ranges; manual advisory verification is required."
+      "PHP published a session upload progress follow-up on October 23. Its full affected/fixed ranges are not curated here. Review application session configuration and the publisher notice even on October 21 patched releases."
     ],
     "assumptions": [
       "Runtime and exposure metadata are user assertions.",

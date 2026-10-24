@@ -55,7 +55,7 @@ flowchart TD
 | `adk_adapter.py`, `ai.py` | Ephemeral ADK tool session, time/call limits, sanitized API failures, AI output gate |
 | `tests/`, `evaluations/`, `evaluate.py` | Golden fixtures, regression/failure tests, real result reporting |
 
-Core modules never import Gemini or ADK. Each investigation owns its evidence dictionary: `R1` is asserted runtime/exposure metadata, `L<number>` is an original log line, `A:<CVE>` is a reviewed advisory, and `N<number>` is a publisher notice. References have meaning only inside their report. No shared global evidence ledger or persistent agent memory is used for decisions.
+Core modules never import Gemini or ADK. Each investigation owns its evidence dictionary: `R1` is asserted runtime/exposure metadata, `L<number>` is an original log line, `A:<CVE>` is a reviewed advisory, `N<number>` is a publisher notice, and `D1` records dataset coverage and freshness. References have meaning only inside their report. No shared global evidence ledger or persistent agent memory is used for decisions.
 
 ## Security and trust boundaries
 
@@ -82,7 +82,22 @@ Each record stores the CVE, product, severity, publication date, source URL, rev
 
 **PHP follow-up:** the [October 23 publisher notice](https://www.php.net/archive/2026.php) describes additional session configuration concerns without complete curated ranges here. Consequently PHP 8.4.27 is FIXED for the two listed CVEs but its investigation remains HOLD for manual follow-up. No new affected range or severity is invented.
 
-After seven days the snapshot is stale: overall runtime status becomes UNKNOWN. Historical affected matches remain visible and still trigger escalation. A FIXED result is never a claim that a runtime is secure, supported, or free of other vulnerabilities. Review [data provenance and update instructions](data/README.md) before refreshing the snapshot.
+The report separates two independent assessments:
+
+```json
+{
+  "status": "FIXED_FOR_CHECKED_ADVISORIES",
+  "overall_security": "OVERALL_SECURITY_UNKNOWN"
+}
+```
+
+These are fields inside `runtime`. Per-advisory `matches[].status` remains `AFFECTED` or `FIXED`, accompanied by its CVE, publication date, source, and matched range. `checked_advisory_ids` identifies exactly which records were evaluated. Report schema version 2 replaces the old aggregate `FIXED` value with `FIXED_FOR_CHECKED_ADVISORIES`; consumers must update that enum comparison. Overall security remains unknown even when every checked CVE is fixed.
+
+`runtime.freshness` records FRESH/STALE/UNAVAILABLE, the verification and evaluation dates, snapshot age, and permitted age. After seven days the aggregate assessment becomes UNKNOWN. Historical affected matches remain visible and still trigger escalation. A fresh snapshot means recently reviewed, not comprehensive coverage.
+
+`runtime.coverage_gaps` records a code, message, and `requires_hold` flag. Known unevaluated notices include publication dates, source URLs, and whether they postdate the curated advisories. Known records with no applicable evaluated branch range are explicitly listed as unevaluated; they cannot silently disappear into a fixed result. Dates after verification produce an additional warning that newer advisories have not been checked; the offline agent cannot discover or name unseen advisories.
+
+Policy: the general partial-catalog limitation and the interval after verification within the freshness window produce visible `coverage_warnings`, allowing a bounded PASS. Stale/unavailable data, a known unevaluated record, or a publisher follow-up require HOLD unless another condition already mandates ESCALATE. The CLI displays warnings, and AI selection cannot remove them. Review [data provenance and update instructions](data/README.md) before refreshing the snapshot; no live CVE crawler is used.
 
 ## Installation and environment setup
 
@@ -134,7 +149,7 @@ python -m incident_triage.cli --text "INFO ready" --product nodejs --version 22.
 | `TRIAGE_AI_TIMEOUT_SECONDS` | `60` | Wall-clock request limit, integer 1-120 |
 | `TRIAGE_EVAL_REPORT` | project `evaluations/report.json` | Evaluation output path |
 
-Offline commands read actual process environment variables and do not require dotenv. `--ai` and the ADK entry point additionally load the project's `.env`, without overriding process variables. Freshness uses the current UTC date; golden fixtures explicitly freeze the date to 2026-10-24, so future evaluation runs remain repeatable.
+Offline commands read actual process environment variables and do not require dotenv. `--ai` and the ADK entry point additionally load the project's `.env`, without overriding process variables. Freshness uses the current UTC date; golden fixtures use explicit evaluation dates (2026-10-24 by default), so future evaluation runs remain repeatable.
 
 ## CLI usage and demo scenarios
 
@@ -147,7 +162,7 @@ python -m incident_triage.cli --file samples/spring-boot-incident.log
 # Critical PHP exposure: ESCALATE, AFFECTED, compromise NOT_CONFIRMED
 python -m incident_triage.cli --file samples/php-critical.log --product php --version 8.4.26 --internet-facing --production
 
-# Patched scoped Node CVE: PASS, FIXED (not a security clearance)
+# Patched scoped Node CVE: PASS with coverage warning and FIXED_FOR_CHECKED_ADVISORIES
 python -m incident_triage.cli --file samples/node-patched.log --product nodejs --version 22.23.4 --format json
 
 # Suspicious requests on a patched runtime: HOLD
@@ -165,7 +180,7 @@ Example excerpt from an actual synthetic PHP run:
 
 ```text
 === TraceGuard AI | offline_deterministic ===
-ESCALATE: scoped runtime assessment AFFECTED; compromise is not confirmed.
+ESCALATE: scoped runtime assessment AFFECTED; OVERALL_SECURITY_UNKNOWN; compromise is not confirmed.
 ```
 
 The complete escalation object includes summary, severity, rationale, verified reference membership, unknowns, next investigation steps, and the required human decision. Evidence membership is verified; the truth of log statements is not.
@@ -193,7 +208,7 @@ The public custom ADK agent runs deterministic investigation first. A separate e
 Policy precedence is **ESCALATE > HOLD > PASS**. Missing evidence, stale data, or an invalid model response cannot downgrade an existing escalation.
 
 - **ESCALATE:** a scoped affected runtime has official high/critical severity (even with asserted internal exposure), a log mentions a possible webshell/reverse shell/exfiltration/unauthorized process, or possible credentials appear in logs. Human investigation determines applicability and truth.
-- **HOLD:** missing/invalid runtime, incomplete or stale advisory data, unresolved publisher notice, conflicting runtime statements, suspicious requests without corroboration, missing logs, or failed AI credibility checks.
+- **HOLD:** missing/invalid runtime, unavailable or stale advisory data, known unevaluated advisory/branch or publisher notice, conflicting runtime statements, suspicious requests without corroboration, missing logs, or failed AI credibility checks. The general partial-catalog limitation always produces a coverage warning, including on PASS.
 - **PASS:** sufficient evidence for the narrow report and no policy hold/escalation condition. It does not authorize closure or assert safety.
 
 | Failure | Failsafe and fallback |

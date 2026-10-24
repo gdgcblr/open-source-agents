@@ -19,3 +19,7 @@ To update:
 5. Run the complete suite and evaluator. Record intentional fixture-date changes and reviewer rationale.
 
 An operator-supplied `TRIAGE_ADVISORY_PATH` has the same trust requirements. Malformed or unverified data fails closed to UNKNOWN. Missing/severely corrupted data cannot preserve knowledge it no longer contains; urgent log indicators still escalate independently.
+
+The matcher reports each CVE independently. Report schema 2 uses `FIXED_FOR_CHECKED_ADVISORIES` for an aggregate fixed result and always reports `OVERALL_SECURITY_UNKNOWN` separately. Publication dates belong to advisory records; `verified_on` is the date the snapshot was reviewed, not a claim that all advisories through that date are included.
+
+Coverage gaps are explicit: PARTIAL_CATALOG (warning), AFTER_VERIFICATION (warning), STALE_DATA/UNAVAILABLE_DATA (HOLD), UNEVALUATED_NOTICE (HOLD), and UNEVALUATED_ADVISORY/UNSUPPORTED_BRANCH/UNKNOWN_RUNTIME (HOLD). Mandatory escalation takes precedence. An unevaluated advisory lists its original CVE, date, and source; an unseen newer advisory cannot be named by this offline system. No publication dates, verification dates, or production advisory facts were changed by this reporting refinement.

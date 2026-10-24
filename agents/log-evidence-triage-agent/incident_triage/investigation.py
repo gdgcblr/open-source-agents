@@ -31,6 +31,7 @@ def investigate(log_text: str, product: str = "", version: str = "", internet_fa
                      "trust": "User supplied; deployed binary and configuration require human verification."}}
     findings = []
     unknowns = list(runtime["issues"])
+    unknowns.extend(g["message"] for g in runtime["coverage_gaps"] if g["requires_hold"])
     reasons = []
     escalation_refs = []
 
@@ -40,7 +41,7 @@ def investigate(log_text: str, product: str = "", version: str = "", internet_fa
     for match in runtime["matches"]:
         ref = "A:" + match["cve"]
         ledger[ref] = {"kind": "advisory", **match}
-        qualifier = "Historical snapshot" if runtime["status"] == "UNKNOWN" else "Curated snapshot"
+        qualifier = "Historical snapshot" if runtime["freshness"]["status"] == "STALE" else "Curated snapshot"
         add("runtime", f"{qualifier}: {safe_product} {safe_version} is {match['status']} for {match['cve']} only; this does not establish exploitation or overall safety.", ["R1", ref])
         if match["status"] == "AFFECTED" and match["severity"] in {"critical", "high"}:
             reasons.append("An affected runtime has an officially high or critical advisory; urgent human review is required to assess applicability and exposure.")
@@ -49,7 +50,10 @@ def investigate(log_text: str, product: str = "", version: str = "", internet_fa
         ref = f"N{i}"
         ledger[ref] = {"kind": "publisher_notice", **notice}
         add("coverage_gap", notice["note"], [ref])
-        unknowns.append("Publisher follow-up has no complete curated version ranges; manual advisory verification is required.")
+
+    ledger["D1"] = {"kind": "coverage_metadata", "freshness": runtime["freshness"],
+                    "checked_advisory_ids": runtime["checked_advisory_ids"], "coverage_gaps": runtime["coverage_gaps"]}
+    add("coverage", "OVERALL_SECURITY_UNKNOWN: fixes apply only to checked advisories; the local dataset has incomplete coverage.", ["D1"])
 
     safe_lines = redacted_lines(log_text)
     counts = {}
@@ -101,8 +105,9 @@ def investigate(log_text: str, product: str = "", version: str = "", internet_fa
                   "Preserve relevant logs and correlate request IDs with host, identity, and network telemetry.",
                   "Have an authorized responder decide containment and patching; no action or incident closure is automated."]
     assumptions = ["Runtime and exposure metadata are user assertions.", "Log authenticity is not established.", "Snapshot coverage is partial; FIXED refers only to listed CVEs."]
-    return {"schema_version": 1, "mode": "offline_deterministic", "decision": decision,
-            "summary": f"{decision}: scoped runtime assessment {runtime['status']}; compromise is not confirmed.",
+    return {"schema_version": 2, "mode": "offline_deterministic", "decision": decision,
+            "summary": f"{decision}: scoped runtime assessment {runtime['status']}; {runtime['overall_security']}; compromise is not confirmed.",
+            "coverage_warnings": [g["message"] for g in runtime["coverage_gaps"]],
             "runtime": runtime, "severity": severity, "findings": findings, "evidence": ledger,
             "unknowns": unknowns, "assumptions": assumptions,
             "compromise": "NOT_CONFIRMED", "next_steps": next_steps,

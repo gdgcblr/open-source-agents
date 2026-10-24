@@ -50,6 +50,9 @@ def main() -> int:
         print(f"- {finding['text']} [{', '.join(finding['evidence_refs'])}]")
     for unknown in result["unknowns"]:
         print(f"Unknown: {unknown}")
+    for warning in result["coverage_warnings"]:
+        if warning not in result["unknowns"]:
+            print(f"Coverage warning: {warning}")
     if "fallback_reason" in result:
         print(result["fallback_reason"])
     print("Required human decision: " + result["escalation"]["required_human_decision"])

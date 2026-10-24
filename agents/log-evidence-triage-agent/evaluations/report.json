@@ -7,8 +7,8 @@
     "python-dotenv": "1.2.4"
   },
   "fixture_date": "2026-10-24",
-  "total": 137,
-  "passed": 137,
+  "total": 176,
+  "passed": 176,
   "failed": 0,
   "skipped": 0,
   "metrics": {
@@ -24,45 +24,57 @@
       "failed": 0,
       "skipped": 0
     },
+    "advisory_coverage_safety": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
     "citation_validity": {
-      "total": 15,
-      "passed": 15,
+      "total": 18,
+      "passed": 18,
       "failed": 0,
       "skipped": 0
     },
     "critical_escalation_recall": {
-      "total": 7,
-      "passed": 7,
+      "total": 8,
+      "passed": 8,
       "failed": 0,
       "skipped": 0
     },
     "decision_accuracy": {
-      "total": 15,
-      "passed": 15,
+      "total": 18,
+      "passed": 18,
       "failed": 0,
       "skipped": 0
     },
     "deterministic_consistency": {
-      "total": 15,
-      "passed": 15,
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "no_unsupported_compromise": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "overall_security_unknown": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "version_match": {
+      "total": 18,
+      "passed": 18,
       "failed": 0,
       "skipped": 0
     },
     "indicator_detection": {
       "total": 7,
       "passed": 7,
-      "failed": 0,
-      "skipped": 0
-    },
-    "no_unsupported_compromise": {
-      "total": 15,
-      "passed": 15,
-      "failed": 0,
-      "skipped": 0
-    },
-    "version_match": {
-      "total": 15,
-      "passed": 15,
       "failed": 0,
       "skipped": 0
     },
@@ -147,6 +159,31 @@
       "status": "passed"
     },
     {
+      "id": "test_coverage.CoverageTests.test_ai_selection_cannot_remove_coverage_warning",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_blanket_secure_model_claim_rejected_despite_real_citations",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_freshness_boundary_is_explicit",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_newer_notice_is_separate_from_fixed_cves",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
+      "id": "test_coverage.CoverageTests.test_partial_branch_coverage_cannot_hide_unevaluated_advisory",
+      "metric": "advisory_coverage_safety",
+      "status": "passed"
+    },
+    {
       "id": "test_engine.TriageEngineTests.test_guard_against_path_traversal",
       "metric": "regression_and_safety",
       "status": "passed"
@@ -187,6 +224,41 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_critical_escalation_recall",
+      "metric": "critical_escalation_recall",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_affected_stale_catalog_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_citation_validity",
       "metric": "citation_validity",
       "status": "passed"
@@ -217,6 +289,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_conflict_keeps_escalation_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -244,6 +321,11 @@
     {
       "id": "test_golden.GoldenTests.test_conflicting_evidence_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_conflicting_evidence_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {
@@ -282,6 +364,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_exfiltration_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_exfiltration_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -304,6 +391,11 @@
     {
       "id": "test_golden.GoldenTests.test_missing_catalog_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_missing_catalog_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {
@@ -332,6 +424,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_missing_evidence_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_missing_evidence_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -354,6 +451,11 @@
     {
       "id": "test_golden.GoldenTests.test_node_patched_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_node_patched_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {
@@ -387,7 +489,72 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_node_vulnerable_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_node_vulnerable_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_after_verification_version_match",
+      "metric": "version_match",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_citation_validity",
+      "metric": "citation_validity",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_decision_accuracy",
+      "metric": "decision_accuracy",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_deterministic_consistency",
+      "metric": "deterministic_consistency",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_no_unsupported_compromise",
+      "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_patched_stale_catalog_version_match",
       "metric": "version_match",
       "status": "passed"
     },
@@ -409,6 +576,11 @@
     {
       "id": "test_golden.GoldenTests.test_php_patched_followup_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_patched_followup_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {
@@ -439,6 +611,11 @@
     {
       "id": "test_golden.GoldenTests.test_php_vulnerable_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_php_vulnerable_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {
@@ -477,6 +654,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_prompt_injection_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_prompt_injection_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -509,6 +691,11 @@
     {
       "id": "test_golden.GoldenTests.test_secret_redaction_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_secret_redaction_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {
@@ -552,6 +739,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_suspected_compromise_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_suspected_compromise_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -582,6 +774,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_suspicious_patched_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_suspicious_patched_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -607,6 +804,11 @@
       "status": "passed"
     },
     {
+      "id": "test_golden.GoldenTests.test_unknown_branch_overall_security_unknown",
+      "metric": "overall_security_unknown",
+      "status": "passed"
+    },
+    {
       "id": "test_golden.GoldenTests.test_unknown_branch_version_match",
       "metric": "version_match",
       "status": "passed"
@@ -629,6 +831,11 @@
     {
       "id": "test_golden.GoldenTests.test_unknown_version_no_unsupported_compromise",
       "metric": "no_unsupported_compromise",
+      "status": "passed"
+    },
+    {
+      "id": "test_golden.GoldenTests.test_unknown_version_overall_security_unknown",
+      "metric": "overall_security_unknown",
       "status": "passed"
     },
     {

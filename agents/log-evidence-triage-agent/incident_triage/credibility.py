@@ -36,6 +36,6 @@ def apply_candidate(report: dict, candidate: object) -> dict:
         result["unknowns"].append("AI credibility validation failed; unsupported output was discarded.")
         if result["decision"] != "ESCALATE":
             result["decision"] = "HOLD"
-        result["summary"] = f"{result['decision']}: AI credibility check failed; review deterministic evidence."
+        result["summary"] = f"{result['decision']}: AI credibility check failed; OVERALL_SECURITY_UNKNOWN; review deterministic evidence."
         result["escalation"]["unknowns"] = result["unknowns"]
     return result
