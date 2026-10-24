@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`agents/nanonavs-road-anomaly`](nanonavs-road-anomaly/) | Autonomous road anomaly detection and classification using multi-sensor fusion with optional Gemini AI reporting | Python, Streamlit, Google GenAI | [@1WN24CS203](https://github.com/1WN24CS203) |
