@@ -134,8 +134,8 @@ python3 -m pytest tools/gemma-quant-mcp/tests
 ## 🎥 Video Demonstration & Scene Composition (Brag Skill)
 
 ### 🎥 Final Render Paths (Post-Render)
-- **Arthaniti Video**: `/Users/shikhar/Projects/open-source-agents/brag-quant/brag.mp4` (also synced at `tools/gemma-quant-mcp/brag/brag.mp4`)
+- **Arthaniti Video**: `brag-quant/brag.mp4` (also synced at `tools/gemma-quant-mcp/brag/brag.mp4`)
 
 ### 🛠️ Current Composition Paths (The Source)
 If you want to preview or edit the scenes before rendering:
-- **Arthaniti Composition**: `/Users/shikhar/Projects/open-source-agents/brag-quant/composition/index.html` (also at `tools/gemma-quant-mcp/brag/composition/index.html`)
+- **Arthaniti Composition**: `brag-quant/composition/index.html` (also at `tools/gemma-quant-mcp/brag/composition/index.html`)
