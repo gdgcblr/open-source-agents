@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| `video-analysis-agent` | CLI agent that turns a video into an evidence-backed report (summary, decisions, action items, facts, open questions) with timestamps. | Python, FFmpeg, faster-whisper, Pydantic, Gemini/OpenAI/Anthropic | @lavishguptaa |
