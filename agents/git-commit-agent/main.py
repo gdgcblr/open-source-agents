@@ -376,6 +376,31 @@ def run_with_adk(model_name: str, prompt: str, amend_mode: bool = False) -> tupl
 # Local Offline Ollama Fallback Provider
 # ---------------------------------------------------------------------------
 
+def get_available_ollama_model(ollama_host: str, requested: str = "") -> str:
+    """Auto-detects installed models on local Ollama instance."""
+    try:
+        url = f"{ollama_host}/api/tags"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            installed = [m["name"] for m in data.get("models", [])]
+            if requested:
+                for m in installed:
+                    if m == requested or m.startswith(f"{requested}:"):
+                        return m
+                return requested
+            # Preferences if no model specified
+            for pref in ["qwen2.5-coder", "llama3.2", "llama3", "mistral", "llama2", "codellama"]:
+                for m in installed:
+                    if pref in m:
+                        return m
+            if installed:
+                return installed[0]
+    except Exception:
+        pass
+    return requested or "llama3.2:latest"
+
+
 def run_with_ollama(model_name: str, prompt: str, amend_mode: bool = False) -> tuple[object, str, str]:
     """Queries a local Ollama instance (zero external cloud dependencies)."""
     ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
@@ -398,9 +423,16 @@ def run_with_ollama(model_name: str, prompt: str, amend_mode: bool = False) -> t
         payload = json.dumps({"model": model_name, "messages": msgs, "stream": False}).encode("utf-8")
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=45) as resp:
+            with urllib.request.urlopen(req, timeout=60) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return clean_commit_message(data.get("message", {}).get("content", "").strip())
+        except urllib.error.HTTPError as http_err:
+            if http_err.code == 404:
+                raise RuntimeError(
+                    f"Model '{model_name}' is not installed in Ollama.\n"
+                    f"Run `ollama pull {model_name}` or choose one of your installed models (`ollama list`)."
+                )
+            raise RuntimeError(f"Ollama HTTP error {http_err.code}: {http_err.reason}")
         except Exception as e:
             raise RuntimeError(f"Ollama connection error at {ollama_host}: {e}")
 
@@ -692,7 +724,8 @@ def main():
         print(f"\n{Colors.CYAN}Analysing staged changes with Google ADK ({model_name})...{Colors.RESET}\n")
         reply_fn, commit_message, _ = run_with_adk(model_name, initial_prompt, amend_mode=args.amend)
     else:
-        model_name = model_name or os.getenv("OLLAMA_MODEL", "qwen2.5-coder:latest")
+        ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        model_name = get_available_ollama_model(ollama_host, args.model or os.getenv("OLLAMA_MODEL", ""))
         print(f"\n{Colors.CYAN}Analysing staged changes with local Ollama ({model_name})...{Colors.RESET}\n")
         try:
             reply_fn, commit_message, _ = run_with_ollama(model_name, initial_prompt, amend_mode=args.amend)
