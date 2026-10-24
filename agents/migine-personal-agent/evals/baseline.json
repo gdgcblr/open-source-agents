@@ -1,0 +1,135 @@
+{
+  "model": "gemma4:e4b",
+  "machine": "arm64",
+  "passed": 8,
+  "total": 8,
+  "results": [
+    {
+      "case": "bill",
+      "passed": true,
+      "actual": [
+        {
+          "kind": "bill",
+          "provider": "example bank",
+          "account": "1234",
+          "amount": "12450.00",
+          "currency": "INR",
+          "occurred_on": "2026-10-01",
+          "due_on": "2026-10-20",
+          "period": "2026-10",
+          "status": "statement",
+          "reference": "",
+          "subscription": false,
+          "evidence": "Statement issued 2026-10-01 by Example Bank. Card 1234. Statement month 2026-10. INR 12450.00 due 2026-10-20."
+        }
+      ],
+      "seconds": 12.12,
+      "error": null
+    },
+    {
+      "case": "credited",
+      "passed": true,
+      "actual": [
+        {
+          "kind": "payment",
+          "provider": "example bank",
+          "account": "1234",
+          "amount": "12450.00",
+          "currency": "INR",
+          "occurred_on": "2026-10-12",
+          "due_on": null,
+          "period": "2026-10",
+          "status": "credited",
+          "reference": "ABC123",
+          "subscription": false,
+          "evidence": "Example Bank: INR 12450.00 credited to card 1234 on 2026-10-12 for statement month 2026-10. Reference ABC123."
+        }
+      ],
+      "seconds": 5.53,
+      "error": null
+    },
+    {
+      "case": "pending",
+      "passed": true,
+      "actual": [
+        {
+          "kind": "payment",
+          "provider": "example bank",
+          "account": "1234",
+          "amount": "12450.00",
+          "currency": "INR",
+          "occurred_on": "2026-10-12",
+          "due_on": null,
+          "period": "2026-10",
+          "status": "scheduled",
+          "reference": "ABC124",
+          "subscription": false,
+          "evidence": "Example Bank: INR 12450.00 payment scheduled on 2026-10-12 to card 1234 for statement month 2026-10. Reference ABC124. Not yet credited."
+        }
+      ],
+      "seconds": 5.52,
+      "error": null
+    },
+    {
+      "case": "subscription",
+      "passed": true,
+      "actual": [
+        {
+          "kind": "charge",
+          "provider": "example music",
+          "account": "",
+          "amount": "149.00",
+          "currency": "INR",
+          "occurred_on": "2026-10-03",
+          "due_on": null,
+          "period": "",
+          "status": "credited",
+          "reference": "MUSIC1",
+          "subscription": true,
+          "evidence": "Example Music monthly subscription: INR 149.00 charged successfully on 2026-10-03. Receipt MUSIC1."
+        }
+      ],
+      "seconds": 4.07,
+      "error": null
+    },
+    {
+      "case": "renewal",
+      "passed": true,
+      "actual": [],
+      "seconds": 0.44,
+      "error": null
+    },
+    {
+      "case": "missing_date",
+      "passed": true,
+      "actual": [],
+      "seconds": 0.45,
+      "error": null
+    },
+    {
+      "case": "injection",
+      "passed": true,
+      "actual": [],
+      "seconds": 0.44,
+      "error": null
+    },
+    {
+      "case": "not_a_bill",
+      "passed": true,
+      "actual": [],
+      "seconds": 0.45,
+      "error": null
+    }
+  ],
+  "run_date": "2026-10-24",
+  "model_id": "c6eb396dbd59",
+  "adk_version": "2.13.0",
+  "dataset_sha256": "a49d22ed218577c33235703407eb8400ffc3f4e0e6848229f15e5ae258ed2647",
+  "scope": "Eight synthetic extraction cases. This set was used during development; it is not a held-out accuracy estimate.",
+  "options": {
+    "temperature": 0,
+    "num_predict": 2048,
+    "num_ctx": 16384,
+    "think": false
+  }
+}

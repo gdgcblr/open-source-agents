@@ -1,0 +1,25 @@
+services:
+  migine:
+    build: .
+    image: migine-personal-agent:0.1.0
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    environment:
+      MIGINE_DATA_DIR: /data
+      MIGINE_TIMEZONE: ${MIGINE_TIMEZONE:-Asia/Kolkata}
+      MIGINE_CHAT_MODEL: ${MIGINE_CHAT_MODEL:-gemma4:e4b}
+      MIGINE_EMBEDDING_MODEL: ${MIGINE_EMBEDDING_MODEL:-embeddinggemma}
+      MIGINE_MAC_CONNECTOR_URL: http://host.docker.internal:8765
+      MIGINE_MAC_CONNECTOR_TOKEN_FILE: /run/secrets/connector_token
+      LITELLM_TELEMETRY: "False"
+    volumes:
+      - migine-data:/data
+    secrets: [connector_token]
+secrets:
+  connector_token:
+    file: ${MIGINE_MAC_CONNECTOR_TOKEN_FILE:?Set the host token file path in .env}
+volumes:
+  migine-data:

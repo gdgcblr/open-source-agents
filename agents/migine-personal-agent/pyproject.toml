@@ -1,0 +1,31 @@
+[project]
+name = "migine-personal-agent"
+version = "0.1.0"
+description = "A local personal agent for Apple Mail, Calendar, and Contacts."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "google-adk[db]>=2.0,<3",
+  "litellm==1.106.2",
+  "httpx>=0.28,<1",
+  "pydantic>=2.12,<3",
+  "python-dotenv>=1,<2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.14,<1"]
+
+[project.scripts]
+migine = "migine.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/migine"]
+
+[tool.ruff]
+line-length = 100
