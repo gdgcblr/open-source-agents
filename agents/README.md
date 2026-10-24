@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`runready-cloudrun-agent`](./runready-cloudrun-agent) | Safety-first Cloud Run deployment-rescue agent: evidence-backed diagnosis of Python/FastAPI startup failures with minimal, approval-gated fixes. | Python · Google ADK 2.x · Gemini | [@gitlakshya](https://github.com/gitlakshya) |

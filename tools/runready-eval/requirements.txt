@@ -1,0 +1,8 @@
+# RunReady eval — point this harness at a GOOGLE_API_KEY and it scores the
+# agent's Gemini-backed diagnosis. It imports the agent package from the
+# sibling agents/runready-cloudrun-agent/ directory, so install that agent's
+# requirements too (they share google-adk).
+google-adk>=2.0,<3.0
+# For the sample fixtures' import checks performed by the agent's tools:
+fastapi>=0.110
+uvicorn>=0.29
