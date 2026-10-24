@@ -45,7 +45,8 @@ All paths below are relative to the project directory.
 | `sample/workflow.svg` | README illustration of the before/during/after event journey |
 | `tests/test_buildbuddy.py` | Import, matching, authentication, consent and workflow regressions |
 | `tests/test_nlp_privacy.py` | NLP, renamed identity, cloud boundaries, host rules and privacy regressions |
-| `README.md` | Overview, architecture, setup, examples, tests, limitations and license |
+| `README.md` | App overview, user journey, benefits, privacy choices and limitations |
+| `DEVELOPMENT.md` | Setup, configuration, architecture, implementation, examples, tests and contribution-check summary |
 | `ORGANIZER_GUIDE.md` | Form setup, import, safe token delivery, operation and retention |
 | `ATTENDEE_GUIDE.md` | Sign-in, search, evidence, finding people and privacy choices |
 | `DEPLOY.md` | Render configuration and email-button integration instructions |
@@ -58,7 +59,7 @@ All paths below are relative to the project directory.
 | Standard | Evidence and qualification |
 | --- | --- |
 | Reproducibility | Base requirements installed in a fresh virtual environment; final 38 tests pass; pip check passes. macOS/Python 3.14.5 verified, other platforms and Render deployment not yet verified. |
-| Documentation quality | README covers all substantive template sections; exact sample input/output, separate role guides, deployment instructions, model/cost assumptions and known limitations are present. |
+| Documentation quality | Product-focused README links to DEVELOPMENT.md for setup, configuration, architecture and tests. Sample input/output, role guides, deployment instructions, model/cost assumptions and limitations remain documented. The repository requests these technical topics in README itself; this split is a deliberate presentation choice, subject to maintainer approval. |
 | Security and privacy | No intended real credentials or private dataset in the Git submission. Examples contain only explicitly fictional demo/test tokens. Consent, token hashes, event isolation, withdrawal, expiring check-ins and upload bounds are tested. This is not a formal audit or a guarantee against all attacks. |
 | Focused scope | Every added file lives under the one project directory; root build files and other contributors' files are untouched. |
 
@@ -66,7 +67,7 @@ All paths below are relative to the project directory.
 
 - Fork/main was fetched and verified. The local clone initially came from upstream, with the user's fork added as remote `fork`; this is operationally equivalent to a fork clone but uses different remote names (`origin` is upstream here).
 - Feature branch originates from the shared upstream/fork main commit.
-- Required README, `.gitignore`, `.env.example`, manifests and license are present; README covers the template's topics with task-specific section names.
+- Required README, `.gitignore`, `.env.example`, manifests and license are present. Technical template topics are in linked DEVELOPMENT.md rather than directly in README; maintainers may request inline sections.
 - Implementation, local tests and scoped commits are prepared.
 - Push to the fork, opening the upstream PR, completing its checklist, and responding to reviews remain subsequent workflow steps. A rejected push approval was not retried.
 - A public evaluator URL still requires the organizer to provision and verify hosting. No live deployment, live Gemini call or MiniLM inference is claimed.

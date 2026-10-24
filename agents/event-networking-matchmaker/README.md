@@ -1,196 +1,62 @@
-# BuildBuddy — useful introductions, backed by evidence
+# BuildBuddy — turn event registrations into real connections
 
-> Import event registration responses, describe your goal in ordinary language, and find people who can help—or explore the same interest—with you.
+> Find people worth meeting, understand why you match, and find each other at the event.
+
+BuildBuddy helps community-event attendees turn “Who should I talk to?” into a useful conversation. Organizers bring their confirmed, consenting attendees’ Google Form responses; attendees discover relevant people through a private invitation in their confirmation email.
 
 ![BuildBuddy journey: before the event, upload consenting Google Form responses and open private email invitations to explore matches; during the event, check in at a meeting spot and connect; afterwards, aim to leave productive and satisfied.](sample/workflow.svg)
 
-**From registration to a real conversation:** organizers import consenting responses; attendees open their private email button and explore relevant people before arrival. At the venue, a short-lived check-in helps them find each other.
+## Before, during, and after the event
 
-*Availability is collected in the registration form and used by the networking-window filter. The current app does not reserve future meetings or save a future location preference. Location check-in is voluntary and starts when the attendee is there; the email button signs in without marking arrival. Email delivery uses the organizer’s existing sender. The after-event feeling is the intended benefit, not a measured or guaranteed outcome.*
+**Before:** the organizer uploads the confirmed attendees’ spreadsheet and sends each person a private BuildBuddy button in their confirmation email. Attendees open it to explore matches before arrival. Networking availability comes from their registration responses.
 
-**Example:** “I want to know how I can start contributing to open source.” BuildBuddy retrieves contribution-related projects, Git/documentation skills, and open-source interests. It explains the source of each recommendation instead of treating interest as verified expertise. A short-lived meeting-spot check-in helps you find the person in the room.
+**During:** attendees describe what they need, explore their top three introductions, and voluntarily check in at an approved meeting spot. A public badge code helps confirm they have found the right person. After a conversation, **We’ve met** makes room for new suggestions.
 
-**Private by default:** local NLP searches skills, interests, and project descriptions. A downloaded MiniLM model adds semantic matching on the organizer’s own server. No attendee profiles are sent to a hosted AI service. The optional Gemini tool planner sees only the requester’s goal and aggregate hit counts.
+**After:** the aim is to leave with useful connections, shared ideas, and a sense of time well spent—not just a list of names.
 
-[Organizer guide](ORGANIZER_GUIDE.md) · [Attendee guide](ATTENDEE_GUIDE.md) · [Security and privacy](PRIVACY.md)
+Opening the email button does not mark venue arrival. Check-ins start when attendees choose a spot at the event and expire automatically. BuildBuddy does not book future meetings.
 
-**Evaluator URL and email button:** see [DEPLOY.md](DEPLOY.md) for a no-key Render deployment, included `render.yaml`, and private confirmation-email links that open pre-event matches. GitHub Pages alone cannot host the Python backend. Hosted deployment requires your hosting account; no public URL is provisioned automatically.
+## Ask for the connection you need
 
-## Quick start: no API key
+> “I want to know how I can start contributing to open source.”
 
-Requires Python 3.11+ and a modern browser. From this folder:
+BuildBuddy looks for people with relevant skills, projects, or shared interests. In the fictional sample, Kiran’s Git/testing skills and contributor starter kit, and Farah’s documentation skills and first-contribution guide, provide reasons to start a conversation.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements-dev.txt
-python -m pytest -q
-python app.py --demo
-```
+Every recommendation explains **why this person**, **what you could offer them**, and **how to break the ice**. Shared interest is clearly distinguished from relevant offered skills: interest alone does not make someone a mentor.
 
-Windows PowerShell activation: `.venv\Scripts\Activate.ps1`.
+![BuildBuddy recommendations with profile evidence and a meeting-spot check-in](sample/app-desktop.jpg)
 
-Open **http://127.0.0.1:8000**, select **Adarsh · P001**, and enter the open-source request above. **Kiran and Farah** should appear among the top three in local lexical mode. Their Git/documentation skills and contribution projects support those recommendations. The sample XLSX has 20 fictional responses, 18 with consent; no real attendee data is bundled.
+The sample profiles are fictional; the screenshot illustrates the experience, not measured networking outcomes.
 
-### Enable local semantic AI
+## What makes BuildBuddy useful?
 
-```bash
-python -m pip install -r requirements-semantic.txt
-python setup_model.py
-cp .env.example .env
-```
+- **Start with your existing registrations:** import selected, confirmed Google Form responses as an XLSX file.
+- **Use ordinary language:** describe a goal instead of guessing exact skill tags.
+- **Make conversations mutual:** see how you may be able to help each other.
+- **Trust the evidence, not a compatibility percentage:** inspect the profile details behind each suggestion.
+- **Find people in the room:** filter by networking window or recent check-in, then look for their public badge code.
+- **Stay in control:** choose whom to approach, mark people as met, end a check-in, or remove your profile.
 
-Put the printed `BUILDBUDDY_MODEL_DIR=...` line in `.env`, then restart `python app.py --demo`. If the hub download transport stalls, use `python setup_model.py --direct`. The first setup downloads public model files, approximately 90 MB for weights. Once installed, inference loads local files only; the running app never initiates a model download. An unavailable model produces an explicit **Local lexical NLP** label and warning instead of a false AI claim.
+## Privacy and choice
 
-The semantic engine is [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2), executed with [FastEmbed](https://github.com/qdrant/fastembed) and ONNX Runtime. It creates sentence vectors for similarity comparison. This is trained-model inference, not a generative chatbot. The model is English-focused and truncates long fields; keep responses concise.
+Only attendees who explicitly consent to networking appear in matches. Access is private to the event, and personal invitation links must not be forwarded. Profiles stay on the organizer’s server; organizers can access that data.
 
-## What reviewers can verify
+Matching works without a paid AI account. Optional cloud assistance sends the typed request and aggregate result counts—not attendee profiles or locations—to Google. Attendees can leave it off.
 
-| Try this | Expected behavior |
-| --- | --- |
-| “I want to start contributing to open source” | Contribution-related people, with exact profile evidence |
-| “I want to put my app online” | Deployment/hosting connections |
-| “I want to run AI offline” | A local-model connection such as Nila |
-| `Docker` | Kabir’s offered Docker skill |
-| A goal unrelated to the event, such as `quantum spectroscopy` | No sufficiently relevant match |
-| Check Priya in at Table B in another tab; search as Adarsh with available-now enabled | Priya’s recent, expiring check-in |
-| Mark a person as met | Exclude them for that viewer, without changing other attendees’ results |
-| Search only relevant offered skills | Exclude interest-only connections |
-| Inspect “See the profile evidence” and “How these matches were chosen” | Source fields and actual workflow/tool trace |
+BuildBuddy never messages another attendee on your behalf. Removing your profile stops it appearing in BuildBuddy; deleting the original registration response is a separate request to the organizer.
 
-![A real BuildBuddy match with a meeting-spot check-in](sample/app-desktop.jpg)
+## Know its limits
 
-The screenshot and sample are illustrative, not proof of real-world networking outcomes. See the test commands below for reproducible checks.
+Matches are conversation leads, not verified expertise or guaranteed availability. English requests work best, and nuanced goals can be misunderstood. Check the evidence and ask before approaching someone.
 
-## Overview
+Spreadsheet imports are snapshots, not a live Google Sheets connection. Confirmation emails use the organizer’s existing email service. Meeting acceptance, future reservations, and real-world networking outcomes are not guaranteed.
 
-**Problem:** registration spreadsheets contain useful skills and interests, but attendees still struggle to identify a mutually useful person and locate them.
+## Learn more
 
-**Users:** community-event organizers, attendees, and developers reusing the retrieval or privacy patterns.
+[Organizer guide](ORGANIZER_GUIDE.md) · [Attendee guide](ATTENDEE_GUIDE.md) · [Privacy details](PRIVACY.md)
 
-**Features:** multi-event XLSX ingestion, explicit consent, local multi-field NLP, optional semantic AI, reciprocal benefits, source evidence, bounded optional tool calling, private attendee tokens, expiring check-ins, met history, withdrawal persistence, token replacement, and organizer event deletion.
+For maintaining or hosting the app: [setup, configuration, architecture and testing](DEVELOPMENT.md) · [deployment and email integration](DEPLOY.md) · [verified test results](VERIFICATION.md) · [contribution review](SUBMISSION_REVIEW.md).
 
-## Technical stack
+## License
 
-Python/FastAPI/Uvicorn; SQLite; openpyxl for ingestion; plain HTML/CSS/JavaScript; optional FastEmbed/ONNX Runtime; optional Gemini REST function calling. No frontend build step, vector server, Google login, or paid model account is required for the base application. Dependencies are declared in project-local requirements and constraints files.
-
-## Architecture and data flow
-
-```text
-Form responses → XLSX → validate + consent → event-specific SQLite profiles
-                                                  ↓
-Authenticated request → filter eligible people → local multi-field retrieval
-                                                  ↓
-              local MiniLM + lexical evidence + reciprocal skill relevance
-                                                  ↓
-                     evidence-backed cards + private, expiring check-ins
-
-Optional: user goal → Gemini search_people tool call → local search
-                               ↑                         ↓
-                               └── aggregate hit count ──┘
-                         finish → locally composed introductions
-```
-
-### Where the AI and agent are used
-
-- **Local lexical NLP:** token normalization, a documented small phrase-expansion map, and BM25 retrieval across offers, projects, and interests. This is language retrieval, not an LLM.
-- **Local semantic AI:** MiniLM encodes the query and profile fields locally. Cosine similarity contributes to retrieval and ranking. No prompts or profile vectors are stored. The engine is identified explicitly in the UI.
-- **Optional Gemini agent:** the model chooses real `search_people` and `finish` tool calls. It receives only counts, can try one additional search, and is bounded to three model turns/two searches. Successful related searches can provide a small agreement bonus to already-grounded candidates. The model cannot add an attendee who did not meet the original local relevance and eligibility checks. Invalid calls or provider failures fall back to local results.
-
-The default local workflow is not an autonomous LLM agent. It is a local NLP networking assistant with deterministic orchestration; installing MiniLM adds semantic AI. The optional cloud path is a bounded tool-calling agent, not a hidden extra model request on every search. See [Gemini function calling](https://ai.google.dev/gemini-api/docs/function-calling).
-
-## Ranking and evidence
-
-Eligibility is enforced first: correct event, not self, not already met, compatible networking window, and optionally a current check-in. Semantic similarity never overrides these rules.
-
-Each candidate’s offers, project, and interests are searched separately. Evidence is the original source text plus matched/related terms or a semantic similarity above the configured code threshold (currently 0.48). The score combines:
-
-- Direct offered-skill overlap: 5 points each.
-- Reciprocal skill overlap: 3 points each.
-- Shared interests: up to 2 points.
-- BM25 field relevance, lower-weight domain expansions, and thresholded semantic similarity. Project and offers evidence are weighted above general interests.
-
-The top three are returned, with stable ID tie-breaking. Scores are ranking heuristics, not compatibility percentages. Labels distinguish direct skill evidence, related offered skills, relevant projects, and shared-interest connections. A model similarity is not a credential or a guarantee someone can mentor you.
-
-## Installation and configuration
-
-Place the complete folder at `agents/event-networking-matchmaker/` in the monorepo. Follow the quick start above; run `python app.py` without `--demo` for real events. The organizer key is printed locally at startup unless supplied in `.env`.
-
-| Variable | Default / purpose |
-| --- | --- |
-| `BUILDBUDDY_ADMIN_KEY` | A random temporary organizer key; configure a stable, strong secret for a real instance |
-| `BUILDBUDDY_DB` | `data/buildbuddy.sqlite3` beside the application; use a private persistent location |
-| `BUILDBUDDY_MODEL_DIR` | Unset; path printed by model setup enables local semantic inference |
-| `BUILDBUDDY_ALLOWED_HOSTS` | `localhost,127.0.0.1`; add the exact HTTPS hostname or LAN IP when hosting |
-| `GEMINI_API_KEY` | Unset; optional server-side Google credential |
-| `GEMINI_MODEL` | Unset; a model available to your account that supports function calling |
-
-Restart after changing `.env`. The optional Gemini checkbox sends the typed goal and aggregate counts to Google, never profiles or locations. Model billing and quotas depend on your account. The code makes at most three model calls with bounded timeouts; it does not measure monetary cost. Live provider behavior must be verified using your own authorized key.
-
-## Input format
-
-[Sample XLSX](sample/form-responses.xlsx). Required columns are `Attendee ID`, `Display name`, `Skills I can help with`, `What I want help with`, `Available networking window`, and `Allow my profile to appear in event matches`. `Interests` and `What I am building` are optional but strongly recommended. See the organizer guide for question types, consent wording, aliases, reimports, and a complete operating procedure.
-
-The first row contains headers. Use `Form Responses 1`, or put responses on the first sheet. Only explicit consent values `Yes`, `True`, or `I agree` are accepted. Unknown columns are discarded. Duplicate identities, ambiguous headers, formulas, and invalid files fail before database changes. Limits: 1,000 rows, 50 columns, 5 MB XLSX, 25 MB expanded content, and 1,000 characters per recognized field.
-
-## Example input and output
-
-Input as Adarsh:
-
-```text
-I want to know how I can start contributing to open source
-```
-
-The lexical test verifies that Kiran and Farah appear among the returned IDs. Evidence includes Kiran’s offered `Git, testing` and project `Contributor starter kit`, and Farah’s `technical writing, documentation` and `First contribution guide`. The response contains `label`, `reason`, `caveat`, `evidence`, `you_help`, `starter`, and current check-in fields. Names and facts come from the imported rows, not generated biography text.
-
-## Tests and evaluation
-
-```bash
-python -m pip install -r requirements-dev.txt
-python -m pytest -q
-python evaluate.py
-```
-
-The tests cover the original open-source regression, project/interest retrieval, paraphrases, evidence labeling, offered-only filtering, consent, malformed XLSX, event isolation, token replacement, identity reassignment, check-in expiry, withdrawals/reimports, deletion, request bounds, host/origin checks, concurrent independent sessions, and bounded Gemini tools with mocked HTTP.
-
-The base test suite uses lexical NLP and does not need internet or model weights. Provider tests use fake responses and do not claim a live Gemini run. A 200-profile catalog test checks functional retrieval, not 200 concurrent users. `evaluate.py` checks ten curated queries and sequential 200-profile retrieval timing. These are synthetic regression checks, not a held-out accuracy benchmark. Actual results and unverified components are recorded in [VERIFICATION.md](VERIFICATION.md). Run `python evaluate.py --model-dir /path/to/model` to evaluate an installed semantic model separately.
-
-## Does it meet the contribution rules?
-
-Local checks against the repository’s four standards (24 October 2026):
-
-| Standard | Verified evidence |
-| --- | --- |
-| Reproducibility | Fresh environment installed successfully; **38 tests passed**, `pip check` passed, and browser JavaScript syntax checked. Tested on macOS / Python 3.14.5. |
-| Documentation | README template topics, role guides, deployment steps and limitations covered. Browser-tested Adarsh’s open-source query and invitation sign-in; **10/10 curated retrieval checks passed**. |
-| Security & privacy | Tests cover consent, event isolation, token revocation, withdrawal, upload limits and cloud-tool boundaries. No private runtime files tracked; common credential-pattern scan found no matches. Fictional demo/test tokens are intentional. |
-| Focused scope | **34 files**, all under `agents/event-networking-matchmaker/`; no unrelated changes; Git whitespace check passed. |
-
-**Limits:** one upstream test-client deprecation warning; synthetic checks are not general accuracy or production-load proof. MiniLM inference, live Gemini and public hosting remain unverified. This is not a security certification or maintainer acceptance. Push and PR submission are still pending. [Detailed results](VERIFICATION.md) · [Rule-by-rule review](SUBMISSION_REVIEW.md)
-
-## Security and privacy
-
-Read [PRIVACY.md](PRIVACY.md) before using real attendee data. Key properties: consenting profiles only; per-event authentication; hashed private tokens; source-grounded text rendering; no profile data in cloud planner calls; no profile-vector cache; in-app withdrawal suppression; organizer-only import/rotation/deletion; bounded uploads; private database permissions; cross-origin rejection; no-store responses; and fresh authorization/profile checks after slow matching.
-
-Use HTTPS for real attendees, restrict access to the database and organizer key, and announce a retention policy. Delete event data at the end of that policy. Source Forms/Sheets, downloaded tokens, and backups require separate management.
-
-## Known limitations
-
-- XLSX snapshots, not a live Google Sheets connection. No automatic email or token delivery.
-- English-focused lexical/model retrieval. The phrase map is small; negation, nuanced intent and technical jargon may be misunderstood. Inspect evidence rather than assuming semantic relevance proves expertise.
-- No guaranteed meeting acceptance, availability reservation, or recommendation capacity balancing.
-- One SQLite instance; no distributed deployment or 200-concurrent-attendee load claim.
-- The privacy boundary is the organizer’s server, not each attendee’s phone. Organizers can access stored data.
-- Local model files are downloaded separately and not bundled in the PR. Missing or incompatible dependencies produce a visible fallback.
-- Runtime dependencies and platform compatibility need validation on each deployment. Real mobile-device and live Gemini verification must not be inferred from passing API tests.
-- One organizer role. Lost tokens are rotated after identity verification; there is no account recovery service.
-
-## Future improvements
-
-QR-assisted check-in, opt-in meeting requests, capacity-aware recommendations, evaluated multilingual embeddings, and consent-aware Google Sheets synchronization.
-
-## License and contribution
-
-Application code is under the parent repository’s MIT license; `LICENSE` preserves that notice. MiniLM model weights carry their own Apache-2.0 license and attribution. Runtime dependencies keep their own licenses. Sample profiles are fictional.
-
-Keep all files inside `agents/event-networking-matchmaker/`. Do not commit `.env`, data, model caches, private-token exports, or virtual environments. Run the tests and reviewer walkthrough, then submit the project with the upstream PR checklist. No root build changes are needed.
+BuildBuddy application code is MIT licensed. Optional models and dependencies retain their own licenses; see the [technical guide](DEVELOPMENT.md#license-and-contribution).
