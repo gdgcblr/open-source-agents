@@ -1,100 +1,161 @@
 # diff-risk-reviewer
 
-A small CLI agent that reads a `git diff`, summarises it in plain English, flags risks, and suggests tests.
+> A CLI agent that reads a `git diff`, summarises it in plain English, flags risks, and suggests tests, so reviewers catch problems before merge.
 
-> Part of **FORK. BUILD. MERGE.** (GDG Cloud Bengaluru, Road to DevFest 2026).
+Built by [@naman0867](https://github.com/naman0867) for the GDG Cloud Bengaluru **FORK. BUILD. MERGE.** workshop (Road to DevFest 2026).
+
+---
 
 ## Overview
 
-Code review is slow and easy to rush. `diff-risk-reviewer` combines two layers:
+### Problem Statement & Intended Users
+- **Problem**: Code review is slow and easy to rush. Risky changes (hard-coded secrets, migrations, auth changes, missing tests, leftover debug code) slip through when reviewers skim a large diff.
+- **Intended Users**: Developers who want a quick self-review before opening a PR, reviewers who want a first-pass summary, and teams that want a simple CI gate.
 
-1. **Static checks** (offline, deterministic): hard-coded secrets, sensitive files (migrations, CI, auth, dependency manifests), source changes without tests, oversized changes, and debug/TODO leftovers.
-2. **LLM review** (Gemini or Grok, your choice): a short summary and suggested test cases. Use `--mock` to skip this layer, so no API key is needed.
+### Key Features
+- **Offline static checks**: Deterministic, no API key needed. Detects hard-coded secrets, sensitive files (migrations, CI/CD, auth, dependency manifests), source changes without tests, oversized diffs, and debug/TODO leftovers.
+- **LLM review**: Gemini (default) or Grok adds a plain-English summary, extra risks that regexes cannot see, and suggested test cases.
+- **Mock mode and CI support**: `--mock` runs with no API key, `--json` gives machine-readable output, and `--fail-on high|medium` exits with code 1 so it can gate a CI job.
 
-## Tech stack
+---
 
-- Python 3.10+
-- [`google-genai`](https://pypi.org/project/google-genai/) SDK (Gemini)
-- [`openai`](https://pypi.org/project/openai/) SDK pointed at xAI's OpenAI-compatible endpoint (Grok)
-- `python-dotenv` (optional, loads `.env`)
-- `pytest` for tests
+## Technical Stack
+
+- **Language & Runtime**: Python 3.10+
+- **Agent Framework / Core Library**: Vanilla Python script (`argparse`), `google-genai` SDK, and the `openai` SDK pointed at xAI's OpenAI-compatible endpoint
+- **Models**: Gemini (default `gemini-3.8-flash`) or Grok (default `grok-4.20-reasoning`), both overridable
+- **External APIs / Tools**: Google Gemini API, xAI API (optional), `python-dotenv`, `pytest` for tests
+
+---
+
+## Architecture & Data Flow
+
+```
+[git diff] --> [parse_diff] --> [static_checks] -----------------------+
+                    |                                                  |
+                    +--> [LLM review: Gemini / Grok / --mock] ---------+--> [merged report]
+                                                                            (Markdown or JSON)
+```
+
+The diff is parsed into per-file added/removed lines. Static checks run first and always. The LLM review then receives the diff plus the static findings (so it does not repeat them) and returns JSON with a summary, extra risks, and suggested tests. Both result sets are merged and sorted by severity.
+
+---
 
 ## Prerequisites
 
+Before running this project, ensure you have:
 - Python 3.10 or newer
-- One API key (not needed with `--mock`): a free Gemini key from [Google AI Studio](https://aistudio.google.com/apikey), or an xAI key from [console.x.ai](https://console.x.ai) (requires credits)
+- `pip` (the virtual environment tool `venv` ships with Python)
+- One API key, unless you use `--mock`: a free Gemini key from [Google AI Studio](https://aistudio.google.com/apikey), or an xAI key from [console.x.ai](https://console.x.ai) (requires credits)
 
-## Setup
+---
+
+## Installation & Setup
+
+1. **Navigate to the project directory:**
+   ```bash
+   cd agents/diff-risk-reviewer
+   ```
+
+2. **Set up the virtual environment / install dependencies:**
+   ```bash
+   python -m venv .venv
+   # Windows:
+   .venv\Scripts\activate
+   # Linux/macOS:
+   source .venv/bin/activate
+
+   pip install -r requirements.txt
+   ```
+
+3. **Configure Environment Variables:**
+   Copy the example environment file and fill in your key:
+   ```bash
+   cp .env.example .env      # Windows: copy .env.example .env
+   ```
+
+---
+
+## Configuration & Environment Variables
+
+| Variable Name | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `LLM_PROVIDER` | No | `gemini` | LLM provider: `gemini` or `grok` |
+| `GEMINI_API_KEY` | If provider is `gemini` | *None* | Gemini API key |
+| `GEMINI_MODEL` | No | `gemini-3.8-flash` | Gemini model name |
+| `XAI_API_KEY` | If provider is `grok` | *None* | xAI API key |
+| `XAI_MODEL` | No | `grok-4.20-reasoning` | Grok model name (check xAI docs for current names) |
+
+The `--mock` flag needs no variables at all.
+
+---
+
+## How to Run
 
 ```bash
-cd agents/diff-risk-reviewer
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env             # then put your key in .env and set LLM_PROVIDER
-```
-
-### Environment variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `LLM_PROVIDER` | No | `gemini` (default) or `grok` |
-| `GEMINI_API_KEY` | If provider is gemini | Gemini API key |
-| `GEMINI_MODEL` | No | Default `gemini-3.8-flash` |
-| `XAI_API_KEY` | If provider is grok | xAI API key |
-| `XAI_MODEL` | No | Default `grok-4.20-reasoning` (check xAI docs for current names) |
-
-## Usage
-
-```bash
-# No API key needed
+# No API key needed: static checks only
 python reviewer.py sample.diff --mock
 
-# Real review of your current changes (Gemini by default)
-git diff | python reviewer.py -
+# Real review of the bundled sample (Gemini by default)
+python reviewer.py sample.diff
 
-# Use Grok instead
-git diff | python reviewer.py - --provider grok
+# Review your current changes
+git diff | python reviewer.py -
 
 # Review a branch against main
 git diff main...HEAD | python reviewer.py -
 
-# JSON output, and fail (exit 1) if any high-severity risk is found, e.g. in CI
+# Use Grok instead of Gemini
+git diff | python reviewer.py - --provider grok
+
+# JSON output, and exit 1 if any high-severity risk is found (e.g. in CI)
 git diff | python reviewer.py - --json --fail-on high
 ```
 
 | Flag | Description |
-|---|---|
-| `--mock` | Skip the LLM; run static checks only |
+| :--- | :--- |
+| `--mock` | Skip the LLM and run static checks only |
 | `--provider {gemini,grok}` | LLM provider (default: `$LLM_PROVIDER` or `gemini`) |
 | `--model NAME` | Override the model for the chosen provider |
 | `--json` | Machine-readable output |
 | `--fail-on {high,medium}` | Exit with code 1 at or above this severity |
 
-## Example
+---
 
-Input: [`sample.diff`](sample.diff). Output of `python reviewer.py sample.diff --mock` (a genuine run):
+## Example Input & Output
 
-```markdown
-# Diff Risk Report (2 files, +8/-1)
+### Example Input
 
-## Summary
-[mock] 2 file(s) changed (+8/-1): app/auth/login.py, migrations/0007_add_last_login.sql
+`python reviewer.py sample.diff`, where [`sample.diff`](sample.diff) contains:
 
-## Risks
-- **[HIGH]** Possible secret: Hard-coded credential assignment: app/auth/login.py (value redacted)
-- **[MEDIUM]** Sensitive file touched: Authentication-related code: app/auth/login.py
-- **[MEDIUM]** Sensitive file touched: Database migration: migrations/0007_add_last_login.sql
-- **[MEDIUM]** Source changed without tests: app/auth/login.py
-- **[LOW]** Debug/TODO leftovers: app/auth/login.py: 2 line(s), e.g. `# TODO: switch to bcrypt`
-
-## Suggested tests
-- [mock] Run with a real model (omit --mock) for test suggestions.
+```diff
+diff --git a/app/auth/login.py b/app/auth/login.py
+index 1a2b3c4..5d6e7f8 100644
+--- a/app/auth/login.py
++++ b/app/auth/login.py
+@@ -1,6 +1,12 @@
+ import hashlib
+ 
++API_KEY = "demo-placeholder-value-1234"
++
+ def check_password(user, password):
+-    return user.hash == hashlib.md5(password.encode()).hexdigest()
++    # TODO: switch to bcrypt
++    print("checking", user.name)
++    breakpoint()
++    return user.hash == hashlib.sha256(password.encode()).hexdigest()
+diff --git a/migrations/0007_add_last_login.sql b/migrations/0007_add_last_login.sql
+new file mode 100644
+--- /dev/null
++++ b/migrations/0007_add_last_login.sql
+@@ -0,0 +1,2 @@
++ALTER TABLE users ADD COLUMN last_login TIMESTAMP;
++UPDATE users SET last_login = NOW();
 ```
 
-### Example with a real model
+### Example Output
 
-Output of `python reviewer.py sample.diff` using Gemini (`gemini-3.8-flash`), a genuine run. Note that the LLM adds risks the static checks cannot see (the hashing change and the migration lock), and the exact wording will vary between runs:
+A genuine run using Gemini (`gemini-3.8-flash`). The LLM adds risks the static checks cannot see (the hashing change and the migration lock), and its exact wording varies between runs:
 
 ```markdown
 # Diff Risk Report (2 files, +8/-1)
@@ -119,32 +180,54 @@ This change updates password verification from MD5 to unsalted SHA-256 in the au
 - Benchmark migration 0007 against a staging database with realistic user volume to assess table lock duration.
 ```
 
-## Testing
+---
+
+## How to Test
 
 ```bash
 pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-9 tests cover diff parsing, secret detection, risky-file and missing-test detection, mock mode, JSON-fence parsing, missing-key handling, and the `--fail-on` exit code. None require an API key.
+9 tests cover diff parsing, secret detection, risky-file and missing-test detection, mock mode, JSON-fence parsing, missing-key handling, and the `--fail-on` exit code. None of them need an API key.
 
-## How it works
+For a manual check without any key:
 
+```bash
+python reviewer.py sample.diff --mock    # should print a report with HIGH, MEDIUM and LOW findings
 ```
-git diff -> parse_diff -> static_checks ----------\
-                      \-> Gemini (or --mock) -----+-> merged report (Markdown / JSON)
-```
 
-## Known limitations
+---
 
-- Static checks are regex heuristics: expect false positives and false negatives. They are not a substitute for a real secret scanner or human review.
-- Grok/Gemini model names change over time; if you get a "model not found" error, set `XAI_MODEL` / `GEMINI_MODEL` to a current name.
+## Known Limitations
+
+- Static checks are regex heuristics, so expect false positives and false negatives. They are not a substitute for a real secret scanner or human review.
 - The LLM sees only the diff (truncated to 60,000 characters), not the rest of the codebase.
-- LLM output can be wrong or miss issues. Treat it as a second pair of eyes.
-- The diff is sent to the chosen provider's API (Google or xAI). Do not use it on code you are not allowed to share.
-- Each LLM run makes one API call; check your provider's quota and pricing (xAI requires paid credits).
-- Live Gemini run tested on Windows (PowerShell, Python 3.10). Unit tests also pass on Linux (Python 3.12). macOS untested. The Grok provider path is implemented but has not been run against the live xAI API.
+- LLM output can be wrong or miss issues. Treat it as a second pair of eyes, and wording varies between runs.
+- Model names change over time. If you get a "model not found" error, set `GEMINI_MODEL` or `XAI_MODEL` to a current name.
+- Each LLM run makes one API call, so check your provider's quota and pricing (xAI requires paid credits; Gemini free tier has rate limits).
+- Live Gemini run tested on Windows (PowerShell, Python 3.10). Unit tests also pass on Linux (Python 3.12). macOS is untested.
+- The Grok provider is implemented but has not been run against the live xAI API.
+
+---
+
+## Security & Privacy Considerations
+
+- **Secrets Handling**: API keys are read from environment variables or a local `.env` file, which is git-ignored. Only placeholders live in `.env.example`. Detected secrets are reported with the value redacted.
+- **Data Privacy**: In LLM mode, the diff (up to 60,000 characters) is sent to the chosen provider (Google or xAI). Do not run it on code you are not allowed to share. `--mock` sends nothing anywhere.
+- **Safety**: The tool is read-only. It never executes code or shell commands from the diff, and it makes no changes to your repository.
+
+---
+
+## Future Improvements
+
+- [ ] Support local models via Ollama for fully private reviews.
+- [ ] Add a GitHub Action that comments the report on pull requests.
+- [ ] Add more static checks (disabled SSL verification, wildcard CORS, insecure deserialization).
+- [ ] Review large diffs in chunks instead of truncating.
+
+---
 
 ## License
 
-MIT, same as the parent repository.
+*This project is contributed under the repository's open-source license (MIT).*
