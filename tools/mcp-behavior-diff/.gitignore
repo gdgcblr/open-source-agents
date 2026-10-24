@@ -36,3 +36,7 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+
+
+.vscode/*
+agents/.vscode/*
