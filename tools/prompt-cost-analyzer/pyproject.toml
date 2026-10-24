@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prompt-cost-analyzer"
+version = "0.1.0"
+description = "MCP tools for estimating prompt token usage and model costs"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.9,<2",
+    "tiktoken>=0.8,<1",
+]
+
+[project.scripts]
+prompt-cost-analyzer = "prompt_cost_analyzer.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

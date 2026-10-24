@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`prompt-cost-analyzer/`](prompt-cost-analyzer/README.md) | Estimates prompt and tool-result input tokens and maximum output cost for a selected model. | MCP server / Cost analysis | — |
