@@ -1,4 +1,4 @@
-# [RXGuard]
+# [Medicine research agent]
 
 > [Multi-Agent Prescription Safety & Research Pipeline]
 
@@ -23,7 +23,7 @@
 
 - **Language & Runtime**: Node.js 20+ / TypeScript 5+ (ES Modules)
 - **Agent Framework / Core Library**: Google Agent Development Kit (@google/adk), Zod
-- **Models**: Gemini 2.5 Flash (gemini-2.5-flash)
+- **Models**: Gemini 3.1 Flash Lite (gemini-3.1-flash-lite)
 - **External APIs / Tools**: OpenFDA Drug Label API (https://api.fda.gov/drug/label.json)
 ---
 
