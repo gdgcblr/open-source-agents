@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Event Networking World — Road to DevFest 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Press+Start+2P&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/web/styles.css" />
+</head>
+<body data-phase="loading">
+  <!-- Slim header: brand | stage | stats | actions -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">
+        <span class="dot-blue"></span>
+        <span class="dot-red"></span>
+        <span class="dot-yellow"></span>
+        <span class="dot-green"></span>
+      </div>
+      <h1 id="event-name">Road to DevFest 2026</h1>
+    </div>
+
+    <div class="hud-pill round-pill" id="hud-round-pill">
+      <span class="pill-label">STAGE</span>
+      <strong id="hud-round">Lobby (Round 0)</strong>
+    </div>
+
+    <div class="hud-stats">
+      <span class="stat"><span class="pill-label">ATTENDEES</span><strong id="hud-attendees">0</strong></span>
+      <span class="stat"><span class="pill-label">ROOMS</span><strong id="hud-rooms">0</strong></span>
+      <span class="stat"><span class="pill-label">MEETUPS</span><strong id="hud-meetups">0</strong></span>
+      <span class="stat"><span class="pill-label">CONNECTS</span><strong id="hud-connects">0</strong></span>
+    </div>
+
+    <span class="status-dot" id="llm-dot" title="Profile &amp; Room Host LLM telemetry"></span>
+    <span class="sr-only" id="hud-llm">LLM Ready</span>
+
+    <button class="btn btn-primary btn-sm js-next-round bar-only" id="btn-next-round" title="Run Matchmaker &amp; Gemini Host Agent to form new rooms">▶ Start next round</button>
+    <button class="btn btn-secondary btn-sm" id="btn-tools" aria-expanded="false" aria-controls="organiser-drawer">Tools</button>
+  </header>
+
+  <!-- Organiser drawer (opened from the Tools button) -->
+  <div class="organiser-drawer hidden" id="organiser-drawer">
+    <span class="toolbar-tag">ORGANISER / DEMO</span>
+    <button class="btn btn-primary btn-sm js-next-round drawer-only" id="btn-next-round-2">▶ Start next round</button>
+    <button class="btn btn-secondary btn-sm" id="btn-seed" title="Spawn synthetic attendees onto the floor">+15 Bots</button>
+    <button class="btn btn-accent btn-sm" id="btn-simulate" title="Let bots vote to meet in person and reciprocate likes">⚡ Simulate votes &amp; connects</button>
+    <button class="btn btn-ghost btn-sm" id="btn-reset" title="Clear all state and restart event">↺ Reset event</button>
+  </div>
+
+  <!-- Onboarding: 1 describe yourself -> 2 AI builds profile -> 3 enter the world -->
+  <div class="onboard" id="onboard">
+    <div class="onb-panel">
+      <ol class="stepper" id="stepper">
+        <li data-step="form" class="active"><span>1</span>You</li>
+        <li data-step="working"><span>2</span>AI profile</li>
+        <li data-step="ready"><span>3</span>Enter</li>
+      </ol>
+
+      <!-- Join Form Card (shown when not joined) -->
+      <section class="onb-step" id="join-card">
+        <h2 class="onb-title">Tell us who you are</h2>
+        <p class="onb-desc">
+          Pick a nickname and describe yourself in plain text. The <strong>Profile Agent</strong> turns it into an anonymous 1-liner and tags with no personal details leaked.
+        </p>
+        <form id="join-form" autocomplete="off">
+          <div class="field">
+            <label for="input-nickname">Nickname</label>
+            <input type="text" id="input-nickname" maxlength="24" placeholder="e.g. chai-coder" required />
+          </div>
+          <div class="field">
+            <div class="field-label-row">
+              <label for="input-about">About you &amp; who you'd like to meet</label>
+              <button type="button" class="link-btn" id="btn-sample-persona">🎲 Sample persona</button>
+            </div>
+            <textarea id="input-about" rows="4" maxlength="1000" placeholder="Backend dev building AI agents with ADK &amp; RAG in fintech. Looking to collaborate or find a co-founder..."></textarea>
+          </div>
+          <div class="field">
+            <label for="input-contact">Contact <span class="muted">(shared only on mutual match)</span></label>
+            <input type="text" id="input-contact" maxlength="120" placeholder="@chai_coder or email@example.com" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="btn-join">
+            ✨ Spawn Avatar on Map
+          </button>
+        </form>
+      </section>
+
+
+      <section class="onb-step hidden" id="onb-working">
+        <h2 class="onb-title">Building your anonymous profile</h2>
+        <p class="onb-desc">The Profile Agent is reading your intro. No personal details leave this step.</p>
+        <ul class="work-list" id="work-list">
+          <li>Reading your intro</li>
+          <li>Removing personal details</li>
+          <li>Tagging interests &amp; goals</li>
+          <li>Placing your avatar on the venue floor</li>
+        </ul>
+      </section>
+
+      <section class="onb-step hidden" id="onb-ready">
+        <h2 class="onb-title">You're in, <span id="onb-nick">—</span></h2>
+        <p class="one-liner-box" id="onb-oneliner"></p>
+        <div class="tag-list" id="onb-tags"></div>
+        <button class="btn btn-primary btn-block" id="btn-enter" type="button">Enter the world →</button>
+      </section>
+    </div>
+  </div>
+
+  <!-- Main Workspace: Left Profile Drawer + Center 2D Map + Right Room/Meetup Panel -->
+  <main class="workspace">
+    <!-- Left Column: Attendee Identity & Spot Directory -->
+    <aside class="sidebar sidebar-left" id="panel-left" aria-label="Your profile, zones and connections">
+      <div class="panel-bar"><span class="panel-grip" aria-hidden="true"></span><span class="panel-title">You &amp; places</span><button type="button" class="panel-close" data-close="panel-left" aria-label="Minimise panel">Minimise &#8964;</button></div>
+      <!-- Logged-in Attendee Card (shown after joining) -->
+      <section class="card hidden" id="me-card">
+        <div class="card-header">
+          <div class="me-avatar-badge" id="me-avatar-dot"></div>
+          <div>
+            <div class="me-title-row">
+              <h2 id="me-nickname">—</h2>
+              <span class="role-badge" id="me-role">developer</span>
+            </div>
+            <span class="tiny-muted">Anonymous Public Profile</span>
+          </div>
+          <button class="btn btn-ghost btn-xs" id="btn-leave" title="Switch or create a new attendee">Switch</button>
+        </div>
+        <p class="one-liner-box" id="me-oneliner"></p>
+        <div class="tag-section">
+          <span class="tag-label">INTERESTS</span>
+          <div class="tag-list" id="me-interests"></div>
+        </div>
+        <div class="tag-section">
+          <span class="tag-label">GOALS</span>
+          <div class="tag-list" id="me-goals"></div>
+        </div>
+      </section>
+
+      <!-- Mutual Connections Card (above the zone list so it's visible without scrolling) -->
+      <section class="card connections-card">
+        <div class="card-header">
+          <h2>Mutual Connections</h2>
+          <span class="badge badge-green" id="connections-count">0</span>
+        </div>
+        <p class="card-desc">
+          Contacts unlock only when two roommates both click <strong>Stay in touch</strong>.
+        </p>
+        <div id="connections-list" class="connections-list">
+          <div class="empty-hint">No mutual connections yet. Like roommates during a round!</div>
+        </div>
+      </section>
+
+      <!-- Physical Spots Directory -->
+      <section class="card spots-card">
+        <div class="card-header">
+          <h2>Meetup zones</h2>
+          <span class="tiny-muted">Click to pan</span>
+        </div>
+        <p class="card-desc">
+          Configured in <code>config/event.example.yaml</code>. When half a room votes to meet, the <strong>Meetup Agent</strong> reserves a zone within capacity.
+        </p>
+        <div class="spot-list" id="spot-list"></div>
+      </section>
+    </aside>
+
+    <!-- Center: 2D Top-Down Virtual World Canvas -->
+    <section class="map-stage">
+      <canvas id="world-canvas"></canvas>
+
+      <!-- Floating Map Controls -->
+      <div class="map-controls">
+        <button class="map-btn" id="btn-zoom-in" title="Zoom In">+</button>
+        <button class="map-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+        <button class="map-btn" id="btn-fit-map" title="Reset Camera">Fit</button>
+        <button class="map-btn" id="btn-center-me" title="Center on My Avatar"><span class="ico">🎯</span><span class="lbl"> Find Me</span></button>
+        <button class="map-btn" id="btn-rejoin-group" title="Walk back to your assigned room or meetup spot"><span class="ico">🚶</span><span class="lbl"> Walk to Group</span></button>
+      </div>
+
+      <!-- Floating Map Legend & Controls Hint -->
+      <div class="map-legend">
+        <div class="legend-item"><span class="legend-swatch swatch-spot"></span> Meetup build</div>
+        <div class="legend-item"><span class="legend-swatch swatch-room"></span> Campfire room</div>
+        <div class="legend-item"><span class="legend-swatch swatch-meetup"></span> Trail to meet in person</div>
+        <div class="legend-item"><span class="legend-swatch swatch-you"></span> You — click the grass or use WASD</div>
+      </div>
+
+      <!-- Touch joystick (coarse pointers only) -->
+      <div class="joystick" id="joystick" aria-label="Move your avatar"><div class="joy-knob"></div></div>
+
+      <!-- Proximity prompt -->
+      <button class="interact-hint hidden" id="interact-hint" type="button">
+        <span class="hint-key">E</span><span class="hint-text"></span><span class="hint-go">View</span>
+      </button>
+
+      <!-- Inspect Avatar / Spot Tooltip Overlay -->
+      <div class="map-inspector hidden" id="map-inspector"></div>
+
+      <!-- Round Transition / Loading Banner -->
+      <div class="map-banner hidden" id="map-banner">
+        <div class="spinner"></div>
+        <span id="map-banner-text">Matchmaker &amp; Gemini Room Host grouping attendees...</span>
+      </div>
+    </section>
+
+    <!-- Right Column: Active Room Card, Icebreaker, Meet in Person & Roommates -->
+    <aside class="sidebar sidebar-right open" id="panel-right" aria-label="Your room">
+      <div class="panel-bar"><span class="panel-grip" aria-hidden="true"></span><span class="panel-title">Room</span><button type="button" class="panel-close" data-close="panel-right" aria-label="Minimise panel">Minimise &#8964;</button></div>
+      <!-- Empty state when in Lobby or not in a room -->
+      <section class="card" id="no-room-card">
+        <div class="card-header">
+          <span class="badge badge-amber">WAITING FOR ROUND</span>
+          <h2>Virtual Room Card</h2>
+        </div>
+        <div class="empty-room-state">
+          <div class="empty-illustration">🗺️</div>
+          <p id="no-room-message">
+            Join the event on the left, add some synthetic bots if testing solo, and click <strong>▶ Start Next Round</strong> in the top bar!
+          </p>
+          <div class="quick-start-actions">
+            <button class="btn btn-secondary btn-sm" id="btn-quick-populate">
+              ⚡ Quick Demo Setup (15 Bots + Start Round 1)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Room Card -->
+      <section class="card room-card hidden" id="room-card">
+        <div class="room-card-top">
+          <div>
+            <div class="room-badges">
+              <span class="badge badge-cyan" id="room-badge-owner">YOUR ROOM</span>
+              <span class="badge badge-outline" id="room-round-label">Round 1</span>
+            </div>
+            <h2 id="room-title">Room r1-1</h2>
+          </div>
+          <button class="btn btn-ghost btn-xs hidden" id="btn-back-my-room">← Back to My Room</button>
+        </div>
+
+        <!-- Shared Interests -->
+        <div class="shared-interests-row" id="room-shared-interests"></div>
+
+        <!-- Room Host "Why you're together" -->
+        <div class="host-box">
+          <div class="host-box-label">🤖 ROOM HOST — WHY YOU'RE TOGETHER</div>
+          <p id="room-why">—</p>
+        </div>
+
+        <!-- Icebreaker Card -->
+        <div class="icebreaker-box">
+          <div class="icebreaker-label">💬 ICEBREAKER PROMPT</div>
+          <p class="icebreaker-text" id="room-icebreaker">—</p>
+        </div>
+
+        <!-- Meet in Person / Spot Booking Action Box -->
+        <div class="meetup-action-box" id="meetup-action-box">
+          <div class="vote-header">
+            <span><strong>Meet in Person</strong> (Physical Spot Booking)</span>
+            <span class="vote-counter" id="room-vote-counter">0 / 3 votes</span>
+          </div>
+          <div class="vote-bar-track">
+            <div class="vote-bar-fill" id="room-vote-fill" style="width: 0%"></div>
+          </div>
+          <p class="vote-hint" id="room-vote-hint">
+            Once half the room votes to meet, the Meetup Agent books an available physical spot on the map and avatars walk over.
+          </p>
+
+          <div class="meetup-buttons" id="meetup-buttons">
+            <button class="btn btn-meet btn-block" id="btn-vote-meet">
+              🤝 Vote to Meet in Person
+            </button>
+          </div>
+
+          <!-- Booked Physical Spot Ticket (shown once quorum is reached) -->
+          <div class="meetup-ticket hidden" id="meetup-ticket">
+            <div class="ticket-header">
+              <span class="ticket-badge">📍 SPOT RESERVED</span>
+              <span class="ticket-time" id="meetup-time">11:03 – 11:13</span>
+            </div>
+            <h3 id="meetup-spot-name">Coffee Corner</h3>
+            <p id="meetup-spot-desc">Next to the coffee counter, ground floor</p>
+            <div class="ticket-footer">
+              <span class="walking-indicator" id="meetup-walk-status">🚶 Avatars gathered at spot</span>
+              <button class="btn btn-secondary btn-xs" id="btn-focus-spot">View on Map →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room Members List + Stay in Touch -->
+        <div class="members-section">
+          <div class="members-header">
+            <h3>Room Members</h3>
+            <span class="tiny-muted">Click "Stay in touch" to exchange contacts on mutual match</span>
+          </div>
+          <div class="members-list" id="room-members-list"></div>
+        </div>
+      </section>
+    </aside>
+
+    <nav class="dock" aria-label="Panels">
+      <button class="dock-btn" id="dock-left" data-panel="panel-left" aria-pressed="false">You &amp; places <span class="dock-count hidden" id="dock-connections" title="Mutual connections">0</span></button>
+      <button class="dock-btn active" id="dock-right" data-panel="panel-right" aria-pressed="true">Room</button>
+    </nav>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/web/app.js"></script>
+</body>
+</html>

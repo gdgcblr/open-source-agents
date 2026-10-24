@@ -1,0 +1,5 @@
+# Files not uploaded to Cloud Build by `gcloud run deploy --source .`
+.gcloudignore
+.git
+#!include:.gitignore
+tests/
