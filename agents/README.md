@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [commute-gate](commute-gate/) | Bengaluru commute agent with swappable gates/evals over BMTC + Namma Metro | Python + Ollama | Community |

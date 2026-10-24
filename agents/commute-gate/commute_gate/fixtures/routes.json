@@ -1,0 +1,44 @@
+{
+  "koramangala|indiranagar|arrive:09:00": {
+    "legs": [
+      {
+        "mode": "bus",
+        "line": "41",
+        "duration_min": 28,
+        "departure": "08:35"
+      }
+    ],
+    "total_duration_min": 28,
+    "arrival": "08:58"
+  },
+  "hsr layout|kempegowda international airport|arrive:06:00": {
+    "legs": [
+      {
+        "mode": "metro",
+        "line": "Green",
+        "duration_min": 45,
+        "departure": "04:30"
+      },
+      {
+        "mode": "bus",
+        "line": "KIA-8",
+        "duration_min": 35,
+        "departure": "05:20"
+      }
+    ],
+    "total_duration_min": 80,
+    "arrival": "05:50"
+  },
+  "whitefield|mg road|leave:08:00": {
+    "legs": [
+      {
+        "mode": "metro",
+        "line": "Purple",
+        "duration_min": 42,
+        "departure": "08:05"
+      }
+    ],
+    "total_duration_min": 42,
+    "arrival": "08:47"
+  }
+}

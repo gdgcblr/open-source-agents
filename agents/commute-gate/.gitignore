@@ -1,0 +1,28 @@
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Downloaded GTFS / BMTC caches (regenerate with scripts/build_bengaluru_network.py)
+.cache/
+*.zip
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

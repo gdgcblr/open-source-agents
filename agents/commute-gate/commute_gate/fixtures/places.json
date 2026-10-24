@@ -1,0 +1,256 @@
+{
+  "places": [
+    {
+      "id": "koramangala",
+      "name": "Koramangala",
+      "aliases": ["kormangala", "koramangla", "sony world"],
+      "lat": 12.9352,
+      "lon": 77.6245,
+      "stop_hints": ["koramangala", "sony world", "forum mall", "st johns"],
+      "metro": ["yellow:silk board"]
+    },
+    {
+      "id": "indiranagar",
+      "name": "Indiranagar",
+      "aliases": ["indirangar", "indira nagar", "100ft road"],
+      "lat": 12.9784,
+      "lon": 77.6408,
+      "stop_hints": ["indiranagar", "indira nagar", "cmh road", "hal 2nd stage"],
+      "metro": ["purple:indiranagar"]
+    },
+    {
+      "id": "hsr layout",
+      "name": "HSR Layout",
+      "aliases": ["hsr", "h.s.r", "agrahar"],
+      "lat": 12.9121,
+      "lon": 77.6446,
+      "stop_hints": ["hsr", "h.s.r", "agrahar", "sector 1"],
+      "metro": ["yellow:hsr layout"]
+    },
+    {
+      "id": "whitefield",
+      "name": "Whitefield",
+      "aliases": ["itpl", "kadugodi", "hope farm"],
+      "lat": 12.9698,
+      "lon": 77.7499,
+      "stop_hints": ["whitefield", "itpl", "kadugodi", "hope farm", "vydehi"],
+      "metro": ["purple:whitefield"]
+    },
+    {
+      "id": "mg road",
+      "name": "MG Road",
+      "aliases": ["mahatma gandhi road", "mgroad", "brigade road", "trinity"],
+      "lat": 12.9756,
+      "lon": 77.6066,
+      "stop_hints": ["mg road", "brigade road", "trinity", "mayo hall"],
+      "metro": ["purple:mg road", "purple:trinity"]
+    },
+    {
+      "id": "kempegowda international airport",
+      "name": "Kempegowda International Airport",
+      "aliases": ["airport", "bial", "kia", "kia airport", "devanahalli airport"],
+      "lat": 13.1986,
+      "lon": 77.7066,
+      "stop_hints": ["airport", "bial", "kempegowda international"],
+      "metro": ["blue:kia terminal"]
+    },
+    {
+      "id": "electronic city",
+      "name": "Electronic City",
+      "aliases": ["ecity", "e-city", "electronic city phase 1", "wipro"],
+      "lat": 12.8452,
+      "lon": 77.6602,
+      "stop_hints": ["electronic city", "konappana", "wipro", "infosys"],
+      "metro": ["yellow:electronic city"]
+    },
+    {
+      "id": "jayanagar",
+      "name": "Jayanagar",
+      "aliases": ["jayanagara", "4th block jayanagar"],
+      "lat": 12.9250,
+      "lon": 77.5938,
+      "stop_hints": ["jayanagar", "jayanagara"],
+      "metro": ["green:jayanagar"]
+    },
+    {
+      "id": "jp nagar",
+      "name": "JP Nagar",
+      "aliases": ["j.p. nagar", "jpnagar", "jayaprakash nagar"],
+      "lat": 12.9063,
+      "lon": 77.5857,
+      "stop_hints": ["jp nagar", "j.p nagar", "jayaprakash"],
+      "metro": ["green:jp nagar"]
+    },
+    {
+      "id": "btm layout",
+      "name": "BTM Layout",
+      "aliases": ["btm", "b.t.m", "madiwala"],
+      "lat": 12.9166,
+      "lon": 77.6101,
+      "stop_hints": ["btm", "madiwala", "silk board"],
+      "metro": ["green:btm layout", "yellow:jayadeva"]
+    },
+    {
+      "id": "marathahalli",
+      "name": "Marathahalli",
+      "aliases": ["marathalli", "marathahalli bridge", "orion"],
+      "lat": 12.9592,
+      "lon": 77.6974,
+      "stop_hints": ["marathahalli", "marathalli", "kundalahalli"],
+      "metro": ["purple:kadubeesanahalli"]
+    },
+    {
+      "id": "hebbal",
+      "name": "Hebbal",
+      "aliases": ["hebbala", "hebbal flyover"],
+      "lat": 13.0358,
+      "lon": 77.5970,
+      "stop_hints": ["hebbal"],
+      "metro": ["green:hebbal"]
+    },
+    {
+      "id": "yeshwanthpur",
+      "name": "Yeshwanthpur",
+      "aliases": ["yeshvantpur", "yesvantpur", "ypr"],
+      "lat": 13.0280,
+      "lon": 77.5400,
+      "stop_hints": ["yeshwanthpur", "yeshvantpur", "yesvantpur"],
+      "metro": ["green:yeshwanthpur"]
+    },
+    {
+      "id": "majestic",
+      "name": "Kempegowda Bus Station",
+      "aliases": ["kbs", "majestic", "kempegowda bus station", "city railway"],
+      "lat": 12.9767,
+      "lon": 77.5713,
+      "stop_hints": ["kempegowda bus station", "majestic", "mysore bank"],
+      "metro": ["purple:nadaprabhu kempegowda", "green:nadaprabhu kempegowda"]
+    },
+    {
+      "id": "silk board",
+      "name": "Silk Board",
+      "aliases": ["central silk board", "csb"],
+      "lat": 12.9177,
+      "lon": 77.6233,
+      "stop_hints": ["silk board"],
+      "metro": ["yellow:central silk board"]
+    },
+    {
+      "id": "banashankari",
+      "name": "Banashankari",
+      "aliases": ["bsk", "banashankari ttmc"],
+      "lat": 12.9255,
+      "lon": 77.5468,
+      "stop_hints": ["banashankari"],
+      "metro": ["green:banashankari"]
+    },
+    {
+      "id": "rajajinagar",
+      "name": "Rajajinagar",
+      "aliases": ["raja ji nagar"],
+      "lat": 12.9916,
+      "lon": 77.5522,
+      "stop_hints": ["rajajinagar"],
+      "metro": ["green:rajajinagar"]
+    },
+    {
+      "id": "malleshwaram",
+      "name": "Malleshwaram",
+      "aliases": ["malleswaram", "sampige road"],
+      "lat": 13.0035,
+      "lon": 77.5640,
+      "stop_hints": ["malleshwaram", "malleswaram", "sampige"],
+      "metro": ["green:sampige road"]
+    },
+    {
+      "id": "kr puram",
+      "name": "KR Puram",
+      "aliases": ["k r puram", "krpura", "kr pura"],
+      "lat": 13.0076,
+      "lon": 77.6960,
+      "stop_hints": ["kr puram", "k r puram", "kr pura"],
+      "metro": ["purple:kr puram", "blue:kr puram"]
+    },
+    {
+      "id": "manyata",
+      "name": "Manyata Tech Park",
+      "aliases": ["manyata", "nagawara", "manyata embassy"],
+      "lat": 13.0475,
+      "lon": 77.6208,
+      "stop_hints": ["manyata", "nagawara"],
+      "metro": ["pink:nagawara"]
+    },
+    {
+      "id": "domlur",
+      "name": "Domlur",
+      "aliases": ["domluru", "old airport road"],
+      "lat": 12.9609,
+      "lon": 77.6387,
+      "stop_hints": ["domlur"],
+      "metro": ["purple:hal"]
+    },
+    {
+      "id": "bellandur",
+      "name": "Bellandur",
+      "aliases": ["bellanduru"],
+      "lat": 12.9304,
+      "lon": 77.6784,
+      "stop_hints": ["bellandur"],
+      "metro": []
+    },
+    {
+      "id": "sarjapur",
+      "name": "Sarjapur",
+      "aliases": ["sarjapura", "sarjapur road", "wipro sarjapur"],
+      "lat": 12.8600,
+      "lon": 77.7860,
+      "stop_hints": ["sarjapur", "sarjapura"],
+      "metro": []
+    },
+    {
+      "id": "kengeri",
+      "name": "Kengeri",
+      "aliases": ["kengeri satellite"],
+      "lat": 12.8996,
+      "lon": 77.4827,
+      "stop_hints": ["kengeri"],
+      "metro": ["purple:kengeri"]
+    },
+    {
+      "id": "shivajinagar",
+      "name": "Shivajinagar",
+      "aliases": ["shivaji nagar", "shivajinagara", "russell market"],
+      "lat": 12.9857,
+      "lon": 77.6050,
+      "stop_hints": ["shivajinagar", "shivajinagara"],
+      "metro": ["purple:cubbon park"]
+    },
+    {
+      "id": "lalbagh",
+      "name": "Lalbagh",
+      "aliases": ["lalbagh botanical", "lal bagh"],
+      "lat": 12.9507,
+      "lon": 77.5848,
+      "stop_hints": ["lalbagh"],
+      "metro": ["green:lalbagh"]
+    },
+    {
+      "id": "hebbagodi",
+      "name": "Hebbagodi",
+      "aliases": ["hebbagodi"],
+      "lat": 12.8270,
+      "lon": 77.6790,
+      "stop_hints": ["hebbagodi", "bommasandra"],
+      "metro": ["yellow:hebbagodi"]
+    },
+    {
+      "id": "chandapura",
+      "name": "Chandapura",
+      "aliases": ["chandapura circle"],
+      "lat": 12.8015,
+      "lon": 77.7119,
+      "stop_hints": ["chandapura"],
+      "metro": []
+    }
+  ]
+}
