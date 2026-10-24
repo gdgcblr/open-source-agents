@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| [`devguard/`](devguard/) | Deterministic command permission manager and AI commit message generator | CLI Utility / Developer Tools | Community |
+| [`devguard/`](devguard/) | DevGuard is an open-source AI developer productivity toolkit that makes AI-assisted software development more controlled, reliable, and efficient. It complements coding agents by providing policy-governed command execution, explainable permissions, and AI-powered commit message generation, build failure diagnosis, and pull request summaries. By combining deterministic safeguards with AI-driven assistance, DevGuard helps developers move from AI-generated code to reviewable, well-documented changes while retaining control over critical actions. Designed to work alongside existing development tools, DevGuard makes AI-assisted workflows more transparent, practical, and trustworthy. | CLI Utility / Developer Tools | Pushkar Pawar |
