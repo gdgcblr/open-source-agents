@@ -1,0 +1,130 @@
+# Indicative transfer/redemption rates for popular Indian credit cards.
+# Educational estimates compiled from public issuer pages and community
+# points guides. ALWAYS verify with your issuer before transferring points.
+as_of: "2026-10-24"
+cards:
+  hdfc-infinia:
+    name: HDFC Infinia
+    issuer: HDFC Bank
+    reward_currency: Reward Points
+    sources:
+      - https://www.hdfcbank.com/personal/pay/cards/credit-cards/infinia
+    routes:
+      - id: smartbuy-flights
+        type: travel-portal
+        category: flights
+        description: Flights via SmartBuy portal (capped monthly)
+        value_inr_per_point: 1.0
+      - id: smartbuy-hotels
+        type: travel-portal
+        category: hotels
+        description: Hotels via SmartBuy portal (capped monthly)
+        value_inr_per_point: 1.0
+      - id: krisflyer
+        type: transfer
+        category: flights
+        partner: Singapore Airlines KrisFlyer
+        transfer_ratio: "2:1"
+        value_inr_per_point: 0.75
+        min_points: 5000
+        description: Transfer to KrisFlyer miles; value depends on award used
+      - id: accor
+        type: transfer
+        category: hotels
+        partner: Accor ALL
+        transfer_ratio: "2:1"
+        value_inr_per_point: 0.9
+        min_points: 5000
+      - id: statement-credit
+        type: statement-credit
+        category: cash
+        value_inr_per_point: 0.3
+  axis-magnus:
+    name: Axis Magnus
+    issuer: Axis Bank
+    reward_currency: EDGE Reward Points
+    sources:
+      - https://www.axisbank.com/retail/cards/credit-card/axis-bank-magnus-credit-card
+    routes:
+      - id: edge-travel
+        type: travel-portal
+        category: flights
+        description: Flights via Travel EDGE portal
+        value_inr_per_point: 0.8
+      - id: krisflyer
+        type: transfer
+        category: flights
+        partner: Singapore Airlines KrisFlyer
+        transfer_ratio: "5:2"
+        value_inr_per_point: 0.6
+        min_points: 5000
+      - id: edge-vouchers
+        type: voucher
+        category: shopping
+        value_inr_per_point: 0.2
+  axis-atlas:
+    name: Axis Atlas
+    issuer: Axis Bank
+    reward_currency: EDGE Miles
+    sources:
+      - https://www.axisbank.com/retail/cards/credit-card/atlas-credit-card
+    routes:
+      - id: travel-edge
+        type: travel-portal
+        category: flights
+        description: Flights/hotels via Travel EDGE
+        value_inr_per_point: 1.0
+      - id: krisflyer
+        type: transfer
+        category: flights
+        partner: Singapore Airlines KrisFlyer
+        transfer_ratio: "2:1"
+        value_inr_per_point: 0.75
+        min_points: 2500
+      - id: accor
+        type: transfer
+        category: hotels
+        partner: Accor ALL
+        transfer_ratio: "2:1"
+        value_inr_per_point: 0.9
+        min_points: 2500
+  amex-mr:
+    name: American Express Membership Rewards
+    issuer: American Express India
+    reward_currency: Membership Rewards Points
+    sources:
+      - https://www.americanexpress.com/in/rewards/membership-rewards/
+    routes:
+      - id: marriott-bonvoy
+        type: transfer
+        category: hotels
+        partner: Marriott Bonvoy
+        transfer_ratio: "1:1"
+        value_inr_per_point: 0.45
+        min_points: 1000
+      - id: gold-collection
+        type: voucher
+        category: cash
+        description: 24k Gold Collection voucher redemption
+        value_inr_per_point: 0.5
+        min_points: 24000
+      - id: statement-credit
+        type: statement-credit
+        category: cash
+        value_inr_per_point: 0.25
+  sbi-elite:
+    name: SBI Card ELITE
+    issuer: SBI Card
+    reward_currency: Reward Points
+    sources:
+      - https://www.sbicard.com/en/personal/credit-cards/lifestyle/sbi-card-elite.page
+    routes:
+      - id: cash-redeem
+        type: statement-credit
+        category: cash
+        value_inr_per_point: 0.25
+      - id: shop-and-smile
+        type: voucher
+        category: shopping
+        description: Vouchers via Shop & Smile catalogue
+        value_inr_per_point: 0.25

@@ -1,0 +1,46 @@
+# Golden cases for the LLM layer. Run: python evals/run_evals.py (needs GEMINI_API_KEY)
+goal_cases:        # parse_goal_category(goal) must equal expected_category,
+                   # and the engine's top route for it must match expected card/route.
+  - goal: "I want a flight to Singapore next year"
+    expected_category: flights
+    expected_card_id: hdfc-infinia
+    expected_route_id: smartbuy-flights
+  - goal: "book business class to London with points"
+    expected_category: flights
+    expected_card_id: hdfc-infinia
+    expected_route_id: smartbuy-flights
+  - goal: "redeem for a staycation hotel weekend"
+    expected_category: hotels
+    expected_card_id: hdfc-infinia
+    expected_route_id: smartbuy-hotels
+  - goal: "I want maximum plain cash back"
+    expected_category: cash
+    expected_card_id: amex-mr
+    expected_route_id: gold-collection
+  - goal: "convert everything to money in my statement"
+    expected_category: cash
+    expected_card_id: amex-mr
+    expected_route_id: gold-collection
+  - goal: "buy an iPhone with my points"
+    expected_category: shopping
+    expected_card_id: axis-magnus
+    expected_route_id: edge-vouchers
+  - goal: "anniversary trip, flights for two to Bali"
+    expected_category: flights
+    expected_card_id: hdfc-infinia
+    expected_route_id: smartbuy-flights
+  - goal: "Marriott stay in Jaipur"
+    expected_category: hotels
+    expected_card_id: hdfc-infinia
+    expected_route_id: smartbuy-hotels
+chat_cases:        # expected_tool must appear in the tool call_log for the question
+  - question: "What are my options with my HDFC Infinia points?"
+    expected_tool: lookup_transfer_rates
+  - question: "How much is 20000 Infinia points worth if I move them to KrisFlyer?"
+    expected_tool: calculate_redemption_value
+  - question: "Do any of my points expire soon?"
+    expected_tool: check_expiry
+  - question: "Which of my cards has the best hotel redemption?"
+    expected_tool: lookup_transfer_rates
+  - question: "What's the rupee value of my 45000 Magnus points as vouchers?"
+    expected_tool: calculate_redemption_value
