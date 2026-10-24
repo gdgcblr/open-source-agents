@@ -15,6 +15,7 @@
 - **Optional OpenAI mode**: set `OPENAI_API_KEY` to draft messages with an LLM. The `openai` package is imported lazily, so it is never needed for the default path.
 - **Auto provider selection**: picks `openai` when a key is present and the SDK is installed, otherwise falls back to `mock`. An explicit `--provider` always wins.
 - **Flexible input**: reads `git diff --staged`, or any diff file via `--diff-file` for demos and tests.
+- **One-step commit**: use `--write` to generate the message AND commit automatically — no copy-paste needed.
 - **Friendly failures**: clear messages and handled exit codes when git is missing, nothing is staged, or a config is wrong.
 
 ---
@@ -128,6 +129,9 @@ python main.py --diff-file tests/fixtures/add_module.diff
 # Header line only, no body:
 python main.py --no-body
 
+# Generate message AND commit automatically (one-step workflow):
+python main.py --write
+
 # Use OpenAI (requires OPENAI_API_KEY and `pip install openai`):
 python main.py --provider openai --model gpt-4o-mini
 ```
@@ -137,6 +141,7 @@ CLI flags:
 - `--diff-file PATH` — read the diff from a file instead of running git.
 - `--model NAME` — model override (openai only; ignored by mock).
 - `--no-body` — print only the header line.
+- `--write` — automatically commit with the generated message (cannot be used with `--diff-file`).
 - `--help` — full usage.
 
 Exit codes: `0` success, `1` no staged changes / empty diff, `2` git missing, unreadable diff file, or provider/config error.

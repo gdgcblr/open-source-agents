@@ -30,6 +30,7 @@ _EPILOG = (
     "  python main.py --provider mock              # force the offline heuristic\n"
     "  python main.py --diff-file changes.diff     # read a diff from a file\n"
     "  python main.py --no-body                    # header line only\n"
+    "  python main.py --write                      # generate and commit automatically\n"
 )
 
 
@@ -63,6 +64,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-body",
         action="store_true",
         help="Emit only the header line, no bullet-point body.",
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Automatically commit with the generated message (requires git and staged changes).",
     )
     return parser
 
@@ -100,9 +106,38 @@ def read_diff_file(path: str) -> str:
         raise ProviderError(f"Could not read diff file '{path}': {exc}") from exc
 
 
+def write_commit(message: str) -> None:
+    """Execute ``git commit -m "<message>"`` with the generated message.
+
+    Raises :class:`ProviderError` if git is missing or the commit fails.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "commit", "-m", message],
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError as exc:
+        raise ProviderError(
+            "git was not found on PATH. Cannot commit without git."
+        ) from exc
+    if result.returncode != 0:
+        stderr = result.stderr.strip() or "unknown error"
+        raise ProviderError(f"'git commit' failed: {stderr}")
+
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    # Safety check: --write is incompatible with --diff-file
+    if args.write and args.diff_file:
+        print(
+            "error: --write cannot be used with --diff-file (can only commit real staged changes).",
+            file=sys.stderr,
+        )
+        return EXIT_ERROR
 
     # The mock provider has no model concept; note it but do not fail.
     resolved = resolve_provider(
@@ -140,4 +175,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         return EXIT_ERROR
 
     print(message)
+
+    # If --write is set, commit with the generated message
+    if args.write:
+        try:
+            write_commit(message)
+            print("\n✓ Committed successfully.", file=sys.stderr)
+        except ProviderError as exc:
+            print(f"\nerror: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+
     return EXIT_OK
