@@ -334,7 +334,7 @@ The tests also cover the grounding rule: a hallucinated AI finding is demoted an
 - **False positives on real PRs.** On the 20 newest event PRs (2026-10-24), several blocking findings were wrong:
   - fake keys inside other projects' own test fixtures
   - prompt-injection strings inside their security tests and sample data
-  - code expressions like `api_key = existing.openai_api_key`, read as secrets
+  - code that copies one key variable into another (for example from `existing.openai_api_key`), read as a secret
   - a storage key *name* ending in `_auth_token`
   - an ordinary UTF-8 byte-order mark (BOM), read as hidden characters
 
