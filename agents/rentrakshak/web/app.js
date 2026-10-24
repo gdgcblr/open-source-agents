@@ -136,25 +136,55 @@ document.getElementById("btn-seed").onclick = async () => {
 document.getElementById("load-scam").onclick = () => { document.getElementById("listing").value = SAMPLES.scam; };
 document.getElementById("load-clean").onclick = () => { document.getElementById("listing").value = SAMPLES.clean; };
 
+function showUploadPreview(file, dataUrl, serverData) {
+  const box = document.getElementById("upload-preview");
+  const src = dataUrl || (serverData?.preview_mime && serverData?.preview_base64
+    ? `data:${serverData.preview_mime};base64,${serverData.preview_base64}`
+    : null);
+  if (!src) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+  box.classList.remove("hidden");
+  box.innerHTML = `<img src="${src}" alt="Uploaded listing screenshot" /><small class="muted">${esc(file.name)}</small>`;
+}
+
 document.getElementById("file-upload").onchange = async (ev) => {
   const file = ev.target.files?.[0];
   if (!file) return;
   const status = document.getElementById("upload-status");
   const fd = new FormData();
   fd.append("file", file);
-  status.textContent = "Uploading…";
+  status.textContent = file.type.startsWith("image/") ? "Reading screenshot with vision…" : "Uploading…";
+  let localPreview = null;
+  if (file.type.startsWith("image/")) {
+    localPreview = await new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.readAsDataURL(file);
+    });
+    showUploadPreview(file, localPreview);
+  } else {
+    document.getElementById("upload-preview").classList.add("hidden");
+  }
   try {
     const res = await fetch("/api/upload-listing", { method: "POST", body: fd });
     const data = await res.json();
-    if (data.extracted_text) {
-      document.getElementById("listing").value = data.extracted_text;
-      status.textContent = "Loaded " + file.name;
+    if (!res.ok) throw new Error(data.detail || data.message || res.statusText);
+    if (data.preview_base64) showUploadPreview(file, null, data);
+    if (data.extracted_text && data.extracted_text.trim().length > 0) {
+      document.getElementById("listing").value = data.extracted_text.trim();
+      const via = data.ocr_applied ? ` · OCR (${data.vision_backend || "vision"})` : "";
+      status.textContent = `Loaded ${file.name}${via}`;
+      if (data.ocr_applied) toast("Screenshot text extracted — review and Analyse");
     } else {
-      status.textContent = data.message || "Upload noted — paste text manually.";
-      toast(data.message || "OCR not enabled");
+      status.textContent = data.message || "No text extracted — paste manually.";
+      if (data.message) toast(data.message);
     }
   } catch (e) {
     status.textContent = "Upload failed";
+    toast(e.message || "Upload failed");
   }
 };
 

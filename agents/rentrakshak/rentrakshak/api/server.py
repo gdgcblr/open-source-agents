@@ -19,12 +19,13 @@ from rentrakshak.services.community import create_anonymous_experience, search_a
 from rentrakshak.services.demo_seed import seed_demo
 from rentrakshak.services.locality_summary import POPULAR_LOCALITIES, popular_locality_cards
 from rentrakshak.services.rent_estimator import estimate_bengaluru_rent
+from rentrakshak.services.listing_upload import ListingUploadError, process_listing_upload
 from rentrakshak.services.safety_report import generate_rental_safety_report
 from rentrakshak.services.vacating import create_vacating_post, search_available_rooms
 
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
 
-app = FastAPI(title="RentRakshak API", version="0.2.0")
+app = FastAPI(title="RentRakshak API", version="0.2.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -78,7 +79,7 @@ def _startup() -> None:
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "service": "rentrakshak", "version": "0.2.0"}
+    return {"status": "ok", "service": "rentrakshak", "version": "0.2.1"}
 
 
 @app.get("/api/localities")
@@ -120,21 +121,10 @@ def api_safety_report(body: SafetyReportRequest) -> dict[str, Any]:
 async def api_upload_listing(file: UploadFile = File(...)) -> dict[str, Any]:
     name = file.filename or "upload"
     raw = await file.read()
-    if len(raw) > 5_000_000:
-        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
-    lower = name.lower()
-    if lower.endswith(".txt"):
-        text = raw.decode("utf-8", errors="replace")
-        return {"filename": name, "extracted_text": text, "ocr_applied": False}
-    return {
-        "filename": name,
-        "extracted_text": "",
-        "ocr_applied": False,
-        "message": (
-            "Image/PDF upload saved for demo UI. OCR is not enabled in this MVP — "
-            "please paste listing text or upload a .txt export. Future: Gemma vision / Document AI."
-        ),
-    }
+    try:
+        return process_listing_upload(raw, name)
+    except ListingUploadError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.post("/api/demo/seed")

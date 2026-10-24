@@ -8,7 +8,7 @@
 
 [![Google ADK](https://img.shields.io/badge/Google-ADK-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://google.github.io/adk-docs/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](.)
-[![Tests](https://img.shields.io/badge/tests-32%2B%20offline-success?style=for-the-badge)](.)
+[![Tests](https://img.shields.io/badge/tests-40%2B%20offline-success?style=for-the-badge)](.)
 [![Docker](https://img.shields.io/badge/Docker-compose%20ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](DOCKER.md)
 [![Gemma](https://img.shields.io/badge/Local-Gemma%20(Ollama)-22C55E?style=for-the-badge)](USAGE_GUIDE.md)
 
@@ -253,7 +253,7 @@ No local Python required. Image runs **pytest** and **deterministic safety repor
 ```bash
 cd agents/rentrakshak
 docker compose build
-docker compose run --rm test          # 32 tests
+docker compose run --rm test          # 40 tests
 docker compose run --rm cli           # suspicious listing JSON report
 docker compose run --rm seed          # demo SQLite in a named volume
 ```
@@ -348,9 +348,9 @@ python scripts/seed_demo_data.py
 |------|---------|
 | **Docker smoke (fastest)** | `docker compose build && docker compose run --rm test` |
 | **Docker safety report** | `docker compose run --rm cli` |
-| **Prove safeguards (local)** | `pytest -q` → 32 passed, offline |
+| **Prove safeguards (local)** | `pytest -q` → 40 passed, offline |
 | **No-key demo (local)** | `python main.py --listing @tests/fixtures/suspicious_listing.txt` |
-| **HTML web demo (mockup-style UI)** | `./scripts/run_web_demo.sh` → http://127.0.0.1:8080 — see `UI_ROADMAP.md` |
+| **HTML web demo (mockup-style UI)** | `./scripts/run_web_demo.sh` → http://127.0.0.1:8080 — upload **JPG/PNG screenshots** (Ollama Gemma or Gemini vision), community, vacating — see `UI_ROADMAP.md` |
 | **Streamlit** | `streamlit run ui/streamlit_app.py` (optional) |
 | **ADK + Gemini** | `export GOOGLE_API_KEY=... && adk web adk_agent` |
 | **Reset demo DB** | `rm -f data/rentrakshak.db && python scripts/seed_demo_data.py` |

@@ -68,7 +68,7 @@
           <!-- ANALYZE -->
           <section class="view" id="view-analyze">
             <h2>Analyse a Rental Listing</h2>
-            <p class="lead">Paste from NoBroker, 99acres, MagicBricks, WhatsApp — or upload a <code>.txt</code> export.</p>
+            <p class="lead">Paste from NoBroker, 99acres, MagicBricks, WhatsApp — or upload <code>.txt</code>, <strong>JPG/PNG screenshots</strong> (Gemma/Gemini vision), or <code>.pdf</code>.</p>
             <div class="subtabs">
               <button type="button" class="subtab active" data-tab="listing-pane">Listing</button>
               <button type="button" class="subtab" data-tab="chat-pane">Landlord chat</button>
@@ -78,10 +78,11 @@
               <textarea id="listing" maxlength="5000" rows="8" placeholder="Paste listing description…"></textarea>
               <div class="upload-row">
                 <label class="upload-btn">Upload file (TXT / JPG / PNG / PDF)
-                  <input type="file" id="file-upload" accept=".txt,.pdf,.png,.jpg,.jpeg" hidden />
+                  <input type="file" id="file-upload" accept=".txt,.pdf,.png,.jpg,.jpeg,.webp" hidden />
                 </label>
                 <span id="upload-status" class="muted"></span>
               </div>
+              <div id="upload-preview" class="upload-preview hidden"></div>
             </div>
             <div id="chat-pane" class="tab-pane">
               <textarea id="chat" rows="6" placeholder="Optional broker/owner chat…"></textarea>
@@ -191,13 +192,13 @@
             <p>This web demo implements the core hackathon features. The purple dashboard mockup (sidebar, metro hero, screenshot OCR) is tracked in <code>UI_ROADMAP.md</code>.</p>
             <ul class="roadmap">
               <li>✅ Listing + chat + property fields analysis</li>
-              <li>✅ File upload (.txt extracted; image OCR planned)</li>
+              <li>✅ File upload — TXT, PDF text, JPG/PNG via Gemma (Ollama) or Gemini vision</li>
               <li>✅ Locality rent cards &amp; detailed estimate API</li>
               <li>✅ Community feed with filters &amp; rent bands</li>
               <li>✅ Vacating board + demo seed</li>
               <li>✅ Checklist + deterministic Ask helper</li>
               <li>🔜 Full ADK chat widget in-page</li>
-              <li>🔜 OCR for listing screenshots (Gemma vision)</li>
+              <li>🔜 Scanned PDF pages → vision (screenshot upload works today)</li>
               <li>🔜 My Posts (edit token management)</li>
             </ul>
           </section>

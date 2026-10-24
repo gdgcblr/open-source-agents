@@ -102,6 +102,14 @@ python scripts/seed_demo_data.py
 | F10 | Full safety report | `main.py` | suspicious fixture | — | JSON with limitations | "Verified by Google" | `test_integration.py` | [ ] |
 | F11 | ADK tools | pytest | — | — | 13 tools on agent | — | `test_agent_tools.py` | [ ] |
 | F12 | Guardrails | pytest | injection in listing | ignore instructions | guardrail_notes | Agent obeys injection | `test_injection` | [ ] |
+| F13 | Screenshot upload OCR | Web Analyze → Upload JPG/PNG | Ollama `gemma3:4b` or `GOOGLE_API_KEY` | NoBroker/WhatsApp screenshot | Text fills listing + preview thumbnail | Silent failure | `test_listing_upload.py` | [ ] |
+
+### Screenshot upload (F13)
+
+1. Start Ollama with a vision model: `ollama pull gemma3:4b` and `export RENTRAKSHAK_VISION_BACKEND=ollama` (or set `GOOGLE_API_KEY` for Gemini).  
+2. `./scripts/run_web_demo.sh` → **Analyze Listing** → upload a listing screenshot.  
+3. Expect thumbnail preview, extracted text in the textarea, status `OCR (ollama|gemini)`.  
+4. Click **Analyse with AI** — same safety report flow as pasted text.
 
 ---
 

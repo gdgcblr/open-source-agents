@@ -10,7 +10,7 @@ Reference: purple **dashboard mockup** (sidebar, hero, locality cards, analyse m
 | Hero + feature cards + CTAs | ✅ |
 | Popular Bengaluru locality cards with rent ranges | ✅ |
 | Analyse listing — tabs: listing / chat / property details | ✅ |
-| File upload (.txt extracted; image/PDF → message, OCR planned) | ✅ |
+| File upload — TXT, PDF text extract, JPG/PNG/WebP vision OCR | ✅ |
 | Rent estimate detail view | ✅ |
 | Community feed with locality, category, sentiment, property type | ✅ |
 | Share experience — rent band, escalations, ratings | ✅ |
@@ -23,7 +23,8 @@ Reference: purple **dashboard mockup** (sidebar, hero, locality cards, analyse m
 ## Future enhancements
 
 - [ ] Hero illustration (Vidhana Soudha / Namma Metro) — assets under `web/assets/`
-- [ ] OCR / vision for JPG, PNG, PDF uploads (Gemma / Document AI)
+- [ ] Scanned PDF → page render + vision (image screenshots work via Ollama Gemma / Gemini)
+- [ ] Document AI fallback for low-quality photos
 - [ ] In-page ADK chat WebSocket to Gemini or Ollama
 - [ ] **My Posts** — manage with edit token
 - [ ] Settings + privacy panel

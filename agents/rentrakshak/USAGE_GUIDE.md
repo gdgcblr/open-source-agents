@@ -9,7 +9,7 @@ This guide helps you run the hackathon demo without last-minute surprises.
 ```bash
 cd agents/rentrakshak
 docker compose build
-docker compose run --rm test    # expect: 32 passed
+docker compose run --rm test    # expect: 40 passed
 docker compose run --rm cli     # JSON safety report (suspicious fixture)
 docker compose run --rm seed    # demo community DB in Docker volume
 ```
@@ -34,7 +34,7 @@ python scripts/seed_demo_data.py
 pytest -q
 ```
 
-Expected: **32 passed**.
+Expected: **40 passed**.
 
 ## 3. Deterministic safety report (recommended for judges)
 
@@ -49,12 +49,29 @@ python main.py --listing @tests/fixtures/clean_listing.txt
 
 ```bash
 cd agents/rentrakshak
-pip install fastapi uvicorn
+pip install -r requirements.txt
 ./scripts/run_web_demo.sh
 # open http://127.0.0.1:8080
 ```
 
-Dark-themed HTML/CSS/JS frontend → same Python services via REST API.
+Purple dashboard UI → same Python services via REST API. **Analyze Listing** accepts paste, `.txt`, `.pdf` (text extract), and **JPG/PNG/WebP screenshots**.
+
+### Screenshot OCR (Gemma / Gemini vision)
+
+Pick one backend:
+
+```bash
+# Local Gemma (you already have Ollama)
+ollama pull gemma3:4b
+export RENTRAKSHAK_VISION_BACKEND=ollama
+export RENTRAKSHAK_OLLAMA_MODEL=gemma3:4b
+
+# Or cloud Gemini
+export GOOGLE_API_KEY=your_key
+export RENTRAKSHAK_VISION_BACKEND=gemini
+```
+
+Upload a NoBroker / WhatsApp screenshot on **Analyze Listing** — text fills the box with a thumbnail preview, then click **Analyse with AI**.
 
 ## 4b. Streamlit (legacy / optional)
 
