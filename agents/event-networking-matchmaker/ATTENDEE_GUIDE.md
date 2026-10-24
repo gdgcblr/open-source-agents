@@ -5,10 +5,12 @@ BuildBuddy helps you find a relevant conversation and gives you a reason to star
 ## Join your event
 
 1. Complete the organizer’s form with your offered skills, learning needs, interests, and project. Choose Yes only if you want your profile used for networking.
-2. Get the shared BuildBuddy link, event name, and your private access token from the organizer.
-3. Select the event and sign in. Keep your token private; it lets its holder use your profile. Your public badge ID is different.
+2. Once your attendance is confirmed, open your **confirmation email** and click your personal **See my event matches** BuildBuddy button. It signs you in and finds matches—even before the event.
+3. If you need to sign in manually, use the BuildBuddy website link, event name, and private access token included in that same confirmation email.
 
-If you lose your token or think it was exposed, ask the organizer to verify your identity and replace it. Replacing a token invalidates the old one.
+Keep the email, personal button link, and token private: anyone with your link or token can use your profile. Do not forward them. Your public badge ID is different. Opening the email button does **not** mark you as present at the venue; check in only when you arrive at your chosen meeting spot.
+
+Missing your confirmation email? Check spam, then ask the organizer to resend it. If your link or token may have been exposed, ask the organizer to verify your identity, replace the token, and send an updated invitation. Replacing a token invalidates the old invitation.
 
 ## Find a useful conversation
 
@@ -40,8 +42,8 @@ After meeting someone, click **We’ve met**. They are excluded from your future
 - Matching is local to the organizer’s server by default. Your browser is not downloading the attendee spreadsheet.
 - Other authenticated attendees in your event may see your opted-in display name, skills, needs, interests, project, networking window, and active meeting spot.
 - The optional Gemini planner checkbox sends your typed goal and aggregate hit counts to Google. It does not send attendee profiles or locations. Leave it off to keep your request local too. Do not type private information into goals or profile fields.
-- Sign out on shared devices. Tokens stay in browser memory only, so reloading requires another sign-in.
+- Sign out on shared devices. Tokens stay in browser memory only, so reloading requires another sign-in. Reopen your personal BuildBuddy button in the confirmation email, or use the manual sign-in details from that email.
 - **Remove my profile** deletes your BuildBuddy profile, check-in, and associated met history. Your attendee ID remains excluded from future imports for this event.
 - Ask the organizer separately to remove your source form response and explain their retention policy. BuildBuddy cannot delete those external copies.
 
-For the fictional sample, choose a profile from “Try a profile” instead of obtaining a token. Sample tokens are public and must never be used for real participants.
+For the fictional sample, choose a profile from “Try a profile” instead of using a confirmation email invitation. Sample tokens are public and must never be used for real participants.
