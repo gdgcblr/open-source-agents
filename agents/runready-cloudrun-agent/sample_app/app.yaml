@@ -1,0 +1,7 @@
+# Cloud Run service configuration for the sample app.
+#
+# BUG (intentional): the startup command points at "main:app", but the ASGI
+# application actually lives at "src.api:app". This mismatch is what causes the
+# ModuleNotFoundError seen in startup.log, and what RunReady diagnoses.
+runtime: python
+entrypoint: uvicorn main:app --host 0.0.0.0 --port $PORT

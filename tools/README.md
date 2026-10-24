@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`runready-eval`](./runready-eval) | Model-backed evaluation harness scoring the RunReady agent's Cloud Run diagnosis quality (recall, correctness, and safety) across broken-project fixtures. | Evaluation harness · Google ADK · Gemini | [@gitlakshya](https://github.com/gitlakshya) |
