@@ -10,6 +10,8 @@ service-account*.json
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 .venv/
 venv/
 env/
@@ -37,6 +39,7 @@ src/index.test.ts
 # Generated project artifacts
 reports/
 reports/*.json
+coverage.xml
 
 # Operating system and editor files
 .DS_Store
