@@ -1,0 +1,11 @@
+# Core LLM integration
+google-generativeai>=0.8.0
+
+# Environment variable loading
+python-dotenv>=1.0.0
+
+# CLI framework
+click>=8.1.0
+
+# Rich terminal output (progress bars, tables, colored output)
+rich>=13.0.0

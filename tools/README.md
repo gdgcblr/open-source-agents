@@ -47,4 +47,5 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [code-lens-doc-gen](code-lens-doc-gen/) | Automatic codebase documentation generator (User & Dev docs) with AST analysis & incremental updates | Developer Tools / CLI | [@ArshdeepSinghVirdi](https://github.com/ArshdeepSinghVirdi) |
+

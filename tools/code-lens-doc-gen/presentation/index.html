@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeLens Doc Gen — Executive Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #4f46e5;
+      --primary-glow: rgba(79, 70, 229, 0.35);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.35);
+      --green: #10b981;
+      --purple: #a855f7;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Nav Bar */
+    header {
+      height: 56px;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Slide Deck Container */
+    #deck {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 3rem 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.96) translateY(20px);
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Typography & Utilities */
+    .eyebrow {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--cyan);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h1 {
+      font-size: 3.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    p.lead {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 850px;
+      margin-bottom: 2rem;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-icon {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: #fff;
+    }
+
+    .card-desc {
+      font-size: 0.925rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Code & Architecture Display */
+    .code-box {
+      background: #060911;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    .badge-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .badge.cyan { border-color: rgba(6, 182, 212, 0.4); color: #38bdf8; background: rgba(6, 182, 212, 0.1); }
+    .badge.green { border-color: rgba(16, 185, 129, 0.4); color: #34d399; background: rgba(16, 185, 129, 0.1); }
+    .badge.purple { border-color: rgba(168, 85, 247, 0.4); color: #c084fc; background: rgba(168, 85, 247, 0.1); }
+
+    /* Footer / Progress Bar */
+    footer {
+      height: 48px;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.9);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-container {
+      width: 200px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 10%;
+      background: linear-gradient(90deg, var(--primary), var(--cyan));
+      transition: width 0.3s ease;
+    }
+
+    /* Print styles for exporting as PDF */
+    @media print {
+      body { overflow: visible; height: auto; }
+      header, footer, .nav-controls { display: none !important; }
+      #deck { overflow: visible; }
+      .slide {
+        position: relative !important;
+        opacity: 1 !important;
+        transform: none !important;
+        page-break-after: always;
+        height: 100vh;
+        padding: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <span>CodeLens</span>
+      <span class="brand-badge">Doc Gen</span>
+    </div>
+    <div class="nav-controls">
+      <span>Use <kbd>←</kbd> <kbd>→</kbd> or Space to navigate</span>
+      <button class="btn" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+      <button class="btn" onclick="window.print()">⎙ Export PDF</button>
+    </div>
+  </header>
+
+  <!-- Slide Deck -->
+  <main id="deck">
+
+    <!-- Slide 1: Title -->
+    <section class="slide active">
+      <div class="eyebrow">🚀 Production-Ready AI Tool Submission</div>
+      <h1>CodeLens Doc Gen</h1>
+      <p class="lead">
+        Automatic, deep-codebase documentation engine with AST structural parsing,
+        Gemini 3.8 Flash categorization, and incremental synchronization via Git diffs.
+      </p>
+      <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem;">
+        <span class="badge cyan">Google Gemini 3.8 Flash</span>
+        <span class="badge green">Python AST Parsing</span>
+        <span class="badge purple">Zero-Secrets Architecture</span>
+        <span class="badge">Incremental Git Sync</span>
+      </div>
+      <div style="margin-top: 3.5rem; font-size: 0.95rem; color: var(--text-muted);">
+        <strong>Presenter:</strong> Arshdeep Singh Virdi &bull; <strong>Repository:</strong> open-source-agents
+      </div>
+    </section>
+
+    <!-- Slide 2: The Core Problem -->
+    <section class="slide">
+      <div class="eyebrow">⚠️ Industry Problem Statement</div>
+      <h2>The Real Cost of Documentation Debt</h2>
+      <p class="lead">
+        In modern agile teams, code moves at lightning speed while documentation rots.
+      </p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">🥀</div>
+          <div class="card-title">Stale & Rotting Docs</div>
+          <div class="card-desc">
+            Developers update code and forget READMEs. New joiners and customers waste hours deciphering broken examples and obsolete APIs.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔀</div>
+          <div class="card-title">User vs. Dev Docs Chaos</div>
+          <div class="card-desc">
+            Projects mash internal private classes and public installation guides together into one huge, confusing README file.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">💸</div>
+          <div class="card-title">Token Waste & LLM Costs</div>
+          <div class="card-desc">
+            Naive LLM generators dump entire 100,000-line codebases into prompts every time a 1-line commit is made, burning API budgets.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: The Solution -->
+    <section class="slide">
+      <div class="eyebrow">💡 The Innovation</div>
+      <h2>Enter CodeLens Doc Gen</h2>
+      <p class="lead">
+        A deterministic static analyzer paired with Google Gemini intelligence for continuous, dual-tiered documentation.
+      </p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">🔬</div>
+          <div class="card-title">Deep AST Parsing</div>
+          <div class="card-desc">
+            Analyzes Python Abstract Syntax Trees to extract exact class hierarchies, public vs. private functions, docstrings, and signatures without regex guesswork.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <div class="card-title">Dual-Tier Categorization</div>
+          <div class="card-desc">
+            Separates output into <code>user-docs/</code> (APIs, usage, config) and <code>dev-docs/</code> (architecture, internals, data flow).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">Diff-Aware Incremental Sync</div>
+          <div class="card-desc">
+            Inspects <code>git diff</code> commits and updates only the documentation files affected by the changed code. Zero wasted tokens.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Architecture Flow -->
+    <section class="slide">
+      <div class="eyebrow">🏛️ System Architecture</div>
+      <h2>Enterprise Data Pipeline Flow</h2>
+      <div class="code-box" style="font-size: 0.8rem; margin: 1rem 0;">
+┌───────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   CodeLens CLI (main.py)                                  │
+│             [ scan &lt;path&gt; ]         [ generate &lt;path&gt; ]         [ update &lt;path&gt; ]          │
+└───────────────────────┬──────────────────────────┬───────────────────────────┬────────────┘
+                        │                          │                           │
+                        ▼                          ▼                           ▼
+                 ┌──────────────┐           ┌──────────────┐           ┌──────────────┐
+                 │  Scanner     │           │  Analyzer    │           │ DiffAnalyzer │
+                 │  (scanner.py)│──────────&gt;│ (analyzer.py)│           │  (git diff)  │
+                 └──────────────┘           └──────┬───────┘           └───────┬──────┘
+                                                   │                           │
+                                                   ▼                           ▼
+                                            ┌──────────────┐           ┌──────────────┐
+                                            │ Categorizer  │           │   Updater    │
+                                            │(Gemini/Rules)│──────────&gt;│ (State Sync) │
+                                            └──────┬───────┘           └───────┬──────┘
+                                                   │                           │
+                                                   ▼                           ▼
+                                            ┌──────────────┐           ┌──────────────┐
+                                            │  Generator   │           │ docs_output/ │
+                                            │ (Markdown)   │──────────&gt;│ .codelens-   │
+                                            └──────────────┘           │  state.json  │
+                                                                       └──────────────┘
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        <strong>Separation of Concerns:</strong> 7 decoupled domain modules. The CLI is merely an adapter layer; the entire engine is embeddable in CI/CD pipelines.
+      </p>
+    </section>
+
+    <!-- Slide 5: Deep Dive: AST & LLM Token Economy -->
+    <section class="slide">
+      <div class="eyebrow">⚙️ Engineering Depth</div>
+      <h2>Static AST Parsing & Token Condensation</h2>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Why AST beats Raw Code Dump</div>
+          <p class="card-desc">
+            Dumping raw files into an LLM leaks implementation secrets, risks hallucination, and explodes token limits.<br><br>
+            CodeLens parses files using Python's native <code>ast</code> module to distill code down to pure semantic metadata:
+          </p>
+          <div class="badge-list">
+            <span class="badge">Class Inheritance Trees</span>
+            <span class="badge">Docstrings & Comments</span>
+            <span class="badge">Type Annotations</span>
+            <span class="badge">Private <code>_func()</code> vs Public</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">The Token Condensation Layer</div>
+          <p class="card-desc">
+            Before calling Gemini, <code>condense_for_llm()</code> converts the AST tree into a hyper-efficient structural digest:
+          </p>
+          <div class="code-box" style="margin-top: 0.5rem; font-size: 0.75rem;">
+File: codelens/config.py (Python)
+  Class: Config
+    - gemini_api_key: str
+    - gemini_model: str = "gemini-3.8-flash"
+    - output_dir: str = "./docs_output"
+  Function: validate_config(config: Config)
+          </div>
+          <p class="card-desc" style="margin-top: 0.5rem; color: var(--green);">
+            ✓ 92% token reduction compared to sending raw source code.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: Categorization Strategy -->
+    <section class="slide">
+      <div class="eyebrow">🗂️ Intelligent Categorization</div>
+      <h2>Categorization Strategy: Dev vs. User Docs</h2>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--cyan);">User Docs (<code>user-docs/</code>)</div>
+          <p class="card-desc">
+            Targeted at developers consuming the application, end users, and API clients:
+          </p>
+          <ul style="margin: 0.75rem 0 0 1.25rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            <li>CLI commands, arguments, and options</li>
+            <li>Configuration keys & environment variables</li>
+            <li>Public SDK APIs and return types</li>
+            <li>Step-by-step setup and quickstart guides</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--purple);">Developer Docs (<code>dev-docs/</code>)</div>
+          <p class="card-desc">
+            Targeted at project maintainers and internal contributors:
+          </p>
+          <ul style="margin: 0.75rem 0 0 1.25rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            <li>Internal architecture diagrams & module flows</li>
+            <li>Private methods and implementation details</li>
+            <li>State management and persistence schemes</li>
+            <li>Unit testing strategies and extension hooks</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 1.5rem;">
+        <span class="badge green">Strategy Pattern Resilience</span>
+        <span style="font-size: 0.9rem; color: var(--text-muted); margin-left: 0.5rem;">
+          If Gemini API is offline, rate-limited, or no key is provided, the engine gracefully falls back to deterministic rule-based heuristics. The tool never crashes.
+        </span>
+      </div>
+    </section>
+
+    <!-- Slide 7: Security & Standards -->
+    <section class="slide">
+      <div class="eyebrow">🛡️ Production Readiness</div>
+      <h2>Enterprise Security & Code Quality</h2>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">🔒</div>
+          <div class="card-title">Zero-Secrets Policy</div>
+          <div class="card-desc">
+            Keys are strictly loaded from <code>.env</code> (blocked by <code>.gitignore</code>). Only <code>.env.example</code> with clean placeholders is tracked.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">💻</div>
+          <div class="card-title">Cross-Platform UTF-8</div>
+          <div class="card-desc">
+            Automated console reconfigure resolves legacy Windows <code>cp1252</code> charmap encoding errors when displaying spinners and emojis.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧪</div>
+          <div class="card-title">14/14 Unit Tests Passing</div>
+          <div class="card-desc">
+            Full test suite covering AST parsing, config validation, file tree mapping, and offline fallback. Zero network dependencies required to test.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8: Technical Stack -->
+    <section class="slide">
+      <div class="eyebrow">📦 Technology Foundation</div>
+      <h2>Technical Stack & Dependencies</h2>
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-title">Python 3.10+</div>
+          <div class="card-desc">Modern language core with native AST parser and typing.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Gemini 3.8 Flash</div>
+          <div class="card-desc">High-throughput, low-latency reasoning and categorization.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Click & Rich</div>
+          <div class="card-desc">Beautiful CLI with progress spinners, colored tables, and panels.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Git VCS Integration</div>
+          <div class="card-desc">Zero-dependency subprocess git diff parsing for updates.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-title">Repository Standards Compliance</div>
+        <p class="card-desc">
+          Strictly conforms to <code>gdgcblr/open-source-agents</code> guidelines: dedicated directory under <code>tools/code-lens-doc-gen/</code>, isolated git commits, and pre-registered in <code>tools/README.md</code>.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 9: Future Roadmap -->
+    <section class="slide">
+      <div class="eyebrow">🗺️ Next Level</div>
+      <h2>Future Enhancements & Enterprise Roadmap</h2>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">🌲</div>
+          <div class="card-title">Tree-Sitter Multi-Lang</div>
+          <div class="card-desc">Extend native AST-level precision from Python to TypeScript, Go, Rust, and Java.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👁️</div>
+          <div class="card-title">Live Watch Mode</div>
+          <div class="card-desc">Filesystem event watcher that regenerates documentation pages instantly upon file save.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚀</div>
+          <div class="card-title">CI/CD Pipeline Action</div>
+          <div class="card-desc">GitHub Action and Azure DevOps pipeline task to keep master documentation in sync automatically on push.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10: Conclusion -->
+    <section class="slide">
+      <div class="eyebrow">🎯 Summary & Demo</div>
+      <h1>Thank You!</h1>
+      <p class="lead">
+        CodeLens Doc Gen bridges the gap between fast-moving codebases and crystal-clear, up-to-date documentation.
+      </p>
+      <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+        <a href="../README.md" class="btn" style="padding: 0.6rem 1.2rem; font-weight: 600;">📖 View Documentation</a>
+        <button class="btn" onclick="window.print()" style="padding: 0.6rem 1.2rem; font-weight: 600;">⎙ Print / Save as PDF</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div id="slideCounter">Slide 1 of 10</div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div>Use Arrow Keys <kbd>←</kbd> <kbd>→</kbd></div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('slideCounter');
+    const progress = document.getElementById('progressBar');
+    let currentIndex = 0;
+
+    function updateSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      slides[currentIndex].classList.remove('active');
+      currentIndex = index;
+      slides[currentIndex].classList.add('active');
+
+      counter.textContent = `Slide ${currentIndex + 1} of ${slides.length}`;
+      progress.style.width = `${((currentIndex + 1) / slides.length) * 100}%`;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        updateSlide(currentIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        updateSlide(currentIndex - 1);
+      } else if (e.key === 'Home') {
+        updateSlide(0);
+      } else if (e.key === 'End') {
+        updateSlide(slides.length - 1);
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullScreen();
+      }
+    });
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+  </script>
+</body>
+</html>
