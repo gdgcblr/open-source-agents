@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from migine.adapters import NativeAdapter, serve_connector
+from migine.adapters import NativeAdapter, NativeToolError, serve_connector
 
 
 @pytest.fixture
@@ -89,6 +89,58 @@ def test_connector_rejects_expired_request(handler_class):
 
 def test_connector_rejects_cloud_model(handler_class):
     assert invoke(handler_class, "/ollama/api/chat", {"model": "gemma4:cloud"})[0] == 400
+
+
+def test_connector_returns_safe_permission_diagnostic(handler_class, monkeypatch):
+    def denied(*_args):
+        raise NativeToolError("calendar.read", "permission_required")
+
+    monkeypatch.setattr(NativeAdapter, "call", denied)
+    status, payload = invoke(
+        handler_class,
+        "/tool",
+        {"operation": "calendar.read", "payload": {"days": 1}, "expires": time.time() + 30},
+    )
+    assert status == 503
+    assert json.loads(payload)["error"]["code"] == "permission_required"
+
+
+@pytest.mark.parametrize(
+    "stderr,code",
+    [
+        ("App permission denied or timed out. private@example.invalid", "permission_required"),
+        ("Internal error with private@example.invalid", "helper_failed"),
+    ],
+)
+def test_native_failure_does_not_expose_stderr(tmp_path, monkeypatch, stderr, code):
+    helper = tmp_path / "helper"
+    helper.touch()
+    monkeypatch.setenv("MIGINE_MAC_HELPER", str(helper))
+    monkeypatch.setattr("migine.adapters.sys.platform", "darwin")
+
+    def failed(command, **_kwargs):
+        raise subprocess.CalledProcessError(1, command, stderr=stderr)
+
+    monkeypatch.setattr("migine.adapters.subprocess.run", failed)
+    with pytest.raises(NativeToolError) as caught:
+        NativeAdapter().call("calendar.read", {"days": 1})
+    assert caught.value.code == code
+    assert "private@example.invalid" not in json.dumps(caught.value.result())
+
+
+def test_native_timeout_has_safe_diagnostic(tmp_path, monkeypatch):
+    helper = tmp_path / "helper"
+    helper.touch()
+    monkeypatch.setenv("MIGINE_MAC_HELPER", str(helper))
+    monkeypatch.setattr("migine.adapters.sys.platform", "darwin")
+
+    def timed_out(command, **_kwargs):
+        raise subprocess.TimeoutExpired(command, 60)
+
+    monkeypatch.setattr("migine.adapters.subprocess.run", timed_out)
+    with pytest.raises(NativeToolError) as caught:
+        NativeAdapter().call("calendar.read", {"days": 1})
+    assert caught.value.code == "helper_timeout"
 
 
 def test_native_write_requires_host_approval(monkeypatch):

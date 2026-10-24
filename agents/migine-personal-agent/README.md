@@ -11,7 +11,8 @@ and SQLite. App changes require approval. Contacts access is not yet working.
 Requires macOS 14+, Xcode Command Line Tools, [uv](https://docs.astral.sh/uv/),
 and [Ollama](https://ollama.com/). No cloud API key is needed.
 
-From the repository root:
+Run from the macOS **Terminal** app, starting at the repository root. Some VS Code
+terminal configurations block Calendar access through macOS permission rules.
 
 ```sh
 cd agents/migine-personal-agent

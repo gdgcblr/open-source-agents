@@ -40,6 +40,13 @@ under System Settings > Privacy & Security > Automation. No Full Disk Access is 
 Enable birthday calendars in Calendar to include those events. Contacts permission
 prompting is unresolved; see [current test results](TESTING.md).
 
+If Calendar fails in the VS Code terminal, stop ADK Web and launch `sh scripts/run-local.sh`
+from the macOS Terminal app. macOS can attribute the helper request to the terminal's
+host app; the tested VS Code build lacks the Calendar entitlement required by its hardened
+runtime. Rebuilding the helper alone cannot grant that host permission. Allow Calendar
+access when prompted, then start a new Web chat. Permission failures are reported as
+unavailable data, not an empty calendar.
+
 The helper uses local ad-hoc signing; signed/notarised distribution is future work.
 ADK Web is a local development UI. Its chat history is stored separately in ignored
 `.adk/` folders under `examples/web/`. CLI and Web use the same configured financial

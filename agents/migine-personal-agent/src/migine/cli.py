@@ -7,7 +7,7 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from .adapters import adapter_for, serve_connector
+from .adapters import NativeToolError, adapter_for, serve_connector
 from .config import Settings
 from .demo import load_demo
 from .finance import month_key, monthly_summary
@@ -225,6 +225,9 @@ def main():
         value = execute(args, Settings.load())
         if value is not None:
             output(value)
+    except NativeToolError as error:
+        print(str(error), file=sys.stderr)
+        sys.exit(1)
     except Exception as error:  # noqa: BLE001 -- CLI boundary redacts private error content.
         # Avoid logging exception details that could include personal content or tokens.
         print(

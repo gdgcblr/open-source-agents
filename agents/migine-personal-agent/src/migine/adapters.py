@@ -13,6 +13,33 @@ from .config import local_url
 from .safety import WRITES, host_approval, validate
 
 
+class NativeToolError(RuntimeError):
+    """Safe diagnostic that can be shown without exposing native stderr or personal data."""
+
+    def __init__(self, operation, code):
+        self.operation = operation
+        self.code = code
+        resource = "Calendar" if operation.startswith("calendar.") else "Contacts"
+        if code == "permission_required":
+            message = (
+                f"macOS denied or could not prompt for {resource} access. "
+                "If launched from VS Code, stop ADK Web and run "
+                "sh scripts/run-local.sh from the macOS Terminal app. "
+                f"Allow {resource} access when requested."
+            )
+        elif code == "helper_timeout":
+            message = f"{resource} access timed out. Check for a macOS permission prompt and retry."
+        else:
+            message = f"The {resource} helper failed. Run sh scripts/setup-local.sh and retry."
+        super().__init__(message)
+
+    def result(self):
+        return {
+            "status": "unavailable",
+            "error": {"code": self.code, "operation": self.operation, "message": str(self)},
+        }
+
+
 class NativeAdapter:
     def call(self, operation, payload, expires=None):
         if sys.platform != "darwin":
@@ -84,9 +111,24 @@ class NativeAdapter:
             ).expanduser()
             if not helper.is_file():
                 raise RuntimeError("Build the native helper with scripts/build-mac-helper.sh.")
-            result = subprocess.run(
-                [str(helper)], input=request, capture_output=True, text=True, timeout=60, check=True
-            )
+            try:
+                result = subprocess.run(
+                    [str(helper)],
+                    input=request,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                    check=True,
+                )
+            except subprocess.CalledProcessError as error:
+                reason = (
+                    "permission_required"
+                    if "permission denied or timed out" in (error.stderr or "").casefold()
+                    else "helper_failed"
+                )
+                raise NativeToolError(operation, reason) from None
+            except subprocess.TimeoutExpired:
+                raise NativeToolError(operation, "helper_timeout") from None
         return json.loads(result.stdout)
 
 
@@ -109,6 +151,11 @@ class RemoteAdapter:
                 },
                 headers={"Authorization": "Bearer " + token},
             )
+            if response.status_code == 503:
+                data = response.json()
+                code = data.get("error", {}).get("code")
+                if code in {"permission_required", "helper_timeout", "helper_failed"}:
+                    raise NativeToolError(operation, code)
             response.raise_for_status()
             return response.json()
 
@@ -187,6 +234,14 @@ def serve_connector(token_file, bind="127.0.0.1", port=8765):
                     raise ValueError("Invalid expiry.")
                 result = NativeAdapter().call(body["operation"], body["payload"], expires)
                 data = json.dumps(result).encode()
+            except NativeToolError as error:
+                data = json.dumps(error.result()).encode()
+                self.send_response(503)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
             except Exception:  # noqa: BLE001 -- HTTP boundary must not disclose private errors.
                 self.send_error(400, "Operation failed, permission denied, or approval denied.")
                 return

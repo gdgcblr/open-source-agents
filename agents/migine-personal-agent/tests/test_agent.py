@@ -6,6 +6,7 @@ from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
+from migine.adapters import NativeToolError
 from migine.agent import build_agent, chat
 from migine.config import Settings
 from migine.demo import load_demo
@@ -87,3 +88,59 @@ def test_tool_proposal_has_no_execution_path(tmp_path):
     assert result["preview"]["id"] == "synthetic"
     with store.connect() as db:
         assert db.execute("SELECT state FROM action_requests").fetchone()[0] == "pending"
+
+
+def test_calendar_permission_failure_is_a_tool_result(tmp_path, monkeypatch):
+    class DeniedAdapter:
+        def call(self, *_args):
+            raise NativeToolError("calendar.read", "permission_required")
+
+    class PermissionModel(BaseLlm):
+        model: str = "scripted"
+        calls: int = 0
+
+        async def generate_content_async(self, llm_request, stream=False):
+            self.calls += 1
+            if self.calls == 1:
+                yield LlmResponse(
+                    content=types.Content(
+                        role="model",
+                        parts=[
+                            types.Part(
+                                function_call=types.FunctionCall(
+                                    name="upcoming_events", args={"days": 1}
+                                )
+                            )
+                        ],
+                    )
+                )
+            else:
+                responses = [
+                    p.function_response
+                    for c in llm_request.contents
+                    for p in c.parts or []
+                    if p.function_response
+                ]
+                result = responses[-1].response
+                assert result["status"] == "unavailable"
+                assert "events" not in result
+                assert result["error"]["code"] == "permission_required"
+                yield LlmResponse(
+                    content=types.Content(
+                        role="model",
+                        parts=[
+                            types.Part(
+                                text="Calendar access is unavailable. Run from the macOS Terminal app."
+                            )
+                        ],
+                    )
+                )
+
+    settings = settings_at(tmp_path)
+    store = Store(tmp_path)
+    adapter = DeniedAdapter()
+    agent = build_agent(settings, store, adapter)
+    agent.model = PermissionModel()
+    monkeypatch.setattr("migine.agent.build_agent", lambda *_args: agent)
+    result = asyncio.run(chat(settings, store, adapter, "What events do I have today?", "denied"))
+    assert "unavailable" in result

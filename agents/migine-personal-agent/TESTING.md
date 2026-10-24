@@ -5,7 +5,7 @@ Locked ADK version: 2.13.0 (ADK 2.x).
 
 | Check | Result |
 |---|---|
-| Automated tests | 73 passed |
+| Automated tests | 78 passed |
 | Clean project setup | New environment installed from uv.lock; 71 tests and helper build passed |
 | Local setup scripts | Settings preserved, only missing models downloaded, and local Web launch verified with stubs |
 | Actual local launch | `sh scripts/run-local.sh` started ADK Web; a live `/run` request returned 9 Calendar events without a helper error |
@@ -60,6 +60,13 @@ The actual launcher check found an invalid placeholder in `MIGINE_MAC_HELPER`. S
 and launch now repair missing/invalid helper paths and export the checked path to ADK Web.
 Regression tests cover unset, valid custom, and invalid helper paths. The live check used
 the real local server and Calendar; no Contacts requests or app write actions ran.
+
+Later system diagnostics identified Calendar requests launched from VS Code being
+blocked because the responsible app lacks a required Calendar entitlement. The same
+helper succeeds from the Codex test process. Use the macOS Terminal app for local app
+access. Tests now cover safe native failure/timeout diagnostics, bridge propagation,
+and ADK returning unavailable Calendar data without crashing. Raw native stderr is not
+shown to the model or browser.
 
 The clean setup check copied only staged project files, created a new Python environment,
 and installed locked dependencies from the local uv cache. It did not copy private data,

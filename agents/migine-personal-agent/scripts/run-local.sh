@@ -3,6 +3,9 @@ set -eu
 umask 077
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$project_dir"
+if [ "${TERM_PROGRAM:-}" = vscode ]; then
+  echo 'Calendar access may be blocked in VS Code. Use the macOS Terminal app if access fails.' >&2
+fi
 if [ ! -f .env ]; then
   echo 'Run sh scripts/setup-local.sh first.' >&2
   exit 1
