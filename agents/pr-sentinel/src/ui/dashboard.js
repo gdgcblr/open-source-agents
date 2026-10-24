@@ -585,15 +585,25 @@ function renderDashboardHtml(report) {
       ];
 
       const findingsContainer = document.getElementById('findingsList');
-      if (allFindings.length === 0) {
-        findingsContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--success);">✔ Zero blocking issues detected.</div>';
+      const actionIssues = allFindings.filter(f => f.severity && f.severity !== 'INFO');
+      const infoChecks = allFindings.filter(f => !f.severity || f.severity === 'INFO');
+
+      let html = '';
+      if (actionIssues.length === 0) {
+        html += \`
+          <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 12px; padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🎉</div>
+            <div style="font-weight: 700; color: var(--success); font-size: 1.1rem;">Zero Blocking Vulnerabilities Detected</div>
+            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">All security, guidelines compliance, and architectural safety checks passed successfully.</div>
+          </div>
+        \`;
       } else {
-        findingsContainer.innerHTML = allFindings.map(f => {
+        html += actionIssues.map(f => {
           const sevClass = (f.severity || 'info').toLowerCase();
           return \`
             <div class="finding-card \${sevClass}">
               <div class="finding-title">
-                <span style="font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);">\${f.severity || 'INFO'}</span>
+                <span style="font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);">\${f.severity}</span>
                 \${f.title}
               </div>
               <div class="finding-desc">\${f.description}</div>
@@ -603,6 +613,21 @@ function renderDashboardHtml(report) {
           \`;
         }).join('');
       }
+
+      if (infoChecks.length > 0) {
+        html += '<div style="margin-top: 1.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Verified Audit Checks</div>';
+        html += infoChecks.map(f => \`
+          <div class="finding-card info" style="opacity: 0.85;">
+            <div class="finding-title">
+              <span style="font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; background: rgba(56,189,248,0.15); color: var(--primary);">VERIFIED</span>
+              \${f.title}
+            </div>
+            <div class="finding-desc" style="margin-bottom: 0;">\${f.description}</div>
+          </div>
+        \`).join('');
+      }
+
+      findingsContainer.innerHTML = html;
 
       // Render Patches
       const patchesContainer = document.getElementById('patchesList');
