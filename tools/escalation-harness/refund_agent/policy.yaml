@@ -1,0 +1,47 @@
+# Escalation policy for the Threadline refund agent.
+# Edit this file to change what the agent may do on its own. No code changes needed.
+
+# Messages that always go to a human, before the model even sees them.
+escalate_on_phrases:
+  human_request: ["talk to a human", "speak to a human", "real person", "human agent", "customer care executive", "your manager"]
+  legal_threat: ["consumer court", "lawyer", "legal action", "legal notice", "sue", "police complaint"]
+
+# What happens to a tool the policy does not mention.
+unknown_tool: escalate
+
+tools:
+  list_orders:
+    risk: read
+
+  escalate_to_human:
+    risk: handoff
+
+  issue_refund:
+    risk: money
+    grounded_args:
+      order_id: "ORD-\\d{4}"
+    refuse_if:
+      - arg: destination
+        op: "!="
+        value: original_payment
+        reason: Refunds only go back to the original payment method.
+    escalate_if:
+      - arg: amount
+        op: ">"
+        value: 5000
+        cumulative_by: order_id
+        reason: Refunds above ₹5,000 per order need a human approver.
+
+  cancel_order:
+    risk: irreversible
+    grounded_args:
+      order_id: "ORD-\\d{4}"
+
+  update_address:
+    risk: reversible
+    grounded_args:
+      order_id: "ORD-\\d{4}"
+    required_patterns:
+      new_address: "\\b\\d{6}\\b"  # must include a 6-digit PIN code
+    grounded_parts:
+      new_address: "\\b\\d{6}\\b"  # ...that the customer actually gave (models invent plausible ones)

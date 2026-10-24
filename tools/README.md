@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`escalation-harness`](escalation-harness/README.md) | Policy gate that decides act / clarify / escalate / refuse before an ADK agent's tool calls, with paired before/after evals | Evaluation & Safety · Google ADK | [@devarintakmashido](https://github.com/devarintakmashido) |
