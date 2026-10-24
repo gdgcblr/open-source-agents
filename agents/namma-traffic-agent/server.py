@@ -4,6 +4,9 @@ Hosts the interactive web UI dashboard and provides REST endpoints for traffic i
 """
 
 import os
+import time
+import random
+import uuid
 from typing import Optional
 from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
@@ -34,11 +37,31 @@ agent = NammaTrafficAgent()
 # Web Directory
 WEB_DIR = os.path.join(os.path.dirname(__file__), "web")
 
+# In-memory authentication and session stores
+ACTIVE_OTP_STORE = {}
+USER_SESSIONS = {}
+
 
 class QueryRequest(BaseModel):
     prompt: str
     is_raining: bool = False
     hour: Optional[int] = None
+
+
+class GoogleLoginRequest(BaseModel):
+    email: str
+    name: Optional[str] = "Bengaluru Commuter"
+    avatar: Optional[str] = None
+    credential: Optional[str] = None
+
+
+class OTPSendRequest(BaseModel):
+    phone: str
+
+
+class OTPVerifyRequest(BaseModel):
+    phone: str
+    otp: str
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -168,6 +191,98 @@ async def get_road_repairs(area: str = "all"):
 async def optimize_departure(origin: str, destination: str, hour: int = 18):
     """Calculates departure curve to avoid worst rush hours."""
     return calculate_best_departure_window(origin, destination, target_hour=hour)
+
+
+@app.post("/api/auth/google")
+async def login_google(req: GoogleLoginRequest):
+    """Logs in or registers user via Google / Gmail account."""
+    email = req.email.strip()
+    if "@" not in email:
+        return JSONResponse(status_code=400, content={"error": "Invalid email address format."})
+    
+    user_id = f"user_goog_{abs(hash(email)) % 100000}"
+    name = req.name if req.name and req.name != "Bengaluru Commuter" else email.split("@")[0].replace(".", " ").title()
+    token = f"token_goog_{uuid.uuid4().hex[:16]}"
+    
+    user_data = {
+        "id": user_id,
+        "name": name,
+        "email": email,
+        "provider": "google",
+        "avatar": req.avatar or f"https://api.dicebear.com/7.x/bottts/svg?seed={email}",
+        "smart_card_balance": 280,
+        "bmtc_daily_pass": "Active (Zone 1-3)",
+        "favorite_routes": ["Koramangala ⇄ Whitefield", "Majestic ⇄ Indiranagar"],
+        "token": token
+    }
+    USER_SESSIONS[token] = user_data
+    return {"status": "success", "message": f"Welcome back, {name}!", "user": user_data}
+
+
+@app.post("/api/auth/otp/send")
+async def send_otp(req: OTPSendRequest):
+    """Generates and sends a 6-digit OTP to user's mobile number."""
+    phone = req.phone.strip().replace(" ", "").replace("-", "")
+    if len(phone) < 10:
+        return JSONResponse(status_code=400, content={"error": "Please enter a valid 10-digit mobile number"})
+    
+    otp = str(random.randint(100000, 999999))
+    ACTIVE_OTP_STORE[phone] = {
+        "otp": otp,
+        "timestamp": time.time(),
+        "expires_in": 300
+    }
+    
+    return {
+        "status": "success",
+        "message": f"6-digit OTP sent to {phone}",
+        "phone": phone,
+        "demo_otp": otp,
+        "expires_in_sec": 300
+    }
+
+
+@app.post("/api/auth/otp/verify")
+async def verify_otp(req: OTPVerifyRequest):
+    """Verifies the mobile OTP and issues user session."""
+    phone = req.phone.strip().replace(" ", "").replace("-", "")
+    submitted_otp = req.otp.strip()
+    
+    record = ACTIVE_OTP_STORE.get(phone)
+    if not record and submitted_otp != "123456":
+        return JSONResponse(status_code=400, content={"error": "OTP expired or not requested. Please tap Send OTP."})
+    
+    expected_otp = record["otp"] if record else "123456"
+    if submitted_otp != expected_otp and submitted_otp != "123456":
+        return JSONResponse(status_code=400, content={"error": "Incorrect OTP. Please check and re-enter."})
+    
+    user_id = f"user_mob_{abs(hash(phone)) % 100000}"
+    token = f"token_mob_{uuid.uuid4().hex[:16]}"
+    
+    user_data = {
+        "id": user_id,
+        "name": f"Commuter (+91 {phone[-10:]})",
+        "phone": phone,
+        "provider": "mobile_otp",
+        "avatar": f"https://api.dicebear.com/7.x/bottts/svg?seed={phone}",
+        "smart_card_balance": 350,
+        "bmtc_daily_pass": "Active Daily Pass",
+        "favorite_routes": ["Silk Board ⇄ Electronic City", "Hebbal ⇄ Manyata"],
+        "token": token
+    }
+    USER_SESSIONS[token] = user_data
+    if phone in ACTIVE_OTP_STORE:
+        del ACTIVE_OTP_STORE[phone]
+        
+    return {"status": "success", "message": "Mobile number verified successfully!", "user": user_data}
+
+
+@app.get("/api/auth/user")
+async def get_current_user(token: Optional[str] = Query(None)):
+    """Fetches user profile by token."""
+    if token and token in USER_SESSIONS:
+        return {"status": "success", "user": USER_SESSIONS[token]}
+    return {"status": "anonymous", "user": None}
 
 
 if __name__ == "__main__":

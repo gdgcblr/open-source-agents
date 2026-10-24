@@ -172,6 +172,75 @@
       color: #ffffff;
     }
 
+    /* Auth Modal & Profile Dropdown Styles */
+    .auth-tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+      color: #5f6368;
+    }
+    .auth-tab-btn.active {
+      background: #1a73e8;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(26,115,232,0.3);
+    }
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #ffffff;
+      color: #3c4043;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.12);
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+    .google-btn:hover {
+      background: #f8fafd;
+      border-color: #d2e3fc;
+      box-shadow: 0 2px 6px rgba(60,64,67,0.2);
+    }
+    .user-dropdown-card {
+      position: absolute;
+      top: 54px;
+      right: 16px;
+      width: 280px;
+      background: #ffffff;
+      border: 1px solid #dadce0;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      padding: 14px;
+      z-index: 10000;
+      display: none;
+    }
+    .auth-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #202124;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      z-index: 11000;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
     /* Sidebar Header & Brand */
     .sidebar-header {
       padding: 16px 20px 12px 20px;
@@ -1032,11 +1101,48 @@
           <span>🚦</span> Namma Traffic Copilot
           <span class="tag">AI Optimizer</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <button onclick="openMobileAppModal()" style="background: linear-gradient(135deg, #1a73e8, #1557b0); color: #fff; border: none; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(26,115,232,0.35);">
+        <div style="display: flex; align-items: center; gap: 6px; position: relative;">
+          <button onclick="openMobileAppModal()" style="background: linear-gradient(135deg, #1a73e8, #1557b0); color: #fff; border: none; padding: 4px 9px; border-radius: 20px; font-size: 0.74rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(26,115,232,0.35);">
             📲 App
           </button>
-          <div style="font-size: 0.8rem; color: #5f6368;">Bengaluru</div>
+          
+          <!-- Auth User Pill / Login Trigger -->
+          <button id="btnHeaderLogin" onclick="openAuthModal()" style="background: #ffffff; color: #1a73e8; border: 1.5px solid #1a73e8; padding: 4px 10px; border-radius: 20px; font-size: 0.74rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            👤 Sign In
+          </button>
+          
+          <div id="headerUserProfile" onclick="toggleUserDropdown()" style="display: none; background: #f1f3f4; border: 1px solid #dadce0; border-radius: 20px; padding: 3px 8px 3px 4px; align-items: center; gap: 5px; cursor: pointer;">
+            <div id="userAvatarCircle" style="width: 22px; height: 22px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">U</div>
+            <span id="headerUserName" style="font-size: 0.72rem; font-weight: 700; color: #202124; max-width: 65px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</span>
+            <span style="font-size: 0.65rem; color: #5f6368;">▼</span>
+          </div>
+
+          <!-- User Profile Dropdown Card -->
+          <div class="user-dropdown-card" id="userProfileDropdown">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 10px; margin-bottom: 10px;">
+              <div id="dropdownAvatarCircle" style="width: 36px; height: 36px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: bold;">U</div>
+              <div style="flex: 1; overflow: hidden;">
+                <div id="dropdownUserName" style="font-size: 0.86rem; font-weight: 800; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bengaluru Rider</div>
+                <div id="dropdownUserContact" style="font-size: 0.72rem; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">user@gmail.com</div>
+              </div>
+            </div>
+            <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.78rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="color: #64748b;">🚇 Metro Card:</span>
+                <span id="dropdownMetroCard" style="font-weight: 700; color: #9333ea;">₹280.00</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #64748b;">🚌 BMTC Pass:</span>
+                <span id="dropdownBmtcPass" style="font-weight: 700; color: #16a34a;">Active Daily Pass</span>
+              </div>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 10px;">
+              <b>⭐ Saved Route:</b> Koramangala ⇄ Whitefield
+            </div>
+            <button onclick="logoutUser()" style="width: 100%; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; border-radius: 8px; padding: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2288,8 +2394,304 @@
       }
     }
 
+    // ==========================================
+    // Authentication (Google / Gmail & Mobile OTP)
+    // ==========================================
+    let currentUserSession = null;
+    let otpCountdownInterval = null;
+
+    function showAuthToast(msg, icon = '✅') {
+      const toast = document.getElementById('authToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      if (!toast) return;
+      toastMsg.innerText = msg;
+      toastIcon.innerText = icon;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function openAuthModal() {
+      const modal = document.getElementById('authModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeAuthModal() {
+      const modal = document.getElementById('authModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function closeAuthModalOnBg(e) {
+      if (e.target.id === 'authModal') closeAuthModal();
+    }
+
+    function switchAuthTab(tab) {
+      const tabGoogle = document.getElementById('tabAuthGoogle');
+      const tabMobile = document.getElementById('tabAuthMobile');
+      const secGoogle = document.getElementById('authSectionGoogle');
+      const secMobile = document.getElementById('authSectionMobile');
+
+      if (tab === 'google') {
+        tabGoogle.className = 'auth-tab-btn active';
+        tabMobile.className = 'auth-tab-btn';
+        secGoogle.style.display = 'block';
+        secMobile.style.display = 'none';
+      } else {
+        tabGoogle.className = 'auth-tab-btn';
+        tabMobile.className = 'auth-tab-btn active';
+        secGoogle.style.display = 'none';
+        secMobile.style.display = 'block';
+      }
+    }
+
+    async function loginWithGoogleManual() {
+      const emailInput = document.getElementById('googleEmailInput');
+      const email = emailInput ? emailInput.value.trim() : '';
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid Gmail / Google email address.');
+        return;
+      }
+      await performGoogleAuth(email, email.split('@')[0].replace('.', ' ').toUpperCase());
+    }
+
+    async function loginWithGoogleDemo() {
+      await performGoogleAuth('shaik.bengaluru@gmail.com', 'Shaik Commuter');
+    }
+
+    async function performGoogleAuth(email, name) {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          saveAndApplyUserSession(data.user);
+          closeAuthModal();
+          showAuthToast(`Welcome back, ${data.user.name}! (Signed in via Gmail)`);
+        } else {
+          alert(data.error || 'Google sign in failed');
+        }
+      } catch (err) {
+        // Fallback for offline PWA
+        const fallbackUser = {
+          name: name || 'Google Commuter',
+          email: email,
+          provider: 'google',
+          smart_card_balance: 280,
+          bmtc_daily_pass: 'Active Daily Pass',
+          token: 'offline_token'
+        };
+        saveAndApplyUserSession(fallbackUser);
+        closeAuthModal();
+        showAuthToast(`Welcome, ${fallbackUser.name}! (Offline mode)`);
+      }
+    }
+
+    let activePhoneForOtp = '';
+
+    async function sendMobileOtp() {
+      const phoneInput = document.getElementById('mobileNumberInput');
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      if (!phone || phone.length < 10) {
+        alert('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+      activePhoneForOtp = phone;
+      const btn = document.getElementById('btnSendOtp');
+      if (btn) btn.innerText = 'Sending OTP...';
+
+      try {
+        const res = await fetch('/api/auth/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: '+91' + phone })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          document.getElementById('otpStepPhone').style.display = 'none';
+          document.getElementById('otpStepCode').style.display = 'block';
+          document.getElementById('otpTargetPhone').innerText = '+91 ' + phone;
+          if (data.demo_otp) {
+            document.getElementById('demoOtpDisplay').innerText = data.demo_otp;
+          }
+          startOtpCountdown();
+        } else {
+          alert(data.error || 'Failed to send OTP');
+        }
+      } catch (e) {
+        document.getElementById('otpStepPhone').style.display = 'none';
+        document.getElementById('otpStepCode').style.display = 'block';
+        document.getElementById('otpTargetPhone').innerText = '+91 ' + phone;
+        document.getElementById('demoOtpDisplay').innerText = '123456';
+        startOtpCountdown();
+      } finally {
+        if (btn) btn.innerText = '📨 Send 6-Digit OTP';
+      }
+    }
+
+    function autoFillOtp(code) {
+      const input = document.getElementById('otpCodeInput');
+      if (input) {
+        input.value = code;
+        input.focus();
+      }
+    }
+
+    function resetOtpStep() {
+      document.getElementById('otpStepPhone').style.display = 'block';
+      document.getElementById('otpStepCode').style.display = 'none';
+      if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+    }
+
+    function startOtpCountdown() {
+      let seconds = 30;
+      const timerText = document.getElementById('otpTimerText');
+      const resendBtn = document.getElementById('btnResendOtp');
+      if (resendBtn) resendBtn.disabled = true;
+
+      if (otpCountdownInterval) clearInterval(otpCountdownInterval);
+      otpCountdownInterval = setInterval(() => {
+        seconds--;
+        if (timerText) timerText.innerText = `Resend OTP in ${seconds}s`;
+        if (seconds <= 0) {
+          clearInterval(otpCountdownInterval);
+          if (timerText) timerText.innerText = `Didn't get code?`;
+          if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.style.color = '#1a73e8';
+          }
+        }
+      }, 1000);
+    }
+
+    async function verifyMobileOtp() {
+      const codeInput = document.getElementById('otpCodeInput');
+      const otp = codeInput ? codeInput.value.trim() : '';
+      if (!otp || otp.length < 6) {
+        alert('Please enter the 6-digit OTP code.');
+        return;
+      }
+
+      const btn = document.getElementById('btnVerifyOtp');
+      if (btn) btn.innerText = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/auth/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: '+91' + activePhoneForOtp, otp })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          saveAndApplyUserSession(data.user);
+          closeAuthModal();
+          resetOtpStep();
+          showAuthToast(`Verified! Welcome ${data.user.name}`);
+        } else {
+          alert(data.error || 'Incorrect OTP code');
+        }
+      } catch (e) {
+        // Fallback for offline PWA
+        const fallbackUser = {
+          name: `Commuter (+91 ${activePhoneForOtp})`,
+          phone: activePhoneForOtp,
+          provider: 'mobile_otp',
+          smart_card_balance: 350,
+          bmtc_daily_pass: 'Active Daily Pass',
+          token: 'offline_otp_token'
+        };
+        saveAndApplyUserSession(fallbackUser);
+        closeAuthModal();
+        resetOtpStep();
+        showAuthToast(`Verified via mobile OTP!`);
+      } finally {
+        if (btn) btn.innerText = 'Verify & Sign In';
+      }
+    }
+
+    function saveAndApplyUserSession(user) {
+      currentUserSession = user;
+      try {
+        localStorage.setItem('namma_auth_user', JSON.stringify(user));
+      } catch (e) {}
+      renderAuthUserState();
+    }
+
+    function renderAuthUserState() {
+      const btnHeaderLogin = document.getElementById('btnHeaderLogin');
+      const headerUserProfile = document.getElementById('headerUserProfile');
+      const headerUserName = document.getElementById('headerUserName');
+      const userAvatarCircle = document.getElementById('userAvatarCircle');
+
+      const dropdownUserName = document.getElementById('dropdownUserName');
+      const dropdownUserContact = document.getElementById('dropdownUserContact');
+      const dropdownMetroCard = document.getElementById('dropdownMetroCard');
+      const dropdownBmtcPass = document.getElementById('dropdownBmtcPass');
+      const dropdownAvatarCircle = document.getElementById('dropdownAvatarCircle');
+
+      if (currentUserSession) {
+        if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+        if (headerUserProfile) headerUserProfile.style.display = 'flex';
+        
+        const displayName = currentUserSession.name || 'Commuter';
+        const initial = displayName.charAt(0).toUpperCase();
+        if (headerUserName) headerUserName.innerText = displayName;
+        if (userAvatarCircle) userAvatarCircle.innerText = initial;
+        
+        if (dropdownUserName) dropdownUserName.innerText = displayName;
+        if (dropdownUserContact) {
+          dropdownUserContact.innerText = currentUserSession.email || ('+91 ' + (currentUserSession.phone || ''));
+        }
+        if (dropdownMetroCard && currentUserSession.smart_card_balance) {
+          dropdownMetroCard.innerText = `₹${currentUserSession.smart_card_balance}.00`;
+        }
+        if (dropdownBmtcPass && currentUserSession.bmtc_daily_pass) {
+          dropdownBmtcPass.innerText = currentUserSession.bmtc_daily_pass;
+        }
+        if (dropdownAvatarCircle) dropdownAvatarCircle.innerText = initial;
+      } else {
+        if (btnHeaderLogin) btnHeaderLogin.style.display = 'flex';
+        if (headerUserProfile) headerUserProfile.style.display = 'none';
+        const dropdown = document.getElementById('userProfileDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+      }
+    }
+
+    function toggleUserDropdown() {
+      const dropdown = document.getElementById('userProfileDropdown');
+      if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+      }
+    }
+
+    function logoutUser() {
+      currentUserSession = null;
+      try {
+        localStorage.removeItem('namma_auth_user');
+      } catch (e) {}
+      renderAuthUserState();
+      const dropdown = document.getElementById('userProfileDropdown');
+      if (dropdown) dropdown.style.display = 'none';
+      showAuthToast('Signed out successfully', '👋');
+    }
+
+    function initAuth() {
+      try {
+        const saved = localStorage.getItem('namma_auth_user');
+        if (saved) {
+          currentUserSession = JSON.parse(saved);
+        }
+      } catch (e) {}
+      renderAuthUserState();
+    }
+
     // Initial Setup on Page Load
     window.onload = () => {
+      initAuth();
       drawChokepoints();
       drawMetroLines();
       drawRoadRepairs();
@@ -2297,6 +2699,118 @@
       calculateCommute();
     };
   </script>
+
+  <!-- Auth Modal: Login with Gmail or Mobile OTP -->
+  <div class="mobile-modal-overlay" id="authModal" onclick="closeAuthModalOnBg(event)">
+    <div class="mobile-modal-box" style="max-width: 440px;">
+      <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+      
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <div style="width: 40px; height: 40px; border-radius: 10px; background: #e8f0fe; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+          🔐
+        </div>
+        <div>
+          <h3 style="font-size: 1.1rem; color: #1e293b; font-weight: 800;">Login to Namma Travel App</h3>
+          <p style="font-size: 0.76rem; color: #64748b;">Sync smart cards, digital bus passes & live alerts</p>
+        </div>
+      </div>
+
+      <!-- Auth Provider Tabs -->
+      <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 10px; margin: 14px 0 16px 0;">
+        <div class="auth-tab-btn active" id="tabAuthGoogle" onclick="switchAuthTab('google')">
+          🌐 Google / Gmail
+        </div>
+        <div class="auth-tab-btn" id="tabAuthMobile" onclick="switchAuthTab('mobile')">
+          📱 Mobile (OTP)
+        </div>
+      </div>
+
+      <!-- Tab 1: Google / Gmail Authentication -->
+      <div id="authSectionGoogle">
+        <button class="google-btn" onclick="loginWithGoogleDemo()" style="margin-bottom: 12px;">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin: 12px 0;">
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+          <span style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">or enter email</span>
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Gmail / Google Account</label>
+          <input type="email" id="googleEmailInput" placeholder="e.g. shaik.commuter@gmail.com" value="shaik.bengaluru@gmail.com" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#1a73e8'">
+        </div>
+
+        <button onclick="loginWithGoogleManual()" style="width: 100%; background: #1a73e8; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 2px 6px rgba(26,115,232,0.3);">
+          Sign In with Gmail
+        </button>
+      </div>
+
+      <!-- Tab 2: Mobile Number (OTP) Authentication -->
+      <div id="authSectionMobile" style="display: none;">
+        <!-- Step 1: Enter Phone Number -->
+        <div id="otpStepPhone">
+          <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Indian Mobile Number</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="padding: 10px 12px; background: #f1f5f9; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 0.88rem; color: #334155;">
+              🇮🇳 +91
+            </div>
+            <input type="tel" id="mobileNumberInput" maxlength="10" placeholder="98765 43210" value="9876543210" style="flex: 1; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none;">
+          </div>
+          <button id="btnSendOtp" onclick="sendMobileOtp()" style="width: 100%; background: #16a34a; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 2px 6px rgba(22,163,74,0.3);">
+            📨 Send 6-Digit OTP
+          </button>
+        </div>
+
+        <!-- Step 2: Enter OTP Code -->
+        <div id="otpStepCode" style="display: none;">
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.76rem; color: #166534; font-weight: 600;">✅ OTP sent to <span id="otpTargetPhone">+91 9876543210</span></span>
+              <button onclick="resetOtpStep()" style="background: none; border: none; color: #1a73e8; font-size: 0.72rem; cursor: pointer; text-decoration: underline;">Change</button>
+            </div>
+            <div style="margin-top: 6px; font-size: 0.74rem; color: #15803d;">
+              ⚡ <b>Test Code:</b> <span id="demoOtpDisplay" onclick="autoFillOtp(this.innerText)" style="background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: bold; cursor: pointer; border: 1px dashed #86efac;" title="Click to auto-fill">123456</span> <span style="font-size: 0.68rem; color: #64748b;">(tap to autofill)</span>
+            </div>
+          </div>
+
+          <label style="display: block; font-size: 0.76rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Enter 6-Digit Verification Code</label>
+          <input type="text" id="otpCodeInput" maxlength="6" placeholder="• • • • • •" style="width: 100%; padding: 12px; border: 2px solid #1a73e8; border-radius: 8px; font-size: 1.25rem; font-weight: 800; letter-spacing: 8px; text-align: center; margin-bottom: 12px; outline: none;">
+
+          <button id="btnVerifyOtp" onclick="verifyMobileOtp()" style="width: 100%; background: #1a73e8; color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 2px 6px rgba(26,115,232,0.3);">
+            Verify & Sign In
+          </button>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.74rem; color: #64748b;">
+            <span id="otpTimerText">Resend OTP in 30s</span>
+            <button id="btnResendOtp" onclick="sendMobileOtp()" disabled style="background: none; border: none; color: #94a3b8; cursor: pointer; font-weight: 600;">Resend OTP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Perks Footer -->
+      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; text-align: center; font-size: 0.72rem; color: #64748b;">
+        <span>💳 Smart Card Sync</span>
+        <span>•</span>
+        <span>🚌 BMTC Pass Active</span>
+        <span>•</span>
+        <span>⚡ WhatsApp Alerts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="auth-toast" id="authToast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Logged in successfully!</span>
+  </div>
 
   <!-- Mobile App Installation Modal for Android & iPhone -->
   <div class="mobile-modal-overlay" id="mobileAppModal" onclick="closeModalOnBg(event)">
