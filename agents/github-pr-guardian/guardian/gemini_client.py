@@ -67,7 +67,7 @@ You must respond ONLY with a valid JSON object matching the following structure 
 class GeminiClient:
     """Client for Google Gemini API."""
 
-    def __init__(self, api_key: str | None = None, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str | None = None, model: str = "gemini-flash-latest"):
         self.api_key = (api_key or os.getenv("GEMINI_API_KEY", "")).strip()
         self.model = os.getenv("GEMINI_MODEL", model).strip()
 
@@ -123,15 +123,55 @@ Git Diff:
             },
         }
 
+        # Try using curl first for high-speed, reliable TLS on macOS/Linux
+        import shutil
+        import subprocess
+
+        if shutil.which("curl"):
+            cmd = [
+                "curl",
+                "-s",
+                "-X",
+                "POST",
+                "-H",
+                "Content-Type: application/json",
+                "-d",
+                json.dumps(payload),
+                endpoint,
+            ]
+            try:
+                res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                if res.returncode == 0 and res.stdout.strip():
+                    resp_data = json.loads(res.stdout)
+                    if "error" in resp_data:
+                        err = resp_data["error"]
+                        raise RuntimeError(f"Gemini API error ({err.get('code')}): {err.get('message')}")
+                    candidate = resp_data.get("candidates", [{}])[0]
+                    text_response = (
+                        candidate.get("content", {})
+                        .get("parts", [{}])[0]
+                        .get("text", "{}")
+                    )
+                    return self._parse_json_response(text_response)
+            except RuntimeError:
+                raise
+            except Exception:
+                pass
+
+        encoded_data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
             endpoint,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
+            data=encoded_data,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "GitHub-PR-Guardian/1.0",
+                "Content-Length": str(len(encoded_data)),
+            },
             method="POST",
         )
 
         try:
-            with urllib.request.urlopen(req, timeout=45, context=_get_ssl_context()) as resp:
+            with urllib.request.urlopen(req, timeout=60, context=_get_ssl_context()) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
                 candidate = resp_data.get("candidates", [{}])[0]
                 text_response = (
