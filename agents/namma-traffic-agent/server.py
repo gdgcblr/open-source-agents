@@ -48,6 +48,16 @@ async def serve_dashboard():
     return HTMLResponse("<h2>Dashboard index.html not found.</h2>")
 
 
+@app.get("/presentation", response_class=HTMLResponse)
+async def serve_presentation():
+    """Serves the interactive DevFest slide deck."""
+    pres_file = os.path.join(os.path.dirname(__file__), "presentation.html")
+    if os.path.exists(pres_file):
+        with open(pres_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse("<h2>presentation.html not found.</h2>")
+
+
 @app.post("/api/ask")
 async def ask_agent(req: QueryRequest):
     """Answers a natural language commute query with tool execution."""
