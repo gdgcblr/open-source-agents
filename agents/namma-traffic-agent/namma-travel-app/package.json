@@ -1,0 +1,37 @@
+{
+  "name": "namma-travel-app",
+  "version": "1.0.0",
+  "description": "Namma Bengaluru Travel App - Multimodal Transit & Traffic Copilot for Android and iOS",
+  "main": "www/index.html",
+  "scripts": {
+    "start": "python -m http.server 8080 --directory www",
+    "cap:sync": "cap sync",
+    "cap:android": "cap run android",
+    "cap:ios": "cap run ios",
+    "build:twa": "bubblewrap build",
+    "init:twa": "bubblewrap init --manifest=www/manifest.json"
+  },
+  "keywords": [
+    "bengaluru",
+    "traffic",
+    "travel-app",
+    "namma-metro",
+    "bmtc",
+    "android",
+    "ios",
+    "pwa",
+    "capacitor",
+    "twa"
+  ],
+  "author": "open-source-agents",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0"
+  },
+  "devDependencies": {
+    "@bubblewrap/cli": "^1.21.0"
+  }
+}

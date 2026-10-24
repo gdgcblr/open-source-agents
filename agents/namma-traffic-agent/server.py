@@ -6,7 +6,7 @@ Hosts the interactive web UI dashboard and provides REST endpoints for traffic i
 import os
 from typing import Optional
 from fastapi import FastAPI, Query
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -59,6 +59,40 @@ async def serve_presentation():
         with open(pres_file, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     return HTMLResponse("<h2>presentation.html not found.</h2>")
+
+
+@app.get("/manifest.json")
+async def get_manifest():
+    """PWA Web App Manifest for Android & iOS."""
+    path = os.path.join(WEB_DIR, "manifest.json")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="application/manifest+json")
+    return JSONResponse(status_code=404, content={"error": "manifest.json not found"})
+
+
+@app.get("/sw.js")
+async def get_service_worker():
+    """PWA Service Worker for offline support and mobile install."""
+    path = os.path.join(WEB_DIR, "sw.js")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="application/javascript")
+    return JSONResponse(status_code=404, content={"error": "sw.js not found"})
+
+
+@app.get("/icon-192.svg")
+async def get_icon_192():
+    path = os.path.join(WEB_DIR, "icon-192.svg")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="image/svg+xml")
+    return JSONResponse(status_code=404, content={"error": "icon not found"})
+
+
+@app.get("/icon-512.svg")
+async def get_icon_512():
+    path = os.path.join(WEB_DIR, "icon-512.svg")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="image/svg+xml")
+    return JSONResponse(status_code=404, content={"error": "icon not found"})
 
 
 @app.post("/api/ask")

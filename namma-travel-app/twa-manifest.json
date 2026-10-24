@@ -1,0 +1,38 @@
+{
+  "packageId": "com.nammatraffic.travelapp",
+  "host": "nammatraffic.web.app",
+  "name": "Namma Travel App",
+  "launcherName": "NammaTravel",
+  "themeColor": "#1A73E8",
+  "navigationColor": "#0F172A",
+  "backgroundColor": "#0F172A",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://nammatraffic.web.app/icon-512.svg",
+  "maskableIconUrl": "https://nammatraffic.web.app/icon-512.svg",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Live Metro Lines",
+      "shortName": "Metro",
+      "url": "/?view=metro"
+    },
+    {
+      "name": "BMTC Bus Routes",
+      "shortName": "BMTC",
+      "url": "/?view=bus"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://nammatraffic.web.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  }
+}

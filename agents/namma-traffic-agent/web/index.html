@@ -2,8 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Namma Bengaluru Traffic Copilot - Live Commute & Money Saver</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Namma Bengaluru Traffic Copilot - Mobile App for Android & iPhone</title>
+  
+  <!-- PWA Manifest & Mobile App Configuration -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+
+  <!-- Apple iOS Native App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Namma Traffic">
+  <link rel="apple-touch-icon" href="/icon-192.svg">
+  <link rel="apple-touch-startup-image" href="/icon-512.svg">
   
   <!-- Leaflet Maps CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -63,11 +76,100 @@
       transition: all 0.3s ease;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       .gmaps-sidebar {
-        width: calc(100% - 32px);
-        max-height: 80vh;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: 78vh;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.3);
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
       }
+      .mobile-drag-bar {
+        display: block !important;
+        width: 40px;
+        height: 5px;
+        background: #cbd5e1;
+        border-radius: 3px;
+        margin: 6px auto 2px auto;
+        cursor: pointer;
+      }
+      .map-controls-panel {
+        top: max(10px, env(safe-area-inset-top));
+        right: 10px;
+        font-size: 0.78rem;
+      }
+      .map-btn {
+        padding: 6px 10px;
+      }
+      .live-tracking-pill {
+        display: none; /* Hide on small mobile to give maximum map viewing area */
+      }
+    }
+
+    /* Install Mobile App Modal */
+    .mobile-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .mobile-modal-box {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: #f1f3f4;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .modal-os-tabs {
+      display: flex;
+      gap: 6px;
+      margin: 14px 0;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .modal-os-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-os-tab.active-android {
+      background: #34a853;
+      color: #ffffff;
+    }
+    .modal-os-tab.active-ios {
+      background: #000000;
+      color: #ffffff;
     }
 
     /* Sidebar Header & Brand */
@@ -920,14 +1022,22 @@
   </div>
 
   <!-- Floating Google Maps-style Left Panel -->
-  <div class="gmaps-sidebar">
+  <div class="gmaps-sidebar" id="gmapsSidebar">
+    <!-- Mobile drag bar handle -->
+    <div class="mobile-drag-bar" style="display: none;" onclick="toggleMobileSheet()"></div>
+
     <div class="sidebar-header">
       <div class="brand-row">
         <div class="brand-title">
           <span>🚦</span> Namma Traffic Copilot
           <span class="tag">AI Optimizer</span>
         </div>
-        <div style="font-size: 0.8rem; color: #5f6368;">Bengaluru</div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button onclick="openMobileAppModal()" style="background: linear-gradient(135deg, #1a73e8, #1557b0); color: #fff; border: none; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(26,115,232,0.35);">
+            📲 App
+          </button>
+          <div style="font-size: 0.8rem; color: #5f6368;">Bengaluru</div>
+        </div>
       </div>
 
       <!-- Live Bengaluru Weather Ribbon -->
@@ -2102,6 +2212,82 @@
       content.innerHTML = html;
     }
 
+    // Service Worker Registration for PWA & Mobile Install
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+      });
+    }
+
+    // PWA Install prompt handling
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('btnPwaInstall');
+      if (btn) btn.style.display = 'block';
+    });
+
+    function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            console.log('User installed PWA');
+          }
+          deferredPrompt = null;
+          closeMobileAppModal();
+        });
+      } else {
+        alert("To install on Android: In Chrome tap the three dots (⋮) in top right and choose 'Install app' or 'Add to Home screen'.");
+      }
+    }
+
+    function openMobileAppModal() {
+      const modal = document.getElementById('mobileAppModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeMobileAppModal() {
+      const modal = document.getElementById('mobileAppModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function closeModalOnBg(e) {
+      if (e.target.id === 'mobileAppModal') closeMobileAppModal();
+    }
+
+    function showOsInstall(os) {
+      const androidTab = document.getElementById('tabAndroid');
+      const iosTab = document.getElementById('tabIos');
+      const androidContent = document.getElementById('androidInstallContent');
+      const iosContent = document.getElementById('iosInstallContent');
+
+      if (os === 'android') {
+        androidTab.className = 'modal-os-tab active-android';
+        iosTab.className = 'modal-os-tab';
+        androidContent.style.display = 'block';
+        iosContent.style.display = 'none';
+      } else {
+        androidTab.className = 'modal-os-tab';
+        iosTab.className = 'modal-os-tab active-ios';
+        androidContent.style.display = 'none';
+        iosContent.style.display = 'block';
+      }
+    }
+
+    let isMobileSheetExpanded = false;
+    function toggleMobileSheet() {
+      const sidebar = document.getElementById('gmapsSidebar');
+      if (!sidebar) return;
+      isMobileSheetExpanded = !isMobileSheetExpanded;
+      if (isMobileSheetExpanded) {
+        sidebar.style.maxHeight = '88vh';
+      } else {
+        sidebar.style.maxHeight = '32vh';
+      }
+    }
+
     // Initial Setup on Page Load
     window.onload = () => {
       drawChokepoints();
@@ -2111,5 +2297,62 @@
       calculateCommute();
     };
   </script>
+
+  <!-- Mobile App Installation Modal for Android & iPhone -->
+  <div class="mobile-modal-overlay" id="mobileAppModal" onclick="closeModalOnBg(event)">
+    <div class="mobile-modal-box">
+      <button class="modal-close-btn" onclick="closeMobileAppModal()">✕</button>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <img src="/icon-192.svg" width="44" height="44" style="border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
+        <div>
+          <h3 style="font-size: 1.05rem; color: #1e293b; font-weight: 800;">Namma Travel App</h3>
+          <p style="font-size: 0.78rem; color: #64748b;">Official Android & iPhone Mobile App</p>
+        </div>
+      </div>
+
+      <!-- OS Tabs -->
+      <div class="modal-os-tabs">
+        <div class="modal-os-tab active-android" id="tabAndroid" onclick="showOsInstall('android')">
+          🤖 Android / Play Store
+        </div>
+        <div class="modal-os-tab" id="tabIos" onclick="showOsInstall('ios')">
+          🍎 iPhone (iOS)
+        </div>
+      </div>
+
+      <!-- Android Content -->
+      <div id="androidInstallContent" style="display: block;">
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+          <b style="color: #166534; font-size: 0.85rem;">⚡ Instant 1-Tap Android Install:</b>
+          <p style="font-size: 0.78rem; color: #334155; margin-top: 4px; line-height: 1.4;">
+            Installs as a standalone APK on your home screen with zero storage overhead.
+          </p>
+          <button id="btnPwaInstall" onclick="triggerPwaInstall()" style="width: 100%; margin-top: 8px; background: #16a34a; color: #ffffff; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);">
+            📥 Install on Android (Play Store Ready)
+          </button>
+        </div>
+        <div style="font-size: 0.78rem; color: #475569; line-height: 1.5;">
+          <b>🛒 Google Play Store Generation:</b><br>
+          Packaged under <code>apps/namma-travel-app/</code>. Run <code>npm run twa:playstore</code> or <code>npx cap open android</code> in Android Studio.
+        </div>
+      </div>
+
+      <!-- iPhone iOS Content -->
+      <div id="iosInstallContent" style="display: none;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+          <b style="color: #0f172a; font-size: 0.85rem;">🍎 Install on iPhone (Safari):</b>
+          <ol style="margin: 8px 0 0 20px; font-size: 0.8rem; color: #334155; line-height: 1.6;">
+            <li>Open this URL in <b>Safari</b> on your iPhone.</li>
+            <li>Tap the <b>Share icon</b> (⎙ or square with arrow up) on bottom bar.</li>
+            <li>Scroll down and tap <b>"Add to Home Screen"</b> (➕).</li>
+            <li>Tap <b>"Add"</b> in the top right corner.</li>
+          </ol>
+        </div>
+        <p style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">
+          Launches full-screen with native iOS animations, Retina icons, safe-area support, and zero browser navigation bars!
+        </p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
