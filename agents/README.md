@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| [`gemini-audit-agent`](gemini-audit-agent/) | Autonomous Double-Entry Accounting & Financial Invariant Audit Agent | Google Gemini Flash / Python / Docker | [@shikharagrawal17](https://github.com/shikharagrawal17) |
+| [`gemini-audit-agent`](gemini-audit-agent/) | Autonomous Double-Entry Accounting & Financial Invariant Audit Agent | Google ADK / Gemini 2.5 Flash / FastAPI | [@shikharagrawal17](https://github.com/shikharagrawal17) |

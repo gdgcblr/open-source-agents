@@ -128,3 +128,14 @@ python3 -m pytest tools/gemma-quant-mcp/tests
 - **Author**: Shikhar Agrawal ([@shikharagrawal17](https://github.com/shikharagrawal17))
 - **Event**: Road to DevFest: Open Source Edition | GDG Cloud Bengaluru
 - **License**: MIT License © 2026 GDG Cloud Bengaluru Community
+
+---
+
+## 🎥 Video Demonstration & Scene Composition (Brag Skill)
+
+### 🎥 Final Render Paths (Post-Render)
+- **Arthaniti Video**: `/Users/shikhar/Projects/open-source-agents/brag-quant/brag.mp4` (also synced at `tools/gemma-quant-mcp/brag/brag.mp4`)
+
+### 🛠️ Current Composition Paths (The Source)
+If you want to preview or edit the scenes before rendering:
+- **Arthaniti Composition**: `/Users/shikhar/Projects/open-source-agents/brag-quant/composition/index.html` (also at `tools/gemma-quant-mcp/brag/composition/index.html`)

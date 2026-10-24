@@ -223,3 +223,14 @@ python3 -m pytest agents/gemini-audit-agent/tests
 - **Author**: Shikhar Agrawal ([@shikharagrawal17](https://github.com/shikharagrawal17))
 - **Event**: Road to DevFest: Open Source Edition | GDG Cloud Bengaluru
 - **License**: MIT License © 2026 GDG Cloud Bengaluru Community
+
+---
+
+## 🎥 Video Demonstration & Scene Composition (Brag Skill)
+
+### 🎥 Final Render Paths (Post-Render)
+- **Bharat Dues Video**: `/Users/shikhar/Projects/open-source-agents/brag-audit/brag.mp4` (also synced at `agents/gemini-audit-agent/brag/brag.mp4`)
+
+### 🛠️ Current Composition Paths (The Source)
+If you want to preview or edit the scenes before rendering:
+- **Bharat Dues Composition**: `/Users/shikhar/Projects/open-source-agents/brag-audit/composition/index.html` (also at `agents/gemini-audit-agent/brag/composition/index.html`)
