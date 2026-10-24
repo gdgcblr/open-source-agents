@@ -1,0 +1,5 @@
+2026-10-24T09:12:44.501Z ERROR request_id=req_demo_002 method=GET path=/api/health
+Error: connect ECONNREFUSED 127.0.0.1:5432
+Failed to reach dependency postgres at localhost:5432
+Authorization: Bearer demo-token-conn-refused
+API_KEY=demo-api-key-should-be-redacted

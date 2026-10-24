@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "stacksentry": {
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/TO/open-source-agents/tools/api-incident-triage/src/mcp-server.mjs"
+      ]
+    }
+  }
+}

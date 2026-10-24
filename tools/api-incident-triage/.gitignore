@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+!examples/
+!examples/**/*.log
+lab/lab.log
+reports/
+coverage/
+.nyc_output/
+.DS_Store

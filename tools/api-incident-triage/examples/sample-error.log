@@ -1,0 +1,5 @@
+2026-10-24T08:45:13.112Z ERROR request_id=req_demo_001 method=POST path=/api/users status=500
+DatabaseError: relation "users" does not exist
+SQLSTATE: 42P01
+Authorization: Bearer demo-token-should-be-redacted
+DATABASE_URL=postgresql://demo-user:demo-password@localhost:5432/demo_app

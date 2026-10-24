@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [api-incident-triage](./api-incident-triage/) | StackSentry — offline CLI + Failure Lab + MCP server for local log triage, secret redaction, risk scores, and playbooks | CLI / MCP | [BhanwarLalSuthar](https://github.com/BhanwarLalSuthar) |

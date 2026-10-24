@@ -1,0 +1,24 @@
+{
+  "name": "api-incident-triage",
+  "version": "0.2.0",
+  "description": "Offline-first CLI for first-pass API and backend log triage with best-effort local secret redaction.",
+  "type": "module",
+  "private": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "demo": "node src/index.mjs --demo",
+    "lab": "node lab/server.mjs",
+    "lab:boom": "node lab/boom.mjs",
+    "mcp": "node src/mcp-server.mjs",
+    "test:storage": "node scripts/storage-model-c-demo.mjs",
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  }
+}
