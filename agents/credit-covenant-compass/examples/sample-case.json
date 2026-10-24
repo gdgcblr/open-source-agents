@@ -1,0 +1,66 @@
+{
+    "borrower": "Northstar Components (synthetic example)",
+    "asOf": "2025-12-31",
+    "currency": "USD",
+    "financials": {
+        "revenueAnnual": 5200000,
+        "ebitdaAnnual": 680000,
+        "ebitAnnual": 540000,
+        "interestExpenseAnnual": 62000,
+        "totalDebt": 1450000,
+        "annualDebtService": 390000,
+        "currentAssets": 1100000,
+        "currentLiabilities": 760000
+    },
+    "historicalFinancials": [
+        {
+            "period": "2023",
+            "revenueAnnual": 4250000,
+            "ebitdaAnnual": 520000,
+            "ebitAnnual": 410000,
+            "interestExpenseAnnual": 58000,
+            "totalDebt": 1250000,
+            "annualDebtService": 350000,
+            "currentAssets": 930000,
+            "currentLiabilities": 680000
+        },
+        {
+            "period": "2024",
+            "revenueAnnual": 4800000,
+            "ebitdaAnnual": 610000,
+            "ebitAnnual": 475000,
+            "interestExpenseAnnual": 60000,
+            "totalDebt": 1375000,
+            "annualDebtService": 370000,
+            "currentAssets": 1020000,
+            "currentLiabilities": 720000
+        }
+    ],
+    "request": {
+        "amount": 450000,
+        "termYears": 5,
+        "annualRate": 0.085
+    },
+    "policy": {
+        "minimumDscr": 1.25,
+        "maximumDebtToEbitda": 3.5,
+        "minimumCurrentRatio": 1.1,
+        "minimumInterestCoverage": 2
+    },
+    "stress": {
+        "ebitdaDecline": 0.2,
+        "annualRateIncrease": 0.02
+    },
+    "sources": [
+        {
+            "field": "FY2025 financials",
+            "source": "Synthetic audited-statement fixture",
+            "asOf": "2025-12-31"
+        },
+        {
+            "field": "Existing debt service",
+            "source": "Synthetic borrower debt schedule",
+            "asOf": "2025-12-31"
+        }
+    ]
+}
