@@ -2,6 +2,12 @@
 
 > Import event registration responses, describe your goal in ordinary language, and find people who can help—or explore the same interest—with you.
 
+![BuildBuddy journey: before the event, upload consenting Google Form responses and open private email invitations to explore matches; during the event, check in at a meeting spot and connect; afterwards, aim to leave productive and satisfied.](sample/workflow.svg)
+
+**From registration to a real conversation:** organizers import consenting responses; attendees open their private email button and explore relevant people before arrival. At the venue, a short-lived check-in helps them find each other.
+
+*Availability is collected in the registration form and used by the networking-window filter. The current app does not reserve future meetings or save a future location preference. Location check-in is voluntary and starts when the attendee is there; the email button signs in without marking arrival. Email delivery uses the organizer’s existing sender. The after-event feeling is the intended benefit, not a measured or guaranteed outcome.*
+
 **Example:** “I want to know how I can start contributing to open source.” BuildBuddy retrieves contribution-related projects, Git/documentation skills, and open-source interests. It explains the source of each recommendation instead of treating interest as verified expertise. A short-lived meeting-spot check-in helps you find the person in the room.
 
 **Private by default:** local NLP searches skills, interests, and project descriptions. A downloaded MiniLM model adds semantic matching on the organizer’s own server. No attendee profiles are sent to a hosted AI service. The optional Gemini tool planner sees only the requester’s goal and aggregate hit counts.

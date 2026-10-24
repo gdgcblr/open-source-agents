@@ -42,6 +42,7 @@ All paths below are relative to the project directory.
 | `static/guide.html` | In-app organizer, attendee and privacy instructions |
 | `sample/form-responses.xlsx` | Twenty synthetic rows; Adarsh is P001; eighteen consenting profiles |
 | `sample/app-desktop.jpg` | Actual browser screenshot of the synthetic demonstration |
+| `sample/workflow.svg` | README illustration of the before/during/after event journey |
 | `tests/test_buildbuddy.py` | Import, matching, authentication, consent and workflow regressions |
 | `tests/test_nlp_privacy.py` | NLP, renamed identity, cloud boundaries, host rules and privacy regressions |
 | `README.md` | Overview, architecture, setup, examples, tests, limitations and license |
