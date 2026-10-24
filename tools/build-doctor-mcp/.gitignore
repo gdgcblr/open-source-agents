@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .pytest_cache/
 .coverage
+uv.lock
 
 # Local configuration and secrets
 .env
