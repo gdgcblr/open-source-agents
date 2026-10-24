@@ -1,0 +1,180 @@
+# The complex-canvas showcase: a WebGL map app with no DOM to click.
+#
+# This points at a public deployment of a Bengaluru water-network digital twin
+# (a separate project — autodemo neither ships nor needs its code or data).
+# It exists to demonstrate the two step types that ordinary DOM-driving cannot
+# replace:
+#
+#   drag       — a right-button drag pitches and orbits a 3D map
+#   probeClick — clicks in an expanding spiral until an inspector panel shows a
+#                matching feature, because pipes on a canvas have no DOM nodes
+#
+#   autodemo render --config examples/map-app/autodemo.config.yaml
+#
+# Heads-up before you run this:
+#   - It renders against a live third-party site. Selectors and content can
+#     change under you; expect to repair steps. That is realistic, and the
+#     dry-run exists for exactly this.
+#   - The map needs a Mapbox token — but it belongs to *that app*, not to
+#     autodemo. Nothing here reads a token and none is committed.
+#   - WebGL under software rendering is slow. On a CI runner this takes several
+#     times longer than on a laptop with a GPU.
+
+app:
+  url: https://bwssb.vijaykumarkk.in/
+  viewport: { width: 1600, height: 900 }
+  chromePath: auto
+  waitForSelector: ".map-container"
+
+voice:
+  engine: edge-tts
+  voice: en-IN-NeerjaNeural
+  rate: "+0%"
+  tailMs: 750
+
+theme:
+  accent: "#7dd3fc"
+  font: "Inter, Segoe UI, system-ui, sans-serif"
+  position: bottom
+  eyebrow: "Water network · Bengaluru"
+
+output:
+  dir: ./out
+  file: map-demo.mp4
+  crf: 20
+  thumbnail: true
+
+outro:
+  title: "Explore the live map"
+  subtitle: "bwssb.vijaykumarkk.in"
+  holdMs: 3500
+
+scenes:
+  - id: intro
+    layout: title
+    title: "A city water network, as a digital twin"
+    subtitle: "Every pipe, drawn from the state G I S"
+    narration: >-
+      This is a digital twin of a city drinking-water network. Every line on the
+      map is a real pipe, drawn from the state G I S. Let me show you what it
+      can do.
+    steps: []
+
+  - id: network
+    layout: caption
+    title: "The real network"
+    subtitle: "Rendered on a WebGL canvas"
+    narration: >-
+      The network view is the heart of it. The brighter lines are the large
+      feeder mains; the fainter ones are the distribution pipes that carry
+      water the final stretch to homes.
+    steps:
+      - { do: navClick, name: "Network" }
+      - { do: wait, ms: 9000 }
+
+  - id: orbit_3d
+    layout: caption
+    title: "Three-dimensional terrain"
+    subtitle: "drag — a right-button orbit"
+    narration: >-
+      The whole network is drawn over the city's real elevation. Tilting and
+      orbiting shows how the system climbs the ridges and valleys that decide
+      the pressure available at every junction.
+    steps:
+      # A right-button drag is pitch-and-rotate in every map library. The path
+      # runs as a sequence of legs from the last position, each walked in small
+      # hops so the camera animates instead of teleporting.
+      - do: drag
+        button: right
+        from: ".map-container"
+        stepMs: 55
+        path:
+          - [0, -132]       # pitch up into 3D
+          - [-170, 0]       # orbit left
+          - [340, 0]        # orbit right across
+          - [-170, 0]       # back to centre
+          - [0, 132]        # pitch back to flat
+      - { do: click, name: "Reset bearing to north" }
+      - { do: wait, ms: 1000 }
+
+  - id: zoom_in
+    layout: caption
+    title: "Down to street level"
+    subtitle: "wheel — repeated, paced for the camera"
+    narration: >-
+      Zooming in reveals the street-level pipes. The model keeps large mains and
+      distribution pipes in separate size classes, because they behave very
+      differently when something fails.
+    steps:
+      - { do: wheel, at: ".map-container", dy: -500, times: 8, pauseMs: 400 }
+      - { do: wait, ms: 2500 }
+
+  - id: inspect
+    layout: caption
+    title: "Selecting a pipe"
+    subtitle: "probeClick — no DOM node to target"
+    narration: >-
+      A pipe on a canvas has no element to click, so autodemo probes outward in
+      a spiral until the inspector reports a hit. Here it is: diameter, ward,
+      and probable material, each traced to its source.
+    steps:
+      - do: probeClick
+        pattern: "(W[MD]-K[0-9.-]+)"
+        panel: 'aside[aria-label="Asset inspector"]'
+        region: ".map-container"
+        saveAs: firstPipe
+        spiral: { steps: 160, radiusStep: 2.5, angleStep: 0.7 }
+        settleMs: 220
+      - { do: wait, ms: 2000 }
+
+  - id: burst
+    layout: caption
+    title: "Bursting it"
+    subtitle: "Isolation · supply lost · people affected"
+    narration: >-
+      Now it earns the name. Bursting this pipe answers what an operator
+      actually needs: which valves to close, which pipes lose supply, and how
+      many people go without water.
+    steps:
+      - { do: click, within: 'aside[aria-label="Asset inspector"]', name: "Burst" }
+      - { do: wait, ms: 5000 }
+      - { do: scrollPanel, selector: 'aside[aria-label="Asset inspector"] [data-slot="scroll-area-viewport"]', to: bottom }
+      - { do: wait, ms: 2500 }
+
+  - id: second_pipe
+    layout: caption
+    title: "A different pipe"
+    subtitle: "excludeMatch — never the same one twice"
+    narration: >-
+      The same engine models a slow leak instead of a full break. The probe is
+      told to skip the pipe it already used, so this is a genuinely different
+      stretch of the network.
+    steps:
+      # excludeMatch reads the variable saved in the `inspect` scene, so the
+      # spiral keeps probing past the pipe that was already shown.
+      - do: probeClick
+        pattern: "(W[MD]-K[0-9.-]+)"
+        panel: 'aside[aria-label="Asset inspector"]'
+        region: ".map-container"
+        excludeMatch: firstPipe
+        spiral: { steps: 160, radiusStep: 2.5, angleStep: 0.7 }
+        settleMs: 220
+      - { do: click, within: 'aside[aria-label="Asset inspector"]', name: "Leak" }
+      - { do: wait, ms: 4000 }
+      - { do: scrollPanel, selector: 'aside[aria-label="Asset inspector"] [data-slot="scroll-area-viewport"]', to: bottom }
+      - { do: wait, ms: 2000 }
+
+  - id: search
+    layout: caption
+    title: "Jumping anywhere"
+    subtitle: "press · type · press"
+    narration: >-
+      Control K opens search from anywhere, so an operator can jump straight to
+      a ward or a reservoir without hunting for it on the map.
+    steps:
+      - { do: press, key: "Control+k" }
+      - { do: wait, ms: 1200 }
+      - { do: type, text: "hegg", delay: 70 }
+      - { do: wait, ms: 2000 }
+      - { do: press, key: "Enter" }
+      - { do: wait, ms: 4000 }

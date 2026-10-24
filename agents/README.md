@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [autodemo](./autodemo/) | Explores a running web app, writes the demo script itself, and renders a narrated, captioned MP4 walkthrough. | Node.js 20+, Claude Code plugin (skill + subagent + MCP), Playwright, ffmpeg, edge-tts | [vijaykumargowdakk](https://github.com/vijaykumargowdakk) |
