@@ -40,6 +40,8 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `inspect_test_reports`: parse bounded JUnit, Surefire, and pytest-style XML reports into factual test evidence.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
 - `analyze_alert`: normalize provider alerts from New Relic, CubeAPM, Prometheus, OpenTelemetry, or custom webhooks.
+- `inspect_ci_annotations`: extract GitHub/GitLab/Azure-style error and warning annotations from CI output.
+- `inspect_api_error`: normalize common JSON API error envelopes with status, message, request ID, and retry guidance.
 - `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
 - Deterministic categories for compilation, dependencies, tests, runtime/API, configuration, permissions, network/TLS, resources, data/schema, CI/container, and concurrency/state failures.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
@@ -251,7 +253,7 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 
 ## Future Improvements
 
-- Add opt-in parsers for CI annotations and provider-specific API error envelopes.
+- Add provider-specific webhook signature adapters behind an optional gateway.
 - Add client-confirmed workspace roots and per-tool permission policies.
 - Add historical diagnosis comparison without storing raw logs.
 
