@@ -11,6 +11,7 @@ service-account*.json
 target/
 *.class
 *.log
+!examples/*.log
 
 # IDE and OS files
 .idea/

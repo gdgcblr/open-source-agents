@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>community.opensource.ai</groupId>
-  <artifactId>adk-java-agent</artifactId>
+  <artifactId>build-doctor</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 
   <properties>

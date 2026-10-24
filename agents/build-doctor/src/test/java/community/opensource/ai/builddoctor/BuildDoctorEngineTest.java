@@ -48,4 +48,22 @@ class BuildDoctorEngineTest {
     assertEquals("unknown", report.failureType());
     assertEquals("low", report.confidence());
   }
+
+  @Test
+  void identifiesLanguageAgnosticCompilationSignals() {
+    DiagnosticReport report = engine.analyze("error: syntax error near unexpected token\n", null);
+
+    assertEquals("compilation", report.failureType());
+  }
+
+  @Test
+  void reportsCommonProjectManifests() throws Exception {
+    Path project = Files.createTempDirectory("build-doctor");
+    Files.writeString(project.resolve("package.json"), "{\"name\":\"demo\"}\n");
+
+    String evidence = BuildDoctorTools.inspectProject(project.toString());
+
+    assertTrue(evidence.contains("package.json"));
+    assertTrue(evidence.contains("demo"));
+  }
 }

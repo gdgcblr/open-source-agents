@@ -8,11 +8,11 @@ import java.util.regex.Pattern;
 
 public final class BuildDoctorEngine {
   private static final Pattern COMPILATION_ERROR =
-      Pattern.compile("(?i)(compilation error|cannot find symbol|compilation failure)");
+      Pattern.compile("(?i)(compilation error|cannot find symbol|compilation failure|syntax error|type error|failed to compile)");
   private static final Pattern DEPENDENCY_ERROR =
-      Pattern.compile("(?i)(could not resolve dependencies|could not transfer artifact|dependency resolution)");
+      Pattern.compile("(?i)(could not resolve dependencies|could not transfer artifact|dependency resolution|module not found|no matching distribution|failed to fetch|package .* not found)");
   private static final Pattern TEST_FAILURE =
-      Pattern.compile("(?i)(tests run:.*(failures|errors): [1-9]|there are test failures|assertionerror)");
+      Pattern.compile("(?i)(tests run:.*(failures|errors): [1-9]|there are test failures|assertionerror|test(s)? failed|expected .* but was)");
 
   public DiagnosticReport analyze(String log, Path projectRoot) {
     if (log == null || log.isBlank()) {
@@ -23,22 +23,22 @@ public final class BuildDoctorEngine {
     if (COMPILATION_ERROR.matcher(log).find()) {
       return report(
           "compilation",
-          "The build contains a Java compilation failure.",
+          "The build output contains a compilation failure.",
           "high",
           evidence,
           List.of(
               "Inspect the first compiler error and its source location.",
-              "Check the referenced type, import, method signature, and Java release configuration."),
+              "Check the referenced symbol, source location, language configuration, and compiler settings."),
           projectRoot);
     }
     if (DEPENDENCY_ERROR.matcher(log).find()) {
       return report(
           "dependency-resolution",
-          "Maven could not resolve or download one or more dependencies.",
+          "The build could not resolve or download one or more dependencies.",
           "high",
           evidence,
           List.of(
-              "Inspect the dependency coordinates and version in pom.xml.",
+              "Inspect the dependency name, version, lockfile, and configured registries.",
               "Check repository access and whether the requested version exists."),
           projectRoot);
     }
@@ -55,7 +55,7 @@ public final class BuildDoctorEngine {
           projectRoot);
     }
 
-    return unknownReport("The supplied output does not match a supported Maven failure signature.");
+    return unknownReport("The supplied output does not match a supported failure signature.");
   }
 
   private DiagnosticReport report(
@@ -66,8 +66,16 @@ public final class BuildDoctorEngine {
       List<String> nextSteps,
       Path projectRoot) {
     List<String> enrichedEvidence = new ArrayList<>(evidence);
-    if (projectRoot != null && Files.exists(projectRoot.resolve("pom.xml"))) {
-      enrichedEvidence.add("Project evidence: pom.xml is present at the selected project root.");
+    if (projectRoot != null) {
+      List<String> manifests = List.of(
+          "pom.xml", "build.gradle", "build.gradle.kts", "package.json", "pyproject.toml",
+          "requirements.txt", "go.mod", "Cargo.toml", "composer.json", "mix.exs");
+      List<String> present = manifests.stream()
+          .filter(manifest -> Files.isRegularFile(projectRoot.resolve(manifest)))
+          .toList();
+      if (!present.isEmpty()) {
+        enrichedEvidence.add("Project manifests present: " + String.join(", ", present) + ".");
+      }
     }
     return new DiagnosticReport(
         failureType, summary, confidence, enrichedEvidence, nextSteps, "pending: no verification run was supplied");
@@ -76,7 +84,7 @@ public final class BuildDoctorEngine {
   private List<String> extractEvidence(String log) {
     return log.lines()
         .map(String::trim)
-        .filter(line -> line.startsWith("[ERROR]") || line.matches(".*Tests run:.*"))
+        .filter(line -> line.matches("(?i).*(\\[error\\]|\\berror:|\\bfailed\\b|\\bfailure\\b|tests run:).*"))
         .limit(5)
         .toList();
   }
@@ -87,7 +95,7 @@ public final class BuildDoctorEngine {
         summary,
         "low",
         List.of("No supported failure signature was confidently identified."),
-        List.of("Provide the complete Maven output, including the first error and its surrounding context."),
+        List.of("Provide the complete build or runtime output, including the first error and its surrounding context."),
         "pending: no verification run was supplied");
   }
 }

@@ -24,15 +24,19 @@ public final class BuildDoctorTools {
 
   public static String inspectProject(String projectRoot) throws IOException {
     Path root = Path.of(projectRoot).toAbsolutePath().normalize();
-    Path pom = root.resolve("pom.xml");
-    if (!Files.isRegularFile(pom)) {
-      return "Project evidence: no pom.xml was found at the selected project root.";
+    List<String> manifests = List.of(
+        "pom.xml", "build.gradle", "build.gradle.kts", "package.json", "pyproject.toml",
+        "requirements.txt", "go.mod", "Cargo.toml", "composer.json", "mix.exs");
+    StringBuilder result = new StringBuilder("Project manifests and selected metadata:\n");
+    boolean found = false;
+    for (String manifest : manifests) {
+      Path file = root.resolve(manifest);
+      if (Files.isRegularFile(file)) {
+        found = true;
+        result.append("\n--- ").append(manifest).append(" ---\n");
+        Files.readAllLines(file).stream().limit(20).forEach(line -> result.append(line).append('\n'));
+      }
     }
-
-    List<String> relevantLines = Files.readAllLines(pom).stream()
-        .filter(line -> line.contains("<groupId>") || line.contains("<artifactId>") || line.contains("<version>"))
-        .limit(20)
-        .toList();
-    return "Project evidence from pom.xml:\n" + String.join("\n", relevantLines);
+    return found ? result.toString() : "Project evidence: no supported manifest was found at the selected project root.";
   }
 }
