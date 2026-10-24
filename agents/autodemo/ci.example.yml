@@ -1,0 +1,79 @@
+# A ready-to-use GitHub Actions workflow for autodemo.
+#
+# It is NOT installed as an active workflow: contributions to this repository
+# are scoped to their own directory, and a live workflow would have to live in
+# the repository root's .github/workflows/. Copy it there in your own fork, or
+# into your own project, to run it.
+#
+#   cp agents/autodemo/ci.example.yml .github/workflows/autodemo.yml
+#
+# It installs ffmpeg and Playwright's chromium, then runs the full suite —
+# including the integration test, which renders a real MP4 of the bundled
+# example app with voice.engine: none (no TTS, no secrets, no network).
+
+name: autodemo
+
+on:
+  push:
+    paths: ['agents/autodemo/**']
+  pull_request:
+    paths: ['agents/autodemo/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agents/autodemo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: agents/autodemo/package-lock.json
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify the toolchain the engine depends on
+        run: |
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+          node --version
+
+      - name: Run tests
+        run: npm test
+
+      - name: Render the example demo end to end
+        run: |
+          npx --yes serve examples/todo-app -l 5173 &
+          npx --yes wait-on http://localhost:5173 -t 60000
+          node bin/autodemo.mjs render --config examples/todo-app/autodemo.config.yaml
+
+      - name: Assert the rendered MP4 is real
+        run: |
+          OUT=examples/todo-app/out/taskbench-demo.mp4
+          test -f "$OUT"
+          ffprobe -v error -show_entries stream=codec_type -of csv=p=0 "$OUT" | sort | uniq -c
+          DUR=$(ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 "$OUT")
+          echo "duration: ${DUR}s"
+          awk -v d="$DUR" 'BEGIN { exit (d > 30 && d < 120) ? 0 : 1 }'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: example-demo
+          path: |
+            agents/autodemo/examples/todo-app/out/*.mp4
+            agents/autodemo/examples/todo-app/out/*.jpg
+          if-no-files-found: warn
