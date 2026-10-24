@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [ws-to-gcp-migrator](aws-to-gcp-migrator/) | Autonomous agent migrating AWS Terraform to idiomatic Google Cloud Platform configurations and architectural reports | Python / Gemini 2.5 Flash / Google GenAI SDK | [@Darshan-S-P](https://github.com/Darshan-S-P) |
