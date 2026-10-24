@@ -96,12 +96,20 @@ def assess_deposit_terms_tool(
 
 def build_rental_checklist_tool() -> dict[str, Any]:
     items = build_rental_checklist()
-    return {"items": [i.model_dump() for i in items]}
+    return {
+        "status": "complete",
+        "agent_note": "Checklist delivered — summarize for the user; do not call this tool again this turn.",
+        "items": [i.model_dump() for i in items],
+    }
 
 
 def get_karnataka_rental_guidance_tool() -> dict[str, Any]:
     refs = get_karnataka_rental_guidance()
-    return {"sources": [r.model_dump() for r in refs]}
+    return {
+        "status": "complete",
+        "agent_note": "Legal sources delivered — summarize; do not call this tool again this turn.",
+        "sources": [r.model_dump() for r in refs],
+    }
 
 
 def create_anonymous_experience_tool(

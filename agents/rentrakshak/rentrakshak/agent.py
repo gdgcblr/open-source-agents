@@ -3,6 +3,7 @@ from __future__ import annotations
 from google.adk.agents import Agent
 from google.adk.tools.function_tool import FunctionTool
 
+from rentrakshak.agent_callbacks import after_tool_callback, before_tool_callback
 from rentrakshak.llm import resolve_agent_model
 from rentrakshak.tools.registry import ALL_TOOL_FUNCTIONS
 
@@ -27,9 +28,15 @@ SAFETY:
 - Community sentiment is not proof of fraud; mention sample size limits.
 
 WORKFLOW:
-- For safety questions, call generate_rental_safety_report_tool or detect_rental_red_flags.
-- For rent ranges, call estimate_bengaluru_rent_tool and repeat its limitations.
-- For legal/deposit caps, use get_karnataka_rental_guidance_tool and build_rental_checklist_tool; do not invent law.
+- For listing + scam checks: call generate_rental_safety_report_tool ONCE (preferred). Do not also spam analyze/detect unless the user asks for a narrower check.
+- For rent ranges: call estimate_bengaluru_rent_tool ONCE and repeat its limitations.
+- For checklist OR legal sources: call build_rental_checklist_tool OR get_karnataka_rental_guidance_tool at most once each — not in a loop.
+- For community/vacating: search tools at most once per user message unless filters change.
+
+TOOL DISCIPLINE (required — local models loop without this):
+- Never call the same tool twice in one user turn.
+- After any tool returns, prefer a final text answer to the user instead of another tool call.
+- Maximum ~5 tool calls per user message, then stop and summarize.
 
 Be concise, empathetic, and practical for tenants in Bengaluru.
 """
@@ -41,4 +48,6 @@ root_agent = Agent(
     model=resolve_agent_model(),
     instruction=INSTRUCTION,
     tools=tools,
+    before_tool_callback=before_tool_callback,
+    after_tool_callback=after_tool_callback,
 )
