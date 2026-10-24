@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [blast-radius](blast-radius/) | Change Impact Analysis Agent for Java Microservices | Python 3.9+ (pure stdlib) | GDG Cloud Bengaluru Community |

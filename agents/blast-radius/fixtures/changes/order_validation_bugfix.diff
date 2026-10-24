@@ -1,0 +1,9 @@
+--- a/src/main/java/com/example/order/OrderService.java
++++ b/src/main/java/com/example/order/OrderService.java
+@@ -17,3 +17,4 @@ public class OrderService {
+     public void validateOrder(double totalAmount) {
+-        if (totalAmount < 1.0) {
++        if (totalAmount <= 0.0) {
+             throw new IllegalArgumentException("Minimum order total is 1.0");
+         }
+
