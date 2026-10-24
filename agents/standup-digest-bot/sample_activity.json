@@ -1,0 +1,45 @@
+{
+  "username": "demo-user",
+  "date": "2026-10-24",
+  "partial": false,
+  "fetch_warnings": [],
+  "events": [
+    {
+      "event_id": "commit:a1b2c3d",
+      "kind": "commit",
+      "repo": "demo-user/payments-api",
+      "title": "Fix race condition in refund webhook handler",
+      "url": "https://github.com/demo-user/payments-api/commit/a1b2c3d",
+      "timestamp": "2026-10-24T09:14:00Z",
+      "extra": { "commit_count": 3 }
+    },
+    {
+      "event_id": "pr:demo-user/payments-api#128",
+      "kind": "pull_request",
+      "repo": "demo-user/payments-api",
+      "title": "Add idempotency keys to refund endpoint",
+      "url": "https://github.com/demo-user/payments-api/pull/128",
+      "timestamp": "2026-10-24T11:02:00Z",
+      "state": "merged",
+      "extra": { "action": "closed" }
+    },
+    {
+      "event_id": "issue:demo-user/payments-api#131",
+      "kind": "issue",
+      "repo": "demo-user/payments-api",
+      "title": "Refund webhook occasionally double-fires",
+      "url": "https://github.com/demo-user/payments-api/issues/131",
+      "timestamp": "2026-10-24T14:40:00Z",
+      "state": "opened"
+    },
+    {
+      "event_id": "review:demo-user/billing-ui#57",
+      "kind": "review",
+      "repo": "demo-user/billing-ui",
+      "title": "Reviewed PR: Migrate invoice table to server pagination",
+      "url": "https://github.com/demo-user/billing-ui/pull/57",
+      "timestamp": "2026-10-24T16:20:00Z",
+      "state": "approved"
+    }
+  ]
+}

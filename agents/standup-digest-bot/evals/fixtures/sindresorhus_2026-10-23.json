@@ -1,0 +1,452 @@
+{
+  "username": "sindresorhus",
+  "date": "2026-10-23",
+  "partial": false,
+  "fetch_warnings": [],
+  "events": [
+    {
+      "event_id": "comment:sindresorhus/type-fest#893",
+      "kind": "review",
+      "repo": "sindresorhus/type-fest",
+      "title": "Commented on issue #893: `PartialDeep` doesn't work with arrays",
+      "url": "https://github.com/sindresorhus/type-fest/issues/893",
+      "timestamp": "2026-10-23T06:13:33+00:00",
+      "state": "created",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/type-fest#893",
+      "kind": "issue",
+      "repo": "sindresorhus/type-fest",
+      "title": "`PartialDeep` doesn't work with arrays",
+      "url": "https://github.com/sindresorhus/type-fest/issues/893",
+      "timestamp": "2026-10-23T06:13:33+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "comment:nodejs/node#62909",
+      "kind": "review",
+      "repo": "nodejs/node",
+      "title": "Commented on issue #62909: Add passive signal observers",
+      "url": "https://github.com/nodejs/node/issues/62909",
+      "timestamp": "2026-10-23T06:19:18+00:00",
+      "state": "created",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/eslint-package-json#47",
+      "kind": "issue",
+      "repo": "sindresorhus/eslint-package-json",
+      "title": "Rule proposal: follow `npm pkg fix`",
+      "url": "https://github.com/sindresorhus/eslint-package-json/issues/47",
+      "timestamp": "2026-10-23T07:12:27+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "pr:sindresorhus/eslint-plugin-unicorn#3948",
+      "kind": "pull_request",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "PR #3948",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/pull/3948",
+      "timestamp": "2026-10-23T08:25:34+00:00",
+      "state": "opened",
+      "extra": {
+        "action": "opened"
+      }
+    },
+    {
+      "event_id": "push:sindresorhus/execa@e375b0b",
+      "kind": "commit",
+      "repo": "sindresorhus/execa",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/execa/commit/e375b0b94b1cc4b5b6bbc035a14586be31755bd9",
+      "timestamp": "2026-10-23T08:44:26+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "issue:sindresorhus/execa#1265",
+      "kind": "issue",
+      "repo": "sindresorhus/execa",
+      "title": "TS2344 in `result-all.d.ts` with `exactOptionalPropertyTypes` since 10.2.0",
+      "url": "https://github.com/sindresorhus/execa/issues/1265",
+      "timestamp": "2026-10-23T08:44:27+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-plugin-unicorn@ee3edf0",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/commit/ee3edf06ba46b97e5e83e08f87d023171145cb47",
+      "timestamp": "2026-10-23T08:46:24+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "issue:sindresorhus/eslint-plugin-unicorn#3947",
+      "kind": "issue",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "`prefer-simple-condition-first`: `typeof X == 'type'` should be considered as \"simple\"",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/issues/3947",
+      "timestamp": "2026-10-23T08:46:30+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "push:sindresorhus/execa@247faa0",
+      "kind": "commit",
+      "repo": "sindresorhus/execa",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/execa/commit/247faa0ff0641020e8790475989cee72df85d62b",
+      "timestamp": "2026-10-23T09:14:17+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "push:sindresorhus/type-fest@be3f010",
+      "kind": "commit",
+      "repo": "sindresorhus/type-fest",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/type-fest/commit/be3f0107d5df6502d32fa5c200eda8e6874810a2",
+      "timestamp": "2026-10-23T11:06:44+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "issue:sindresorhus/type-fest#869",
+      "kind": "issue",
+      "repo": "sindresorhus/type-fest",
+      "title": "PositiveIntegerString type",
+      "url": "https://github.com/sindresorhus/type-fest/issues/869",
+      "timestamp": "2026-10-23T11:06:46+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/type-fest#925",
+      "kind": "issue",
+      "repo": "sindresorhus/type-fest",
+      "title": "Feat: Include types to remove null/undefined/optionals from a tuple",
+      "url": "https://github.com/sindresorhus/type-fest/issues/925",
+      "timestamp": "2026-10-23T11:06:51+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "comment:sindresorhus/type-fest#980",
+      "kind": "review",
+      "repo": "sindresorhus/type-fest",
+      "title": "Commented on issue #980: Proposal: DeepPartialDiff",
+      "url": "https://github.com/sindresorhus/type-fest/issues/980",
+      "timestamp": "2026-10-23T12:42:15+00:00",
+      "state": "created",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/type-fest#980",
+      "kind": "issue",
+      "repo": "sindresorhus/type-fest",
+      "title": "Proposal: DeepPartialDiff",
+      "url": "https://github.com/sindresorhus/type-fest/issues/980",
+      "timestamp": "2026-10-23T12:42:18+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/np#808",
+      "kind": "issue",
+      "repo": "sindresorhus/np",
+      "title": "`np --release-draft-only` -> `np notes`",
+      "url": "https://github.com/sindresorhus/np/issues/808",
+      "timestamp": "2026-10-23T12:59:51+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/np#809",
+      "kind": "issue",
+      "repo": "sindresorhus/np",
+      "title": "Detect breaking changes and suggest major releases",
+      "url": "https://github.com/sindresorhus/np/issues/809",
+      "timestamp": "2026-10-23T12:59:52+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/np#726",
+      "kind": "issue",
+      "repo": "sindresorhus/np",
+      "title": "Open npmjs.com instead of asking for OTP",
+      "url": "https://github.com/sindresorhus/np/issues/726",
+      "timestamp": "2026-10-23T12:59:53+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-cssicorn@07baba4",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/commit/07baba419ba29d7cbaf0049f4e803cd65818091d",
+      "timestamp": "2026-10-23T14:35:01+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "pr:sindresorhus/eslint-cssicorn#46",
+      "kind": "pull_request",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "PR #46",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/pull/46",
+      "timestamp": "2026-10-23T14:43:05+00:00",
+      "state": "opened",
+      "extra": {
+        "action": "opened"
+      }
+    },
+    {
+      "event_id": "pr:sindresorhus/eslint-cssicorn#47",
+      "kind": "pull_request",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "PR #47",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/pull/47",
+      "timestamp": "2026-10-23T14:50:06+00:00",
+      "state": "opened",
+      "extra": {
+        "action": "opened"
+      }
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-cssicorn@bc3dd32",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "Pushed 1 commit to ss/expand-shorthand-default-omissions",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/commit/bc3dd32f76be12593430d9f4b790f7b351f9716d",
+      "timestamp": "2026-10-23T14:53:20+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "ss/expand-shorthand-default-omissions",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-cssicorn@084d12a",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "Pushed 1 commit to ss/expand-shorthand-default-omissions",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/commit/084d12ae76ac15f1cf27538c194ce54ae83b8e0f",
+      "timestamp": "2026-10-23T14:59:27+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "ss/expand-shorthand-default-omissions",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-cssicorn@dc7919e",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/commit/dc7919e9dc8e63193ddefd738429235ef9aaac84",
+      "timestamp": "2026-10-23T15:04:27+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "pr:sindresorhus/eslint-cssicorn#48",
+      "kind": "pull_request",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "PR #48",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/pull/48",
+      "timestamp": "2026-10-23T15:06:54+00:00",
+      "state": "opened",
+      "extra": {
+        "action": "opened"
+      }
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-cssicorn@8bbc0d1",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-cssicorn",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/eslint-cssicorn/commit/8bbc0d1d0c0bc347234c348c480ba4720ea3d905",
+      "timestamp": "2026-10-23T15:12:08+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "pr:sindresorhus/eslint-plugin-unicorn#3950",
+      "kind": "pull_request",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "PR #3950",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/pull/3950",
+      "timestamp": "2026-10-23T15:43:05+00:00",
+      "state": "opened",
+      "extra": {
+        "action": "opened"
+      }
+    },
+    {
+      "event_id": "comment:sindresorhus/eslint-plugin-unicorn#3944",
+      "kind": "review",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "Commented on issue #3944: `comment-content`: ignoring text by custom patterns",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/issues/3944",
+      "timestamp": "2026-10-23T15:46:09+00:00",
+      "state": "created",
+      "extra": {}
+    },
+    {
+      "event_id": "pr:sindresorhus/eslint-plugin-unicorn#3951",
+      "kind": "pull_request",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "PR #3951",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/pull/3951",
+      "timestamp": "2026-10-23T15:47:18+00:00",
+      "state": "opened",
+      "extra": {
+        "action": "opened"
+      }
+    },
+    {
+      "event_id": "issue:sindresorhus/np#810",
+      "kind": "issue",
+      "repo": "sindresorhus/np",
+      "title": "Interactively offer to change branch or release from any branch",
+      "url": "https://github.com/sindresorhus/np/issues/810",
+      "timestamp": "2026-10-23T15:47:30+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "comment:sindresorhus/np#787",
+      "kind": "review",
+      "repo": "sindresorhus/np",
+      "title": "Commented on issue #787: Use passkeys",
+      "url": "https://github.com/sindresorhus/np/issues/787",
+      "timestamp": "2026-10-23T16:00:14+00:00",
+      "state": "created",
+      "extra": {}
+    },
+    {
+      "event_id": "issue:sindresorhus/np#787",
+      "kind": "issue",
+      "repo": "sindresorhus/np",
+      "title": "Use passkeys",
+      "url": "https://github.com/sindresorhus/np/issues/787",
+      "timestamp": "2026-10-23T16:00:20+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-plugin-unicorn@bcec97a",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/commit/bcec97a430840d620ead254bfd349526675b0fb8",
+      "timestamp": "2026-10-23T16:14:37+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "issue:sindresorhus/eslint-plugin-unicorn#3949",
+      "kind": "issue",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "`prefer-default-parameters`: `||` fallbacks on `number`, `string`, and `bigint` are reported with type information",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/issues/3949",
+      "timestamp": "2026-10-23T16:14:38+00:00",
+      "state": "closed",
+      "extra": {}
+    },
+    {
+      "event_id": "push:sindresorhus/eslint-plugin-unicorn@3fe046e",
+      "kind": "commit",
+      "repo": "sindresorhus/eslint-plugin-unicorn",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/sindresorhus/eslint-plugin-unicorn/commit/3fe046e6e091ad536e91525bf803ad1f01d836cf",
+      "timestamp": "2026-10-23T16:14:48+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "push:xojs/eslint-config-xo@6b5bf86",
+      "kind": "commit",
+      "repo": "xojs/eslint-config-xo",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/xojs/eslint-config-xo/commit/6b5bf86187f8a7dd23440521041dddf6946e6984",
+      "timestamp": "2026-10-23T16:52:58+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "push:xojs/eslint-config-xo@f995075",
+      "kind": "commit",
+      "repo": "xojs/eslint-config-xo",
+      "title": "Pushed 1 commit to main",
+      "url": "https://github.com/xojs/eslint-config-xo/commit/f9950756a671990cd103fc7dc95aff929d97f6df",
+      "timestamp": "2026-10-23T16:56:43+00:00",
+      "state": "",
+      "extra": {
+        "commit_count": 1,
+        "ref": "main",
+        "detail": "summary"
+      }
+    },
+    {
+      "event_id": "issue:kylebrowning/BLESwift#63",
+      "kind": "issue",
+      "repo": "kylebrowning/BLESwift",
+      "title": "Preserve missing peripheral names as `nil`",
+      "url": "https://github.com/kylebrowning/BLESwift/issues/63",
+      "timestamp": "2026-10-23T17:36:42+00:00",
+      "state": "opened",
+      "extra": {}
+    }
+  ]
+}

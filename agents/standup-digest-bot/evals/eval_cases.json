@@ -1,0 +1,66 @@
+{
+  "description": "Eval cases for standup-digest-bot. Each case supplies an activity log and the ground-truth expectations a correct digest must satisfy.",
+  "cases": [
+    {
+      "name": "normal_day_four_events",
+      "activity": "sample_activity.json",
+      "expect": {
+        "must_reference_event_ids": [
+          "commit:a1b2c3d",
+          "pr:demo-user/payments-api#128",
+          "issue:demo-user/payments-api#131",
+          "review:demo-user/billing-ui#57"
+        ],
+        "should_escalate": false,
+        "max_unconfirmed": 1
+      }
+    },
+    {
+      "name": "empty_day_must_escalate",
+      "activity": "fixtures/empty_day.json",
+      "expect": {
+        "must_reference_event_ids": [],
+        "should_escalate": true,
+        "max_unconfirmed": 999
+      }
+    },
+    {
+      "name": "partial_fetch_must_escalate",
+      "activity": "fixtures/partial_fetch.json",
+      "expect": {
+        "must_reference_event_ids": ["commit:f00dbad"],
+        "should_escalate": true,
+        "max_unconfirmed": 999
+      }
+    },
+    {
+      "name": "real_torvalds_2026-10-04",
+      "activity": "fixtures/torvalds_2026-10-04.json",
+      "expect": {
+        "must_reference_event_ids": [
+          "pr:torvalds/GuitarPedal#48",
+          "comment:torvalds/GuitarPedal#48",
+          "push:torvalds/linux@6addb4f"
+        ],
+        "should_escalate": false,
+        "max_unconfirmed": 1
+      }
+    },
+    {
+      "name": "real_gaearon_2026-10-21",
+      "activity": "fixtures/gaearon_2026-10-21.json",
+      "expect": {
+        "should_escalate": false,
+        "max_unconfirmed": 1
+      }
+    },
+    {
+      "name": "real_sindresorhus_2026-10-23",
+      "activity": "fixtures/sindresorhus_2026-10-23.json",
+      "expect": {
+        "should_escalate": false,
+        "max_unconfirmed": 1
+      }
+    }
+  ]
+}

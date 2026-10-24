@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [standup-digest-bot](./standup-digest-bot/) | Local-first agent that turns real GitHub activity into a standup update, grounding every claim in a verifiable event and escalating instead of inventing progress. | Python, vanilla (Ollama / Gemini / OpenAI / mock), GitHub REST API | [@prajwal-vr](https://github.com/prajwal-vr) |
