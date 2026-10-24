@@ -1,0 +1,20 @@
+[
+  {
+    "file": "ready.json",
+    "project": "agents/weather-forecast-agent",
+    "verdict": "ready",
+    "score": 100
+  },
+  {
+    "file": "changes.json",
+    "project": "agents/pr-summarizer-agent",
+    "verdict": "changes_requested",
+    "score": 50
+  },
+  {
+    "file": "blocked.json",
+    "project": "agents/MyAgent",
+    "verdict": "blocked",
+    "score": 38
+  }
+]

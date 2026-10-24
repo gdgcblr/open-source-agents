@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Namma Commit Leaderboard</title>
+<style>
+  :root { --bg: #f6f7f9; --card: #fff; --ink: #111b21; --muted: #667781; --accent: #008069; --line: #e6e8eb; --gold: #f5b301; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0b141a; --card: #16222a; --ink: #e9edef; --muted: #8696a0; --accent: #00a884; --line: #23323b; }
+  }
+  :root[data-theme="dark"] { --bg: #0b141a; --card: #16222a; --ink: #e9edef; --muted: #8696a0; --accent: #00a884; --line: #23323b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  p.sub { margin: 0 0 20px; color: var(--muted); }
+  ol { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  li { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); }
+  li:first-child { border-top: none; }
+  .rank { font-weight: 700; font-size: 18px; color: var(--muted); text-align: center; }
+  li:nth-child(1) .rank { color: var(--gold); }
+  .name { font-weight: 600; overflow-wrap: anywhere; }
+  .badges { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .pts { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+  .how { margin-top: 22px; color: var(--muted); font-size: 13.5px; }
+  .how b { color: var(--ink); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>🏆 Namma Commit leaderboard</h1>
+  <p class="sub">First-time contributors learning open source. Points are for learning, never money.</p>
+  <ol id="board"><li class="empty" style="display:block">Loading…</li></ol>
+  <p class="how">
+    <b>How to earn:</b> FIX_PLAN 10 · bug report 5 · issue clarification 5 · open a PR 20 · PR merged 50.
+    PR and merge points are verified with the GitHub API. Names are GitHub handles or pseudonyms; no phone numbers are stored.
+    <br><a href="/">Open the chat simulator →</a>
+  </p>
+</main>
+<script>
+(async () => {
+  const ol = document.getElementById('board');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  async function load() {
+    try {
+      const j = await (await fetch('/api/leaderboard')).json();
+      const rows = j.leaderboard || [];
+      ol.innerHTML = rows.length ? rows.map(r =>
+        `<li><span class="rank">${r.rank}</span><div><div class="name">${esc(r.name)}</div>` +
+        `<div class="badges">${r.badges.map(esc).join(' · ') || '&nbsp;'}</div></div><span class="pts">${r.points} pts</span></li>`).join('')
+        : '<li class="empty" style="display:block">No points yet. Be the first: send "hi" to Namma Commit!</li>';
+    } catch (e) { ol.innerHTML = '<li class="empty" style="display:block">Could not load the leaderboard.</li>'; }
+  }
+  load(); setInterval(load, 15000);
+})();
+</script>
+</body>
+</html>
