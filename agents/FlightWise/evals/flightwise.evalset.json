@@ -1,0 +1,113 @@
+{
+  "eval_set_id": "flightwise_mvp",
+  "name": "Flightwise AI MVP evaluations",
+  "description": "Checks requirement gathering, search-tool gating, and honest presentation of synthetic flight results.",
+  "eval_cases": [
+    {
+      "eval_id": "asks_for_missing_requirements",
+      "session_input": {
+        "app_name": "FlightWise",
+        "user_id": "eval_user"
+      },
+      "conversation": [
+        {
+          "invocation_id": "incomplete_request",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Find me a flight from Bengaluru to Delhi sometime next month."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": []
+          },
+          "rubrics": [
+            {
+              "rubric_id": "clarifies_missing_trip_details",
+              "rubric_content": {
+                "text_property": "The response asks concise follow-up questions for missing travel details, including specific dates, one-way or return, passenger count, budget, baggage needs, and ranking preference. It does not invent these details or claim to have searched."
+              },
+              "type": "INSTRUCTION_ADHERENCE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eval_id": "searches_complete_one_way_request",
+      "session_input": {
+        "app_name": "FlightWise",
+        "user_id": "eval_user"
+      },
+      "conversation": [
+        {
+          "invocation_id": "complete_one_way",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Search one-way from BLR to DEL on 2026-12-01 for 1 passenger. My total budget is INR 7000. I need 1 checked bag and a carry-on, and I prefer the cheapest option."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "search_flights",
+                "args": {}
+              }
+            ]
+          },
+          "rubrics": [
+            {
+              "rubric_id": "discloses_demo_results",
+              "rubric_content": {
+                "text_property": "The response clearly says the results are synthetic demo data, not live, verified, or bookable flights. It presents no more than five options and accurately mentions relevant price, duration, stops, baggage uncertainty, and budget status."
+              },
+              "type": "INSTRUCTION_ADHERENCE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "eval_id": "searches_complete_round_trip_request",
+      "session_input": {
+        "app_name": "FlightWise",
+        "user_id": "eval_user"
+      },
+      "conversation": [
+        {
+          "invocation_id": "complete_round_trip",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Find a round trip from SFO to LAX, departing 2026-12-10 and returning 2026-12-14, for 2 passengers. Our total budget is INR 30000. We need 1 checked bag and a carry-on. Rank by fewest stops."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "search_flights",
+                "args": {}
+              }
+            ]
+          },
+          "rubrics": [
+            {
+              "rubric_id": "reports_ranked_round_trip_options_honestly",
+              "rubric_content": {
+                "text_property": "The response clearly discloses that results are synthetic demo data and not bookable. It presents up to five ranked round-trip options and describes prices, durations, stops, baggage uncertainty, and budget status without claiming live availability."
+              },
+              "type": "INSTRUCTION_ADHERENCE"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
