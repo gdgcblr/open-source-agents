@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`first-pr-mentor`](first-pr-mentor/README.md) | Finds open issues in your stack that are likely to get merged, explains the repo in plain words (or your language), checks your understanding, then builds a PR checklist from the repo's real rules | Node.js, Gemini API, GitHub REST API | [@Agnik47](https://github.com/Agnik47) |

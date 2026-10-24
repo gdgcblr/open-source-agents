@@ -1,0 +1,16 @@
+{
+  "name": "first-pr-mentor",
+  "version": "0.1.0",
+  "description": "A Gemini-powered CLI mentor that helps first-time open source contributors find a mergeable issue, understand the repo, and open a PR they can explain.",
+  "type": "module",
+  "bin": { "first-pr-mentor": "src/cli.js" },
+  "scripts": {
+    "start": "node src/cli.js start",
+    "find": "node src/cli.js find",
+    "learn": "node src/cli.js learn",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20.12" },
+  "license": "MIT",
+  "dependencies": {}
+}
