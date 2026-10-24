@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`research-assistant`](research-assistant/) | Autonomous desk-research agent with DuckDuckGo search, HTML dashboard & MCP Server | Python / Gemini 2.5 Flash / FastMCP / ReAct | [@PavanSRocky](https://github.com/PavaS279) |

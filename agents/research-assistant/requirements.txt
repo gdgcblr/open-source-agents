@@ -1,0 +1,19 @@
+# Core Google Gemini SDKs
+google-genai>=0.1.1
+google-generativeai>=0.8.0
+
+# Free Web Search & Content Scraping (Zero API keys needed)
+duckduckgo-search>=7.0.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+
+# Terminal UI & Environment
+rich>=13.7.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+
+# Enterprise Extensions (Model Context Protocol & Architecture)
+mcp>=1.0.0
+
+# Testing
+pytest>=8.0.0
