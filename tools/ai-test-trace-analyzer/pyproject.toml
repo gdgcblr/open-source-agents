@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-test-trace-analyzer"
+version = "0.1.0"
+description = "Pytest call tracing with optional AI-powered failure analysis."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pytest>=7.4"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+demo = ["fastapi>=0.110", "httpx>=0.27", "pytest-asyncio>=0.23"]
+ai = []
+
+[project.entry-points.pytest11]
+ai_test_trace_analyzer = "ai_test_trace_analyzer.pytest_plugin"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
