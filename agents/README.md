@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [pr-draft-agent](pr-draft-agent/) | Draft a PR description from validated staged changes and a repository template. | Python 3.12 / Google ADK v2 / Gemini | [vsuman00](https://github.com/vsuman00) |
