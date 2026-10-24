@@ -219,7 +219,7 @@ This is what the tool prints to the terminal, and what `--post-comment` posts on
 | **Heuristic signals** (collapsed) | Every deterministic signal that fired, with its weight and file:line evidence |
 | **Footer** | Threshold, plus a reminder that this is a triage aid and a maintainer decides |
 
-A third, real-world example, with the exact commands used and the agent's tool calls, is in [`examples/redash-7882-review.md`](examples/redash-7882-review.md): a review of [getredash/redash#7882](https://github.com/getredash/redash/pull/7882), which scored 🟢 16.
+A third, real-world example, with the exact commands used and the agent's tool calls, is in [`examples/redash-7882-review.md`](examples/redash-7882-review.md): a review of [getredash/redash#7882](https://github.com/getredash/redash/pull/7882), which scored 🟢 16. A known false positive is in [`examples/open-source-agents-90-review.md`](examples/open-source-agents-90-review.md): the tool reviewing its own PR ([#90](https://github.com/gdgcblr/open-source-agents/pull/90)), where quoted slop phrases and test fixtures pushed it to 🔴 62.
 
 ### Sample 1: flagged PR (🔴)
 
