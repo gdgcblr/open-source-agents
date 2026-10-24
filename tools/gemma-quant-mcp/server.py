@@ -52,6 +52,7 @@ def health_check():
     }
 
 
+@app.get("/api/hub/spokes")
 @app.get("/api/v1/hub/spokes")
 def get_hub_spokes():
     return {
@@ -60,17 +61,20 @@ def get_hub_spokes():
     }
 
 
+@app.post("/api/hub/chat")
 @app.post("/api/v1/hub/chat")
 def hub_chat_endpoint(req: HubChatRequest):
     return ArthanitiMasterHub.process_user_query(req.query, model_choice=req.model, api_key=req.api_key)
 
 
+@app.get("/api/market/live")
 @app.get("/api/v1/market/live")
 def get_live_quote(symbol: str = Query("HFCL", description="Ticker or company name")):
     quote = fetch_live_quote(symbol)
     return quote.model_dump()
 
 
+@app.get("/api/quant/live-targets")
 @app.get("/api/v1/quant/live-targets")
 def get_live_quant_analysis(
     symbol: str = Query("HFCL", description="Ticker or company name"),
@@ -91,11 +95,13 @@ def get_live_quant_analysis(
     }
 
 
+@app.post("/api/quant/targets", response_model=QuantTargets)
 @app.post("/api/v1/quant/targets", response_model=QuantTargets)
 def get_quant_targets(quote: StockQuote):
     return calculate_quant_targets(quote)
 
 
+@app.post("/api/audit/invariants", response_model=InvariantAuditReport)
 @app.post("/api/v1/audit/invariants", response_model=InvariantAuditReport)
 def run_invariant_audit(
     entries: Optional[List[LedgerEntry]] = None,
@@ -109,6 +115,7 @@ def run_invariant_audit(
     )
 
 
+@app.get("/api/screener")
 @app.get("/api/v1/screener")
 def run_screener(
     max_pe: Optional[float] = None,

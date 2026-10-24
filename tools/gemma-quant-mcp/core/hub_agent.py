@@ -20,6 +20,31 @@ from .spokes.spoke_gemma_advisor import GemmaAdvisorSpoke
 from .spokes.spoke_screener import ScreenerSpoke
 
 
+def extract_equity_query(query: str) -> str:
+    from .symbol_resolver import COMMON_ALIASES
+    clean = query.strip()
+    upper = clean.upper()
+    if upper in COMMON_ALIASES:
+        return upper
+    if ":" in clean:
+        tail = clean.split(":")[-1].strip()
+        if tail:
+            clean = tail
+    patterns = [
+        r"\b(analyze|analysis|check|show|get|find|tell me about|what is|what are|the)\b",
+        r"\b(live|current|realtime|intraday|market)\b",
+        r"\b(stock|price|quote|shares|ticker|equity|symbol)\b",
+        r"\b(and|or|for|with|of|at|on|levels|bounds|targets|pivot|pivots|camarilla|breakout|breakdown)\b",
+        r"\b(please|now|today|setup|momentum)\b",
+        r"[?!,;.]+"
+    ]
+    candidate = clean
+    for pat in patterns:
+        candidate = re.sub(pat, " ", candidate, flags=re.IGNORECASE)
+    candidate = re.sub(r"\s+", " ", candidate).strip()
+    return candidate if candidate else (clean if clean else "HFCL")
+
+
 class ArthanitiMasterHub:
     name: str = "Arthaniti Master Quant Hub"
     urn: str = "urn:adk:hub:arthaniti-quant-master"
@@ -75,15 +100,10 @@ class ArthanitiMasterHub:
                 "latency_ms": round((time.time() - start_time) * 1000, 2),
             }
 
-        # Check candidate ticker in query
-        candidate = None
-        for tick in ["HFCL", "APAR", "SUZLON", "TATA POWER", "RELIANCE", "TCS", "INFY", "HDFCBANK"]:
-            if tick.lower() in q_lower:
-                candidate = tick
-                break
-
-        # Priority 2: Screener (only if no specific stock ticker is requested)
-        if not candidate and any(w in q_lower for w in ["screen", "scanner", "breakout", "momentum", "top stocks", "candidates"]):
+        # Priority 2: Screener (only if explicit screener keywords and no specific ticker)
+        is_screener = any(w in q_lower for w in ["screen", "scanner", "screener", "scan indian", "breakout screener", "top stocks"])
+        has_ticker = any(w in q_lower for w in ["hfcl", "apar", "suzlon", "tata", "reliance", "tcs", "infy", "hdfc", "adani", "zomato", "jio", "wipro", "sbi", "itc"])
+        if is_screener and not has_ticker:
             dispatch_log.append({
                 "step": "2. A2A Task Dispatch",
                 "message": f"Dispatching to {ScreenerSpoke.name} to screen Indian market universe.",
@@ -103,8 +123,8 @@ class ArthanitiMasterHub:
                 "latency_ms": round((time.time() - start_time) * 1000, 2),
             }
 
-        # Priority 3: Stock Equity Analysis
-        candidate = candidate or "HFCL"
+        # Priority 3: Generic Stock Equity Analysis (Auto-Extracts any ticker or company name)
+        candidate = extract_equity_query(query)
 
         # Step 1: Market Feed Spoke
         dispatch_log.append({
