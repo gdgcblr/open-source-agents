@@ -24,6 +24,47 @@ However, accessibility reviews can be overlooked because:
 
 The result? Potential barriers may reach production and affect real users.
 
+## 📊 The Impact of Inaccessible Websites
+
+**Accessibility is not just a design consideration—it affects whether people can use the web independently.**
+
+WebAIM's [2026 Million report](https://webaim.org/projects/million/) analyzed one million website home pages to understand the prevalence of automatically detectable accessibility barriers.
+
+### The numbers tell the story
+
+| Metric | 2026 findings | Why it matters |
+|---|---|---|
+| **95.9%** | Of sampled home pages had detectable WCAG 2 failures | Accessibility barriers remain widespread across the web. |
+| **56.1 errors** | Average number of detected accessibility errors per home page | A single page can contain multiple issues requiring investigation. |
+| **83.9%** | Of home pages had low-contrast text | Users with low vision may struggle to read content. |
+| **53.1%** | Of home pages had images missing alternative text | Important image information may not be available to screen-reader users. |
+| **51%** | Of home pages had missing form input labels | Users may have difficulty understanding what information a form requires. |
+| **46.3%** | Of home pages had empty links | The purpose of some links may not be clear to assistive technology users. |
+
+*Source: [WebAIM Million — 2026 Report](https://webaim.org/projects/million/). These findings are based on automated analysis of sampled home pages. Automated checks cannot identify every accessibility barrier or establish full WCAG conformance.*
+
+### What happens when accessibility is overlooked?
+
+- **People face barriers:** Users may struggle to read content, understand controls, complete forms, or navigate a website.
+- **Potential customers are excluded:** Inaccessible user journeys can prevent some visitors from completing purchases, bookings, registrations, or other important tasks.
+- **Issues reach production:** Without accessibility checks during development and QA, barriers may remain undiscovered until users report them or a later audit identifies them.
+- **Remediation becomes harder to coordinate:** Teams may need to revisit designs, code, test cases, and releases when issues are discovered late.
+- **Compliance exposure can increase:** Depending on the applicable laws and circumstances, inaccessible experiences may create legal and regulatory risks.
+
+### Why AccessAble AI matters
+
+AccessAble AI aims to make accessibility reviews easier to start by helping teams:
+
+1. **Spot potential barriers earlier** using website screenshots or public URLs.
+2. **Understand the evidence** behind each AI-generated observation.
+3. **Prioritize investigation** based on potential user impact.
+4. **Act on recommendations** with practical remediation and verification guidance.
+5. **Share findings** through a structured PDF report.
+
+**Our goal:** Help teams treat accessibility as part of everyday quality engineering—not an afterthought before release.
+
+---
+
 ## 💡 Our Solution
 
 **AccessAble AI acts as an accessibility detective for your website.**
@@ -274,6 +315,8 @@ Ensure your `.gitignore` includes:
 
 ```gitignore
 .env
+.env.*
+!.env.example
 .venv/
 __pycache__/
 *.py[cod]
@@ -433,6 +476,7 @@ Potential next steps for the project include:
 - **Regression detection:** Compare results across builds to identify newly introduced issues.
 - **Developer-ready output:** Export findings in formats suitable for Jira or GitHub issues.
 - **AI-assisted remediation:** Suggest code changes and help verify fixes.
+- **Evaluation metrics:** Track validated findings, false positives, missed issues, and review time to measure the assistant's effectiveness.
 
 These are proposed enhancements and are not necessarily implemented in the current version.
 
@@ -463,5 +507,3 @@ A license has not yet been specified. Add a `LICENSE` file before distributing t
 **Accessibility should not be an afterthought.**
 
 AccessAble AI aims to help teams notice potential accessibility barriers earlier, understand their impact, and take practical steps toward more inclusive digital experiences.
-
-*Build with accessibility in mind. Detect potential barriers. Make the web more inclusive.*
