@@ -1,0 +1,54 @@
+# idle-janitor AWS inventory fixture (example)
+# -----------------------------------------------------------------------------
+# idle-janitor v1 ships *without* a live boto3 integration \u2014 we deliberately
+# scoped out AWS credential handling for the hackathon demo. This fixture file
+# is how the AWS adapter stands in for a real `ec2.describe_instances()` call
+# so the architecture, cost math, and MCP tool are all exercised end-to-end.
+#
+# To use a different fixture at runtime:
+#     export AWS_FIXTURE_PATH=/path/to/your/fixture.yaml
+#
+# To wire this to real AWS later, replace `aws_scan._load_fixture()` with a
+# `boto3.client('ec2').describe_instances()` call that produces the same
+# schema. Nothing else needs to change.
+# -----------------------------------------------------------------------------
+
+instances:
+  - instance_id: i-0abc1234567890aaa
+    instance_type: t3.small
+    region: us-east-1
+    launch_time: 2026-10-17T09:12:00Z        # ~7 days before the DevFest 2026 demo
+    state: running
+    tags:
+      Name: scratch-dev-box
+      Owner: pkumari9
+      Environment: dev
+
+  - instance_id: i-0bcd2345678901bbb
+    instance_type: m5.large
+    region: ap-south-1
+    launch_time: 2026-10-23T18:00:00Z        # ~17h before demo \u2014 "I'll turn it off tomorrow"
+    state: running
+    tags:
+      Name: ml-sandbox-forgot
+      Owner: pkumari9
+      Environment: dev
+
+  - instance_id: i-0cde3456789012ccc
+    instance_type: g4dn.xlarge                # GPU box \u2014 ~$0.52/hr. The expensive one.
+    region: us-east-1
+    launch_time: 2026-10-24T06:30:00Z        # ~5h before demo
+    state: running
+    tags:
+      Name: pytorch-notebook
+      Owner: pkumari9
+      Project: side-quest
+
+  - instance_id: i-0def4567890123ddd
+    instance_type: t3.micro
+    region: us-east-1
+    launch_time: 2026-10-24T11:00:00Z        # ~1h before demo
+    state: stopped                           # stopped \u2014 won't show up unless --include-stopped
+    tags:
+      Name: tutorial-leftover
+      Owner: pkumari9
