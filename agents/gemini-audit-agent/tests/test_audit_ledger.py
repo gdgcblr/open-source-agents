@@ -140,3 +140,31 @@ def test_split_mismatch_anomaly_detection():
     mismatches = [a for a in report.anomalies if a.type == "SPLIT_MISMATCH"]
     assert len(mismatches) == 1
     assert mismatches[0].severity == "HIGH"
+
+
+def test_ocr_tool_receipt_parsing():
+    from core.ocr_tool import ReceiptOCRTool
+    res = ReceiptOCRTool.scan_receipt_image(b"MOCK_IMG", user_notes="swiggy biryani")
+    assert res.total_amount == 1650.00
+    assert len(res.line_items) == 3
+    assert res.confidence_score >= 0.90
+
+
+def test_smart_split_penny_conservation():
+    from core.smart_split_tool import SmartSplitTool
+    p1 = Member(id="m1", name="Alice")
+    p2 = Member(id="m2", name="Bob")
+    p3 = Member(id="m3", name="Charlie")
+
+    # Split 1000 across 3 members (1000 / 3 = 333.33 -> sum = 999.99, residual = 0.01)
+    plan = SmartSplitTool.split_expense("Lunch", 1000.0, p1, [p1, p2, p3], "EQUAL")
+    assert plan.conservation_verified is True
+    assert round(sum(plan.shares.values()), 2) == 1000.00
+    assert plan.shares["m1"] == 333.34  # Adjusted residual
+
+
+def test_chat_copilot_intent_dispatch():
+    from core.chat_tool import BharatDuesChatCopilot
+    res = BharatDuesChatCopilot.handle_message("Who owes what right now?")
+    assert res.intent == "QUERY_BALANCES"
+    assert "Balance Sheet" in res.reply
