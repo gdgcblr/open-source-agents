@@ -35,31 +35,30 @@ Verified environment on 2026-10-24: Python 3.12.12, `google-adk==2.13.0`, `googl
 
 ## Architecture & Data Flow
 
-```text
-[Contributor]
-    |
-    v
-[CLI: --repo, --check | --send-to-model, optional --intent]
-    |
-    v
-[Local capture: root, bounded staged diff, PR template, input checks]
-    |
-    +--> [--check] --> metadata report on stdout
-    |
-    v
-[ADK Runner + single LlmAgent + Gemini]
-    |
-    +--> get_staged_diff() ---+
-    +--> get_pr_template() ---+--> validated in-memory snapshot
-    |
-    v
-[Tool-use check, Markdown validation, unchecked tasks, fixed notice]
-    |
-    v
-[Draft on stdout; human review; manual submission]
+```mermaid
+flowchart TD
+    A[Contributor stages a change] --> B[CLI receives --repo and a mode]
+    B --> C[Read staged Git diff and PR template]
+    C --> D{Local input checks pass?}
+    D -->|No| E[Safe error; no draft]
+    D -->|Yes| F{Selected mode}
+    F -->|--check| G[Print file names, sizes, and diff hash]
+    F -->|--send-to-model| H[Check local model configuration]
+    H --> Q{Key and model available?}
+    Q -->|No| E
+    Q -->|Yes| R[Show transmission notice]
+    R --> I[ADK Runner starts one agent session]
+    I --> J[get_staged_diff and get_pr_template]
+    J --> K[Validated in-memory snapshot]
+    K --> L[Gemini drafts title and description]
+    L --> M{Both tools used and output valid?}
+    M -->|No| E
+    M -->|Yes| N[Uncheck tasks and append verification notice]
+    N --> O[Print editable draft]
+    O --> P[Contributor reviews and submits manually]
 ```
 
-The CLI, capture, agent, and renderer live in `pr_draft_agent/`. The tests cover their input boundaries and the ADK workflow.
+The local checks reject unsupported files, oversized inputs, and recognizable credential material before generation. `--check` stops after the metadata report, so it needs no API key and makes no model call. In generation mode, the two ADK tools read only the validated snapshot; the agent cannot choose new paths or run repository commands. A failed tool or output check produces an error instead of a partial draft. The CLI, capture, agent, and renderer live in `pr_draft_agent/`.
 
 ---
 
@@ -119,25 +118,46 @@ The draft is printed to stdout. Progress and errors go to stderr. Saving the dra
 uv run python -m pr_draft_agent --repo /path/to/demo --send-to-model > draft.md
 ```
 
-To make a disposable demo repository:
+### Run the demo step by step
 
-```bash
-uv run python examples/create_demo_repo.py
-```
+Run these steps in the same terminal. They create a disposable repository with a staged bug fix; your project checkout is not changed.
+
+1. From the repository root, install the locked dependencies:
+
+   ```bash
+   cd agents/pr-draft-agent
+   uv sync --python 3.12 --frozen
+   ```
+
+2. Create the demo repository and save its actual path in `DEMO_REPO`:
+
+   ```bash
+   DEMO_REPO="$(uv run python examples/create_demo_repo.py | sed -n 's/^Demo repository: //p')"
+   git -C "$DEMO_REPO" diff --cached
+   ```
+
+   The Git command shows the staged change that the agent will describe. If you open another terminal, repeat this step there to set `DEMO_REPO` again.
+
+3. Check the input locally without an API key or model call:
+
+   ```bash
+   uv run python -m pr_draft_agent --repo "$DEMO_REPO" --check
+   ```
+
+4. To generate the draft, first set `GOOGLE_API_KEY` and `PR_DRAFT_MODEL` in this project's ignored `.env`, as described in [Installation & Setup](#installation--setup). Then run:
+
+   ```bash
+   uv run python -m pr_draft_agent --repo "$DEMO_REPO" --send-to-model \
+     --intent "Show a clear error when the configuration file is missing"
+   ```
+
+   Review the title, description, unchecked tasks, and verification notice before using the draft in a pull request.
 
 ---
 
 ## Example Input & Output
 
-Create the synthetic demo repository and run the offline check:
-
-```bash
-uv run python examples/create_demo_repo.py
-# Copy the reported repository path into this command:
-uv run python -m pr_draft_agent --repo /reported/repository/path --check
-```
-
-The check reports eligibility, relative file names, byte counts, template source, and the diff digest. It never prints file contents:
+The demo command above creates the synthetic repository and runs the offline check. It reports eligibility, relative file names, byte counts, template source, and the diff digest. It never prints file contents:
 
 ```text
 Eligible: yes
