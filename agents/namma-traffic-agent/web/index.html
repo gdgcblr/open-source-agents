@@ -518,6 +518,9 @@
 
   <!-- Top-Right Map View Toggles -->
   <div class="map-controls-panel">
+    <button class="map-btn active" id="btnToggleBasemap" onclick="toggleBasemap()">
+      🛰️ Satellite View
+    </button>
     <button class="map-btn active" id="btnToggleTraffic" onclick="toggleTrafficLayer()">
       🚦 Traffic Congestion
     </button>
@@ -629,12 +632,46 @@
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // CartoDB Voyager tiles (Google Maps cartographic aesthetic)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      subdomains: 'abcd',
+    // High-Resolution Satellite Imagery Layer (No API Key required, no watermark)
+    const satelliteBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Satellite',
       maxZoom: 19
-    }).addTo(map);
+    });
+
+    // Street Names & Road Boundaries Overlay for Satellite View
+    const satelliteLabels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '',
+      maxZoom: 19
+    });
+
+    // Clean OpenStreetMap Street Basemap (No API Key required, no watermark)
+    const streetBase = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    });
+
+    // Default: Satellite View with Road Overlays
+    let isSatellite = true;
+    satelliteBase.addTo(map);
+    satelliteLabels.addTo(map);
+
+    function toggleBasemap() {
+      isSatellite = !isSatellite;
+      const btn = document.getElementById('btnToggleBasemap');
+      if (isSatellite) {
+        map.removeLayer(streetBase);
+        satelliteBase.addTo(map);
+        satelliteLabels.addTo(map);
+        btn.innerHTML = '🛰️ Satellite View';
+        btn.classList.add('active');
+      } else {
+        map.removeLayer(satelliteBase);
+        map.removeLayer(satelliteLabels);
+        streetBase.addTo(map);
+        btn.innerHTML = '🗺️ Street Map';
+        btn.classList.remove('active');
+      }
+    }
 
     // Hub Coordinates Database
     const BENGALURU_COORDS = {
