@@ -13,6 +13,7 @@
 ### Key Features
 - **Multi-Pillar Audits**:
   - 🛡️ **Security & OWASP Top 10**: Checks for injection, unvalidated inputs, credential leaks, and insecure API exposures.
+  - 🌐 **Blast Radius & Surface Impact**: Computes quantitative risk scores (0-100) based on churn, sensitive surface modifications (auth, db schemas, configs), and visual risk heatmaps.
   - ⚡ **Performance & Scalability**: Detects algorithmic bottlenecks, blocking operations, and resource leaks.
   - 🧼 **Code Quality**: Enforces error handling, maintainability, modularity, and language best practices.
 - **Surrounding Context Inspection**: Uses Google ADK tools to not only read diffs but also pull surrounding file contents (`read_repo_file`) when context is ambiguous.

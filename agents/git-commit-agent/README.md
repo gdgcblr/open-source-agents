@@ -19,7 +19,8 @@
 - **Pre-Commit Secret & Credential Guard**: Automatically scans staged files and diffs for API keys, private keys, tokens, and `.env` files to prevent secret leakage.
 - **Smart Noise Filtering**: Excludes noisy auto-generated lockfiles (`package-lock.json`, `poetry.lock`, etc.) to maximize relevant context window space.
 - **Interactive Review & Multi-Turn Refinement**: Accept (`y`), edit in `$EDITOR` (`e`), cancel (`n`), or **regenerate with custom feedback** (`r`).
-- **Amend Mode (`--amend`)**: Reads previous commit context and staged revisions to regenerate messages for amending commits.
+- **Amend Mode (`--amend`) & Soft Undo (`--undo`)**: Reads previous commit context for amending, or performs a safe soft reset (`--undo`) to restore staged changes if a typo occurred.
+- **Atomic Commit Split Advisor (`--split`)**: Analyzes multi-file staged diffs and clusters them into recommended atomic Conventional Commits when multiple logical concerns are mixed together.
 - **Custom Hints & Constraints**: Guide the agent with user hints (`-m / --hint`), enforced types (`--type feat`), and scopes (`--scope auth`).
 
 ---

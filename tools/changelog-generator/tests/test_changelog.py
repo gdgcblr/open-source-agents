@@ -59,5 +59,25 @@ class TestChangelogGenerator(unittest.TestCase):
         self.assertIn("**ui:** add dark mode (`abc`)", md)
 
 
+    def test_calculate_semver_bump(self):
+        # 1. Feature bump -> MINOR
+        commits_feat = [{"type": "feat", "breaking": False}]
+        res = main.calculate_semver_bump("v1.2.0", commits_feat)
+        self.assertEqual(res["bump"], "MINOR")
+        self.assertEqual(res["next_tag"], "v1.3.0")
+
+        # 2. Breaking change -> MAJOR
+        commits_break = [{"type": "feat", "breaking": True}]
+        res_break = main.calculate_semver_bump("v1.2.0", commits_break)
+        self.assertEqual(res_break["bump"], "MAJOR")
+        self.assertEqual(res_break["next_tag"], "v2.0.0")
+
+        # 3. Fixes only -> PATCH
+        commits_fix = [{"type": "fix", "breaking": False}, {"type": "docs", "breaking": False}]
+        res_fix = main.calculate_semver_bump("v1.2.0", commits_fix)
+        self.assertEqual(res_fix["bump"], "PATCH")
+        self.assertEqual(res_fix["next_tag"], "v1.2.1")
+
+
 if __name__ == "__main__":
     unittest.main()

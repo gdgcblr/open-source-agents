@@ -29,5 +29,14 @@ class TestPrReviewer(unittest.TestCase):
         self.assertIn("does not exist", res["error"])
 
 
+    def test_compute_blast_radius(self):
+        res = main.compute_blast_radius(base_branch="HEAD~1", staged_only=False)
+        self.assertIn("file_count", res)
+        self.assertIn("total_churn", res)
+        self.assertIn("risk_score", res)
+        self.assertIn("risk_level", res)
+        self.assertIn("Blast Radius", res["report_markdown"])
+
+
 if __name__ == "__main__":
     unittest.main()

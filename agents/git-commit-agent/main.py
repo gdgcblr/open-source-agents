@@ -475,6 +475,61 @@ def run_with_ollama(model_name: str, prompt: str, amend_mode: bool = False) -> t
 
 
 # ---------------------------------------------------------------------------
+# Commit Split Advisor & History Utilities
+# ---------------------------------------------------------------------------
+
+def undo_last_commit() -> bool:
+    """Safely undoes the last commit with a soft reset, preserving changes in the staging index."""
+    res = subprocess.run(["git", "reset", "--soft", "HEAD~1"], capture_output=True, text=True)
+    if res.returncode == 0:
+        print(f"{Colors.GREEN}✓ Successfully undid last commit (HEAD~1).{Colors.RESET}")
+        print("All modified files remain staged in your index for editing or re-committing.")
+        return True
+    else:
+        print(f"{Colors.RED}Error undoing commit: {res.stderr.strip()}{Colors.RESET}", file=sys.stderr)
+        return False
+
+
+def recommend_commit_splits() -> None:
+    """
+    Analyzes staged files and clusters them into recommended atomic Conventional Commits
+    if multiple logical directories or concerns are mixed together.
+    """
+    res = subprocess.run(["git", "diff", "--staged", "--name-only"], capture_output=True, text=True)
+    files = [f.strip() for f in res.stdout.splitlines() if f.strip()]
+    if not files:
+        print(f"{Colors.YELLOW}No staged files found to analyze.{Colors.RESET}")
+        return
+
+    clusters = {}
+    for f in files:
+        parts = f.split(os.sep)
+        category = parts[0] if len(parts) > 1 else "root"
+        clusters.setdefault(category, []).append(f)
+
+    border = "─" * 60
+    print(f"\n{Colors.CYAN}{border}")
+    print("💡 Atomic Commit Split Advisor")
+    print(f"{border}{Colors.RESET}\n")
+
+    if len(clusters) == 1:
+        print(f"{Colors.GREEN}Staged changes appear cohesive ({len(files)} file(s) in '{list(clusters.keys())[0]}'). No split necessary.{Colors.RESET}\n")
+        return
+
+    print(f"Staged changes span {len(clusters)} distinct areas. Recommended atomic commits:\n")
+    step = 1
+    for cat, cat_files in clusters.items():
+        files_str = " ".join(cat_files)
+        scope = cat if cat != "root" else "config"
+        c_type = "docs" if "doc" in cat else ("test" if "test" in cat else "feat")
+        print(f"{Colors.BOLD}Step {step}: [{cat}]{Colors.RESET}")
+        print(f"  git reset && git add {files_str}")
+        print(f'  git commit -m "{c_type}({scope}): update {cat} components"\n')
+        step += 1
+    print(f"{Colors.CYAN}{border}{Colors.RESET}\n")
+
+
+# ---------------------------------------------------------------------------
 # Git Hook Installation
 # ---------------------------------------------------------------------------
 
@@ -653,17 +708,32 @@ def main():
         action="store_true",
         help="Remove git-commit-agent 'prepare-commit-msg' hook from the local repository.",
     )
+    parser.add_argument(
+        "--split",
+        action="store_true",
+        help="Analyze staged files and recommend atomic commit splits across directories/concerns.",
+    )
+    parser.add_argument(
+        "--undo",
+        action="store_true",
+        help="Safely undo the previous commit (git reset --soft HEAD~1), keeping files staged.",
+    )
 
     args = parser.parse_args()
 
     if args.no_color or not sys.stdout.isatty():
         Colors.disable()
 
-    # Hook management operations
+    # Hook and utility operations
     if args.install_hook:
         sys.exit(0 if install_git_hook() else 1)
     if args.uninstall_hook:
         sys.exit(0 if uninstall_git_hook() else 1)
+    if args.undo:
+        sys.exit(0 if undo_last_commit() else 1)
+    if args.split:
+        recommend_commit_splits()
+        sys.exit(0)
 
     # 1. Verify Git working tree
     if not is_git_repository():

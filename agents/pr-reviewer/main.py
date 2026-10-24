@@ -94,6 +94,90 @@ def get_pr_changed_files(base_branch: str = "main", staged_only: bool = False) -
     return {"summary": summary}
 
 
+def compute_blast_radius(base_branch: str = "main", staged_only: bool = False) -> dict:
+    """
+    Computes a quantitative Blast Radius & Risk Assessment on the pull request:
+      - Line churn (insertions, deletions)
+      - File count and core module sensitivity (auth, db, config, ci)
+      - Calculates Risk Score (0-100) with visual meter.
+    """
+    target = ["--staged"] if staged_only else [f"{base_branch}...HEAD"]
+    check = subprocess.run(["git", "rev-parse", "--verify", base_branch], capture_output=True, text=True)
+    if not staged_only and check.returncode != 0:
+        target = ["HEAD~1"]
+
+    res_files = subprocess.run(["git", "diff"] + target + ["--name-only"], capture_output=True, text=True)
+    files = [f.strip() for f in res_files.stdout.splitlines() if f.strip()]
+
+    res_numstat = subprocess.run(["git", "diff"] + target + ["--numstat"], capture_output=True, text=True)
+    additions, deletions = 0, 0
+    for line in res_numstat.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            try:
+                additions += int(parts[0])
+                deletions += int(parts[1])
+            except ValueError:
+                pass
+
+    total_churn = additions + deletions
+
+    sensitive_domains = []
+    risk_score = 10
+    for f in files:
+        f_lower = f.lower()
+        if any(k in f_lower for k in ["auth", "security", "token", "crypto", "oauth"]):
+            if "Authentication & Security" not in sensitive_domains:
+                sensitive_domains.append("Authentication & Security")
+                risk_score += 25
+        if any(k in f_lower for k in ["db", "database", "migration", "schema", "model"]):
+            if "Database & Schema" not in sensitive_domains:
+                sensitive_domains.append("Database & Schema")
+                risk_score += 20
+        if any(k in f_lower for k in ["config", "setting", ".env", "secret"]):
+            if "Configuration & Secrets" not in sensitive_domains:
+                sensitive_domains.append("Configuration & Secrets")
+                risk_score += 15
+        if any(k in f_lower for k in ["docker", "k8s", "workflow", "ci", ".github"]):
+            if "CI/CD & Infrastructure" not in sensitive_domains:
+                sensitive_domains.append("CI/CD & Infrastructure")
+                risk_score += 15
+
+    if total_churn > 500:
+        risk_score += 20
+    elif total_churn > 200:
+        risk_score += 10
+
+    risk_score = min(100, risk_score)
+    filled = int(risk_score / 10)
+    meter = f"[{'█' * filled}{'░' * (10 - filled)}] {risk_score}%"
+
+    level = "LOW"
+    if risk_score >= 70:
+        level = "CRITICAL / HIGH"
+    elif risk_score >= 40:
+        level = "MEDIUM"
+
+    report = (
+        f"### 🌐 Blast Radius & Surface Impact\n"
+        f"- **File Count:** {len(files)} file(s) touched\n"
+        f"- **Code Churn:** +{additions} / -{deletions} ({total_churn} lines modified)\n"
+        f"- **Critical Surfaces:** {', '.join(sensitive_domains) if sensitive_domains else 'None (standard application logic)'}\n"
+        f"- **Risk Level:** **{level}** `{meter}`\n"
+    )
+
+    return {
+        "file_count": len(files),
+        "additions": additions,
+        "deletions": deletions,
+        "total_churn": total_churn,
+        "sensitive_domains": sensitive_domains,
+        "risk_score": risk_score,
+        "risk_level": level,
+        "report_markdown": report,
+    }
+
+
 def read_repo_file(file_path: str, max_lines: int = 300) -> dict:
     """
     Reads a full file from the repository to give the agent surrounding context
@@ -161,7 +245,9 @@ One of:
 
 
 def run_pr_reviewer(base_branch: str, staged_only: bool, model_name: str) -> str:
-    """Runs the ADK PR review agent."""
+    """Runs the ADK PR review agent with quantitative Blast Radius metrics."""
+    blast_radius = compute_blast_radius(base_branch, staged_only)
+
     agent = Agent(
         name="pr_reviewer",
         model=model_name,
@@ -180,11 +266,12 @@ def run_pr_reviewer(base_branch: str, staged_only: bool, model_name: str) -> str
     )
 
     prompt = (
-        f"Perform a comprehensive code review on the pull request changes. "
-        f"Base reference: '{base_branch}', Staged only: {staged_only}. "
-        f"1. First call get_pr_changed_files to see what touched. "
-        f"2. Then call get_pr_diff to inspect the actual changes. "
-        f"3. If needed, call read_repo_file on specific files for broader context. "
+        f"Perform a comprehensive code review on the pull request changes.\n"
+        f"Base reference: '{base_branch}', Staged only: {staged_only}.\n"
+        f"Computed Blast Radius: {blast_radius['file_count']} files, {blast_radius['total_churn']} lines churn, Risk: {blast_radius['risk_level']}.\n"
+        f"1. First call get_pr_changed_files to see what touched.\n"
+        f"2. Then call get_pr_diff to inspect the actual changes.\n"
+        f"3. If needed, call read_repo_file on specific files for broader context.\n"
         f"4. Synthesize your final review report."
     )
 
@@ -197,7 +284,8 @@ def run_pr_reviewer(base_branch: str, staged_only: bool, model_name: str) -> str
                 if getattr(part, "text", None):
                     collected_text.append(part.text)
 
-    return "".join(collected_text).strip()
+    review_body = "".join(collected_text).strip()
+    return f"{blast_radius['report_markdown']}\n{review_body}"
 
 
 def main():

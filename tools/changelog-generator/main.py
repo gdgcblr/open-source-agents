@@ -205,14 +205,57 @@ def synthesize_ai_summary(commits_text: str) -> Optional[str]:
         return None
 
 
+def calculate_semver_bump(base_tag: Optional[str], commits: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Evaluates Conventional Commits and calculates the SemVer 2.0 bump:
+      - Any breaking change -> MAJOR
+      - Any 'feat' -> MINOR
+      - Otherwise -> PATCH
+    """
+    has_breaking = any(c.get("breaking") for c in commits)
+    has_feat = any(c.get("type") == "feat" for c in commits)
+
+    clean_tag = (base_tag or "v0.0.0").lstrip("v")
+    nums = []
+    for part in clean_tag.split("."):
+        digits = "".join(filter(str.isdigit, part))
+        nums.append(int(digits) if digits else 0)
+    while len(nums) < 3:
+        nums.append(0)
+
+    major, minor, patch = nums[0], nums[1], nums[2]
+
+    if has_breaking:
+        bump = "MAJOR"
+        next_tag = f"v{major + 1}.0.0"
+        reason = "Breaking change detected in commit history."
+    elif has_feat:
+        bump = "MINOR"
+        next_tag = f"v{major}.{minor + 1}.0"
+        reason = "New feature ('feat') detected without breaking changes."
+    else:
+        bump = "PATCH"
+        next_tag = f"v{major}.{minor}.{patch + 1}"
+        reason = "Only bug fixes, refactoring, or maintenance commits found."
+
+    return {
+        "bump": bump,
+        "current_tag": base_tag or "v0.0.0",
+        "next_tag": next_tag,
+        "reason": reason,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="AI-powered changelog generator from Git commit history."
+        description="AI-powered changelog generator and SemVer release manager from Git commit history."
     )
     parser.add_argument("--from-tag", type=str, default=None, help="Starting tag or commit reference.")
     parser.add_argument("--to-tag", type=str, default="HEAD", help="Ending tag or commit reference (default: HEAD).")
     parser.add_argument("--title", type=str, default="Unreleased", help="Version title (default: 'Unreleased').")
     parser.add_argument("--ai", action="store_true", help="Synthesize release highlights using Gemini.")
+    parser.add_argument("--bump", action="store_true", help="Predict next SemVer version (MAJOR, MINOR, PATCH) from commits.")
+    parser.add_argument("--create-tag", action="store_true", help="Automatically create the predicted SemVer Git tag.")
     parser.add_argument("--output", "-o", type=str, default=None, help="Write output to specified file.")
     parser.add_argument("--dry-run", action="store_true", help="Print changelog without writing to file.")
 
@@ -233,6 +276,27 @@ def main():
     parsed = [parse_conventional_commit(c) for c in commits]
     grouped = group_commits(parsed)
 
+    # SemVer version bump calculation
+    if args.bump or args.create_tag:
+        semver = calculate_semver_bump(from_tag, parsed)
+        border = "─" * 50
+        print(f"\n{border}")
+        print("🏷️  SemVer 2.0 Release Recommendation")
+        print(border)
+        print(f"Current Tag:  {semver['current_tag']}")
+        print(f"Bump Type:    {semver['bump']}")
+        print(f"Next Tag:     {semver['next_tag']}")
+        print(f"Reason:       {semver['reason']}")
+        print(f"{border}\n")
+
+        if args.create_tag:
+            tag_name = semver['next_tag']
+            tag_res = subprocess.run(["git", "tag", "-a", tag_name, "-m", f"Release {tag_name}"], capture_output=True, text=True)
+            if tag_res.returncode == 0:
+                print(f"✓ Created annotated Git tag '{tag_name}'")
+            else:
+                print(f"Error creating tag '{tag_name}': {tag_res.stderr.strip()}", file=sys.stderr)
+
     ai_summary = None
     if args.ai:
         commits_summary = "\n".join(f"- {c['subject']}" for c in commits)
@@ -245,7 +309,7 @@ def main():
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(changelog_md + "\n")
         print(f"✓ Changelog successfully written to {args.output}")
-    else:
+    elif not args.bump:
         print(changelog_md)
 
 

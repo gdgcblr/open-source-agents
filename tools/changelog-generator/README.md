@@ -20,6 +20,8 @@
   - 📚 Documentation (`docs`)
   - 🧹 Maintenance & Chores (`chore`)
 - **AI Executive Summary Synthesis (`--ai`)**: Uses Gemini 2.0 Flash to analyze the change set and generate a concise 2-4 sentence executive overview for human readers.
+- **Automated SemVer 2.0 Release Predictor (`--bump`)**: Evaluates Conventional Commits in the target range and automatically determines whether the release requires a `MAJOR`, `MINOR`, or `PATCH` bump according to SemVer 2.0 specification.
+- **One-Command Tagging (`--create-tag`)**: Automatically creates the next recommended annotated Git tag in your repository.
 - **Flexible Git Range Detection**: Automatically targets latest tags or custom ranges (`--from-tag v1.0 --to-tag v1.1`).
 - **Direct File Output**: Can print to stdout (perfect for GitHub Actions release jobs) or write directly to a `CHANGELOG.md` file (`-o`).
 
@@ -69,6 +71,12 @@ python main.py
 
 # Generate changelog between specific tags
 python main.py --from-tag v1.0.0 --to-tag v1.1.0 --title "Version 1.1.0"
+
+# Predict next SemVer release version (MAJOR, MINOR, PATCH)
+python main.py --from-tag v1.0.0 --bump
+
+# Predict and automatically create the next Git release tag
+python main.py --from-tag v1.0.0 --bump --create-tag
 
 # Synthesize release highlights using Gemini
 python main.py --ai
