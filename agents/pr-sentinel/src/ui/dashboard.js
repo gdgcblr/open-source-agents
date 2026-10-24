@@ -678,8 +678,39 @@ function renderDashboardHtml(report) {
       alert('GitHub PR Review markdown copied to clipboard!');
     }
 
-    // Initial render
-    renderReport(reportData);
+    // Check if report is already available or poll for it
+    async function loadLatestReport() {
+      try {
+        const res = await fetch('/api/report');
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (data && data.agents) {
+          renderReport(data);
+          return true;
+        }
+      } catch (e) {
+        return false;
+      }
+      return false;
+    }
+
+    // Initial render or auto-load
+    if (reportData && reportData.agents) {
+      renderReport(reportData);
+    } else {
+      document.getElementById('verdictBadge').innerText = 'AUDITING...';
+      const pollTimer = setInterval(async () => {
+        const done = await loadLatestReport();
+        if (done) clearInterval(pollTimer);
+      }, 1000);
+
+      // Trigger initial audit if none running
+      loadLatestReport().then(found => {
+        if (!found) {
+          runScan();
+        }
+      });
+    }
   </script>
 </body>
 </html>`;

@@ -37,6 +37,10 @@ export async function generateWithGemini({
 
   const modelName = config.geminiModel;
 
+  if (config.quotaExceeded) {
+    throw new Error('QUOTA_EXCEEDED: Falling back to Autonomous Simulation Engine.');
+  }
+
   const requestConfig = {
     temperature,
     systemInstruction,
@@ -46,11 +50,27 @@ export async function generateWithGemini({
     requestConfig.responseMimeType = 'application/json';
   }
 
-  const response = await client.models.generateContent({
+  // Wrap API call in a 4.5-second timeout to guarantee responsive UI
+  const generatePromise = client.models.generateContent({
     model: modelName,
     contents: prompt,
     config: requestConfig,
   });
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('TIMEOUT: Gemini API request timed out')), 4500)
+  );
+
+  let response;
+  try {
+    response = await Promise.race([generatePromise, timeoutPromise]);
+  } catch (apiErr) {
+    if (apiErr.message?.includes('429') || apiErr.message?.includes('RESOURCE_EXHAUSTED') || apiErr.message?.includes('TIMEOUT')) {
+      config.quotaExceeded = true;
+      console.warn('  ⚠️ Gemini API quota reached or slow response. Falling back to high-fidelity simulation engine.');
+    }
+    throw apiErr;
+  }
 
   const responseText = response.text || '';
   let parsedData = null;

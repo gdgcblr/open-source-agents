@@ -40,9 +40,12 @@ export const config = {
   maxDiffLines: parseInt(process.env.MAX_DIFF_LINES || '5000', 10),
   logLevel: process.env.LOG_LEVEL || 'info',
   
+  // Internal state
+  quotaExceeded: false,
+
   // Helper to determine if live Gemini API is configured
   isLiveApiAvailable() {
-    return Boolean(this.geminiApiKey && !this.mockMode);
+    return Boolean(this.geminiApiKey && !this.mockMode && !this.quotaExceeded);
   }
 };
 
