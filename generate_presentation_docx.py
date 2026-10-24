@@ -150,13 +150,53 @@ def generate_visual_charts():
     ax.annotate('', xy=(0.78, 0.60), xytext=(0.72, 0.72), arrowprops=dict(arrowstyle="->", color="#D97706", lw=2))
     ax.annotate('', xy=(0.78, 0.40), xytext=(0.72, 0.28), arrowprops=dict(arrowstyle="->", color="#D97706", lw=2))
 
+    # --- Chart 5: AI Agent Reasoning Engine & Specialized Tools Architecture ---
+    fig, ax = plt.subplots(figsize=(8.5, 4.4), dpi=220)
+    ax.axis('off')
+
+    agent_components = [
+        # User input layer
+        {"x": 0.02, "y": 0.58, "w": 0.23, "h": 0.36, "title": "User Query / Intent", "desc": "'Fastest route from\nKoramangala to Whitefield\nat 6 PM without surge?'", "color": "#F8FAFC", "border": "#334155"},
+        # AI Agent Reasoning Core
+        {"x": 0.31, "y": 0.54, "w": 0.34, "h": 0.42, "title": "Namma Travel AI Agent", "desc": "• Google GenAI (Gemini 2.5 Flash)\n• Dynamic Tool-Calling Reasoning\n• Deterministic Heuristic Engine\n• Bengaluru Corridors Knowledge", "color": "#EFF6FF", "border": "#1A73E8"},
+        # Output Advice Synthesizer
+        {"x": 0.71, "y": 0.58, "w": 0.27, "h": 0.36, "title": "AI Commute Advice", "desc": "• Take Purple Line (Save ₹745)\n• Depart 45m early to save 47m\n• Avoid flooded Panathur choke", "color": "#F0FDF4", "border": "#16A34A"},
+        
+        # 5 Specialized Bengaluru Transit Tools
+        {"x": 0.02, "y": 0.06, "w": 0.18, "h": 0.34, "title": "Route Traffic", "desc": "get_route_traffic()\nBottleneck delays\nPeak hour multipliers", "color": "#FEF2F2", "border": "#EF4444"},
+        {"x": 0.22, "y": 0.06, "w": 0.17, "h": 0.34, "title": "Chokepoints", "desc": "check_chokepoints()\nSilk Board, Tin Factory\nLive congestion index", "color": "#FFFBEB", "border": "#F59E0B"},
+        {"x": 0.41, "y": 0.06, "w": 0.17, "h": 0.34, "title": "Metro Transit", "desc": "get_metro_alt()\nPurple, Green, Yellow\nFares & station stops", "color": "#FAF5FF", "border": "#9333EA"},
+        {"x": 0.60, "y": 0.06, "w": 0.17, "h": 0.34, "title": "BMTC Buses", "desc": "get_bmtc_bus()\nVajra AC vs Ordinary\nLive stop tracking", "color": "#F0FDF4", "border": "#10B981"},
+        {"x": 0.79, "y": 0.06, "w": 0.19, "h": 0.34, "title": "Weather & Hazard", "desc": "get_weather_alerts()\nFlooded underpasses\nBBMP Road repairs", "color": "#F1F5F9", "border": "#0284C7"}
+    ]
+
+    for comp in agent_components:
+        rect = FancyBboxPatch((comp['x'], comp['y']), comp['w'], comp['h'], boxstyle="round,pad=0.02", facecolor=comp['color'], edgecolor=comp['border'], linewidth=1.4)
+        ax.add_patch(rect)
+        ax.text(comp['x'] + comp['w']/2, comp['y'] + comp['h'] - 0.07, comp['title'], ha='center', va='center', fontsize=8.8, fontweight='bold', color=comp['border'])
+        ax.text(comp['x'] + comp['w']/2, comp['y'] + comp['h']/2 - 0.03, comp['desc'], ha='center', va='center', fontsize=7.2, color='#334155', linespacing=1.25)
+
+    # Connecting Arrows
+    ax.annotate('', xy=(0.31, 0.75), xytext=(0.25, 0.75), arrowprops=dict(arrowstyle="->", color="#1A73E8", lw=2))
+    ax.annotate('', xy=(0.71, 0.75), xytext=(0.65, 0.75), arrowprops=dict(arrowstyle="->", color="#16A34A", lw=2))
+
+    # Bidirectional arrows to tools
+    for tool_x in [0.11, 0.30, 0.49, 0.68, 0.88]:
+        ax.annotate('', xy=(tool_x, 0.40), xytext=(0.48, 0.54), arrowprops=dict(arrowstyle="<->", color="#94A3B8", lw=1.2, linestyle='--'))
+
+    plt.title('Namma Travel AI Agent - Autonomous Tool-Calling Reasoning Architecture', fontsize=11, fontweight='bold', pad=12, color='#0F172A')
+    plt.tight_layout()
+    chart5_path = os.path.join(IMG_DIR, "ai_agent_architecture.png")
+    plt.savefig(chart5_path, bbox_inches='tight')
+    plt.close()
+
     plt.title('Namma Travel App - Cross-Platform Build & App Store Distribution Architecture', fontsize=11, fontweight='bold', pad=12, color='#0F172A')
     plt.tight_layout()
     chart4_path = os.path.join(IMG_DIR, "distribution_pipeline.png")
     plt.savefig(chart4_path, bbox_inches='tight')
     plt.close()
 
-    return chart1_path, chart2_path, chart3_path, chart4_path
+    return chart1_path, chart2_path, chart3_path, chart4_path, chart5_path
 
 # -------------------------------------------------------------
 # 2. WORD DOCUMENT STYLING UTILITIES
@@ -226,7 +266,7 @@ def add_callout_box(doc, title, text, border_color="1A73E8", bg_color="F1F5F9"):
 
 def build_presentation_docx():
     print("🎨 Generating visual charts and figures...")
-    chart1, chart2, chart3, chart4 = generate_visual_charts()
+    chart1, chart2, chart3, chart4, chart5 = generate_visual_charts()
 
     print("📄 Building Microsoft Word Presentation Document...")
     doc = Document()
@@ -335,12 +375,92 @@ def build_presentation_docx():
     )
 
     # ---------------------------------------------------------
-    # SECTION 2: MULTIMODAL FARE & DURATION BENCHMARK (VISUAL)
+    # SECTION 2: AI AGENT REASONING ENGINE & TOOL-CALLING ARCHITECTURE
+    # ---------------------------------------------------------
+    h_agent = doc.add_paragraph()
+    h_agent.paragraph_format.space_before = Pt(14)
+    h_agent.paragraph_format.space_after = Pt(4)
+    r_h_agent = h_agent.add_run("2. Namma Travel AI Agent Architecture & Autonomous Reasoning")
+    r_h_agent.font.name = "Calibri"
+    r_h_agent.font.size = Pt(16)
+    r_h_agent.bold = True
+    r_h_agent.font.color.rgb = RGBColor(15, 23, 42)
+
+    doc.add_paragraph(
+        "At the core of Namma Travel is an autonomous transit intelligence agent (NammaTrafficAgent) powered by Google GenAI "
+        "(Gemini 2.5 Flash SDK) with dynamic tool-calling reasoning and a deterministic local transit heuristics engine. "
+        "The agent deciphers natural language commute queries, selects the most relevant transit tools, and synthesizes "
+        "actionable departure and fare-saving advice:"
+    )
+
+    # Add Chart 5 (AI Agent Architecture Diagram)
+    p_img_agent = doc.add_paragraph()
+    p_img_agent.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_img_agent.paragraph_format.space_after = Pt(4)
+    doc.add_picture(chart5, width=Inches(6.5))
+
+    cap_agent = doc.add_paragraph()
+    cap_agent.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cap_agent.paragraph_format.space_after = Pt(10)
+    r_cap_agent = cap_agent.add_run("Figure 1: Autonomous AI Agent Architecture, Tool-Calling Loop, and Specialized Bengaluru Transit Tools")
+    r_cap_agent.font.size = Pt(8.5)
+    r_cap_agent.italic = True
+    r_cap_agent.font.color.rgb = RGBColor(100, 116, 139)
+
+    # AI Agent Tools Specification Table
+    doc.add_paragraph("Specialized Transit Tools Executed by the AI Agent:")
+    t_tools = doc.add_table(rows=6, cols=3)
+    t_tools.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t_tools.autofit = False
+    for i, w in enumerate([Inches(1.8), Inches(2.3), Inches(2.4)]):
+        t_tools.columns[i].width = w
+
+    tool_heads = ["TOOL NAME", "RESPONSIBILITY", "BENGALURU LOCAL INTELLIGENCE"]
+    for i, h in enumerate(tool_heads):
+        cell = t_tools.cell(0, i)
+        set_cell_background(cell, "1A73E8")
+        set_cell_margins(cell, 80, 80, 100, 100)
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run(h)
+        r.bold = True
+        r.font.size = Pt(8.5)
+        r.font.color.rgb = RGBColor(255, 255, 255)
+
+    tool_data = [
+        ["get_route_traffic()", "Calculates live road delays & surge multipliers", "Calibrated on 15 core tech hubs (Koramangala, Whitefield, Hebbal, E-City)"],
+        ["check_chokepoints()", "Evaluates bottlenecks & congestion severity", "Real-time delay tracking for Silk Board, Tin Factory, Bellandur, Sony World"],
+        ["get_metro_alternative()", "Analyzes Purple, Green & Yellow Metro lines", "Door-to-door duration, exact fare, transfer stations (Majestic) & walking legs"],
+        ["get_bmtc_bus_details()", "Compares Volvo Vajra AC vs Ordinary buses", "Route numbers (500-D, 335-E, G-2), frequency, stops & daily pass savings"],
+        ["get_weather_waterlogging_alerts()", "Monitors monsoon rain & hazard zones", "Real-time alerts for flooded underpasses (Panathur, Marathahalli) & BBMP roadworks"]
+    ]
+
+    for row_idx, r_data in enumerate(tool_data, start=1):
+        bg = "FFFFFF" if row_idx % 2 != 0 else "F8FAFC"
+        for col_idx, val in enumerate(r_data):
+            cell = t_tools.cell(row_idx, col_idx)
+            set_cell_background(cell, bg)
+            set_cell_margins(cell, 60, 60, 80, 80)
+            p = cell.paragraphs[0]
+            if col_idx == 0:
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                r = p.add_run(val)
+                r.bold = True
+            else:
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                r = p.add_run(val)
+            r.font.size = Pt(8.5)
+            r.font.color.rgb = RGBColor(15, 23, 42)
+
+    doc.add_paragraph().paragraph_format.space_after = Pt(8)
+
+    # ---------------------------------------------------------
+    # SECTION 3: MULTIMODAL FARE & DURATION BENCHMARK (VISUAL)
     # ---------------------------------------------------------
     h2 = doc.add_paragraph()
     h2.paragraph_format.space_before = Pt(14)
     h2.paragraph_format.space_after = Pt(4)
-    r_h2 = h2.add_run("2. Multimodal Transit Intelligence & Cost Savings")
+    r_h2 = h2.add_run("3. Multimodal Transit Intelligence & Cost Savings")
     r_h2.font.name = "Calibri"
     r_h2.font.size = Pt(16)
     r_h2.bold = True
@@ -360,7 +480,7 @@ def build_presentation_docx():
     cap1 = doc.add_paragraph()
     cap1.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap1.paragraph_format.space_after = Pt(10)
-    r_cap1 = cap1.add_run("Figure 1: Comprehensive Fare vs Travel Time Benchmark across Bengaluru Transit Modes")
+    r_cap1 = cap1.add_run("Figure 2: Comprehensive Fare vs Travel Time Benchmark across Bengaluru Transit Modes")
     r_cap1.font.size = Pt(8.5)
     r_cap1.italic = True
     r_cap1.font.color.rgb = RGBColor(100, 116, 139)
@@ -412,12 +532,12 @@ def build_presentation_docx():
     doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
     # ---------------------------------------------------------
-    # SECTION 3: PEAK HOUR BOTTLENECK OPTIMIZATION (VISUAL)
+    # SECTION 4: PEAK HOUR BOTTLENECK OPTIMIZATION (VISUAL)
     # ---------------------------------------------------------
     h3 = doc.add_paragraph()
     h3.paragraph_format.space_before = Pt(14)
     h3.paragraph_format.space_after = Pt(4)
-    r_h3 = h3.add_run("3. AI Bottleneck Radar & Departure Optimization")
+    r_h3 = h3.add_run("4. AI Bottleneck Radar & Departure Optimization")
     r_h3.font.name = "Calibri"
     r_h3.font.size = Pt(16)
     r_h3.bold = True
@@ -436,14 +556,14 @@ def build_presentation_docx():
     cap2 = doc.add_paragraph()
     cap2.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap2.paragraph_format.space_after = Pt(10)
-    r_cap2 = cap2.add_run("Figure 2: AI Predicted Delay Curves and Recommended Off-Peak Departure Windows")
+    r_cap2 = cap2.add_run("Figure 3: AI Predicted Delay Curves and Recommended Off-Peak Departure Windows")
     r_cap2.font.size = Pt(8.5)
     r_cap2.italic = True
     r_cap2.font.color.rgb = RGBColor(100, 116, 139)
 
     add_callout_box(
         doc,
-        "Copilot Dynamic Advice",
+        "AI Agent Recommendation Advice",
         "Leaving at 4:30 PM instead of 6:00 PM saves 47 minutes in traffic gridlock on the Marathahalli-Whitefield stretch. "
         "Switching to Metro at Majestic bypasses surface congestion completely.",
         border_color="16A34A",
@@ -451,14 +571,14 @@ def build_presentation_docx():
     )
 
     # ---------------------------------------------------------
-    # SECTION 4: USER AUTHENTICATION (GMAIL & MOBILE OTP)
+    # SECTION 5: USER AUTHENTICATION (GMAIL & MOBILE OTP)
     # ---------------------------------------------------------
     doc.add_page_break()
 
     h4 = doc.add_paragraph()
     h4.paragraph_format.space_before = Pt(14)
     h4.paragraph_format.space_after = Pt(4)
-    r_h4 = h4.add_run("4. Secure Authentication: Gmail & Mobile OTP")
+    r_h4 = h4.add_run("5. Secure Authentication: Gmail & Mobile OTP")
     r_h4.font.name = "Calibri"
     r_h4.font.size = Pt(16)
     r_h4.bold = True
@@ -477,7 +597,7 @@ def build_presentation_docx():
     cap3 = doc.add_paragraph()
     cap3.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap3.paragraph_format.space_after = Pt(10)
-    r_cap3 = cap3.add_run("Figure 3: Dual Authentication Pipeline & User Personalization State Machine")
+    r_cap3 = cap3.add_run("Figure 4: Dual Authentication Pipeline & User Personalization State Machine")
     r_cap3.font.size = Pt(8.5)
     r_cap3.italic = True
     r_cap3.font.color.rgb = RGBColor(100, 116, 139)
@@ -527,12 +647,12 @@ def build_presentation_docx():
     doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
     # ---------------------------------------------------------
-    # SECTION 5: PLAY STORE & APP STORE DEPLOYMENT PIPELINE
+    # SECTION 6: PLAY STORE & APP STORE DEPLOYMENT PIPELINE
     # ---------------------------------------------------------
     h5 = doc.add_paragraph()
     h5.paragraph_format.space_before = Pt(14)
     h5.paragraph_format.space_after = Pt(4)
-    r_h5 = h5.add_run("5. Play Store & App Store Distribution Architecture")
+    r_h5 = h5.add_run("6. Play Store & App Store Distribution Architecture")
     r_h5.font.name = "Calibri"
     r_h5.font.size = Pt(16)
     r_h5.bold = True
@@ -551,7 +671,7 @@ def build_presentation_docx():
     cap4 = doc.add_paragraph()
     cap4.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap4.paragraph_format.space_after = Pt(10)
-    r_cap4 = cap4.add_run("Figure 4: Google Play Store & Apple App Store Packaging and Release Architecture")
+    r_cap4 = cap4.add_run("Figure 5: Google Play Store & Apple App Store Packaging and Release Architecture")
     r_cap4.font.size = Pt(8.5)
     r_cap4.italic = True
     r_cap4.font.color.rgb = RGBColor(100, 116, 139)
@@ -567,12 +687,12 @@ def build_presentation_docx():
     )
 
     # ---------------------------------------------------------
-    # SECTION 6: HOW USERS INSTALL & ROADMAP
+    # SECTION 7: HOW USERS INSTALL & ROADMAP
     # ---------------------------------------------------------
     h6 = doc.add_paragraph()
     h6.paragraph_format.space_before = Pt(14)
     h6.paragraph_format.space_after = Pt(4)
-    r_h6 = h6.add_run("6. User Installation Steps & Technology Stack")
+    r_h6 = h6.add_run("7. User Installation Steps & Technology Stack")
     r_h6.font.name = "Calibri"
     r_h6.font.size = Pt(16)
     r_h6.bold = True
