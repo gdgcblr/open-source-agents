@@ -1,0 +1,5 @@
+done: fixed the login redirect loop
+done: reviewed the caching PR
+doing: writing tests for the CSV export
+blocked: waiting on staging database access
+remember to book the demo room

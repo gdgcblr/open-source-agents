@@ -1,0 +1,137 @@
+# Example workflow: run FirstRun on every agents/ or tools/ project a pull request touches.
+# Copy it to .github/workflows/firstrun-pr-check.yml in the repo that should use it.
+# See ci/README.md for permissions and the fork PR caveats.
+
+name: FirstRun README check
+
+on:
+  pull_request:
+    paths:
+      - "agents/**"
+      - "tools/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: firstrun-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  firstrun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Find changed projects
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --name-only "$BASE_SHA...$HEAD_SHA" \
+            | grep -E '^(agents|tools)/[^/]+/' \
+            | cut -d/ -f1-2 | sort -u > changed.txt || true
+          # a PR that deletes a project leaves nothing to run
+          : > projects.txt
+          while read -r dir; do
+            if [ -d "$dir" ]; then echo "$dir" >> projects.txt; fi
+          done < changed.txt
+          echo "count=$(wc -l < projects.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "Projects to check:"; cat projects.txt
+
+      - name: Install FirstRun
+        if: steps.changed.outputs.count != '0'
+        run: pip install -r agents/readme-first-run/requirements.txt
+
+      - name: Run FirstRun
+        if: steps.changed.outputs.count != '0'
+        env:
+          # empty for PRs from forks, FirstRun then falls back to its offline rules.
+          # The key is FirstRun's own and is never passed into the project being checked.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PYTHONPATH: ${{ github.workspace }}/agents/readme-first-run
+        run: |
+          mkdir -p runs comments
+          failed=0
+          while read -r dir; do
+            slug=$(echo "$dir" | tr '/' '-')
+            set +e
+            python -m firstrun "$dir" --sandbox docker --ci --out runs \
+              --comment-file "comments/$slug.md"
+            rc=$?
+            set -e
+            latest=$(ls -td runs/*/ 2>/dev/null | head -n 1)
+            if [ -n "$latest" ] && [ -f "${latest}report.md" ]; then
+              cat "${latest}report.md" >> "$GITHUB_STEP_SUMMARY"
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+            fi
+            case "$rc" in
+              0) echo "$dir works as documented" ;;
+              2) echo "::warning::$dir needs credentials, FirstRun stopped at that point" ;;
+              *) echo "::error::$dir does not run as documented (exit $rc)"; failed=1 ;;
+            esac
+          done < projects.txt
+
+          # one comment for the whole PR, with a single marker so it can be updated in place
+          {
+            echo "<!-- firstrun-report -->"
+            for f in comments/*.md; do
+              [ -f "$f" ] || continue
+              grep -v '^<!-- firstrun-report -->$' "$f" || true
+              echo ""
+              echo "---"
+              echo ""
+            done
+          } > firstrun-comment.md
+          echo "${{ github.event.pull_request.number }}" > pr-number.txt
+          exit "$failed"
+
+      - name: Upload FirstRun reports
+        if: always() && steps.changed.outputs.count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firstrun-runs
+          path: runs/
+          if-no-files-found: ignore
+
+      # Used by the separate commenter workflow (ci/README.md) for PRs from forks.
+      - name: Upload PR comment
+        if: always() && steps.changed.outputs.count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firstrun-comment
+          path: |
+            firstrun-comment.md
+            pr-number.txt
+          if-no-files-found: ignore
+
+      # Same-repo PRs get a write token, fork PRs do not (see ci/README.md).
+      - name: Post or update the PR comment
+        if: always() && steps.changed.outputs.count != '0' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('firstrun-comment.md')) return;
+            const marker = '<!-- firstrun-report -->';
+            const body = fs.readFileSync('firstrun-comment.md', 'utf8').slice(0, 65000);
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100,
+            });
+            const mine = comments.find(c => c.user.type === 'Bot' && (c.body || '').startsWith(marker));
+            if (mine) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

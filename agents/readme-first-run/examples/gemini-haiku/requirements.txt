@@ -1,0 +1,1 @@
+# standard library only (urllib talks to the Gemini REST API)
