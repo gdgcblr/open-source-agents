@@ -36,3 +36,8 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+
+# Invoice Chaser local data (real client data must never be committed)
+data/
+*.db
+*.db-journal

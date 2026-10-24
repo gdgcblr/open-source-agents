@@ -1,0 +1,9 @@
+client_id,name,contact_name,email,language,flags
+C01,Acme Design Pvt Ltd,Arjun Mehta,accounts@acme-design.example,en,
+C02,Bloom Organics,Neha Kapoor,neha@bloomorganics.example,hinglish,gentle
+C03,Northwind Analytics Inc,Sarah Collins,ap@northwind.example,en,
+C04,Chai Point Cafe Pvt Ltd,Rohit Sharma,rohit@chaipointcafe.example,hinglish,
+C05,Kite Learning,Ananya Iyer,finance@kitelearning.example,en,allow_final_notice
+C06,Sharma & Sons Traders,Vikram Sharma,vikram@sharmasons.example,hinglish,
+C07,Pixel Forge Studios,Kabir Rao,kabir@pixelforge.example,en,
+C08,GreenLeaf Foods,Meera Nair,meera@greenleaffoods.example,en,

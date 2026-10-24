@@ -1,0 +1,6 @@
+# Agent + tool runtime
+google-adk>=2.13,<3
+mcp>=2.3,<3
+
+# Tests
+pytest>=9,<10
