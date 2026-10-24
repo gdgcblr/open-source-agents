@@ -28,17 +28,28 @@ export function startDashboardServer({ port = 3737, host = 'localhost', initialR
       return;
     }
 
-    // API: Trigger re-run
+    // API: Trigger audit (supports custom target path)
     if (url.pathname === '/api/run' && req.method === 'POST') {
-      try {
-        const orchestrator = new Orchestrator();
-        latestReport = await orchestrator.runReview({ targetDir });
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(latestReport));
-      } catch (err) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: err.message }));
-      }
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', async () => {
+        try {
+          let customTarget = targetDir;
+          if (body) {
+            try {
+              const parsed = JSON.parse(body);
+              if (parsed.path) customTarget = parsed.path;
+            } catch (e) {}
+          }
+          const orchestrator = new Orchestrator();
+          latestReport = await orchestrator.runReview({ targetDir: customTarget });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(latestReport));
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
       return;
     }
 
@@ -463,7 +474,8 @@ function renderDashboardHtml(report) {
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary" onclick="runScan()">⚡ Re-Run</button>
+      <input id="auditTarget" type="text" placeholder="Target path (e.g. . or agents/other-slug)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); color: #fff; padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.82rem; width: 220px;" />
+      <button class="btn btn-secondary" onclick="runScan()">🔍 Audit</button>
       <button class="btn btn-secondary" onclick="exportPdf()">📄 Export PDF</button>
       <button class="btn btn-primary" onclick="downloadMarkdown()">📥 Download .md</button>
     </div>
@@ -663,9 +675,15 @@ function renderDashboardHtml(report) {
     }
 
     async function runScan() {
+      const targetInput = document.getElementById('auditTarget');
+      const customPath = targetInput ? targetInput.value.trim() : '';
       document.getElementById('verdictBadge').innerText = 'AUDITING...';
       try {
-        const res = await fetch('/api/run', { method: 'POST' });
+        const res = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: customPath || '.' }),
+        });
         const data = await res.json();
         renderReport(data);
       } catch (e) {
