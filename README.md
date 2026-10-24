@@ -1,130 +1,70 @@
-# open-source-ai
+# PR Agent
 
-> **Build it. Document it. Open-source it.**
+A local agent built on Google ADK. It watches GitHub pull requests, judges whether each feature is worth having and how well it's built, and waits for your approval. Once approved, it implements the change in an isolated git worktree on your machine, runs your checks, and makes a limited number of repair attempts.
 
-A community-driven collection of practical, documented, and open-source AI agents and developer tools, built with diverse frameworks and technologies.
+It never merges, pushes, deploys or publishes anything.
 
----
+## Setup (once)
 
-## Introduction
+1. Install [Ollama](https://ollama.com/download) and pull the model:
+   ```
+   ollama pull qwen2.5-coder:3b
+   ```
+2. Create a fine-grained GitHub token with read-only **Contents** and **Pull requests** access, and put it in `.env`:
+   ```
+   GITHUB_TOKEN=github_pat_...
+   ```
+3. Edit `config.yaml` and set `repos:` to your repository, e.g. `- name: yourname/yourrepo`.
+   Cloning uses your SSH key (`git@github.com:...`). You can set `clone_url` to use HTTPS instead.
+4. Check that everything is reachable:
+   ```
+   .venv\Scripts\python -m pr_agent --check
+   ```
 
-As AI systems evolve from single prompt-response interactions to multi-step reasoning, tool-using agents, and specialized developer utilities, the need for transparent, reproducible, and practical open-source implementations has never been greater.
+The `.venv` is already set up with Python 3.12. To rebuild it: `uv venv --python 3.12 .venv` then `uv pip install --python .venv\Scripts\python.exe -r requirements.txt`.
 
-`open-source-ai` is a collaborative monorepo curated to showcase working, well-documented AI projects. The goal is to provide developers, researchers, and builders with a shared catalog of real-world patterns—ranging from autonomous task agents to Model Context Protocol (MCP) servers and evaluation harnesses.
-
-This repository is designed to be accessible, framework-agnostic, and easy to navigate whether you are looking for reference implementations or contributing your own creation.
-
----
-
-## Acceptable Project Categories
-
-We welcome practical, working AI contributions across a variety of categories. These categories are illustrative rather than rigid constraints:
-
-- **AI Agents**: Autonomous, semi-autonomous, or task-oriented agents, conversational assistants, and multi-agent coordination systems.
-- **Model Context Protocol (MCP) Servers & Integrations**: Servers providing structured context, tools, and prompts to models from databases, filesystems, developer tools, or web services.
-- **AI Developer Utilities**: Command-line interfaces, prompt helpers, token trackers, context formatters, and workflow automations.
-- **AI-Powered Workflows & Automation**: Specialized pipelines for code generation, documentation review, PR triage, research synthesis, or data transformation.
-- **Evaluation, Testing & Safety Utilities**: Tools and harnesses to measure model accuracy, benchmark latency and cost, detect hallucinations, or test tool calls.
-- **Other Practical AI Tooling**: Reusable libraries, adapters, and connectors that help developers build AI applications.
-
----
-
-## Technology Flexibility
-
-This repository is **completely framework-agnostic and language-neutral**. Contributors are encouraged to select the stack best suited to their problem domain.
-
-Accepted technologies and ecosystems include, but are not limited to:
-- **Google Agent Development Kit (ADK)**
-- **OpenAI Agents SDK**
-- **LangGraph & LangChain**
-- **CrewAI**
-- **Model Context Protocol (MCP)**
-- **Python or TypeScript / JavaScript AI runtimes**
-- **Go, Rust, or other systems languages**
-- **Local / open-weights model runtimes** (e.g., Ollama, vLLM, llama.cpp)
-- **Hosted model APIs** (e.g., Gemini, OpenAI, Anthropic, Mistral)
-
-No single cloud provider, framework, or model vendor is mandated.
-
----
-
-## Repository Structure
-
-The repository is organized into distinct directories to keep projects isolated, modular, and easy to maintain:
+## Run
 
 ```
-open-source-ai/
-├── README.md               # Repository overview, philosophy, and index
-├── CONTRIBUTING.md         # Detailed 12-step contributor guide and standards
-├── .gitignore              # Repository-wide ignores for secrets, virtual environments, and caches
-├── agents/                 # Directory for autonomous and task-oriented agents
-│   └── README.md           # Guidelines and index of agent projects
-├── tools/                  # Directory for developer tools, MCP servers, and utilities
-│   └── README.md           # Guidelines and index of tooling projects
-├── template/               # Starter files for new contributions
-│   ├── README.md           # Reusable project documentation template
-│   ├── .gitignore          # Recommended per-project .gitignore
-│   └── .env.example        # Sanitized environment variable template
-└── .github/
-    └── PULL_REQUEST_TEMPLATE.md  # Standard checklist for submitting pull requests
+.venv\Scripts\python -m pr_agent
 ```
 
-- **[`agents/`](agents/README.md)**: Contains end-to-end agents and multi-agent workflows. Each agent lives in its own dedicated subfolder (`agents/<project-slug>/`).
-- **[`tools/`](tools/README.md)**: Contains developer utilities, MCP servers, evaluation harnesses, and reusable components. Each tool lives in its own dedicated subfolder (`tools/<project-slug>/`).
-- **[`template/`](template/README.md)**: Provides a standardized documentation blueprint, environment template, and local `.gitignore` so contributors can document their work consistently.
+Open http://127.0.0.1:8765. Click a PR to see its evaluation, then choose **Implement locally** or **Skip**.
 
----
+## How it works
 
-## Quick Start for Contributors
+| Step | Who does it |
+|---|---|
+| Poll GitHub, skip revisions already handled, apply filters | Deterministic code (`pipeline.py`) |
+| Scan the diff for red flags (eval, process execution, secrets, CI or dependency changes) | Deterministic code (`prescan`) |
+| Score feature value and code quality separately; assign category, risk and recommendation | **PR Evaluator** agent (ADK) |
+| Your approval, tied to the exact commit SHA | Dashboard → `Engine.approve` |
+| Re-check the PR on GitHub before starting; stop if it changed | Deterministic code |
+| Create a worktree from the base branch, with pushing disabled on the clone | `workspace.py` |
+| Write an implementation plan | **Planning** agent |
+| Apply the PR patch or write the change, using tools confined to the worktree | **Implementation** agent |
+| Run the checks (configured or auto-detected) | Deterministic code + `policy.py` |
+| Diagnose failures and fix them, up to `max_repair_attempts` | **Verification** agent |
+| Report changed files, the diff, check results and remaining issues | Dashboard |
 
-Ready to contribute? Follow this straightforward fork-and-pull-request workflow:
+## Safety
 
-1. **Browse existing contributions**: Check [`agents/`](agents/README.md) and [`tools/`](tools/README.md) to explore existing work and choose a unique, descriptive project name.
-2. **Fork the repository**: Fork this repository to your personal GitHub account.
-3. **Clone your fork**:
-   ```bash
-   git clone https://github.com/<your-username>/<repo-name>.git
-   cd <repo-name>
-   ```
-4. **Create a branch**:
-   ```bash
-   git checkout -b feat/<your-project-slug>
-   ```
-5. **Add your project**: Create a dedicated directory under `agents/<project-slug>/` or `tools/<project-slug>/`. Copy `template/README.md`, `template/.gitignore`, and `template/.env.example` into your folder.
-6. **Implement and document**: Write your code, declare dependencies in a manifest (`requirements.txt`, `package.json`, etc.), and document setup, usage, and examples in your project's `README.md`.
-7. **Test thoroughly**: Verify that installation and execution work on a clean environment and that no credentials or virtual environments are tracked.
-8. **Commit and push**:
-   ```bash
-   git add agents/<project-slug>/   # or tools/<project-slug>/
-   git commit -m "feat(agents): add <project-slug>"
-   git push -u origin feat/<your-project-slug>
-   ```
-9. **Open a Pull Request**: Submit your PR against the upstream `main` branch, completing the [Pull Request Checklist](.github/PULL_REQUEST_TEMPLATE.md).
+- **Local-only by default.** `strict_local: true` refuses to start with any model that isn't an Ollama model served from localhost. Code, diffs and prompts stay on your machine. The only network traffic is GitHub API calls and git fetches.
+- **Restricted commands.** Every command goes through an allowlist in `policy.py`: `python -m pytest/ruff/mypy/compileall`, `npm test`, `npm run lint|build|typecheck`, `go test`, `cargo test` and similar. Shell operators are rejected, nothing runs through a shell, and secrets are removed from the environment.
+- **Repository content is untrusted.** Prompts wrap it in `<untrusted>` tags and tell the model not to follow instructions inside them. File tools can't leave the worktree or touch `.git`.
+- **Approval is tied to a revision.** New commits cancel the approval, and the PR has to be re-evaluated.
+- **Restarts are safe.** Runs that were in progress get marked *interrupted* and are never resumed blindly.
+- **Honest outcomes.** Each result is one of `passed`, `checks_failing`, `unverified` (no checks found) or `no_changes`.
+- **Approved implementations run tests from the PR.** The allowlist limits which commands can be launched, but the tests themselves are the PR's own code. Only approve PRs whose code you're willing to run on your machine.
 
-For step-by-step guidance and detailed Git commands, see [CONTRIBUTING.md](CONTRIBUTING.md).
+## Limits on this hardware
 
----
+With 8 GB of RAM and a 2 GB GPU, a 3B model is the practical ceiling. Evaluations will be rough, and implementation depends mostly on applying the PR's own patch. If you get more memory, change `model` to something like `ollama_chat/qwen2.5-coder:7b`.
 
-## Contribution Standards
+## Tests
 
-To maintain technical credibility and long-term utility, all contributions are reviewed against four core criteria:
+```
+.venv\Scripts\python -m pytest -q
+```
 
-1. **Reproducibility**: Clear prerequisites, dependency specifications, and setup instructions that work out-of-the-box.
-2. **Documentation Quality**: Comprehensive documentation using the provided template, including realistic inputs/outputs and known limitations.
-3. **Security & Privacy**: Zero committed credentials, API keys, or private data. All configuration must use environment variables or sanitized configuration files.
-4. **Focused Scope**: Each contribution is isolated in its own directory and does not alter unrelated parts of the repository.
-
----
-
-## Community Context
-
-This repository was established in collaboration with **GDG Cloud Bengaluru** as part of the **FORK. BUILD. MERGE.** initiative under **Road to DevFest 2026**.
-
-While seeded during this community event, this repository is designed as an enduring, public open-source catalog. Contributions, maintenance, and community participation continue beyond the event.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE) &copy; 2026 GDG Cloud Bengaluru Community.
-
+The tests cover the command policy, local-only enforcement, skipping repeat revisions, approval rules, restart recovery and workspace confinement. One end-to-end test runs approval → worktree → patch → pytest → report against a local git remote, with the model stubbed out.

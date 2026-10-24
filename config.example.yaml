@@ -1,0 +1,36 @@
+# Copy to config.yaml and edit. Secrets go in .env, never here.
+repos:
+  - name: owner/repo            # GitHub "owner/name"
+    # base_branch: main         # default: the PR's own base branch
+    # checks: ["python -m pytest -q"]   # default: auto-detected
+    # clone_url: https://github.com/owner/repo.git   # default: SSH git@github.com:owner/repo.git
+
+poll_interval_seconds: 120
+
+# Local model via Ollama. strict_local refuses any non-local model or endpoint.
+model: ollama_chat/qwen2.5-coder:3b
+api_base: http://localhost:11434
+num_ctx: 8192
+strict_local: true
+
+workspace_dir: workspaces
+db_path: data/pr_agent.db
+max_repair_attempts: 2
+max_llm_calls: 25
+command_timeout_seconds: 600
+max_diff_chars: 12000
+
+# PR filters
+skip_drafts: true
+exclude_labels: [wip, do-not-merge]
+exclude_authors: ["dependabot[bot]"]
+
+# Extra executables the agent may run (on top of python -m pytest, ruff, mypy, npm test, go test, cargo test ...)
+allowed_commands: []
+# Interpreter used for `python -m pytest` etc. (default: the agent's own venv)
+# python_executable: C:/path/to/project/.venv/Scripts/python.exe
+
+worthwhile_criteria:
+  - Solves a real problem for users or maintainers.
+  - Fits the project's existing scope and style.
+  - Benefit clearly outweighs added complexity and maintenance cost.
