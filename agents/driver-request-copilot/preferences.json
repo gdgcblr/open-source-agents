@@ -1,0 +1,8 @@
+{
+  "min_fare": 80.0,
+  "max_pickup_km": 3.0,
+  "avoid_destinations": [
+    "Airport",
+    "Outer Ring Toll"
+  ]
+}

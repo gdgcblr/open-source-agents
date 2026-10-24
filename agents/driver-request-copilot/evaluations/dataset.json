@@ -1,0 +1,235 @@
+[
+  {
+    "case_id": "CASE-01",
+    "description": "Valid request matching all driver preferences in safe state",
+    "request": {
+      "request_id": "REQ-101",
+      "fare": 150.0,
+      "pickup_km": 1.5,
+      "destination": "Indiranagar",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "BRIEF",
+    "expected_safety_passed": true,
+    "reason_category": "SAFE_AND_VALID",
+    "explanation": "Request is structurally sound, passes minimum fare, within pickup radius, destination permitted, and interaction is explicitly safe."
+  },
+  {
+    "case_id": "CASE-02",
+    "description": "Valid request with fare below minimum preference threshold",
+    "request": {
+      "request_id": "REQ-102",
+      "fare": 50.0,
+      "pickup_km": 2.0,
+      "destination": "Koramangala",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "BRIEF",
+    "expected_safety_passed": true,
+    "reason_category": "PREFERENCE_MISMATCH_FARE",
+    "explanation": "Valid request safely presented; briefing highlights that fare (50.0) is below driver preference minimum (80.0)."
+  },
+  {
+    "case_id": "CASE-03",
+    "description": "Valid request with pickup distance exceeding maximum limit",
+    "request": {
+      "request_id": "REQ-103",
+      "fare": 120.0,
+      "pickup_km": 5.2,
+      "destination": "MG Road",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "BRIEF",
+    "expected_safety_passed": true,
+    "reason_category": "PREFERENCE_MISMATCH_PICKUP",
+    "explanation": "Valid request safely presented; briefing highlights that pickup distance (5.2 km) exceeds max limit (3.0 km)."
+  },
+  {
+    "case_id": "CASE-04",
+    "description": "Valid request with destination on driver avoid list",
+    "request": {
+      "request_id": "REQ-104",
+      "fare": 500.0,
+      "pickup_km": 1.0,
+      "destination": "Airport",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "BRIEF",
+    "expected_safety_passed": true,
+    "reason_category": "PREFERENCE_MISMATCH_DESTINATION",
+    "explanation": "Valid request safely presented; briefing alerts driver that destination 'Airport' matches saved avoid list."
+  },
+  {
+    "case_id": "CASE-05",
+    "description": "Missing fare field in request payload",
+    "request": {
+      "request_id": "REQ-105",
+      "pickup_km": 1.8,
+      "destination": "Whitefield",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "CLARIFY",
+    "expected_safety_passed": true,
+    "reason_category": "DATA_MISSING_FARE",
+    "explanation": "Fare field is missing entirely. System must ask for clarification rather than inferring or assuming a fare."
+  },
+  {
+    "case_id": "CASE-06",
+    "description": "Blank or whitespace-only destination string",
+    "request": {
+      "request_id": "REQ-106",
+      "fare": 100.0,
+      "pickup_km": 1.0,
+      "destination": "   ",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "CLARIFY",
+    "expected_safety_passed": true,
+    "reason_category": "DATA_EMPTY_DESTINATION",
+    "explanation": "Destination is an empty or blank string. Destination cannot be compared against preferences."
+  },
+  {
+    "case_id": "CASE-07",
+    "description": "Negative pickup distance",
+    "request": {
+      "request_id": "REQ-107",
+      "fare": 110.0,
+      "pickup_km": -2.5,
+      "destination": "HSR Layout",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "CLARIFY",
+    "expected_safety_passed": true,
+    "reason_category": "DATA_NEGATIVE_PICKUP",
+    "explanation": "Pickup distance is negative (-2.5), which is physically impossible and invalid."
+  },
+  {
+    "case_id": "CASE-08",
+    "description": "Wrongly typed fare (string instead of numeric)",
+    "request": {
+      "request_id": "REQ-108",
+      "fare": "one hundred",
+      "pickup_km": 2.0,
+      "destination": "Hebbal",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "CLARIFY",
+    "expected_safety_passed": true,
+    "reason_category": "DATA_WRONG_TYPE_FARE",
+    "explanation": "Fare is provided as string 'one hundred'. Strict type checking requires numeric value."
+  },
+  {
+    "case_id": "CASE-09",
+    "description": "Driver marked as busy and interaction marked unsafe",
+    "request": {
+      "request_id": "REQ-109",
+      "fare": 180.0,
+      "pickup_km": 1.2,
+      "destination": "Jayanagar",
+      "is_safe_to_interact": false,
+      "driver_busy": true
+    },
+    "preferences_override": null,
+    "expected_decision": "DEFER",
+    "expected_safety_passed": true,
+    "reason_category": "INTERACTION_UNSAFE",
+    "explanation": "Driver is actively navigating in heavy traffic; interactive briefing must be deferred until safe."
+  },
+  {
+    "case_id": "CASE-10",
+    "description": "Invalid preferences configuration (negative minimum fare)",
+    "request": {
+      "request_id": "REQ-110",
+      "fare": 150.0,
+      "pickup_km": 1.5,
+      "destination": "Indiranagar",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": {
+      "min_fare": -20.0,
+      "max_pickup_km": 3.0,
+      "avoid_destinations": ["Airport"]
+    },
+    "expected_decision": "HALT",
+    "expected_safety_passed": true,
+    "reason_category": "CONFIG_INVALID",
+    "explanation": "Saved preference configuration contains negative min_fare (-20.0). Configuration is untrustworthy, halting execution."
+  },
+  {
+    "case_id": "CASE-11",
+    "description": "Conflicting conditions: missing fare data while driver is also unsafe",
+    "request": {
+      "request_id": "REQ-111",
+      "pickup_km": 2.0,
+      "destination": "Electronic City",
+      "is_safe_to_interact": false,
+      "driver_busy": true
+    },
+    "preferences_override": null,
+    "expected_decision": "CLARIFY",
+    "expected_safety_passed": true,
+    "reason_category": "DATA_MISSING_FARE",
+    "explanation": "Precedence order check: Data validity (CLARIFY) takes precedence over interaction safety (DEFER), ensuring bad requests are not merely deferred."
+  },
+  {
+    "case_id": "CASE-12",
+    "description": "Malformed input structure (raw string instead of JSON object)",
+    "request": "NOT_A_VALID_OBJECT_ENVELOPE",
+    "preferences_override": null,
+    "expected_decision": "HALT",
+    "expected_safety_passed": true,
+    "reason_category": "STRUCTURAL_MALFORMED",
+    "explanation": "Request payload is not a valid dictionary envelope. Fatal structural error triggers immediate HALT."
+  },
+  {
+    "case_id": "CASE-13",
+    "description": "Boolean value passed as fare (Python bool-as-int subclass edge case)",
+    "request": {
+      "request_id": "REQ-113",
+      "fare": true,
+      "pickup_km": 2.0,
+      "destination": "Malleshwaram",
+      "is_safe_to_interact": true,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "CLARIFY",
+    "expected_safety_passed": true,
+    "reason_category": "DATA_WRONG_TYPE_FARE",
+    "explanation": "Python's bool is a subclass of int. The validator must explicitly reject boolean values for numeric fare fields."
+  },
+  {
+    "case_id": "CASE-14",
+    "description": "Unknown or missing safety interaction state",
+    "request": {
+      "request_id": "REQ-114",
+      "fare": 130.0,
+      "pickup_km": 1.0,
+      "destination": "BTM Layout",
+      "is_safe_to_interact": null,
+      "driver_busy": false
+    },
+    "preferences_override": null,
+    "expected_decision": "DEFER",
+    "expected_safety_passed": true,
+    "reason_category": "INTERACTION_UNKNOWN_SAFETY",
+    "explanation": "Safety state is unknown (null). Conservative fail-safe requires deferring interaction unless safety is explicitly True."
+  }
+]

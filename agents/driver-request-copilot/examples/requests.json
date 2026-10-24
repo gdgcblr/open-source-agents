@@ -1,0 +1,49 @@
+[
+  {
+    "request_id": "REQ-101",
+    "fare": 150.0,
+    "pickup_km": 1.5,
+    "destination": "Indiranagar",
+    "is_safe_to_interact": true,
+    "driver_busy": false
+  },
+  {
+    "request_id": "REQ-102",
+    "fare": 50.0,
+    "pickup_km": 2.0,
+    "destination": "Koramangala",
+    "is_safe_to_interact": true,
+    "driver_busy": false
+  },
+  {
+    "request_id": "REQ-103",
+    "fare": 120.0,
+    "pickup_km": 5.2,
+    "destination": "MG Road",
+    "is_safe_to_interact": true,
+    "driver_busy": false
+  },
+  {
+    "request_id": "REQ-104",
+    "fare": 500.0,
+    "pickup_km": 1.0,
+    "destination": "Airport",
+    "is_safe_to_interact": true,
+    "driver_busy": false
+  },
+  {
+    "request_id": "REQ-105",
+    "pickup_km": 1.8,
+    "destination": "Whitefield",
+    "is_safe_to_interact": true,
+    "driver_busy": false
+  },
+  {
+    "request_id": "REQ-109",
+    "fare": 180.0,
+    "pickup_km": 1.2,
+    "destination": "Jayanagar",
+    "is_safe_to_interact": false,
+    "driver_busy": true
+  }
+]

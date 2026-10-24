@@ -1,0 +1,5 @@
+# Driver Request Copilot
+# -------------------------------------------------------------
+# This project uses the Python Standard Library (Python 3.10+).
+# No third-party dependencies or external API keys are required
+# for the core deterministic decision engine, evaluation, or tests.
