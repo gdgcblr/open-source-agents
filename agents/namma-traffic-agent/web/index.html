@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Namma Bengaluru Traffic Copilot</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 50px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e1b4b, #0f172a);
+      border-bottom: 1px solid var(--card-border);
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .badge-devfest {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    h1 span {
+      color: #fbbf24;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+
+    .search-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      margin-bottom: 24px;
+    }
+
+    .quick-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .pill {
+      background: #334155;
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .pill:hover {
+      background: #475569;
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    button.btn-primary {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button.btn-primary:hover {
+      background: var(--accent-hover);
+      color: #fff;
+    }
+
+    .options-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .span-2 {
+        grid-column: span 2;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .card h3 {
+      font-size: 1.15rem;
+      color: #fff;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.95rem;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-weight: 600;
+    }
+
+    .badge-red {
+      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.2);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .badge-green {
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.2);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .response-bubble {
+      background: rgba(56, 189, 248, 0.05);
+      border-left: 4px solid var(--accent);
+      padding: 16px;
+      border-radius: 0 10px 10px 0;
+      white-space: pre-line;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .chokepoint-card {
+      border-left: 4px solid var(--yellow);
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .chokepoint-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .loading-spinner {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge-devfest">GDG Cloud Bengaluru • FORK. BUILD. MERGE. 2026</div>
+    <h1>Namma <span>Traffic</span> Copilot</h1>
+    <p class="subtitle">AI-powered multimodal transit intelligence, live bottleneck bypasses, and Namma Metro optimizer for Bengaluru commuters.</p>
+  </header>
+
+  <div class="container">
+    <div class="search-section">
+      <div class="quick-pills">
+        <span class="pill" onclick="setQuery('How is traffic from Koramangala to Whitefield at 6 PM?')">📍 Koramangala ➡️ Whitefield (6 PM)</span>
+        <span class="pill" onclick="setQuery('Should I take metro or cab from Indiranagar to Airport?')">✈️ Indiranagar ➡️ Airport</span>
+        <span class="pill" onclick="setQuery('Is Silk Board jammed right now?')">🚦 Silk Board Status</span>
+        <span class="pill" onclick="setQuery('Waterlogging alerts near Bellandur and ORR')">🌧️ Rain / Waterlogging Alerts</span>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="queryInput" placeholder="Ask about routes, junctions, metro savings, or waterlogging..." value="How is traffic from Koramangala to Whitefield at 6 PM?">
+        <button class="btn-primary" onclick="submitQuery()">Ask Copilot</button>
+      </div>
+
+      <div class="options-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="rainToggle">
+          <span>🌧️ Monsoon Rain Disruptions Active</span>
+        </label>
+        <span>⚡ Mode: Gemini 2.5 + Local Transit Intelligence</span>
+      </div>
+    </div>
+
+    <div id="loading" class="loading-spinner">
+      🔄 Analyzing Bengaluru traffic corridor patterns...
+    </div>
+
+    <div id="results" class="results-grid"></div>
+  </div>
+
+  <script>
+    async function submitQuery() {
+      const prompt = document.getElementById('queryInput').value.trim();
+      const isRaining = document.getElementById('rainToggle').checked;
+      const loading = document.getElementById('loading');
+      const resultsDiv = document.getElementById('results');
+
+      if (!prompt) return;
+
+      loading.style.display = 'block';
+      resultsDiv.innerHTML = '';
+
+      try {
+        const resp = await fetch('/api/ask', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ prompt: prompt, is_raining: isRaining })
+        });
+        const data = await resp.json();
+        renderResults(data);
+      } catch (err) {
+        resultsDiv.innerHTML = `<div class="card span-2"><p style="color:red">Failed to reach server: ${err.message}</p></div>`;
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    function setQuery(text) {
+      document.getElementById('queryInput').value = text;
+      submitQuery();
+    }
+
+    function renderResults(data) {
+      const resultsDiv = document.getElementById('results');
+      let html = '';
+
+      // AI Advice Banner
+      html += `
+        <div class="card span-2">
+          <h3>🤖 Namma Copilot Recommendation</h3>
+          <div class="response-bubble">${data.response || 'No summary available.'}</div>
+        </div>
+      `;
+
+      // Tool Data Breakdown
+      if (data.raw_tool_data && data.raw_tool_data.length > 0) {
+        data.raw_tool_data.forEach(item => {
+          // Commute stats
+          if (item.origin && item.destination && item.current_travel_time_mins) {
+            html += `
+              <div class="card">
+                <h3>🚗 Road Commute: ${item.origin} ➡️ ${item.destination}</h3>
+                <div class="stat-row">
+                  <span class="stat-label">Road Distance</span>
+                  <span class="stat-value">${item.distance_km} km</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Current Travel Time</span>
+                  <span class="stat-value badge-red">${item.current_travel_time_mins} mins</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Off-Peak Duration</span>
+                  <span class="stat-value">${item.off_peak_time_mins} mins</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Est. Cab Fare</span>
+                  <span class="stat-value">₹${item.cost_estimates?.cab_uber_ola_inr || 'N/A'} (Surge: ${item.cost_estimates?.surge_multiplier || '1.0x'})</span>
+                </div>
+              </div>
+            `;
+          }
+
+          // Metro Alternative
+          if (item.origin_boarding_station && item.breakdown) {
+            html += `
+              <div class="card">
+                <h3>🚇 Namma Metro Alternative</h3>
+                <div class="stat-row">
+                  <span class="stat-label">Boarding Station</span>
+                  <span class="stat-value">${item.origin_boarding_station}</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Deboarding Station</span>
+                  <span class="stat-value">${item.destination_deboarding_station}</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Multimodal Door-to-Door</span>
+                  <span class="stat-value badge-green">${item.breakdown.total_multimodal_time_mins} mins</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Transit Cost</span>
+                  <span class="stat-value">₹${item.total_transit_cost_inr}</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Commuter Savings</span>
+                  <span class="stat-value badge-green">⏱️ Saves ${item.comparison_with_road_cab?.time_saved_mins || 0} mins (₹${item.comparison_with_road_cab?.money_saved_inr || 0})</span>
+                </div>
+              </div>
+            `;
+          }
+
+          // Departure Windows
+          if (item.schedule_options) {
+            let optionsHtml = item.schedule_options.map(opt => `
+              <div class="stat-row">
+                <span class="stat-label">${opt.departure_time} ${opt.departure_time === item.golden_departure_window ? '⭐ (Best)' : ''}</span>
+                <span class="stat-value">${opt.estimated_minutes} mins</span>
+              </div>
+            `).join('');
+
+            html += `
+              <div class="card span-2">
+                <h3>⏱️ Golden Departure Window Optimization</h3>
+                <p style="color: var(--accent); margin-bottom: 12px;">Recommendation: Departing at <strong>${item.golden_departure_window}</strong> saves up to <strong>${item.time_saved_by_timing}</strong>!</p>
+                <div>${optionsHtml}</div>
+              </div>
+            `;
+          }
+        });
+      }
+
+      resultsDiv.innerHTML = html;
+    }
+
+    // Auto-run default query on initial load
+    window.onload = () => submitQuery();
+  </script>
+</body>
+</html>
