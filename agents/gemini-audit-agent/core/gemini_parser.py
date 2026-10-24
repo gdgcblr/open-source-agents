@@ -25,9 +25,47 @@ def parse_unstructured_ledger(text: str) -> Tuple[List[Member], List[Expense], L
 
 
 def _parse_with_gemini(text: str, api_key: str) -> Tuple[List[Member], List[Expense], List[SettlementRecord]]:
-    """Parses text using Google Generative AI (Gemini Flash) with structured JSON prompt."""
-    import google.generativeai as genai
+    """Parses text using Google Generative AI (Gemini 2.5/1.5 Flash) with structured JSON prompt."""
+    import httpx
+    prompt_str = f"""You are a double-entry financial parsing assistant. Extract all participants, expenses, and settlement records from the following text into strict JSON.
 
+Rules:
+1. Identify all members (name, id as lowercase slug, phone if found, upi if found).
+2. For each expense: extract description, payer_id, total amount, and each member's share amount. Sum of shares must equal amount.
+3. For settlements/payments: extract from_member_id, to_member_id, amount, and status ("confirmed" or "pending" if awaiting receiver confirmation).
+4. Return ONLY valid JSON with no markdown wrapping.
+
+Format:
+{{
+  "members": [{{"id": "alice", "name": "Alice", "uid": null, "phone_number": null, "upi_id": null}}],
+  "expenses": [{{"description": "Dinner", "payer_id": "alice", "amount": 3000.0, "shares": {{"alice": 1500.0, "bob": 1500.0}}, "category": "Food"}}],
+  "settlements": [{{"from_member_id": "bob", "from_name": "Bob", "to_member_id": "alice", "to_name": "Alice", "amount": 1400.0, "status": "pending", "note": "UPI"}}]
+}}
+
+Input Text:
+{text}
+"""
+    for mod in ["gemini-2.5-flash", "gemini-1.5-flash"]:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={api_key}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt_str}]}],
+            "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
+        }
+        try:
+            with httpx.Client(timeout=5.0) as client:
+                resp = client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    raw_text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    parsed = json.loads(raw_text)
+                    members = [Member(**m) for m in parsed.get("members", [])]
+                    expenses = [Expense(**e) for e in parsed.get("expenses", [])]
+                    settlements = [SettlementRecord(**s) for s in parsed.get("settlements", [])]
+                    return members, expenses, settlements
+        except Exception:
+            continue
+
+    import google.generativeai as genai
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
 
