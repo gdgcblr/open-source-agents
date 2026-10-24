@@ -81,6 +81,7 @@ lerna-debug.log*
 out/
 
 # General Build & Caches
+.devguard/
 *.log
 tmp/
 temp/
