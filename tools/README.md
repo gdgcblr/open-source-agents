@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`token-cost-calculator`](./token-cost-calculator/) | Multi-provider token usage auditor, pricing economics evaluator, and FastMCP server | Developer Utilities / FastMCP | [@PavaS279](https://github.com/PavaS279) |
