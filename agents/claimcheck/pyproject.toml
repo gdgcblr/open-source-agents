@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claimcheck"
+version = "0.1.0"
+description = "An ADK agent that checks README, Dockerfile and OpenAPI claims against executable evidence."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "google-adk>=2.13.0,<3",
+    "httpx>=0.28,<1",
+    "jsonschema>=4.26,<5",
+    "python-dotenv>=1.2.4,<2",
+    "pyyaml>=6.0.3,<7",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19,<2",
+    "pytest>=9,<10",
+    "pytest-cov>=7,<8",
+    "ruff>=0.15,<1",
+    "types-jsonschema",
+    "types-pyyaml",
+]
+
+[project.scripts]
+claimcheck = "claimcheck.cli:main"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/claimcheck"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"fixtures/lying-notes" = "claimcheck/fixtures/lying-notes"

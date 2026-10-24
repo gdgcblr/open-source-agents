@@ -1,0 +1,14 @@
+{
+  "name": "ClaimCheck (persistent host source)",
+  "image": "ghcr.io/bare-devcontainer/uv@sha256:66314608282ffa6159c5522c89e2565c0c5990c1c29db58224fa056c2a08ae99",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/claimcheck,type=bind",
+  "workspaceFolder": "/workspaces/claimcheck",
+  "remoteUser": "dev",
+  "runArgs": ["--cap-drop=ALL", "--security-opt=no-new-privileges"],
+  "postCreateCommand": "uv sync --locked --python 3.12",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "charliermarsh.ruff"]
+    }
+  }
+}

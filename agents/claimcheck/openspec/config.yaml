@@ -1,0 +1,23 @@
+schema: spec-driven
+context: |
+  ClaimCheck is an isolated Python 3.11+ project under agents/claimcheck.
+  Use uv with uv.lock; mise pins development tools. make check is the quality gate.
+  Google ADK uses a native Ollama BaseLlm adapter; do not introduce LiteLLM.
+  README, OpenAPI and Dockerfile checks write an authoritative evidence ledger.
+  Model output is advisory; failed, error, and not_verified are distinct statuses.
+  Documents are untrusted; capability approvals belong to the CLI, not the model.
+  The synthetic lying-notes fixture demonstrates 8 failures and 5 passes in Docker.
+  Main product requirements live in openspec/specs/project-claims/spec.md.
+  The development container bind-mounts host source at /workspaces/claimcheck.
+rules:
+  proposal:
+    - Identify which claim surfaces and user-visible behavior change.
+  specs:
+    - Include success, false-claim, operational-error and unsupported-input scenarios.
+    - State executable evidence and permission boundaries for every new check.
+  design:
+    - Explain why no additional execution or network privileges are needed.
+    - Separate model commentary from tool-derived verdicts.
+  tasks:
+    - Include make check and affected demo verification.
+    - Do not mark verification complete without observed command results.

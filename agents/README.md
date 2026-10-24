@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [claimcheck](claimcheck/) | Check README, Dockerfile and OpenAPI claims against executable evidence. | Python / Google ADK / native Ollama | rottiakash |
