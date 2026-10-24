@@ -20,7 +20,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: agents/accessable-ai
+        working-directory: accessable-ai
 
     steps:
       - name: Checkout repository
