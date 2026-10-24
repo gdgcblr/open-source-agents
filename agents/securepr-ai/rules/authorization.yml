@@ -1,0 +1,41 @@
+rules:
+  - id: bola-unvalidated-object-id
+    patterns:
+      - pattern: |
+          @$APP.get("/$PREFIX/{$ID}")
+          def $FUNC(..., $ID, ...):
+              ...
+              $RECORD = $DB.query($MODEL).get($ID)
+              ...
+              return $RECORD
+      - pattern-not-inside: |
+          @$APP.get("/$PREFIX/{$ID}", dependencies=[Depends($AUTH), ...])
+          def $FUNC(...):
+              ...
+    message: "Potential Broken Object Level Authorization (BOLA/IDOR): endpoint retrieves and returns database record by route ID without evident ownership or authorization check."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-639: Authorization Bypass Through User-Controlled Key"
+      category: API_AUTHORIZATION
+      stride: "Elevation of Privilege"
+      owasp_api: "API1:2023 Broken Object Level Authorization"
+
+  - id: missing-role-guard
+    patterns:
+      - pattern: |
+          @$APP.delete("/admin/$ROUTE")
+          def $FUNC(...):
+              ...
+      - pattern-not-inside: |
+          @$APP.delete("/admin/$ROUTE", dependencies=[Depends($ROLE_CHECK), ...])
+          def $FUNC(...):
+              ...
+    message: "Admin privileged route without explicit role or permission verification guard."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-285: Improper Authorization"
+      category: API_AUTHORIZATION
+      stride: "Elevation of Privilege"
+      owasp_api: "API5:2023 Broken Function Level Authorization"

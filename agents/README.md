@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`securepr-ai/`](securepr-ai/README.md) | Pull request security review with deterministic checks, risk prioritization, and an optional AI-assisted dashboard. | Python, React, Vite, Express, Gemini (optional) | Swatibharti46 |

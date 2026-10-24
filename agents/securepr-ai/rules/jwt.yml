@@ -1,0 +1,38 @@
+rules:
+  - id: jwt-none-algorithm-allowed
+    patterns:
+      - pattern-either:
+          - pattern: jwt.decode($TOKEN, $KEY, algorithms=[..., "none", ...], ...)
+          - pattern: jwt.decode($TOKEN, options={"verify_signature": False}, ...)
+          - pattern: jwt.decode($TOKEN, verify=False, ...)
+    message: "JWT signature validation is explicitly disabled or allows the insecure 'none' algorithm."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      category: JWT_AUTH
+      stride: "Tampering"
+      owasp_api: "API2:2023 Broken Authentication"
+
+  - id: jwt-hardcoded-secret
+    patterns:
+      - pattern: jwt.decode($TOKEN, "...", ...)
+      - pattern-not: jwt.decode($TOKEN, "", ...)
+    message: "JWT token decoded with a hardcoded secret string."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      category: SECRET
+      stride: "Information Disclosure"
+
+  - id: jwt-missing-expiration-verification
+    patterns:
+      - pattern: jwt.decode($TOKEN, $SECRET, ..., options={$...OPTS, "verify_exp": False, $...MOREOPTS})
+    message: "JWT token expiration verification is explicitly disabled."
+    languages: [python]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-613: Insufficient Session Expiration"
+      category: JWT_AUTH
+      stride: "Spoofing"

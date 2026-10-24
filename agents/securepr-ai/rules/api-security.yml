@@ -1,0 +1,32 @@
+rules:
+  - id: unauthenticated-endpoint-mutation
+    patterns:
+      - pattern: |
+          @$APP.post($ROUTE)
+          def $FUNC(..., $ID, ...):
+              ...
+              $MODEL.filter(id=$ID).update(...)
+      - pattern-not-inside: |
+          @$APP.post($ROUTE, dependencies=[Depends($AUTH), ...])
+          def $FUNC(...):
+              ...
+    message: "State-modifying REST endpoint alters database resources without an explicit authentication dependency (Potential BOLA)."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-285: Improper Authorization"
+      category: API_AUTHORIZATION
+      stride: "Elevation of Privilege"
+      owasp_api: "API1:2023 Broken Object Level Authorization"
+
+  - id: dangerous-cors-wildcard
+    patterns:
+      - pattern: CORSMiddleware(..., allow_origins=["*"], allow_credentials=True, ...)
+    message: "Wildcard CORS origin configured together with allow_credentials=True allows credentialed cross-origin access."
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+      category: CONFIG
+      stride: "Information Disclosure"
+      owasp_api: "API7:2023 Server-Side Request Forgery & Misconfiguration"

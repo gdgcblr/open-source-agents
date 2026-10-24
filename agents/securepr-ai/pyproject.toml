@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "securepr-agent"
+version = "0.1.0"
+description = "GitHub PR Security Reviewer and Multi-Turn Conversational Agent"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.7.0",
+    "pydantic>=2.6.0",
+    "pyyaml>=6.0.1",
+    "pyjwt>=2.8.0",
+    "requests>=2.31.0",
+    "google-genai>=2.4.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+securepr = "securepr_agent.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["securepr", "securepr.*", "securepr_agent", "securepr_agent.*"]
