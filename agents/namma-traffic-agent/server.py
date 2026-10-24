@@ -84,6 +84,19 @@ async def serve_presentation():
     return HTMLResponse("<h2>presentation.html not found.</h2>")
 
 
+@app.get("/presentation.docx")
+async def download_presentation_docx():
+    """Serves the presentation Word document (.docx) with visuals."""
+    path = os.path.join(os.path.dirname(__file__), "Namma_Travel_App_Presentation.docx")
+    if os.path.exists(path):
+        return FileResponse(
+            path,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename="Namma_Travel_App_Presentation.docx"
+        )
+    return JSONResponse(status_code=404, content={"error": "Presentation Word document not found"})
+
+
 @app.get("/manifest.json")
 async def get_manifest():
     """PWA Web App Manifest for Android & iOS."""
