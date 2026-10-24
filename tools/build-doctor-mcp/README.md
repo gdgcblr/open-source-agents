@@ -40,6 +40,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `inspect_test_reports`: parse bounded JUnit, Surefire, and pytest-style XML reports into factual test evidence.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
 - `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
+- Deterministic categories for compilation, dependencies, tests, runtime/API, configuration, permissions, network/TLS, resources, data/schema, CI/container, and concurrency/state failures.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
 - Deterministic signal IDs and scores make classification inspectable and reproducible for the same input.
 - Standard MCP stdio transport for desktop and editor clients.
@@ -199,7 +200,7 @@ python -m unittest discover -s tests -v
 PYTHONPATH=src:. python evaluation/run.py
 ```
 
-The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs eleven public cases across Python, TypeScript, Maven, Gradle, Rust, GitHub Actions, pytest, APIs, timeouts, and ambiguous evidence; it exits non-zero if any expected signal or classification changes.
+The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs eighteen public cases across Python, TypeScript, Maven, Gradle, Rust, GitHub Actions, pytest, APIs, configuration, permissions, TLS, resources, schemas, CI, concurrency, timeouts, and ambiguous evidence; it exits non-zero if any expected signal or classification changes.
 
 ## Known Limitations
 

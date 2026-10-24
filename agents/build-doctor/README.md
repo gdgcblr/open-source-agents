@@ -30,6 +30,7 @@ This makes BuildDoctor a diagnostic gate and verification companion, not another
 ### Key Features
 
 - Classifies common compilation, dependency, test, runtime, and API failure signals.
+- Covers configuration, permissions, network/TLS, resource, data/schema, CI/container, and concurrency/state signals as well.
 - Extracts evidence from logs instead of treating an unverified guess as fact.
 - Inspects common project manifests including Maven, Gradle, npm, Python, Go, Rust, PHP, and Elixir projects.
 - Produces ordered, read-only remediation steps.
