@@ -155,12 +155,13 @@ The tests cover compilation, dependency, test, and unknown failure signatures, c
 - Logs and manifests can contain secrets or personal data; review them before sending them to a hosted model.
 - The MCP bridge requires the companion server to be installed in the configured Python environment.
 
-## Next Four Steps
+## Completed MVP Milestones
 
-1. Add native report parsers and evidence packs for the most common language and CI ecosystems.
-2. Add a before/after verification input flow that compares developer-supplied results without executing commands.
-3. Publish tested MCP client configuration presets for common editors and desktop clients on all supported operating systems.
-4. Add a public evaluation suite for evidence accuracy, root-cause ranking, secret redaction, and verification honesty.
+- Deterministic evidence scoring with confidence limits.
+- Structured test-report evidence through the companion MCP server.
+- Before/after verification without command execution.
+- Cross-platform MCP client presets.
+- Public cross-ecosystem evaluation cases.
 
 ## Security & Privacy Considerations
 

@@ -199,7 +199,7 @@ python -m unittest discover -s tests -v
 PYTHONPATH=src:. python evaluation/run.py
 ```
 
-The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs nine public cases across Python, TypeScript, Maven, Gradle, Rust, APIs, timeouts, and ambiguous evidence; it exits non-zero if any expected signal or classification changes.
+The tests run without an API key and verify generic failure analysis, multi-language manifest inspection, structured test reports, combined reports, guardrails, and missing-path handling. The evaluation command runs eleven public cases across Python, TypeScript, Maven, Gradle, Rust, GitHub Actions, pytest, APIs, timeouts, and ambiguous evidence; it exits non-zero if any expected signal or classification changes.
 
 ## Known Limitations
 
@@ -221,16 +221,17 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 
 ## Future Improvements
 
-- Add opt-in structured parsers for common test-report formats.
-- Add explicit workspace roots and client-confirmed access policies.
-- Add post-fix verification input without allowing the server to execute fixes.
+- Add opt-in parsers for CI annotations and provider-specific API error envelopes.
+- Add client-confirmed workspace roots and per-tool permission policies.
+- Add historical diagnosis comparison without storing raw logs.
 
-## Next Four Steps
+## Completed MVP Milestones
 
-1. Add opt-in parsers for JUnit, Surefire, pytest, npm, Gradle, and CI report formats.
-2. Add a verification tool that accepts a developer-supplied before/after result and compares it without executing commands.
-3. Expand tested MCP client presets for additional editors and desktop clients on macOS, Linux, and Windows.
-4. Expand the public evaluation fixture set with real anonymized CI and API failure examples.
+- Deterministic signal scoring with confidence limits.
+- Structured JUnit/Surefire/pytest-style report evidence.
+- Before/after verification without command execution.
+- Cross-platform MCP client presets.
+- Eleven public evaluation cases covering multiple ecosystems and CI formats.
 
 ## License
 
