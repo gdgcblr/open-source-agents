@@ -47,3 +47,4 @@ agents/<project-slug>/
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
 | [git-commit-agent](./git-commit-agent/) | Analyses staged git changes and generates a conventional commit message | Google ADK 2.0 / Gemini | pydivenkat |
+| [pr-reviewer](./pr-reviewer/) | Autonomous code review and security audit agent for pull request diffs | Google ADK 2.0 / Gemini | pydivenkat |

@@ -1,6 +1,6 @@
 # git-commit-agent
 
-> An AI agent that analyses your staged git changes and generates a precise, conventional commit message — powered by Google ADK and Gemini.
+> An AI agent that analyses your staged git changes and generates a precise, conventional commit message — powered by Google ADK, Gemini, and offline Ollama.
 
 ---
 
@@ -13,12 +13,14 @@
 ### Key Features
 - **Automatic Staged Diff & Stat Analysis**: Inspects both file-level change statuses and code diffs before generating suggestions.
 - **Conventional Commits 1.0.0 Compliant**: Produces standard `<type>(<scope>): <description>` messages ready for semantic releases and changelogs.
+- **Branch Context & Issue Auto-Linking**: Recognizes issue and ticket IDs from branch names (e.g. `feat/issue-123-auth` or `fix/PROJ-456`) and automatically suggests appropriate commit trailers (`Fixes #123`, `Refs: PROJ-456`).
+- **One-Command Git Hook (`--install-hook`)**: Installs a `prepare-commit-msg` hook into `.git/hooks/` so running `git commit` automatically prefills your commit editor buffer with the generated message.
+- **Dual Engine (Cloud & Offline)**: Supports Google Gemini via Google ADK 2.0 or local offline inference with Ollama (`qwen2.5-coder`, `llama3.2`) when working disconnected or with sensitive internal code.
 - **Pre-Commit Secret & Credential Guard**: Automatically scans staged files and diffs for API keys, private keys, tokens, and `.env` files to prevent secret leakage.
 - **Smart Noise Filtering**: Excludes noisy auto-generated lockfiles (`package-lock.json`, `poetry.lock`, etc.) to maximize relevant context window space.
 - **Interactive Review & Multi-Turn Refinement**: Accept (`y`), edit in `$EDITOR` (`e`), cancel (`n`), or **regenerate with custom feedback** (`r`).
 - **Amend Mode (`--amend`)**: Reads previous commit context and staged revisions to regenerate messages for amending commits.
 - **Custom Hints & Constraints**: Guide the agent with user hints (`-m / --hint`), enforced types (`--type feat`), and scopes (`--scope auth`).
-- **Flexible Automation**: Includes `--dry-run`, auto-staging (`-a`), non-interactive execution (`-y`), and model selection (`--model`).
 
 ---
 
@@ -26,29 +28,29 @@
 
 - **Language & Runtime**: Python 3.11+
 - **Agent Framework**: [Google Agent Development Kit (ADK) 2.0](https://github.com/google/adk-python)
-- **Model**: Gemini 2.0 Flash (configurable via `GEMINI_MODEL` or `--model`)
-- **External APIs**: Google Gemini API via Google AI Studio
-- **Other**: `python-dotenv` for configuration, Python `subprocess` for native Git integration
+- **Model Providers**: Google Gemini (AI Studio) or local Ollama instances
+- **Other**: `python-dotenv` for configuration, Python `subprocess` for native Git integration, `unittest` for automated testing
 
 ---
 
 ## Architecture & Data Flow
 
 ```
-[CLI Invocation: python main.py]
+[CLI Invocation: python main.py or 'git commit' hook]
       │
-      ├─► 1. Pre-flight Checks (Git repository validation, .env loading, API key check)
+      ├─► 1. Pre-flight Checks (Git repository validation, .env loading)
       ├─► 2. Security Scan (Detect staged secrets, API keys, .env files)
+      ├─► 3. Context Enrichment (Extract branch issue tags, e.g. #123)
       │
       ▼
-[Google ADK Runner + InMemorySessionService]
+[Engine Dispatcher: Google ADK 2.0 or Local Ollama]
       │
       ├─► Calls get_staged_file_summary()  ──► git diff --staged --name-status & --stat
       ├─► Calls get_staged_diff()          ──► git diff --staged (filtered lockfiles)
       └─► Calls get_last_commit_info()     ──► git log -1 (if --amend active)
       │
       ▼
-[ADK Agent synthesizes Conventional Commit message]
+[Agent synthesizes Conventional Commit message]
       │
       ▼
 [Interactive Review Loop]
@@ -65,7 +67,9 @@
 - Python 3.11+
 - `pip`
 - `git` (2.25+) installed and available in `PATH`
-- A Gemini API key — get one free at [Google AI Studio](https://aistudio.google.com/app/apikey)
+- Either:
+  - A Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey) (*cloud*), OR
+  - [Ollama](https://ollama.ai) running locally (`ollama serve`) (*offline*)
 
 ---
 
@@ -83,17 +87,18 @@
    # .venv\Scripts\activate    # Windows
    ```
 
-3. **Install dependencies:**
+3. **Install dependencies or install globally:**
    ```bash
    pip install -r requirements.txt
+   # Or install locally with pipx / pip:
+   pip install -e .
    ```
 
-4. **Configure environment variables:**
+4. **Configure environment variables (for Gemini):**
    ```bash
    cp .env.example .env
-   # Open .env and set GEMINI_API_KEY=<your key>
+   # Set GEMINI_API_KEY=<your key> in .env
    ```
-   *(Note: If you already have `GOOGLE_API_KEY` set in your shell environment, it will be automatically detected.)*
 
 ---
 
@@ -101,9 +106,11 @@
 
 | Variable | Required | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `GEMINI_API_KEY` | Yes* | *None* | Google AI Studio API key (*or set `GOOGLE_API_KEY`*) |
-| `GOOGLE_API_KEY` | Optional | *None* | Alternative fallback key environment variable |
+| `GEMINI_API_KEY` | Yes (for cloud) | *None* | Google AI Studio API key (*or set `GOOGLE_API_KEY`*) |
+| `GOOGLE_API_KEY` | Optional | *None* | Fallback alias key |
 | `GEMINI_MODEL` | No | `gemini-2.0-flash` | Gemini model to use |
+| `OLLAMA_HOST` | No | `http://localhost:11434` | Endpoint URL for offline local Ollama |
+| `OLLAMA_MODEL` | No | `qwen2.5-coder:latest` | Model name for local Ollama runs |
 | `EDITOR` | No | `vi` | Editor opened when choosing `e` in the interactive prompt |
 
 ---
@@ -117,6 +124,9 @@ python main.py
 # Preview the message without committing (dry run)
 python main.py --dry-run
 
+# Run offline using local Ollama model
+python main.py --provider ollama
+
 # Provide extra intent/context to guide the message
 python main.py -m "Closes issue #102 and refactors token caching"
 
@@ -129,97 +139,22 @@ python main.py -a
 # Amend the previous commit with updated staged changes
 python main.py --amend
 
+# Install / remove automatic Git hook into .git/hooks/prepare-commit-msg
+python main.py --install-hook
+python main.py --uninstall-hook
+
 # Non-interactive mode (auto-commits without confirmation prompt)
 python main.py -y
-
-# Use a different Gemini model
-python main.py --model gemini-1.5-pro
-```
-
-### Handy Shell Alias
-Add this alias to your `~/.bashrc` or `~/.zshrc`:
-```bash
-alias gca="python /path/to/agents/git-commit-agent/main.py"
-```
-
----
-
-## Example Input & Output
-
-### 1. Staged change
-```bash
-git status -s
-M src/auth/jwt.py
-M src/auth/middleware.py
-```
-
-### 2. Output & Interactive Review
-```text
-Analysing staged changes with Google ADK (gemini-2.0-flash)...
-
-================================================================
-feat(auth): add token revocation check to JWT middleware
-
-Validates incoming bearer tokens against the distributed redis blacklist
-before forwarding requests to downstream route handlers.
-================================================================
-
-Use this commit message? [yes / no / edit / regenerate]: r
-Enter instructions for regeneration (or press Enter for default): Mention Redis timeout fallback
-
-Regenerating commit message with Google ADK...
-
-================================================================
-feat(auth): add JWT revocation check with Redis timeout fallback
-
-Validates incoming bearer tokens against the distributed Redis blacklist.
-Includes a fail-open timeout fallback to prevent auth deadlocks during
-transient network partitions.
-================================================================
-
-Use this commit message? [yes / no / edit / regenerate]: y
-
-✓ Commit created successfully!
-[main a1b2c3d] feat(auth): add JWT revocation check with Redis timeout fallback
- 2 files changed, 48 insertions(+), 6 deletions(-)
 ```
 
 ---
 
 ## How to Test
 
-1. **Verify pre-flight git check:**
-   Run from any non-git directory to confirm graceful error handling:
-   ```bash
-   (cd /tmp && python /path/to/agents/git-commit-agent/main.py)
-   # Expected output: Error: Not a git repository...
-   ```
-
-2. **Verify dry-run execution:**
-   Stage a sample change in any git repository:
-   ```bash
-   echo "test modification" >> README.md
-   git add README.md
-   python main.py --dry-run
-   ```
-
-3. **Verify secret scanner:**
-   Stage a mock `.env` file or sensitive pattern and test detection:
-   ```bash
-   touch .env.test
-   git add .env.test
-   python main.py --dry-run
-   # Expected output: Security warning banner showing sensitive file detected
-   git rm --cached .env.test && rm .env.test
-   ```
-
----
-
-## Known Limitations
-
-- Requires an active internet connection to contact Google AI Studio APIs.
-- Very large diffs exceeding 25,000 characters are safely truncated to remain well within processing budgets.
-- Rate limits on the Google AI Studio free tier apply; rapid consecutive requests may trigger `429 Too Many Requests`.
+Run the automated test suite:
+```bash
+python -m unittest discover -s tests
+```
 
 ---
 
@@ -227,18 +162,7 @@ Use this commit message? [yes / no / edit / regenerate]: y
 
 - **Zero Committed Secrets**: Sensitive values are stored exclusively in `.env` or environment variables; `.env` is ignored by `.gitignore`.
 - **Pre-flight Secret Scanning**: Checks diffs for credentials before sending payloads to the LLM API, helping prevent accidental data leakage.
-- **Safe Subprocess Calls**: All Git actions use strict parameterized argument arrays rather than shell string execution.
-
----
-
-## Future Improvements
-
-- [x] Support `--amend` for revising existing commits.
-- [x] Multi-turn regeneration with custom user feedback (`r` option).
-- [x] Credential and secret scanning before API transmission.
-- [x] Lockfile diff suppression for cleaner token utilization.
-- [ ] Direct Git hook integration (`prepare-commit-msg`).
-- [ ] Enterprise Vertex AI provider support alongside AI Studio.
+- **Offline Mode**: For internal or proprietary code, `--provider ollama` runs 100% on localhost without any network transmission.
 
 ---
 

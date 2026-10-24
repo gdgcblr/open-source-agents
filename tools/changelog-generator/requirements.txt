@@ -1,0 +1,4 @@
+# Core changelog parsing runs on Python 3.10+ standard library.
+# Optional: install google-genai and python-dotenv for AI synthesis mode (--ai)
+google-genai>=1.0.0
+python-dotenv>=1.0.0

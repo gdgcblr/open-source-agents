@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 git-commit-agent: Generates conventional commit messages from staged git diffs
-using Google Agent Development Kit (ADK) and Gemini.
+using Google Agent Development Kit (ADK) and Gemini (with offline Ollama fallback).
 
 Usage:
     python main.py                     # interactive: shows message, asks to commit
@@ -12,33 +12,35 @@ Usage:
     python main.py --amend             # generate message to amend the previous commit
     python main.py -a                  # stage modified/deleted files first (git add -u)
     python main.py -y                  # auto-commit without interactive prompt
+    python main.py --provider ollama   # use local offline Ollama model
+    python main.py --install-hook      # install prepare-commit-msg Git hook
+    python main.py --uninstall-hook    # remove prepare-commit-msg Git hook
 """
 
 import argparse
 import asyncio
+import json
 import os
 import re
+import stat
 import subprocess
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 from typing import Optional
 
 from dotenv import load_dotenv
-from google.adk import Agent
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.genai import types
 
 # ---------------------------------------------------------------------------
 # Environment & Configuration Setup
 # ---------------------------------------------------------------------------
 
-# Load .env from current directory (project-specific) and script directory (central)
+# Load .env from current working directory and from the script directory
 load_dotenv()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(SCRIPT_DIR, ".env"))
 
-# Synchronize GEMINI_API_KEY and GOOGLE_API_KEY if one of them is provided
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 if API_KEY:
     os.environ["GEMINI_API_KEY"] = API_KEY
@@ -142,6 +144,38 @@ def check_staged_for_secrets() -> list[str]:
                     break
 
     return warnings
+
+
+# ---------------------------------------------------------------------------
+# Branch Name Context & Issue Auto-Linking
+# ---------------------------------------------------------------------------
+
+def get_current_branch() -> str:
+    """Retrieves current Git branch name."""
+    res = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True)
+    return res.stdout.strip() if res.returncode == 0 else ""
+
+
+def extract_issue_from_branch(branch: str) -> Optional[str]:
+    """
+    Extracts issue or ticket ID from branch naming patterns.
+    Examples:
+      feat/issue-123-auth -> #123
+      fix/GH-456          -> GH-456
+      PROJ-789-desc       -> PROJ-789
+      bugfix/42-fix-typo  -> #42
+    """
+    patterns = [
+        r"(?:fix|feat|chore|bug|issue|refactor)[/-](?:issue-?|#)?([0-9]+)",
+        r"([A-Z]{2,10}-[0-9]+)",
+        r"(?:^|/)#?([0-9]{2,8})(?:-|$)",
+    ]
+    for p in patterns:
+        m = re.search(p, branch, re.IGNORECASE)
+        if m:
+            val = m.group(1)
+            return f"#{val}" if val.isdigit() else val.upper()
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -275,7 +309,7 @@ feat | fix | docs | style | refactor | test | chore | perf | ci | build | revert
 - Do not put a trailing period at the end of the subject line.
 - Be specific: mention the relevant component, module, or function.
 - If breaking changes exist, use `!` before the colon (e.g., `feat(api)!: break change`) or include `BREAKING CHANGE:` in the footer.
-- Adhere strictly to any user hints, forced types, or scope constraints provided.
+- Adhere strictly to any user hints, forced types, scope constraints, or ticket references provided.
 """
 
 
@@ -293,11 +327,16 @@ def clean_commit_message(msg: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# ADK Runner Helpers
+# Google ADK Runner Helpers
 # ---------------------------------------------------------------------------
 
-def create_agent_runner(model_name: str, amend_mode: bool = False) -> tuple[Runner, str]:
-    """Instantiates the ADK Agent, InMemorySessionService, and Runner."""
+def run_with_adk(model_name: str, prompt: str, amend_mode: bool = False) -> tuple[object, str, str]:
+    """Runs with Google ADK Agent and Runner."""
+    from google.adk import Agent
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+    from google.genai import types
+
     tools = [get_staged_file_summary, get_staged_diff, create_git_commit]
     if amend_mode:
         tools.append(get_last_commit_info)
@@ -311,7 +350,6 @@ def create_agent_runner(model_name: str, amend_mode: bool = False) -> tuple[Runn
     )
 
     session_service = InMemorySessionService()
-    # InMemorySessionService.create_session is an async coroutine in ADK 2.x
     session = asyncio.run(session_service.create_session(app_name=APP_NAME, user_id=USER_ID))
 
     runner = Runner(
@@ -320,29 +358,123 @@ def create_agent_runner(model_name: str, amend_mode: bool = False) -> tuple[Runn
         session_service=session_service,
     )
 
-    return runner, session.id
+    def send_message(p: str) -> str:
+        message = types.Content(role="user", parts=[types.Part(text=p)])
+        collected_text = []
+        for event in runner.run(user_id=USER_ID, session_id=session.id, new_message=message):
+            if event.is_final_response() and event.content and event.content.parts:
+                for part in event.content.parts:
+                    if getattr(part, "text", None):
+                        collected_text.append(part.text)
+        return clean_commit_message("".join(collected_text).strip())
+
+    initial_message = send_message(prompt)
+    return send_message, initial_message, "google-adk"
 
 
-def send_agent_message(runner: Runner, session_id: str, prompt: str) -> str:
-    """Sends a message to the agent within an active session and returns response text."""
-    message = types.Content(
-        role="user",
-        parts=[types.Part(text=prompt)],
-    )
+# ---------------------------------------------------------------------------
+# Local Offline Ollama Fallback Provider
+# ---------------------------------------------------------------------------
 
-    collected_text = []
-    for event in runner.run(
-        user_id=USER_ID,
-        session_id=session_id,
-        new_message=message,
-    ):
-        if event.is_final_response() and event.content and event.content.parts:
-            for part in event.content.parts:
-                if getattr(part, "text", None):
-                    collected_text.append(part.text)
+def run_with_ollama(model_name: str, prompt: str, amend_mode: bool = False) -> tuple[object, str, str]:
+    """Queries a local Ollama instance (zero external cloud dependencies)."""
+    ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
-    raw_response = "".join(collected_text).strip()
-    return clean_commit_message(raw_response)
+    # Gather tool context manually
+    summary = get_staged_file_summary()["summary"]
+    diff = get_staged_diff()["diff"]
+    last_commit = get_last_commit_info()["last_commit"] if amend_mode else ""
+
+    history = [
+        {"role": "system", "content": INSTRUCTION},
+        {
+            "role": "user",
+            "content": f"{prompt}\n\nStaged Summary:\n{summary}\n\nStaged Diff:\n{diff}\n" + (f"\nLast Commit:\n{last_commit}" if last_commit else ""),
+        },
+    ]
+
+    def call_ollama(msgs: list) -> str:
+        url = f"{ollama_host}/api/chat"
+        payload = json.dumps({"model": model_name, "messages": msgs, "stream": False}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return clean_commit_message(data.get("message", {}).get("content", "").strip())
+        except Exception as e:
+            raise RuntimeError(f"Ollama connection error at {ollama_host}: {e}")
+
+    initial_response = call_ollama(history)
+    history.append({"role": "assistant", "content": initial_response})
+
+    def reply_ollama(follow_up: str) -> str:
+        history.append({"role": "user", "content": follow_up})
+        ans = call_ollama(history)
+        history.append({"role": "assistant", "content": ans})
+        return ans
+
+    return reply_ollama, initial_response, "ollama"
+
+
+# ---------------------------------------------------------------------------
+# Git Hook Installation
+# ---------------------------------------------------------------------------
+
+def install_git_hook() -> bool:
+    """Installs a prepare-commit-msg Git hook into .git/hooks/."""
+    git_dir_res = subprocess.run(["git", "rev-parse", "--git-dir"], capture_output=True, text=True)
+    if git_dir_res.returncode != 0:
+        print(f"{Colors.RED}Error: Not inside a git repository.{Colors.RESET}", file=sys.stderr)
+        return False
+
+    git_dir = git_dir_res.stdout.strip()
+    hooks_dir = os.path.join(git_dir, "hooks")
+    os.makedirs(hooks_dir, exist_ok=True)
+    hook_path = os.path.join(hooks_dir, "prepare-commit-msg")
+
+    py_exec = sys.executable
+    script_abs = os.path.abspath(__file__)
+
+    hook_content = f"""#!/usr/bin/env bash
+# Installed by git-commit-agent
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA=$3
+
+if [ -z "$COMMIT_SOURCE" ]; then
+    SUGGESTED=$("{py_exec}" "{script_abs}" --dry-run --no-color 2>/dev/null)
+    if [ -n "$SUGGESTED" ]; then
+        echo "$SUGGESTED" > "$COMMIT_MSG_FILE.tmp"
+        cat "$COMMIT_MSG_FILE" >> "$COMMIT_MSG_FILE.tmp"
+        mv "$COMMIT_MSG_FILE.tmp" "$COMMIT_MSG_FILE"
+    fi
+fi
+"""
+    with open(hook_path, "w", encoding="utf-8") as f:
+        f.write(hook_content)
+
+    st = os.stat(hook_path)
+    os.chmod(hook_path, st.st_mode | stat.S_IEXEC)
+
+    print(f"{Colors.GREEN}✓ Successfully installed 'prepare-commit-msg' hook at:{Colors.RESET} {hook_path}")
+    print("Now whenever you run 'git commit', git-commit-agent will automatically prefill your commit message buffer!")
+    return True
+
+
+def uninstall_git_hook() -> bool:
+    """Removes the prepare-commit-msg Git hook."""
+    git_dir_res = subprocess.run(["git", "rev-parse", "--git-dir"], capture_output=True, text=True)
+    if git_dir_res.returncode != 0:
+        print(f"{Colors.RED}Error: Not inside a git repository.{Colors.RESET}", file=sys.stderr)
+        return False
+
+    hook_path = os.path.join(git_dir_res.stdout.strip(), "hooks", "prepare-commit-msg")
+    if os.path.exists(hook_path):
+        os.remove(hook_path)
+        print(f"{Colors.GREEN}✓ Successfully removed Git hook at:{Colors.RESET} {hook_path}")
+    else:
+        print(f"{Colors.YELLOW}No prepare-commit-msg hook found at {hook_path}.{Colors.RESET}")
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -351,11 +483,7 @@ def send_agent_message(runner: Runner, session_id: str, prompt: str) -> str:
 
 def is_git_repository() -> bool:
     """Checks whether the current working directory is inside a git working tree."""
-    res = subprocess.run(
-        ["git", "rev-parse", "--is-inside-work-tree"],
-        capture_output=True,
-        text=True,
-    )
+    res = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True)
     return res.returncode == 0 and res.stdout.strip() == "true"
 
 
@@ -440,15 +568,32 @@ def main():
         help="Automatically commit using the generated message without prompting for confirmation.",
     )
     parser.add_argument(
+        "--provider",
+        type=str,
+        default="auto",
+        choices=["auto", "adk", "ollama"],
+        help="Provider to use: 'adk' (Google Gemini), 'ollama' (offline local model), or 'auto'.",
+    )
+    parser.add_argument(
         "--model",
         type=str,
-        default=os.getenv("GEMINI_MODEL", "gemini-2.0-flash"),
-        help="Gemini model to use (default: GEMINI_MODEL env or 'gemini-2.0-flash').",
+        default="",
+        help="Model override (Gemini model or Ollama model name).",
     )
     parser.add_argument(
         "--no-color",
         action="store_true",
         help="Disable ANSI color output.",
+    )
+    parser.add_argument(
+        "--install-hook",
+        action="store_true",
+        help="Install git-commit-agent as a 'prepare-commit-msg' hook into the local repository.",
+    )
+    parser.add_argument(
+        "--uninstall-hook",
+        action="store_true",
+        help="Remove git-commit-agent 'prepare-commit-msg' hook from the local repository.",
     )
 
     args = parser.parse_args()
@@ -456,7 +601,13 @@ def main():
     if args.no_color or not sys.stdout.isatty():
         Colors.disable()
 
-    # 1. Verify that current directory is inside a git repository
+    # Hook management operations
+    if args.install_hook:
+        sys.exit(0 if install_git_hook() else 1)
+    if args.uninstall_hook:
+        sys.exit(0 if uninstall_git_hook() else 1)
+
+    # 1. Verify Git working tree
     if not is_git_repository():
         print(f"{Colors.RED}Error: Not a git repository (or any of the parent directories).{Colors.RESET}", file=sys.stderr)
         sys.exit(1)
@@ -480,15 +631,7 @@ def main():
             print(f"{Colors.YELLOW}No staged changes found. Stage changes with `git add` or pass `-a` to stage all modified files.{Colors.RESET}")
             sys.exit(0)
 
-    # 4. Verify API key
-    if not (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")):
-        print(f"{Colors.RED}Error: GEMINI_API_KEY or GOOGLE_API_KEY is not set.{Colors.RESET}", file=sys.stderr)
-        print(f"Set it in your shell or create a .env file:")
-        print(f"  cp {os.path.join(SCRIPT_DIR, '.env.example')} {os.path.join(SCRIPT_DIR, '.env')}")
-        print("Get an API key free at: https://aistudio.google.com/app/apikey")
-        sys.exit(1)
-
-    # 5. Security & Secret Check
+    # 4. Security & Secret Check
     secret_warnings = check_staged_for_secrets()
     if secret_warnings:
         print(f"\n{Colors.RED}{Colors.BOLD}⚠️  SECURITY WARNING: Potential secrets or credentials detected in staged changes!{Colors.RESET}")
@@ -507,11 +650,30 @@ def main():
             print(f"\n{Colors.YELLOW}Aborted by user.{Colors.RESET}")
             sys.exit(1)
 
-    # 6. Initialize ADK Agent & Runner
-    runner, session_id = create_agent_runner(args.model, amend_mode=args.amend)
+    # 5. Determine Provider & Model
+    has_api_key = bool(os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+    provider = args.provider
 
-    # 7. Construct prompt
+    if provider == "auto":
+        if has_api_key:
+            provider = "adk"
+        else:
+            provider = "ollama"
+
+    if provider == "adk" and not has_api_key:
+        print(f"{Colors.RED}Error: GEMINI_API_KEY or GOOGLE_API_KEY is not set.{Colors.RESET}", file=sys.stderr)
+        print("To use Google ADK with Gemini, set GEMINI_API_KEY or pass --provider ollama for offline use:")
+        print(f"  cp {os.path.join(SCRIPT_DIR, '.env.example')} {os.path.join(SCRIPT_DIR, '.env')}")
+        print("Get an API key free at: https://aistudio.google.com/app/apikey")
+        sys.exit(1)
+
+    # 6. Construct prompt with branch context & constraints
     prompt_lines = ["Analyse the staged git changes and generate a conventional commit message."]
+    current_branch = get_current_branch()
+    branch_issue = extract_issue_from_branch(current_branch)
+
+    if branch_issue:
+        prompt_lines.append(f"Current branch '{current_branch}' references issue/ticket {branch_issue}. Consider referencing it in the commit footer if appropriate.")
     if args.hint:
         prompt_lines.append(f"User context/intent: {args.hint}")
     if args.type:
@@ -523,8 +685,21 @@ def main():
 
     initial_prompt = "\n".join(prompt_lines)
 
-    print(f"\n{Colors.CYAN}Analysing staged changes with Google ADK ({args.model})...{Colors.RESET}\n")
-    commit_message = send_agent_message(runner, session_id, initial_prompt)
+    # 7. Execute Agent
+    model_name = args.model
+    if provider == "adk":
+        model_name = model_name or os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        print(f"\n{Colors.CYAN}Analysing staged changes with Google ADK ({model_name})...{Colors.RESET}\n")
+        reply_fn, commit_message, _ = run_with_adk(model_name, initial_prompt, amend_mode=args.amend)
+    else:
+        model_name = model_name or os.getenv("OLLAMA_MODEL", "qwen2.5-coder:latest")
+        print(f"\n{Colors.CYAN}Analysing staged changes with local Ollama ({model_name})...{Colors.RESET}\n")
+        try:
+            reply_fn, commit_message, _ = run_with_ollama(model_name, initial_prompt, amend_mode=args.amend)
+        except Exception as err:
+            print(f"{Colors.RED}Error connecting to Ollama: {err}{Colors.RESET}", file=sys.stderr)
+            print("Ensure Ollama is running (`ollama serve`) or provide a GEMINI_API_KEY.")
+            sys.exit(1)
 
     if not commit_message:
         print(f"{Colors.RED}Agent did not return a commit message. Please try again.{Colors.RESET}", file=sys.stderr)
@@ -588,13 +763,16 @@ def main():
             if feedback:
                 regen_prompt += f" Incorporate the following user feedback: {feedback}"
 
-            print(f"\n{Colors.CYAN}Regenerating commit message with Google ADK...{Colors.RESET}\n")
-            new_msg = send_agent_message(runner, session_id, regen_prompt)
-            if new_msg:
-                commit_message = new_msg
-                print(format_message_box(commit_message))
-            else:
-                print(f"{Colors.RED}Regeneration did not produce a message. Retaining current message.{Colors.RESET}")
+            print(f"\n{Colors.CYAN}Regenerating commit message ({model_name})...{Colors.RESET}\n")
+            try:
+                new_msg = reply_fn(regen_prompt)
+                if new_msg:
+                    commit_message = new_msg
+                    print(format_message_box(commit_message))
+                else:
+                    print(f"{Colors.RED}Regeneration did not produce a message. Retaining current message.{Colors.RESET}")
+            except Exception as e:
+                print(f"{Colors.RED}Error during regeneration: {e}{Colors.RESET}")
             continue
 
         else:
