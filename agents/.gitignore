@@ -19,6 +19,9 @@ env/
 # Generated evaluation results
 evals/results/
 
+# Do not add adk sessions
+agents/accessable_ai/.adk/session.db
+
 # Generated accessibility reports and screenshots
 reports/*.pdf
 reports/screenshots/
