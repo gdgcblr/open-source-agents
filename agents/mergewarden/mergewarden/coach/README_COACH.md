@@ -92,6 +92,10 @@ From `agents/mergewarden/` with the project venv and a Gemini key in `.env` (`GO
   own language, which WhatsApp always uses). It has chat bubbles, a language tag on every reply,
   a 🎤 button that records a voice note in the browser, points/badge toasts, and draft files as attachments.
   "New student" starts a fresh identity. No accounts needed.
+- **▶ Demo** plays a sample student, Priya (2nd-year CSE, Python basics, empty GitHub, curious about AI). Her
+  messages type themselves out while every coach reply comes live from the real agent: onboarding, matched
+  picks, "what is open source?", mentoring, FIX_PLAN.md with a Copilot prompt, PR steps for Windows, and the
+  leaderboard. Click it again to stop.
 - When a review finishes, the simulator picks it up from `/api/inbox` (polled every 4 s) and shows a
   verdict chip on the message. Over WhatsApp it is sent through the Twilio REST API. In `chat` it is printed.
 - `http://localhost:8090/leaderboard` is the public leaderboard (GitHub handles or pseudonyms only).
