@@ -654,6 +654,104 @@
       100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
     }
 
+    /* Active Bus Stop Pulse during Live Tracking */
+    .bus-stop-pulse-active .bus-badge {
+      background: #0284c7 !important;
+      box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.9) !important;
+      animation: bus-stop-ping 1s infinite !important;
+      transform: scale(1.35) !important;
+    }
+    @keyframes bus-stop-ping {
+      0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.8); }
+      70% { box-shadow: 0 0 0 14px rgba(2, 132, 199, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+    }
+    .bus-stop-pulse-active .bus-lbl {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.5) !important;
+    }
+
+    /* Live Bus Stop Tracker Timeline in Sidebar */
+    .bus-live-tracker-box {
+      margin-top: 10px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .bus-live-tracker-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .stop-progress-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .stop-progress-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: #475569;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .stop-progress-item:hover {
+      border-color: #0284c7;
+      background: #f8fafc;
+    }
+    .stop-progress-item.completed {
+      background: #f8fafc;
+      color: #64748b;
+      border-color: #e2e8f0;
+    }
+    .stop-progress-item.active {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 800;
+      border-color: #0284c7;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+      transform: scale(1.02);
+    }
+    .stop-status-pill {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .stop-progress-item.active .stop-status-pill {
+      background: #ffffff;
+      color: #0284c7;
+      animation: pulse-badge 1s infinite alternate;
+    }
+    @keyframes pulse-badge {
+      from { opacity: 0.85; }
+      to { opacity: 1; }
+    }
+    .stop-progress-item.completed .stop-status-pill {
+      background: #e2e8f0;
+      color: #166534;
+    }
+    .stop-progress-item.upcoming .stop-status-pill {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
     /* Loading Indicator */
     .loading-bar {
       height: 3px;
@@ -747,6 +845,9 @@
     </button>
     <button class="map-btn active" id="btnToggleMetro" onclick="toggleMetroLayer()">
       🚇 Namma Metro Lines
+    </button>
+    <button class="map-btn active" id="btnToggleBusStops" onclick="toggleBusStopsLayer()">
+      🚏 BMTC Bus Stops
     </button>
     <button class="map-btn active" id="btnToggleRoadWork" onclick="toggleRoadWorkLayer()">
       🚧 Road Repairs & Work
@@ -924,6 +1025,7 @@
     // Layer Groups
     let trafficLayerGroup = L.layerGroup().addTo(map);
     let metroLayerGroup = L.layerGroup().addTo(map);
+    let busStopsLayerGroup = L.layerGroup().addTo(map);
     let roadWorkLayerGroup = L.layerGroup().addTo(map);
     let floodLayerGroup = L.layerGroup().addTo(map);
     let routeLayerGroup = L.layerGroup().addTo(map);
@@ -1144,6 +1246,7 @@
     // Toggle Handlers
     let showTraffic = true;
     let showMetro = true;
+    let showBusStops = true;
     let showRoadWork = true;
     let showFloods = true;
 
@@ -1157,6 +1260,16 @@
       showMetro = !showMetro;
       document.getElementById('btnToggleMetro').classList.toggle('active', showMetro);
       if (showMetro) drawMetroLines(); else metroLayerGroup.clearLayers();
+    }
+
+    function toggleBusStopsLayer() {
+      showBusStops = !showBusStops;
+      document.getElementById('btnToggleBusStops').classList.toggle('active', showBusStops);
+      if (showBusStops) {
+        map.addLayer(busStopsLayerGroup);
+      } else {
+        map.removeLayer(busStopsLayerGroup);
+      }
     }
 
     function toggleRoadWorkLayer() {
@@ -1274,8 +1387,19 @@
       return coordsList[coordsList.length - 1];
     }
 
+    function zoomToStop(lat, lng, name) {
+      if (lat && lng) {
+        map.flyTo([lat, lng], 15, { duration: 1.0 });
+        L.popup()
+          .setLatLng([lat, lng])
+          .setContent(`<b>🚏 BMTC Bus Stop: ${name}</b><br><small style="color:#0284c7; font-weight:700;">Live Bus Tracking Active</small>`)
+          .openOn(map);
+      }
+    }
+
     function drawRouteOnMap(origName, destName, busData, data) {
       routeLayerGroup.clearLayers();
+      busStopsLayerGroup.clearLayers();
       if (liveTrackingInterval) {
         clearInterval(liveTrackingInterval);
         liveTrackingInterval = null;
@@ -1308,6 +1432,7 @@
       // -------------------------------------------------------------
       const busMid = [(c1[0] + c2[0])/2 + 0.006, (c1[1] + c2[1])/2 + 0.008];
       let busRoadCoords = [c1];
+      let busStopObjects = [];
 
       if (busData && busData.intermediate_stops && busData.intermediate_stops.length > 0) {
         const stops = busData.intermediate_stops;
@@ -1325,10 +1450,21 @@
           const stopName = st.name || st;
           const stopIcon = L.divIcon({
             className: 'custom-bus-stop-wrapper',
-            html: `<div class="custom-bus-stop"><div class="bus-badge">🚏</div><span class="bus-lbl">${stopName}</span></div>`
+            html: `<div class="custom-bus-stop" id="busStopPin_${idx}"><div class="bus-badge">🚏</div><span class="bus-lbl">${stopName}</span></div>`
           });
-          L.marker(stopCoords, { icon: stopIcon }).addTo(routeLayerGroup)
-            .bindPopup(`<b>🚏 BMTC Bus Stop: ${stopName}</b><br><small>Route: ${busData.primary_bus?.route_no || '500-D'}</small><br><small>Next Bus: ~3-5 mins</small>`);
+          const stopMarker = L.marker(stopCoords, { icon: stopIcon }).addTo(busStopsLayerGroup);
+          stopMarker.bindPopup(`
+            <b>🚏 BMTC Bus Stop: ${stopName}</b><br>
+            <small>Stop #${idx + 1} &bull; Route ${busData.primary_bus?.route_no || '500-D'}</small><br>
+            <span style="color: #0284c7; font-weight: 700;">📡 Live Bus Tracking Active</span>
+          `);
+
+          busStopObjects.push({
+            index: idx,
+            name: stopName,
+            coords: stopCoords,
+            marker: stopMarker
+          });
         });
       } else {
         busRoadCoords.push(busMid);
@@ -1353,6 +1489,8 @@
       }
 
       let metroTrackCoords = [c1];
+      let metroStationObjects = [];
+
       if (metroData && metroData.intermediate_stations && metroData.intermediate_stations.length > 0) {
         metroData.intermediate_stations.forEach((st, idx) => {
           let stLat = st.lat;
@@ -1367,10 +1505,21 @@
 
           const stIcon = L.divIcon({
             className: 'custom-metro-station-wrapper',
-            html: `<div class="custom-metro-station"><div class="metro-badge">🚇</div><span class="station-lbl">${st.name}</span></div>`
+            html: `<div class="custom-metro-station" id="metroStationPin_${idx}"><div class="metro-badge">🚇</div><span class="station-lbl">${st.name}</span></div>`
           });
-          L.marker(stCoords, { icon: stIcon }).addTo(routeLayerGroup)
-            .bindPopup(`<b>🚇 Metro Station: ${st.name}</b><br><small>Headway: ${metroData.train_frequency || 'Every 4 mins'}</small><br><small>QR Fare: ₹${metroData.metro_qr_smartcard_fare_inr || 57}</small>`);
+          const stationMarker = L.marker(stCoords, { icon: stIcon }).addTo(routeLayerGroup);
+          stationMarker.bindPopup(`
+            <b>🚇 Metro Station: ${st.name}</b><br>
+            <small>Headway: ${metroData.train_frequency || 'Every 4 mins'}</small><br>
+            <small>QR Fare: ₹${metroData.metro_qr_smartcard_fare_inr || 57}</small>
+          `);
+
+          metroStationObjects.push({
+            index: idx,
+            name: st.name,
+            coords: stCoords,
+            marker: stationMarker
+          });
         });
       } else {
         metroTrackCoords.push([(c1[0] + c2[0])/2, (c1[1] + c2[1])/2]);
@@ -1387,9 +1536,8 @@
         .bindTooltip("🚇 Namma Metro High-Speed Railway Track (Smooth Rail Transit)", { sticky: true });
 
       // -------------------------------------------------------------
-      // 4. CONTINUOUS MOVING VEHICLE TRACKING SIMULATION (Train, Bus, Cab)
+      // 4. CONTINUOUS MOVING VEHICLE TRACKING SIMULATION WITH STOPS TRACKING
       // -------------------------------------------------------------
-      // Moving Metro Train Marker
       const trainIcon = L.divIcon({
         className: 'vehicle-marker-wrapper',
         html: `<div class="vehicle-marker" style="border: 2px solid #9333ea; color: #581c87; background: #ffffff;">🚆 <span id="trainSpeedBadge">Metro • 65 km/h</span></div>`
@@ -1397,15 +1545,13 @@
       const metroMovingMarker = L.marker(metroTrackCoords[0], { icon: trainIcon }).addTo(routeLayerGroup);
       metroMovingMarker.bindPopup(`<b>🚇 Namma Metro Express</b><br>Speed: 65 km/h<br>Smooth electric rail bypasses all road cuts`);
 
-      // Moving BMTC Bus Marker
       const busIcon = L.divIcon({
         className: 'vehicle-marker-wrapper',
-        html: `<div class="vehicle-marker" style="border: 2px solid #0284c7; color: #0369a1; background: #ffffff;">🚌 <span id="busSpeedBadge">BMTC ${busData?.primary_bus?.route_no || '500-D'} • 24 km/h</span></div>`
+        html: `<div class="vehicle-marker" style="border: 2px solid #0284c7; color: #0369a1; background: #ffffff;">🚌 <span id="busSpeedBadge">BMTC ${busData?.primary_bus?.route_no || '500-D'}</span></div>`
       });
       const busMovingMarker = L.marker(busRoadCoords[0], { icon: busIcon }).addTo(routeLayerGroup);
-      busMovingMarker.bindPopup(`<b>🚌 BMTC ${busData?.primary_bus?.route_no || '500-D'} Vajra</b><br>Speed: 24 km/h<br>AC Volvo transit with dedicated corridor access`);
+      busMovingMarker.bindPopup(`<b>🚌 BMTC ${busData?.primary_bus?.route_no || '500-D'} Vajra</b><br>Tracking active along intermediate bus stops`);
 
-      // Moving Road Cab Marker (Crawling slowly in traffic)
       const cabIcon = L.divIcon({
         className: 'vehicle-marker-wrapper',
         html: `<div class="vehicle-marker" style="border: 2px solid #ea4335; color: #c5221f; background: #ffffff;">🚖 <span id="cabSpeedBadge">Cab • 9 km/h (Crawl)</span></div>`
@@ -1415,15 +1561,13 @@
 
       // Animation Loop state
       let trainProg = 0.0;
-      let busProg = 0.35;
+      let busProg = 0.30;
       let cabProg = 0.15;
+      const routeNo = busData?.primary_bus?.route_no || '500-D';
 
       liveTrackingInterval = setInterval(() => {
-        // Metro runs fastest (smooth rail)
         trainProg = (trainProg + 0.0028) % 1.0;
-        // Bus runs moderate
         busProg = (busProg + 0.0018) % 1.0;
-        // Cab crawls slowest due to traffic & road cuts
         cabProg = (cabProg + 0.0009) % 1.0;
 
         const ptTrain = getPointAtFraction(metroTrackCoords, trainProg);
@@ -1433,6 +1577,89 @@
         if (ptTrain) metroMovingMarker.setLatLng(ptTrain);
         if (ptBus) busMovingMarker.setLatLng(ptBus);
         if (ptCab) cabMovingMarker.setLatLng(ptCab);
+
+        // --- BUS STOPS TRACKING LOGIC ---
+        if (busStopObjects.length > 0 && ptBus) {
+          let closestStop = null;
+          let closestDist = Infinity;
+          let closestIdx = -1;
+
+          for (let i = 0; i < busStopObjects.length; i++) {
+            const st = busStopObjects[i];
+            const d = Math.hypot(ptBus[0] - st.coords[0], ptBus[1] - st.coords[1]);
+            if (d < closestDist) {
+              closestDist = d;
+              closestStop = st;
+              closestIdx = i;
+            }
+          }
+
+          const isAtStop = closestDist < 0.0035;
+
+          // Update Map Pin pulses & Sidebar Stop Items
+          busStopObjects.forEach((st, i) => {
+            const pinEl = document.getElementById('busStopPin_' + i);
+            const sideEl = document.getElementById('sidebarStop_' + i);
+
+            if (i < closestIdx) {
+              if (pinEl) pinEl.classList.remove('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item completed';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = '✓ Passed';
+              }
+            } else if (i === closestIdx && isAtStop) {
+              if (pinEl) pinEl.classList.add('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item active';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = '🚌 BUS HERE';
+              }
+            } else if (i === closestIdx && !isAtStop) {
+              if (pinEl) pinEl.classList.remove('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item active';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = '➔ Approaching';
+              }
+            } else {
+              if (pinEl) pinEl.classList.remove('bus-stop-pulse-active');
+              if (sideEl) {
+                sideEl.className = 'stop-progress-item upcoming';
+                const pill = sideEl.querySelector('.stop-status-pill');
+                if (pill) pill.textContent = `⏳ Stop #${i + 1}`;
+              }
+            }
+          });
+
+          // Update Moving Bus Badge
+          const busBadge = document.getElementById('busSpeedBadge');
+          if (busBadge && closestStop) {
+            if (isAtStop) {
+              busBadge.innerHTML = `BMTC ${routeNo} &bull; 🚏 <b>At: ${closestStop.name}</b>`;
+            } else {
+              const nextIdx = (closestIdx >= 0) ? closestIdx : 0;
+              const nextTarget = busStopObjects[nextIdx] || closestStop;
+              busBadge.innerHTML = `BMTC ${routeNo} &bull; ➔ <b>Next: ${nextTarget.name}</b>`;
+            }
+          }
+
+          // Update Bottom Live Tracking Pill
+          const trackingPill = document.getElementById('trackingPill');
+          if (trackingPill && closestStop) {
+            if (isAtStop) {
+              trackingPill.innerHTML = `
+                <div class="radar-dot"></div>
+                <span><b>Live Bus Tracking:</b> 🚌 BMTC ${routeNo} <b>AT STOP: ${closestStop.name}</b> &bull; 🚆 Metro (65 km/h) &bull; 🚖 Cab (9 km/h)</span>
+              `;
+            } else {
+              trackingPill.innerHTML = `
+                <div class="radar-dot"></div>
+                <span><b>Live Bus Tracking:</b> 🚌 BMTC ${routeNo} ➔ Next Stop: <b>${closestStop.name}</b> &bull; 🚆 Metro (65 km/h) &bull; 🚖 Cab (9 km/h)</span>
+              `;
+            }
+          }
+        }
       }, 50);
 
       // Fit map to show both points
@@ -1476,12 +1703,28 @@
         `).join('');
       }
 
-      // Bus stops list HTML
+      // Bus stops list HTML & Interactive Live Stop Progress Steps
       let busStopsHtml = '';
+      let busStopStepsHtml = '';
       if (busData && busData.intermediate_stops) {
         busStopsHtml = busData.intermediate_stops.map(s => `
-          <div class="timeline-item">${s}</div>
+          <div class="timeline-item">${s.name || s}</div>
         `).join('');
+
+        busStopStepsHtml = busData.intermediate_stops.map((st, i) => {
+          const name = st.name || st;
+          const lat = st.lat || 0;
+          const lng = st.lng || 0;
+          return `
+            <div class="stop-progress-item upcoming" id="sidebarStop_${i}" onclick="zoomToStop(${lat}, ${lng}, '${name.replace(/'/g, "\\'")}')">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-weight: 700; opacity: 0.7;">#${i + 1}</span>
+                <span>🚏 ${name}</span>
+              </div>
+              <span class="stop-status-pill">⏳ Stop #${i + 1}</span>
+            </div>
+          `;
+        }).join('');
       }
 
       // 1. Money & Time Saver Big Banner
@@ -1569,6 +1812,17 @@
                   ${busStopsHtml || '<div class="timeline-item">Bus Corridor Stops</div>'}
                 </div>
               </details>
+
+              <!-- Live BMTC Bus Stops Tracking Box -->
+              <div class="bus-live-tracker-box">
+                <div class="bus-live-tracker-title">
+                  <span>🚏 Live Bus Stop Tracking (${busData.stop_count || 'Corridor'} Stops)</span>
+                  <span style="font-size: 0.72rem; color: #0284c7; font-weight: 700;">📡 Live GPS Active</span>
+                </div>
+                <div class="stop-progress-steps" id="busStopStepsContainer">
+                  ${busStopStepsHtml || '<div style="font-size: 0.75rem; color: #64748b;">Direct transit link</div>'}
+                </div>
+              </div>
             </div>
           </div>
         `;

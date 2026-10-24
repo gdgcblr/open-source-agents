@@ -158,10 +158,10 @@ BMTC_BUS_ROUTES: List[Dict[str, Any]] = [
     },
     {
         "route_no": "500-CA",
-        "route_name": "Banashankari ⇄ ITPL / Whitefield (via Silk Board & ORR)",
+        "route_name": "Banashankari / Silk Board ⇄ ITPL / Whitefield (via ORR)",
         "service_type": "AC Vajra Volvo & Ordinary",
         "corridor": "Outer Ring Road to Whitefield",
-        "connects": ["banashankari", "jp_nagar", "hsr_layout", "bellandur", "marathahalli", "whitefield"],
+        "connects": ["banashankari", "jp_nagar", "koramangala", "hsr_layout", "bellandur", "marathahalli", "whitefield"],
         "frequency_minutes": 7,
         "fare_ordinary_inr": 30,
         "fare_ac_vajra_inr": 50,

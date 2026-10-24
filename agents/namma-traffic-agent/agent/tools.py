@@ -382,6 +382,13 @@ def get_bmtc_bus_details(origin: str, destination: str) -> Dict[str, Any]:
     stops_with_coords = []
     for st_name in raw_stops:
         coords = BUS_STOP_COORDS.get(st_name)
+        if not coords:
+            # Substring / partial matching
+            norm_st = st_name.lower()
+            for k, c in BUS_STOP_COORDS.items():
+                if k.lower() in norm_st or norm_st in k.lower():
+                    coords = c
+                    break
         stops_with_coords.append({
             "name": st_name,
             "lat": coords[0] if coords else None,
