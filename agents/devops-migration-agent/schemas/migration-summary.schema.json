@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MigrationSummary",
+  "description": "Schema definition for DevOps Migration Agent summary report",
+  "type": "object",
+  "properties": {
+    "workflow_name": {
+      "type": "string",
+      "description": "Name of the migrated workflow"
+    },
+    "source_file": {
+      "type": "string",
+      "description": "Path or identifier of the source workflow file"
+    },
+    "jobs_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of jobs in the workflow"
+    },
+    "steps_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of execution steps"
+    },
+    "direct_mappings_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of actions mapped directly to native Azure DevOps tasks"
+    },
+    "partial_mappings_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of actions mapped with configuration adjustments or warnings"
+    },
+    "manual_mappings_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of actions requiring manual script or extension migration"
+    },
+    "unsupported_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of actions that cannot be ported to Azure DevOps"
+    },
+    "unknown_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of custom or unrecognized third-party actions"
+    },
+    "secrets_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of distinct secrets referenced in the workflow"
+    },
+    "risk_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Quantitative risk score between 0 and 100"
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "description": "Categorized severity level"
+    },
+    "has_terraform": {
+      "type": "boolean",
+      "description": "Indicates whether Terraform configurations were evaluated"
+    },
+    "estimated_effort_hours": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated engineer-hours to complete migration and validation"
+    },
+    "status": {
+      "type": "string",
+      "description": "Current migration status (e.g., READY_FOR_REVIEW, BLOCKED)"
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp of generation"
+    }
+  },
+  "required": [
+    "workflow_name",
+    "source_file",
+    "jobs_count",
+    "steps_count",
+    "direct_mappings_count",
+    "partial_mappings_count",
+    "manual_mappings_count",
+    "unsupported_count",
+    "unknown_count",
+    "secrets_count",
+    "risk_score",
+    "risk_level",
+    "has_terraform",
+    "estimated_effort_hours",
+    "status",
+    "generated_at"
+  ],
+  "additionalProperties": false
+}

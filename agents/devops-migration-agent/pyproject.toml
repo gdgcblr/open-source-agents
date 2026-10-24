@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devops-migration-agent"
+version = "1.0.0"
+description = "Google ADK-powered AI agent that migrates GitHub Actions workflows to Azure DevOps Pipelines."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "GDG Cloud Bengaluru Community" }
+]
+keywords = ["google-adk", "gemini", "devops", "github-actions", "azure-devops", "migration", "ai-agent"]
+dependencies = [
+  "google-adk>=2.12.0",
+  "google-genai>=2.30.0",
+  "pydantic>=2.10.0",
+  "pyyaml>=6.0.2",
+  "rich>=14.0.0",
+  "jinja2>=3.1.0",
+  "jsonschema>=4.20.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-cov>=6.0.0",
+  "ruff>=0.9.0"
+]
+
+[project.scripts]
+devops-migration-agent = "agent:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-v --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
