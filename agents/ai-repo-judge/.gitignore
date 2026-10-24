@@ -41,5 +41,6 @@ Thumbs.db
 .cache/
 data/*
 !data/sample/
+data/sample/pr/
 web/public/data/
 .ruff_cache/

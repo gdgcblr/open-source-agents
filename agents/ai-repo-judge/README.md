@@ -137,7 +137,8 @@ python -m judge run --local ../my-agent --out .cache/preview
 # Print one result in the terminal
 python -m judge show 2
 
-# Open the dashboard (uses ./data, or the bundled data/sample if you haven't run the judge)
+# Open the dashboard (uses ./data from your last run; the bundled data/sample has the overview only,
+# so project detail pages need a local `judge run`)
 cd web && npm run dev            # or: npm run build && npm run preview
 ```
 

@@ -16,5 +16,6 @@ if (!existsSync(join(src, "results.json"))) {
 rmSync(dest, { recursive: true, force: true });
 mkdirSync(dest, { recursive: true });
 cpSync(join(src, "results.json"), join(dest, "results.json"));
-cpSync(join(src, "pr"), join(dest, "pr"), { recursive: true });
+// The bundled sample ships only the overview (results.json); per-project detail files come from a local run.
+if (existsSync(join(src, "pr"))) cpSync(join(src, "pr"), join(dest, "pr"), { recursive: true });
 console.log(`sync-data: ${src === latest ? "latest run" : "sample data"} → public/data`);

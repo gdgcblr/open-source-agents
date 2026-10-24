@@ -214,7 +214,7 @@ export default function Detail() {
   const { data: index } = useIndex();
   const repo = index?.repo ?? null;
 
-  if (error) return <Empty title="Submission not found">{error}</Empty>;
+  if (error) return <Empty title="Submission not found">{error}. Detail pages need a local run: <code>python -m judge run</code>.</Empty>;
   if (!s) return <p className="animate-pulse text-sm text-muted">Loading…</p>;
 
   const median = index?.insights.dimension_median ?? {};
