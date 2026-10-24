@@ -1,0 +1,35 @@
+{
+  "description": "What is really dead in this example, decided by hand. Keys match dead-code-reaper's removal keys.",
+  "dead": {
+    "inventory/models.py::import os@4": "never used",
+    "inventory/models.py::import csv@2": "only used by legacy_export_csv",
+    "inventory/models.py::import io@3": "only used by legacy_export_csv",
+    "inventory/models.py::import Dict@6": "never used; List and Optional on the same line are used",
+    "inventory/models.py::Item._debug_repr": "never called",
+    "inventory/models.py::Warehouse.legacy_export_csv": "replaced by inventory.exporters",
+    "inventory/pricing.py::calculate_tax_v1": "replaced by calculate_tax",
+    "inventory/pricing.py::_round_legacy": "only used by calculate_tax_v1",
+    "inventory/pricing.py::apply_discount:var:debug_label@23": "assigned, never read",
+    "inventory/pricing.py::unreachable@27": "print after return",
+    "inventory/reports.py::old_summary_v2": "only referenced from an `if False:` block",
+    "inventory/reports.py::LegacyCsvExporter": "never used",
+    "inventory/reports.py::unreachable@37": "`if False:` block",
+    "inventory/legacy_sync.py": "module nothing imports"
+  },
+  "alive": {
+    "inventory/exporters.py::export_json": "called by name: globals()['export_' + fmt]",
+    "inventory/exporters.py::export_xml": "called by name, but no test covers it",
+    "inventory/exporters.py::import json@2": "used by export_json",
+    "inventory/models.py::Item.to_dict": "used by export_json",
+    "inventory/testing.py": "pytest plugin, loaded with `-p inventory.testing`",
+    "inventory/strategies.py::premium_pricing": "chosen by name from an environment variable",
+    "inventory/strategies.py::standard_pricing": "chosen by name from an environment variable",
+    "inventory/reports.py::summary_report": "registered by a decorator",
+    "inventory/encoding.py::DecimalEncoder.default": "hook called by json.JSONEncoder",
+    "inventory/cli.py::main": "entry point declared in pyproject.toml"
+  },
+  "test_only": [
+    "inventory/models.py::Warehouse.restock",
+    "inventory/sample_data.py::make_big_warehouse"
+  ]
+}
