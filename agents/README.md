@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`gemma-adk-codegen`](gemma-adk-codegen/README.md) | Generates a task plan, source project files, reviewer feedback, and test plans from a problem statement. | Google ADK, Gemma, Ollama, Streamlit, Docker | Ritik Sahu |
