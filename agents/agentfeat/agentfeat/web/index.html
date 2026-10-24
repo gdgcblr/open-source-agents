@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentFeat — AI Feature Development Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body { font-family: 'Inter', system-ui, sans-serif; background: #020817; }
+
+    .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    /* Animated gradient border on hub card */
+    .hub-glow {
+      background: linear-gradient(135deg, #1e40af33, #7c3aed33, #0891b233);
+      box-shadow: 0 0 40px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .hub-glow.running {
+      animation: hubPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes hubPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(59,130,246,0.2); }
+      50%       { box-shadow: 0 0 60px rgba(59,130,246,0.5), 0 0 20px rgba(124,58,237,0.3); }
+    }
+
+    /* Flow line animations */
+    .flow-line {
+      stroke: #1e3a5f;
+      stroke-width: 1.5;
+      transition: stroke 0.4s, stroke-width 0.4s;
+    }
+    .flow-line.active {
+      stroke: #3b82f6;
+      stroke-width: 2.5;
+      stroke-dasharray: 8 4;
+      animation: flowDash 0.8s linear infinite;
+    }
+    .flow-line.done {
+      stroke: #10b981;
+      stroke-width: 2;
+    }
+    @keyframes flowDash {
+      to { stroke-dashoffset: -24; }
+    }
+
+    /* Spoke card transitions */
+    .spoke-card {
+      transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+      border: 1px solid #1e293b;
+      background: rgba(2,8,23,0.7);
+    }
+    .spoke-card.active {
+      border-color: #3b82f6;
+      background: rgba(59,130,246,0.05);
+      box-shadow: 0 0 20px rgba(59,130,246,0.15);
+    }
+    .spoke-card.done {
+      border-color: #10b981;
+      background: rgba(16,185,129,0.04);
+    }
+    .spoke-card.error {
+      border-color: #ef4444;
+      background: rgba(239,68,68,0.04);
+    }
+
+    /* Diff highlighting */
+    .diff-add    { color: #4ade80; background: rgba(74,222,128,0.07); }
+    .diff-remove { color: #f87171; background: rgba(248,113,113,0.07); }
+    .diff-meta   { color: #60a5fa; }
+    .diff-hunk   { color: #94a3b8; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Shimmer loader */
+    .shimmer {
+      background: linear-gradient(90deg, #1e293b 25%, #293548 50%, #1e293b 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Tab active state */
+    .tab-btn.active {
+      color: #3b82f6;
+      border-bottom-color: #3b82f6;
+    }
+    .tab-btn {
+      border-bottom: 2px solid transparent;
+      color: #64748b;
+      transition: color 0.2s;
+    }
+    .tab-btn:hover:not(.active) { color: #94a3b8; }
+
+    /* Badge dots */
+    .dot-pulse { animation: dotPulse 1.2s ease-in-out infinite; }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Result card animation */
+    .result-enter {
+      animation: resultIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes resultIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased">
+
+  <!-- Background -->
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative max-w-6xl mx-auto p-4 pb-12">
+
+    <!-- ══════════════════════════════════════ HEADER ══════════════════════════════════════ -->
+    <header class="flex flex-wrap items-center justify-between gap-4 mb-6 py-4 border-b border-slate-800/60">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-blue-500/20">⚡</div>
+        <div>
+          <h1 class="text-white font-bold text-xl leading-tight flex items-center gap-2">
+            AgentFeat
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">Hub-and-Spoke v0.2</span>
+          </h1>
+          <p class="text-slate-500 text-xs">From feature request to working code, with AI · GDG Cloud Bengaluru</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Gemini Status Badge -->
+        <span id="gemini-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 bg-slate-800/80 text-slate-400 border-slate-700">
+          <span class="w-2 h-2 rounded-full bg-slate-500 dot-pulse"></span>
+          <span id="gemini-badge-text">Connecting…</span>
+        </span>
+        <!-- Mode badge -->
+        <span id="mode-badge" class="hidden text-[11px] font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700"></span>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════ REQUEST PANEL ══════════════════════════════════════ -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 mb-6 backdrop-blur">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-5 h-5 rounded bg-blue-500/15 text-blue-400 text-xs flex items-center justify-center">1</span>
+        <span class="text-sm font-semibold text-slate-200">Feature Request</span>
+      </div>
+      <div class="flex flex-col lg:flex-row gap-3">
+        <textarea id="feature-input" rows="2"
+          class="flex-1 bg-slate-950/80 border border-slate-700 text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none placeholder-slate-600 transition-all"
+          placeholder='e.g. "Add a GET /health endpoint that returns {&quot;status&quot;: &quot;ok&quot;}"'>Add a GET /health endpoint to the existing FastAPI application that returns JSON {"status": "ok"}. Include a test that checks the HTTP status code and response body.</textarea>
+        <div class="flex flex-col gap-2 lg:w-52">
+          <input id="target-dir" type="text" value="." placeholder="Target dir (default: .)"
+            class="bg-slate-950/80 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 placeholder-slate-600">
+          <select id="example-select" onchange="loadExample(this.value)"
+            class="bg-slate-950/80 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none">
+            <option value="">— Load example —</option>
+            <option value="health">✦ Health Check Endpoint</option>
+            <option value="ratelimit">✦ Rate Limiting Middleware</option>
+            <option value="oauth">✦ Google OAuth Login</option>
+            <option value="metrics">✦ Prometheus Metrics Route</option>
+          </select>
+          <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer px-1 select-none">
+            <input type="checkbox" id="dryrun-chk" checked class="rounded border-slate-700 text-blue-600 focus:ring-0 focus:ring-offset-0 bg-slate-900">
+            <span>Dry-run (no files written)</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-3">
+        <p class="text-xs text-slate-500">Changes will be <b class="text-slate-400">proposed only</b> — you must approve before anything is written.</p>
+        <button id="run-btn" onclick="runPipeline()"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-semibold text-sm shadow-lg shadow-blue-500/20 transition-all">
+          <span id="run-icon">▶</span>
+          <span id="run-label">Run Agents</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ HUB-AND-SPOKE DIAGRAM ══════════════════════════════════════ -->
+    <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-5 mb-6 backdrop-blur">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="w-5 h-5 rounded bg-purple-500/15 text-purple-400 text-xs flex items-center justify-center">2</span>
+          <span class="text-sm font-semibold text-slate-200">Multi-Agent Coordination Topology</span>
+        </div>
+        <span id="workflow-status" class="text-xs font-mono text-slate-500">Ready</span>
+      </div>
+
+      <!-- SVG + Cards layout -->
+      <div class="relative" style="min-height: 160px;">
+        <!-- SVG Lines -->
+        <svg id="topology-svg" class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+          <line id="line-analyzer"  class="flow-line" x1="18%" y1="28%" x2="47%" y2="50%"/>
+          <line id="line-planner"   class="flow-line" x1="18%" y1="72%" x2="47%" y2="50%"/>
+          <line id="line-developer" class="flow-line" x1="53%" y1="50%" x2="82%" y2="28%"/>
+          <line id="line-qa"        class="flow-line" x1="53%" y1="50%" x2="82%" y2="72%"/>
+        </svg>
+
+        <!-- Grid: Spokes Left | Hub | Spokes Right -->
+        <div class="grid grid-cols-3 gap-4 relative" style="z-index:2">
+          <!-- Left spokes -->
+          <div class="space-y-4">
+            <div id="spoke-analyzer" class="spoke-card rounded-xl p-3.5">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="text-xs font-bold text-slate-200">Analyzer</span>
+                </div>
+                <span id="badge-analyzer" class="text-[10px] px-2 py-0.5 rounded font-medium bg-slate-800 text-slate-500">Ready</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Codebase discovery · file-tree · frameworks</p>
+              <div id="analyzer-detail" class="hidden mt-2 text-[10px] mono text-emerald-400 truncate"></div>
+            </div>
+            <div id="spoke-planner" class="spoke-card rounded-xl p-3.5">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <span class="text-xs font-bold text-slate-200">Planner</span>
+                </div>
+                <span id="badge-planner" class="text-[10px] px-2 py-0.5 rounded font-medium bg-slate-800 text-slate-500">Ready</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Gemini → structured FeaturePlan</p>
+              <div id="planner-detail" class="hidden mt-2 text-[10px] mono text-indigo-400 truncate"></div>
+            </div>
+          </div>
+
+          <!-- Central Hub -->
+          <div class="flex items-center justify-center">
+            <div id="hub-card" class="w-full hub-glow rounded-2xl p-5 text-center border border-blue-500/20">
+              <div class="w-14 h-14 mx-auto rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mb-2 shadow-inner">🎯</div>
+              <h4 class="font-bold text-sm text-white mb-0.5">AgentCoordinator</h4>
+              <p class="text-[11px] text-blue-400 mb-3">Central Hub · Task Router</p>
+              <div class="border-t border-slate-800 pt-2 grid grid-cols-2 gap-1 text-[10px]">
+                <div>
+                  <span class="text-slate-500">Task ID</span>
+                  <div id="stat-task-id" class="text-slate-300 mono truncate">—</div>
+                </div>
+                <div>
+                  <span class="text-slate-500">Messages</span>
+                  <div id="stat-msgs" class="text-slate-300 mono">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right spokes -->
+          <div class="space-y-4">
+            <div id="spoke-developer" class="spoke-card rounded-xl p-3.5">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                  <span class="text-xs font-bold text-slate-200">Developer</span>
+                </div>
+                <span id="badge-developer" class="text-[10px] px-2 py-0.5 rounded font-medium bg-slate-800 text-slate-500">Ready</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Generates unified diffs · safe sandbox</p>
+              <div id="developer-detail" class="hidden mt-2 text-[10px] mono text-purple-400 truncate"></div>
+            </div>
+            <div id="spoke-qa" class="spoke-card rounded-xl p-3.5">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <span class="text-xs font-bold text-slate-200">QA Gate</span>
+                </div>
+                <span id="badge-qa" class="text-[10px] px-2 py-0.5 rounded font-medium bg-slate-800 text-slate-500">Ready</span>
+              </div>
+              <p class="text-[11px] text-slate-500">AST check · isolated pytest execution</p>
+              <div id="qa-detail" class="hidden mt-2 text-[10px] mono text-amber-400 truncate"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ RESULTS ══════════════════════════════════════ -->
+    <div id="results-section" class="bg-slate-900/40 border border-slate-800 rounded-2xl backdrop-blur overflow-hidden">
+      <div class="flex items-center gap-2 p-4 border-b border-slate-800">
+        <span class="w-5 h-5 rounded bg-emerald-500/15 text-emerald-400 text-xs flex items-center justify-center">3</span>
+        <span class="text-sm font-semibold text-slate-200">Results Inspector</span>
+        <div id="qa-pill" class="hidden ml-auto"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-slate-800 px-4 gap-1 overflow-x-auto">
+        <button onclick="switchTab('plan')"    id="tab-btn-plan"    class="tab-btn active text-xs font-medium px-3 py-3 whitespace-nowrap">📋 Feature Plan</button>
+        <button onclick="switchTab('diffs')"   id="tab-btn-diffs"   class="tab-btn text-xs font-medium px-3 py-3 whitespace-nowrap">🔀 Code Diffs</button>
+        <button onclick="switchTab('qa')"      id="tab-btn-qa"      class="tab-btn text-xs font-medium px-3 py-3 whitespace-nowrap">🧪 QA Gate</button>
+        <button onclick="switchTab('audit')"   id="tab-btn-audit"   class="tab-btn text-xs font-medium px-3 py-3 whitespace-nowrap">📡 A2A Protocol</button>
+        <button onclick="switchTab('pr')"      id="tab-btn-pr"      class="tab-btn text-xs font-medium px-3 py-3 whitespace-nowrap">🗂 PR Markdown</button>
+      </div>
+
+      <!-- ── Tab: Plan ── -->
+      <div id="tab-plan" class="p-4 space-y-3">
+        <div id="plan-header" class="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
+          <h4 id="plan-title" class="font-bold text-slate-100 text-sm">Awaiting workflow execution</h4>
+          <p  id="plan-desc"  class="text-xs text-slate-500 mt-1">Click "▶ Run Agents" to start the Hub-and-Spoke pipeline.</p>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-xs">
+            <thead class="bg-slate-950/80 border-b border-slate-800">
+              <tr class="text-left text-slate-500 font-semibold">
+                <th class="p-3 w-10">#</th>
+                <th class="p-3 w-20">Action</th>
+                <th class="p-3">Target File</th>
+                <th class="p-3">Description</th>
+              </tr>
+            </thead>
+            <tbody id="plan-steps-body" class="divide-y divide-slate-800/60">
+              <tr><td colspan="4" class="p-4 text-center text-slate-600">No steps yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="plan-meta" class="hidden grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+            <span class="text-slate-500 block mb-1">New Dependencies</span>
+            <span id="plan-deps" class="text-slate-300 mono">—</span>
+          </div>
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+            <span class="text-slate-500 block mb-1">Test Strategy</span>
+            <span id="plan-tests" class="text-slate-300">—</span>
+          </div>
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+            <span class="text-slate-500 block mb-1">Risk Assessment</span>
+            <span id="plan-risk" class="text-slate-300">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: Diffs ── -->
+      <div id="tab-diffs" class="hidden p-4 space-y-3">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">Unified diffs generated by the Developer spoke:</span>
+          <span id="diff-file-count" class="font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">0 files</span>
+        </div>
+        <div id="diff-files-container" class="space-y-3">
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 text-xs text-slate-600 text-center">No diffs generated yet.</div>
+        </div>
+      </div>
+
+      <!-- ── Tab: QA ── -->
+      <div id="tab-qa" class="hidden p-4 space-y-3">
+        <div id="qa-result-banner" class="rounded-xl p-4 border border-slate-800 bg-slate-950/60">
+          <div class="flex items-center gap-2 mb-2">
+            <span id="qa-status-dot" class="w-3 h-3 rounded-full bg-slate-600"></span>
+            <span id="qa-status-text" class="text-sm font-bold text-slate-400">QA Gate: Awaiting Execution</span>
+          </div>
+          <ul id="qa-findings-list" class="space-y-2 text-xs">
+            <li class="text-slate-600">Results will appear after the workflow runs.</li>
+          </ul>
+        </div>
+        <!-- Codebase summary -->
+        <div id="codebase-summary" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-center">
+            <div id="cb-files" class="text-2xl font-bold text-blue-400 mono">—</div>
+            <div class="text-slate-500 mt-1">Total Files</div>
+          </div>
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-center">
+            <div id="cb-langs" class="text-2xl font-bold text-purple-400 mono">—</div>
+            <div class="text-slate-500 mt-1">Languages</div>
+          </div>
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-center">
+            <div id="cb-fw" class="text-xl font-bold text-emerald-400 mono">—</div>
+            <div class="text-slate-500 mt-1">Frameworks</div>
+          </div>
+          <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 text-center">
+            <div id="cb-changes" class="text-2xl font-bold text-amber-400 mono">—</div>
+            <div class="text-slate-500 mt-1">Proposed Changes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: A2A Protocol ── -->
+      <div id="tab-audit" class="hidden p-4 space-y-2">
+        <p class="text-xs text-slate-500 mb-3">Real Pydantic <code class="bg-slate-800 px-1 py-0.5 rounded">AuditEntry</code> messages dispatched by <code class="bg-slate-800 px-1 py-0.5 rounded">AgentCoordinator</code>:</p>
+        <div id="audit-log-container" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+          <div class="text-slate-600 text-xs p-3 text-center">No audit entries yet.</div>
+        </div>
+      </div>
+
+      <!-- ── Tab: PR Markdown ── -->
+      <div id="tab-pr" class="hidden p-4 space-y-3">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">Generated GitHub PR description (Markdown):</span>
+          <button onclick="copyPrMarkdown()" class="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors font-medium">Copy Markdown</button>
+        </div>
+        <textarea id="pr-markdown-text" readonly rows="16"
+          class="w-full bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-xs mono text-slate-200 resize-none focus:outline-none placeholder-slate-700"
+          placeholder="PR description will appear here after the workflow runs…"></textarea>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-center text-xs text-slate-700 mt-6">
+      AgentFeat · Hub-and-Spoke · Python 3.9 · FastAPI · Google GenAI SDK ·
+      <a href="https://github.com/gdgcblr/open-source-agents" target="_blank" class="text-slate-500 hover:text-slate-400 underline underline-offset-2">GDG Cloud Bengaluru</a>
+    </p>
+  </div>
+
+  <script>
+    const EXAMPLES = {
+      health:    'Add a GET /health endpoint to the existing FastAPI application that returns JSON {"status": "ok"}. Include a test that checks the HTTP status code and response body.',
+      ratelimit: 'Add rate-limiting middleware to all API routes using slowapi. Limit to 60 requests/minute per IP. Return HTTP 429 with a Retry-After header when exceeded.',
+      oauth:     'Add Google OAuth 2.0 login using Authlib. Create /auth/login and /auth/callback routes. Store the user profile in the session and protect /me with @login_required.',
+      metrics:   'Add a GET /metrics endpoint compatible with Prometheus. Expose request count and latency histograms per route using prometheus-fastapi-instrumentator.'
+    };
+
+    /* ── Tab switching ── */
+    const TABS = ['plan','diffs','qa','audit','pr'];
+    function switchTab(name) {
+      TABS.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        btn.classList.toggle('active', t === name);
+      });
+    }
+
+    /* ── Load preset example ── */
+    function loadExample(key) {
+      if (EXAMPLES[key]) document.getElementById('feature-input').value = EXAMPLES[key];
+    }
+
+    /* ── Health check on load ── */
+    async function checkBackendHealth() {
+      const badge = document.getElementById('gemini-badge');
+      const text  = document.getElementById('gemini-badge-text');
+      try {
+        const res  = await fetch('/api/health');
+        const data = await res.json();
+        const mode = data.mode || '';
+        document.getElementById('mode-badge').textContent = mode;
+        document.getElementById('mode-badge').classList.remove('hidden');
+        if (data.gemini_configured && mode === 'live_gemini') {
+          badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>Gemini Connected</span>';
+        } else {
+          badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 bg-amber-500/10 text-amber-400 border-amber-500/20';
+          badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 dot-pulse"></span><span>Offline Mock Mode</span>';
+        }
+      } catch {
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-300 bg-red-500/10 text-red-400 border-red-500/20';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-400"></span><span>Backend Offline</span>';
+      }
+    }
+
+    /* ── Spoke helpers ── */
+    function setSpoke(name, state, detail) {
+      const card  = document.getElementById(`spoke-${name}`);
+      const badge = document.getElementById(`badge-${name}`);
+      const line  = document.getElementById(`line-${name}`);
+      const det   = document.getElementById(`${name}-detail`);
+
+      card.className = `spoke-card rounded-xl p-3.5 ${state === 'active' ? 'active' : state === 'done' ? 'done' : state === 'error' ? 'error' : ''}`;
+      if (state === 'active') {
+        badge.className  = 'text-[10px] px-2 py-0.5 rounded font-medium bg-blue-500/20 text-blue-400 dot-pulse';
+        badge.textContent = 'Running…';
+        line.className   = 'flow-line active';
+      } else if (state === 'done') {
+        badge.className  = 'text-[10px] px-2 py-0.5 rounded font-medium bg-emerald-500/20 text-emerald-400';
+        badge.textContent = '✓ Done';
+        line.className   = 'flow-line done';
+      } else if (state === 'error') {
+        badge.className  = 'text-[10px] px-2 py-0.5 rounded font-medium bg-red-500/20 text-red-400';
+        badge.textContent = '✗ Error';
+        line.className   = 'flow-line';
+      } else {
+        badge.className  = 'text-[10px] px-2 py-0.5 rounded font-medium bg-slate-800 text-slate-500';
+        badge.textContent = 'Ready';
+        line.className   = 'flow-line';
+      }
+      if (detail && det) {
+        det.textContent = detail;
+        det.classList.remove('hidden');
+      }
+    }
+
+    function resetSpokes() {
+      ['analyzer','planner','developer','qa'].forEach(n => setSpoke(n, 'ready'));
+      ['analyzer','planner','developer','qa'].forEach(n => {
+        const d = document.getElementById(`${n}-detail`);
+        if (d) { d.textContent = ''; d.classList.add('hidden'); }
+      });
+    }
+
+    /* ── Colorise unified diff ── */
+    function coloriseDiff(raw) {
+      if (!raw) return '<span class="text-slate-600">(empty diff)</span>';
+      return raw.split('\n').map(line => {
+        if (line.startsWith('+++') || line.startsWith('---')) return `<span class="diff-meta">${escHtml(line)}</span>`;
+        if (line.startsWith('+'))  return `<span class="diff-add">${escHtml(line)}</span>`;
+        if (line.startsWith('-'))  return `<span class="diff-remove">${escHtml(line)}</span>`;
+        if (line.startsWith('@@')) return `<span class="diff-hunk">${escHtml(line)}</span>`;
+        return `<span class="text-slate-400">${escHtml(line)}</span>`;
+      }).join('\n');
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    /* ── Main pipeline runner ── */
+    async function runPipeline() {
+      const reqText   = document.getElementById('feature-input').value.trim();
+      const targetDir = document.getElementById('target-dir').value.trim() || '.';
+      const dryRun    = document.getElementById('dryrun-chk').checked;
+
+      if (!reqText) { alert('Please enter a feature request.'); return; }
+
+      // UI reset
+      resetSpokes();
+      document.getElementById('run-btn').disabled = true;
+      document.getElementById('run-icon').textContent  = '⏳';
+      document.getElementById('run-label').textContent = 'Running…';
+      document.getElementById('workflow-status').textContent = 'Calling POST /api/workflow/run…';
+      document.getElementById('hub-card').classList.add('running');
+      document.getElementById('qa-pill').classList.add('hidden');
+
+      // Stagger spoke activation to mirror sequential pipeline
+      const spokeSeq = ['analyzer','planner','developer','qa'];
+      const delays    = [0, 400, 900, 1400];
+      spokeSeq.forEach((s, i) => setTimeout(() => setSpoke(s, 'active'), delays[i]));
+
+      try {
+        const res = await fetch('/api/workflow/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ request: reqText, target_dir: targetDir, offline: false, apply: !dryRun })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const d = await res.json();
+
+        // Mark all spokes done
+        spokeSeq.forEach(s => setSpoke(s, 'done'));
+
+        // Hub stats
+        document.getElementById('stat-task-id').textContent = d.task_id || '—';
+        document.getElementById('stat-msgs').textContent    = (d.audit_log || []).length;
+        document.getElementById('workflow-status').textContent = `✓ ${d.status.toUpperCase()} · ${d.mode}`;
+
+        // Mode badge
+        const modeBadge = document.getElementById('mode-badge');
+        modeBadge.textContent = d.mode;
+        modeBadge.classList.remove('hidden');
+
+        // ── Plan tab ──
+        if (d.plan) {
+          document.getElementById('plan-title').textContent = d.plan.feature_title || 'Feature Plan';
+          document.getElementById('plan-desc').textContent  = [d.plan.summary, d.plan.architecture_notes].filter(Boolean).join(' — ');
+          document.getElementById('plan-deps').textContent  = (d.plan.new_dependencies || []).join(', ') || 'None';
+          document.getElementById('plan-tests').textContent = d.plan.test_strategy || '—';
+          document.getElementById('plan-risk').textContent  = d.plan.risk_assessment || '—';
+          document.getElementById('plan-meta').classList.remove('hidden');
+
+          const tbody = document.getElementById('plan-steps-body');
+          tbody.innerHTML = '';
+          (d.plan.steps || []).forEach(s => {
+            const isCreate = s.action.toUpperCase() === 'CREATE';
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-800/30 transition-colors result-enter';
+            tr.innerHTML = `
+              <td class="p-3 mono text-slate-500">${s.step_number}</td>
+              <td class="p-3">
+                <span class="text-[10px] px-2 py-0.5 rounded font-bold mono
+                  ${isCreate ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">
+                  ${s.action.toUpperCase()}
+                </span>
+              </td>
+              <td class="p-3 mono text-slate-200 text-[11px]">${escHtml(s.target_file)}</td>
+              <td class="p-3 text-slate-400 text-[11px]">${escHtml(s.description)}</td>`;
+            tbody.appendChild(tr);
+          });
+
+          // Planner detail
+          setSpoke('planner', 'done', `${(d.plan.steps||[]).length} steps planned`);
+        }
+
+        // Analyzer detail
+        if (d.codebase_summary) {
+          const cb = d.codebase_summary;
+          setSpoke('analyzer', 'done', `${cb.total_files} files · ${(cb.languages||[]).join(', ')}`);
+          document.getElementById('cb-files').textContent  = cb.total_files || '—';
+          document.getElementById('cb-langs').textContent  = (cb.languages||[]).length;
+          document.getElementById('cb-fw').textContent     = (cb.frameworks||[]).join(', ') || '—';
+          document.getElementById('cb-changes').textContent = (d.changes||[]).length;
+          document.getElementById('codebase-summary').classList.remove('hidden');
+        }
+
+        // Developer detail
+        if (d.changes && d.changes.length) {
+          setSpoke('developer', 'done', `${d.changes.length} file(s) → ${d.changes.map(c=>c.file_path).join(', ')}`);
+        }
+
+        // ── Diffs tab ──
+        const changes = d.changes || [];
+        document.getElementById('diff-file-count').textContent = `${changes.length} file(s)`;
+        const diffCont = document.getElementById('diff-files-container');
+        if (changes.length === 0) {
+          diffCont.innerHTML = '<div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 text-xs text-slate-600 text-center">No diffs generated.</div>';
+        } else {
+          diffCont.innerHTML = changes.map(c => `
+            <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden result-enter">
+              <div class="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-black/30">
+                <span class="text-[11px] mono font-semibold text-slate-200">${escHtml(c.file_path)}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded font-bold ${c.action?.toUpperCase()==='CREATE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">
+                  ${(c.action||'modify').toUpperCase()}
+                </span>
+              </div>
+              <pre class="p-4 text-[11px] mono overflow-x-auto max-h-64 leading-relaxed">${coloriseDiff(c.diff)}</pre>
+            </div>`).join('');
+        }
+
+        // ── QA tab ──
+        const qaPassed = d.qa_passed;
+        setSpoke('qa', 'done', qaPassed ? `QA PASSED` : `QA FAILED`);
+
+        const qaDot  = document.getElementById('qa-status-dot');
+        const qaText = document.getElementById('qa-status-text');
+        const qaPill = document.getElementById('qa-pill');
+        if (qaPassed) {
+          qaDot.className  = 'w-3 h-3 rounded-full bg-emerald-400';
+          qaText.className = 'text-sm font-bold text-emerald-400';
+          qaText.textContent = '✓ QA Quality Gate: PASSED';
+          qaPill.className   = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+          qaPill.textContent = '✓ QA PASSED';
+        } else {
+          qaDot.className  = 'w-3 h-3 rounded-full bg-red-400';
+          qaText.className = 'text-sm font-bold text-red-400';
+          qaText.textContent = '✗ QA Quality Gate: FAILED';
+          qaPill.className   = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-500/10 text-red-400 border border-red-500/20';
+          qaPill.textContent = '✗ QA FAILED';
+        }
+        qaPill.classList.remove('hidden');
+
+        const qaList = document.getElementById('qa-findings-list');
+        qaList.innerHTML = '';
+        (d.qa_findings || []).forEach(f => {
+          const isErr = /FAILED|failure|error/i.test(f);
+          const li = document.createElement('li');
+          li.className = 'flex items-start gap-2 py-1 border-b border-slate-800/40 last:border-0';
+          li.innerHTML = `
+            <span class="mt-0.5 flex-shrink-0 ${isErr ? 'text-red-400' : 'text-emerald-400'}">${isErr ? '✗' : '✓'}</span>
+            <span class="${isErr ? 'text-red-300' : 'text-slate-300'}">${escHtml(f)}</span>`;
+          qaList.appendChild(li);
+        });
+
+        // ── Audit tab ──
+        const auditCont = document.getElementById('audit-log-container');
+        auditCont.innerHTML = '';
+        const stageColor = { init:'text-blue-400', analyzing:'text-emerald-400', planning:'text-indigo-400', developing:'text-purple-400', qa:'text-amber-400', review:'text-pink-400' };
+        (d.audit_log || []).forEach((e, i) => {
+          const el = document.createElement('div');
+          el.className = 'p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-[11px] result-enter';
+          el.style.animationDelay = `${i * 60}ms`;
+          const col = stageColor[e.stage] || 'text-slate-400';
+          const t   = new Date(e.timestamp * 1000).toLocaleTimeString();
+          el.innerHTML = `
+            <div class="flex items-center justify-between mono">
+              <span class="${col} font-semibold">[${e.stage.toUpperCase()}]</span>
+              <span class="text-slate-600 text-[10px]">${t}</span>
+            </div>
+            <div class="text-slate-300 mt-0.5">
+              agent: <b class="text-white">${e.agent}</b> ·
+              event: <b class="text-slate-200">${e.event}</b>
+            </div>
+            ${Object.keys(e.details||{}).length ? `<div class="text-slate-500 mono mt-1 text-[10px] break-all">${escHtml(JSON.stringify(e.details))}</div>` : ''}`;
+          auditCont.appendChild(el);
+        });
+
+        // ── PR Markdown ──
+        document.getElementById('pr-markdown-text').value = d.pr_markdown || '';
+
+        // Auto-switch to Plan tab on success
+        switchTab('plan');
+
+      } catch (err) {
+        spokeSeq.forEach(s => setSpoke(s, 'error'));
+        document.getElementById('workflow-status').textContent = `✗ Error: ${err.message}`;
+        alert(`Workflow failed: ${err.message}`);
+      } finally {
+        document.getElementById('hub-card').classList.remove('running');
+        document.getElementById('run-btn').disabled  = false;
+        document.getElementById('run-icon').textContent  = '▶';
+        document.getElementById('run-label').textContent = 'Run Agents';
+      }
+    }
+
+    function copyPrMarkdown() {
+      const text = document.getElementById('pr-markdown-text').value;
+      if (!text) { alert('No PR Markdown yet.'); return; }
+      navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+    }
+
+    // On load
+    checkBackendHealth();
+  </script>
+</body>
+</html>
