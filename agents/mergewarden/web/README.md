@@ -8,7 +8,7 @@ python web/server.py          # http://127.0.0.1:8765  (pass a port to change it
 ```
 
 - **Live mode** (server running): paste a PR URL (`https://github.com/OWNER/REPO/pull/N`) or a local path and press Review. "Gemini reviewers" is available when `GOOGLE_API_KEY` is set. "Fresh-install sandbox" is available when Docker is running.
-- **Offline mode** (no API server, e.g. `python -m http.server -d web` on a laptop without the venv): the three bundled demo reports still work, and you can open or drop any report produced by `gatekeeper review … --json report.json` or `gatekeeper triage … ` (its `.json`).
+- **Offline mode** (no API server, e.g. `python -m http.server -d web` on a laptop without the venv): the three bundled demo reports still work, and you can open or drop any report produced by `python -m mergewarden review … --json report.json` or `python -m mergewarden triage …` (its `.json`).
 
 The server binds to `127.0.0.1` only, because it runs `git` (and optionally Docker) on this machine. It handles one review at a time.
 
