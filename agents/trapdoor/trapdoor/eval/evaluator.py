@@ -70,6 +70,22 @@ _MITIGATIONS = {
         "Normalize CI response text through Unicode NFC/NFKC before passing to the LLM. "
         "Strip zero-width characters (U+200B, U+FEFF) and validate that responses match expected schema."
     ),
+    "get_user_profile": (
+        "Treat all user-generated fields (bio, notes, website) as untrusted HTML/text. "
+        "Strip script tags and HTML before injecting profile data into agent context."
+    ),
+    "translate_text": (
+        "Validate translation API responses against a strict schema — only accept the translated string. "
+        "Reject any response containing brackets, notes, or freeform annotations."
+    ),
+    "run_command": (
+        "Never pass raw stdout directly to the LLM. Parse structured output only. "
+        "Enforce an allowlist of expected output patterns per command type."
+    ),
+    "get_weather": (
+        "Even unrelated tools can be injection vectors. Apply output sanitization to ALL tool responses, "
+        "not just security-sensitive ones. Validate response matches expected weather schema."
+    ),
 }
 
 

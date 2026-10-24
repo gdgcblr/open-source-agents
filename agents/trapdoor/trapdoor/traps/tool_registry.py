@@ -64,6 +64,26 @@ TRAP_TOOLS = [
         description="Get the latest CI/CD pipeline status.",
         parameters={"type": "object", "properties": {}, "required": []},
     ),
+    types.FunctionDeclaration(
+        name="get_user_profile",
+        description="Get a user's profile information.",
+        parameters={"type": "object", "properties": {"username": {"type": "string"}}, "required": []},
+    ),
+    types.FunctionDeclaration(
+        name="translate_text",
+        description="Translate text to another language.",
+        parameters={"type": "object", "properties": {"text": {"type": "string"}, "target_lang": {"type": "string"}}, "required": []},
+    ),
+    types.FunctionDeclaration(
+        name="run_command",
+        description="Run a shell command and return stdout.",
+        parameters={"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"]},
+    ),
+    types.FunctionDeclaration(
+        name="get_weather",
+        description="Get current weather for a city.",
+        parameters={"type": "object", "properties": {"city": {"type": "string"}}, "required": []},
+    ),
 ]
 
 SAFE_RESPONSES: dict = {
