@@ -13,10 +13,12 @@ BIN=${TRIAGE_BIN:-./incident-triage-agent}
 mkdir -p runs
 
 # scenario | service that must be named | cause keywords (regex)
+# Order matters: reset rolls checkout back to v1.3.0, which later scenarios see
+# as a deploy, so the deploy scenario runs after the pool one.
 SCENARIOS=(
   "latency|payments|latenc|slow"
-  "bad-deploy|checkout|v1\.4\.0|deploy"
   "pool|checkout|pool|connection"
+  "bad-deploy|checkout|v1\.4\.0|deploy"
   "leak|checkout|memory|leak|oom"
 )
 

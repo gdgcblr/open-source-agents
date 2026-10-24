@@ -154,3 +154,9 @@ func round(v float64) float64 {
 	}
 	return math.Round(v*1000) / 1000
 }
+
+// clock formats a time for the model: local wall clock with an explicit zone,
+// so the model never mixes UTC and local times.
+func clock(t time.Time) string {
+	return t.Local().Format("15:04:05 MST")
+}

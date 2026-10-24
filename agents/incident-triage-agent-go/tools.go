@@ -39,6 +39,10 @@ func (t triageTools) all() ([]tool.Tool, error) {
 			Description: "Lists alerts that are currently firing or pending in Prometheus, with labels, summary and since when.",
 		}, t.firingAlerts)),
 		add(functiontool.New(functiontool.Config{
+			Name:        "service_health",
+			Description: "START HERE. Golden signals for every service (request rate, 5xx error ratio, p99 latency, calls to downstream services, memory, restarts, version), each compared with its median over the previous hour and marked normal or ABNORMAL.",
+		}, t.serviceHealth)),
+		add(functiontool.New(functiontool.Config{
 			Name:        "list_metrics",
 			Description: "Lists application metric names available in Prometheus (Go runtime and scrape internals are hidden).",
 		}, t.listMetrics)),
@@ -82,7 +86,12 @@ func minutesOr(m, def int) time.Duration {
 
 // --- get_firing_alerts ---
 
-type noInput struct{}
+// noInput is for tools without real arguments. It carries one optional field
+// because some OpenAI-compatible servers (e.g. Ollama) reject an object schema
+// with no properties.
+type noInput struct {
+	Reason string `json:"reason,omitempty" jsonschema:"optional: why you are calling this tool"`
+}
 
 type alertInfo struct {
 	Name     string            `json:"name"`
@@ -93,6 +102,7 @@ type alertInfo struct {
 }
 
 type alertsOutput struct {
+	Now    string      `json:"now"`
 	Alerts []alertInfo `json:"alerts"`
 }
 
@@ -108,14 +118,14 @@ func (t triageTools) firingAlerts(ctx agent.Context, _ noInput) (alertsOutput, e
 	if err := httpGetJSON(ctx, t.prom.base, "/api/v1/alerts", nil, &data); err != nil {
 		return alertsOutput{}, err
 	}
-	var out alertsOutput
+	out := alertsOutput{Now: clock(time.Now())}
 	for _, a := range data.Alerts {
 		out.Alerts = append(out.Alerts, alertInfo{
 			Name:     a.Labels["alertname"],
 			State:    a.State,
 			Labels:   a.Labels,
 			Summary:  a.Annotations["summary"],
-			ActiveAt: a.ActiveAt.Format(time.RFC3339),
+			ActiveAt: clock(a.ActiveAt),
 		})
 	}
 	return out, nil
@@ -197,7 +207,7 @@ func (t triageTools) promSummary(ctx agent.Context, in summaryInput) (summaryOut
 		}
 		ss.Avg = sum / float64(len(vals))
 		if i := changePoint(vals); i >= 0 {
-			ss.ChangedAt = times[i].Format(time.TimeOnly)
+			ss.ChangedAt = clock(times[i])
 		}
 		ss.Min, ss.Avg, ss.Max, ss.Last, ss.StartedAt = round(ss.Min), round(ss.Avg), round(ss.Max), round(ss.Last), round(ss.StartedAt)
 		out.Series = append(out.Series, ss)
@@ -321,8 +331,8 @@ type logPattern struct {
 	Service  string `json:"service"`
 	Level    string `json:"level"`
 	Message  string `json:"message"`
-	Recent   int    `json:"recent_count"`
-	Previous int    `json:"previous_window_count"`
+	Recent   float64 `json:"recent_per_min"`
+	Previous float64 `json:"previous_window_per_min"`
 	Trend    string `json:"trend"`
 	Sample   string `json:"sample,omitempty"`
 }
@@ -361,15 +371,15 @@ func (t triageTools) logPatterns(ctx agent.Context, in logInput) (logOutput, err
 			Service:  v.Metric["service"],
 			Level:    v.Metric["level"],
 			Message:  v.Metric["msg"],
-			Recent:   int(v.Value.value()),
-			Previous: prevCount[labelKey(v.Metric)],
+			Recent:   round(v.Value.value() / float64(m)),
+			Previous: round(float64(prevCount[labelKey(v.Metric)]) / float64(m)),
 		}
 		switch {
 		case p.Previous == 0:
 			p.Trend = "NEW in this window"
-		case float64(p.Recent) > 1.5*float64(p.Previous):
-			p.Trend = fmt.Sprintf("INCREASING %.1fx", float64(p.Recent)/float64(p.Previous))
-		case float64(p.Recent) < 0.67*float64(p.Previous):
+		case p.Recent > 1.5*p.Previous:
+			p.Trend = fmt.Sprintf("INCREASING %.1fx", p.Recent/p.Previous)
+		case p.Recent < 0.67*p.Previous:
 			p.Trend = "decreasing"
 		default:
 			p.Trend = "steady (same as previous window)"
@@ -424,28 +434,33 @@ func (t triageTools) recentChanges(ctx agent.Context, in changesInput) (changesO
 	step := 15 * time.Second
 	out := changesOutput{Window: window.String()}
 
-	// A deploy shows up as a build_info series with a new version label that
-	// starts inside the window.
+	// A deploy is a service whose build_info version label changes inside the
+	// window. A new process with the same version is a restart, not a deploy.
 	res, err := t.prom.rangeQuery(ctx, "build_info", window, step)
 	if err != nil {
 		return out, err
 	}
-	start := time.Now().Add(-window).Add(2 * step)
+	type span struct {
+		version     string
+		first, last time.Time
+	}
+	byService := map[string][]span{}
 	for _, r := range res {
 		if len(r.Values) == 0 {
 			continue
 		}
-		first, last := r.Values[0].time(), r.Values[len(r.Values)-1].time()
-		if first.After(start) {
+		svc := r.Metric["service"]
+		byService[svc] = append(byService[svc], span{r.Metric["version"], r.Values[0].time(), r.Values[len(r.Values)-1].time()})
+	}
+	for svc, spans := range byService {
+		sort.Slice(spans, func(i, j int) bool { return spans[i].first.Before(spans[j].first) })
+		for i := 1; i < len(spans); i++ {
+			if spans[i].version == spans[i-1].version {
+				continue
+			}
 			out.Changes = append(out.Changes, change{
-				Time: first.Format(time.TimeOnly), Kind: "deploy",
-				Detail: fmt.Sprintf("%s started running version %s", r.Metric["service"], r.Metric["version"]),
-			})
-		}
-		if last.Before(time.Now().Add(-2 * step)) {
-			out.Changes = append(out.Changes, change{
-				Time: last.Format(time.TimeOnly), Kind: "deploy",
-				Detail: fmt.Sprintf("%s stopped running version %s", r.Metric["service"], r.Metric["version"]),
+				Time: clock(spans[i].first), Kind: "deploy",
+				Detail: fmt.Sprintf("%s changed version %s -> %s", svc, spans[i-1].version, spans[i].version),
 			})
 		}
 	}
@@ -462,7 +477,7 @@ func (t triageTools) recentChanges(ctx agent.Context, in changesInput) (changesO
 	}
 	sort.Slice(out.Changes, func(i, j int) bool { return out.Changes[i].Time < out.Changes[j].Time })
 	if len(out.Changes) == 0 {
-		out.Note = "no deploys or restarts in the window"
+		out.Note = "no version changes or restarts in the window"
 	}
 	return out, nil
 }
