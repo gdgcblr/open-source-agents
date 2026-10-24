@@ -102,6 +102,85 @@ Maintainers benefit too: fewer duplicate PRs on issues someone already took, and
 
 ## Architecture & Data Flow
 
+### Design principles
+1. **Facts in code, explanations by AI.** Deterministic code decides whether an issue is free, claimed or fixed, and how welcoming the repo is. Gemini only explains and plans from those facts, so it can never mark a taken issue as available, and planted text in an issue can't change a verdict.
+2. **Every claim has a link.** Each warning, code pointer and related issue points to the comment, PR or line it came from, so the user can check it in one click.
+3. **One core, three interfaces.** The CLI, the ADK agent and the MCP server call the same functions, so they always agree.
+4. **Works without keys, better with them.** The core uses only the Python standard library and GitHub's public API. A GitHub token adds capacity and code search; a Gemini key adds the plan and the chat.
+5. **Degrade, don't fail.** Rate limits, overloaded models and missing data produce partial results with a plain note, never a crash.
+
+### Layers
+
+```
+┌──── Interfaces ─────────────────────────────────────────────────────┐
+│ CLI (cli.py)          ADK agents (agent.py)        MCP server       │
+│ find · inspect ·      root_agent    → chat         (mcp_server.py)  │
+│ related · brief ·     brief_writer  → plan         host model does  │
+│ doctor · mcp                                       the talking      │
+└─────────────────────────────────────────────────────────────────────┘
+        │                        │  ADK guardrail callbacks  │
+        │                        │  (adk_guardrails.py)      │
+        ┌─────────────────────────────────────────────────────┐
+        │ Tool layer (tools.py): 5 tools, each @guarded →     │
+        │ errors returned as data, secrets masked             │
+        └─────────────────────────────────────────────────────┘
+        │
+┌──── Deterministic core ─────────────────────────────────────────────┐
+│ scout.py        pipeline: repos → issues → evidence → scoring       │
+│ signals.py      claims · "already fixed" · policy · linked PRs      │
+│ scoring.py      verdict · score · reasons · effort                  │
+│ related.py      related issues · duplicates · merged PRs            │
+│ conventions.py  CONTRIBUTING rules · likely files                   │
+│ pointers.py     code search → exact file:line                       │
+│ plan.py         next step · comment draft · checklist               │
+│ guardrails.py   input validation · injection · secrets · grounding  │
+│ report.py       Markdown rendering     models.py   data classes     │
+└─────────────────────────────────────────────────────────────────────┘
+        │
+┌──── github.py ─────────────────────────────┐
+│ read-only GET · api.github.com only        │
+│ response cache · search pacing · retries   │
+└────────────────────────────────────────────┘
+```
+
+The CLI calls the core directly. The ADK agent and the MCP server go through the tool layer, which adds error handling and secret masking; the ADK agent also passes through its guardrail callbacks.
+
+| Layer | Files | Needs |
+| :--- | :--- | :--- |
+| Interfaces | `cli.py`, `agent.py`, `mcp_server.py`, `adk_agents/issue_scout_agent/` | ADK and MCP need Python 3.11+ |
+| Agent guardrails | `adk_guardrails.py` | Google ADK |
+| Tools | `tools.py` | Standard library |
+| Core | `scout.py`, `signals.py`, `scoring.py`, `related.py`, `conventions.py`, `pointers.py`, `plan.py`, `guardrails.py`, `report.py`, `models.py` | Standard library, Python 3.9+ |
+| GitHub access | `github.py` | Standard library |
+
+### The two ADK agents
+
+| | `root_agent`: the chat guide | `brief_writer`: the planner |
+| :--- | :--- | :--- |
+| ADK type | `LlmAgent` with 5 function tools | `LlmAgent` with `output_schema=StarterBrief` (Pydantic) and no tools |
+| Job | Talks with the contributor: find issues, check one, build a plan | Turns one issue's facts into a structured brief: summary, approach, files, risks, questions |
+| Input → output | Chat messages → Markdown with evidence links | One JSON blob of facts → schema-validated JSON, rendered by `report.py` |
+| Used by | `adk web adk_agents`, `adk run adk_agents/issue_scout_agent` | `python -m issue_scout brief` |
+| Model | `gemini-3.5-flash`, temperature 0.2 | Same, falling back to `gemini-3.8-flash`, then `gemini-3.5-flash-lite`, on HTTP 429/5xx |
+| Guardrails | Tool budget, link grounding and secret masking (ADK callbacks) | Schema validation, file grounding, secret masking |
+
+**Why two agents rather than one or many:**
+- **Different needs:** chat needs tools and flexibility, while a brief needs a fixed, checkable shape.
+- **Two simple agents:** a structured output schema and tool calling don't mix well in one agent, so splitting them keeps both simple.
+- **No more than two:** more agents would add cost and failure points without adding facts, because the facts come from code.
+
+**The five tools** (`tools.py`, shared by `root_agent` and the MCP server):
+
+| Tool | Returns |
+| :--- | :--- |
+| `find_issues` | Ranked shortlist with verdicts and evidence, skip summary, legwork counts |
+| `inspect_issue` | One issue's verdict, score, flags, claims, linked PRs and repo merge stats |
+| `related_issues` | Similar open/closed issues and merged PRs, with possible duplicates flagged |
+| `repo_conventions` | CONTRIBUTING rules (CLA, DCO, commit style, changelog) and setup/test/lint commands |
+| `starter_brief_facts` | Everything for a plan: verdict, next step, code pointers, likely files, prior work, rules |
+
+### Data flow: finding issues
+
 ```
  Profile (languages, topics, hours | GitHub username)
         |
@@ -126,13 +205,95 @@ Maintainers benefit too: fewer duplicate PRs on issues someone already took, and
         +--> CLI (Markdown / JSON)
         +--> MCP server tools ------------> host model (Gemini CLI, Claude Code, Cursor...)
         +--> ADK root_agent (adk web/run) -> Gemini explains and plans, calling the same tools
-
- brief <issue>: inspect + related issues/PRs + CONTRIBUTING rules + likely files (git tree)
-                + code pointers (code search -> exact lines) + repo-aware next step
-                --> ADK brief_writer (Gemini, structured StarterBrief) or facts-only without a key
 ```
 
-Every verdict comes from deterministic code and links to its evidence. Gemini summarises and plans from those facts. It never decides whether an issue is available.
+### Data flow: one chat turn
+For example, *"Make me a plan for brekkylab/backlot#988"* in `adk web`:
+
+```
+User message
+  │
+  ▼
+root_agent (Gemini) chooses a tool: starter_brief_facts(issue="brekkylab/backlot#988")
+  │
+  ├─ before_tool_callback  limit_tool_calls    ≤ 6 tool calls per turn, else an error result
+  ▼
+tools.starter_brief_facts (@guarded)
+  │   core: verdict → related → conventions → git tree → code pointers → next step
+  │   optional parts that fail become notes · secrets masked · untrusted-content notice
+  ▼
+  ├─ after_tool_callback   remember_tool_urls  every GitHub URL returned is saved in session state
+  ▼
+root_agent writes the reply from the tool result
+  │
+  ├─ after_model_callback  check_model_output  masks secrets; appends a "not verified" note to any
+  ▼                                            GitHub link that no tool returned and the user didn't paste
+Reply: next step + comment draft, code pointers with links, rules, checklist
+```
+
+Session state holds two keys:
+- `issue_scout:tool_budget`: the call count, reset each turn by invocation id.
+- `issue_scout:grounded_urls`: up to 2,000 URLs.
+
+Nothing is written to disk.
+
+### Data flow: the starter brief
+
+```
+Scout.brief_facts  (code, about 10–20 GitHub calls)
+  1. inspect       verdict + evidence                   essential: if this fails, the brief fails
+  2. related       2–4 searches                          ┐
+  3. conventions   CONTRIBUTING.md                       │ optional: a failure becomes a
+  4. git tree      likely files                          │ note and the brief continues
+  5. pointers      code search → files → exact lines     ┘
+  6. next_step     start now / ask claimant / confirm fix / skip, from the evidence
+        │
+        ▼
+brief_writer (Gemini, one shot) → StarterBrief JSON      (next model on 429/5xx)
+        │
+        ▼
+ground_brief: drop files not in the facts · mask secrets
+        │
+        ▼
+report.render_brief → Markdown, with the Gemini sections labelled
+```
+
+Without a Gemini key, the same brief prints without the Summary and Suggested approach.
+
+### Failure handling
+
+| Failure | Behaviour |
+| :--- | :--- |
+| GitHub rate limit (anonymous or token) | Partial results plus a note with the reset time; "set GITHUB_TOKEN" is suggested only when none is set |
+| GitHub secondary (burst) limit | Searches spaced ≥1 s apart, retried after 5 s and 15 s (or `Retry-After`), then partial results and a note |
+| An optional part of the brief fails | The brief continues and lists what's missing |
+| Gemini overloaded (503) or rate-limited (429) | Next model in the fallback chain; if every model fails, the facts-only brief |
+| Invalid input | `{"error": ...}` from tools, exit code 1 from the CLI, before any request is sent |
+| A tool error during chat | The agent is told to relay it and not guess |
+
+### Performance
+- **Parallel lookups:** evidence-gathering runs on 6 threads. First each repo's merge history, then each issue's timeline.
+- **Cheap pre-ranking:** search data alone picks which 10 issues (25 with a token) get the expensive timeline calls.
+- **Shared cache:** one GitHub client per process caches every response, so follow-up questions in a chat often cost no API calls.
+- **Measured times:** `inspect` 4–5 s, `brief --no-ai` about 11 s, `brief` with Gemini 20–40 s, `find` 8–35 s (depending on token and throttling).
+
+### Design trade-offs
+
+| Decision | Why | Cost |
+| :--- | :--- | :--- |
+| Pattern-based detectors, not an LLM classifier | Free, fast, deterministic, testable offline, immune to prompt injection | Misses unusual wordings: claim recall is 57% on the held-out set ([evals](#detector-accuracy-evals)) |
+| The model explains but never decides | A wrong "it's free" costs a newcomer an evening; keeps the core usable without a key | Less flexible on edge cases |
+| Standard-library core; ADK and MCP optional | Runs anywhere (even Python 3.9) and is easy to review | A hand-written HTTP client instead of a library |
+| The MCP server has no model | Users bring their own assistant; no key needed on the server | Answer quality depends on the host model |
+| Read-only, never claims or comments | Safe to run, and never spams maintainers | The user posts the drafted comment themselves |
+| Code search for pointers | Finds the file that actually defines the code, where file-name matching often guesses wrong | Needs a GitHub token |
+
+### Extending it
+- **New signal** (e.g. "waiting on maintainer"): add a detector in `signals.py`, a flag in `models.py`, its weight in `scoring.py`, and labelled cases in `evals/cases.py`.
+- **New tool:** add a function to `tools.py` with `@guarded` and list it in `ALL_TOOLS`. Both the ADK agent and the MCP server pick it up.
+- **Another forge** (e.g. GitLab): implement the same methods as `github.py`. The core depends only on that interface.
+
+Security controls are listed in [Guardrails](#guardrails).
 
 ---
 
