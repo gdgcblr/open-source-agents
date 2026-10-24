@@ -1,0 +1,85 @@
+{
+  "name": "@manohareldhandi/agent-logger",
+  "version": "0.1.0",
+  "description": "Local execution logs for AI agents, with typed wrappers, streaming support, and an optional Google ADK plugin.",
+  "license": "MIT",
+  "author": "Manohar Eldhandi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ManoharEldhandi/open-source-agents.git",
+    "directory": "tools/agent-logger"
+  },
+  "keywords": [
+    "agent",
+    "logging",
+    "observability",
+    "google-adk",
+    "tracing",
+    "sdk"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./adk": {
+      "types": "./dist/adk.d.ts",
+      "import": "./dist/adk.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "agent-logger": "dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npm run lint && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "lint": "eslint src test examples scripts --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "tsc -p tsconfig.test.json && node --test test-dist/test/*.test.js",
+    "demo": "tsc -p tsconfig.test.json && node test-dist/examples/offline.js",
+    "demo:gemini": "tsc -p tsconfig.test.json && node --env-file=.env test-dist/examples/gemini.js",
+    "demo:story": "tsc -p tsconfig.test.json && node --env-file=.env test-dist/examples/story.js",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "test:package": "npm run build && node --env-file-if-exists=.env scripts/package-smoke.mjs",
+    "check:privacy": "node --env-file-if-exists=.env scripts/privacy-check.mjs",
+    "verify": "npm run check:privacy && npm run check && npm audit && node --env-file-if-exists=.env scripts/package-smoke.mjs",
+    "prepack": "npm run check:privacy && npm run check"
+  },
+  "peerDependencies": {
+    "@google/adk": "^2.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@google/adk": {
+      "optional": true
+    }
+  },
+  "overrides": {
+    "gaxios@6.7.1": {
+      "uuid": "11.1.1"
+    }
+  },
+  "devDependencies": {
+    "@google/adk": "2.3.0",
+    "@google/genai": "^2.31.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.13.0",
+    "prettier": "^3.0.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.0.0",
+    "zod": "^4.0.0"
+  }
+}

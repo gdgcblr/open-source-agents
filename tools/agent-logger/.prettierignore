@@ -1,0 +1,5 @@
+dist/
+test-dist/
+node_modules/
+.agent-logs/
+package-lock.json
