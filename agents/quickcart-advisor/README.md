@@ -2,6 +2,18 @@
 
 > A Go AI agent that compares one product across Swiggy Instamart, Blinkit, Zepto and Amazon India and recommends where to buy — by total delivered cost (fees, memberships, ETA), never the headline price alone, and with strict honesty about where every number came from.
 
+![Go 1.26](https://img.shields.io/badge/Go-1.26-00ADD8) ![Framework: Google ADK-Go](https://img.shields.io/badge/framework-Google%20ADK%E2%80%93Go-4285F4) ![Backend: LM Studio or Gemini](https://img.shields.io/badge/backend-LM%20Studio%20%7C%20Gemini-8A2BE2) ![Phase 1: demo catalog](https://img.shields.io/badge/Phase%201-demo%20catalog-F29900)
+
+| | |
+| :--- | :--- |
+| **Category** | `agents/quickcart-advisor` (AI agent, community catalog entry) |
+| **Language / Stack** | Go 1.26 · Google ADK-Go v2.6.0 · pluggable LLM (LM Studio local, or Gemini) |
+| **What it ranks on** | Final delivered cost (price − discount + all fees + taxes) — membership-aware — plus delivery ETA |
+| **Safety** | HITL approval gate before any checkout/subscribe/pay · deterministic Go math (LLM never computes) |
+
+> **Hackathon note (time constraint).** There is no real-time public API for the Indian quick-commerce sites. To ship a *fully working, reproducible* agent within the hackathon window, Phase 1 deliberately runs on a **bundled offline demo catalog** — deterministic, zero-network, clearly labeled — so the entire workflow (identify → serviceability → offers → ranking → approval) demonstrates end-to-end with no setup. See **[Demo catalog](#demo-catalog-the-phase-1-data-source)** for exactly what it contains, and **[Phase 2](#future-improvements-phase-2)** for the real-Internet / MCP plan.
+
+
 **Phase 1 (current)**: a **bundled offline demo catalog always powers every local run** — zero external calls, deterministic, clearly labeled. **Phase 2 (roadmap)**: real Internet prices via web sources and/or **[MCP](https://modelcontextprotocol.io/) servers**, with qbuys as an optional live adapter. See [Data sources & phases](#data-sources--phases).
 
 ---
@@ -205,32 +217,36 @@ Useful flags: `--compare` forces one-shot mode; `--backend`, `--model`, `--base-
 go run ./cmd/quickcart --query "Amul Taaza milk 1L" --pincode 560001
 ```
 
-### Example Output (illustrative shape — prices, fees, ETAs and data-source labels vary by run and PIN code)
+### Example Output (real deterministic run — offline demo catalog, offline-demo labels, PIN 560001)
+
+Startup line + comparison table. All four rows are labeled a data source; the agent never places an order — it hands you the retailer's link after approval.
+
 ```
-QuickCart Advisor — backend=openai model=google/gemma-4-12b base-url=http://localhost:1235/v1 qbuys=http://localhost:8080
-All offers are labeled by data source: "qbuys-live" = live qbuys service; "offline-demo-catalog" = bundled demo data (never live prices).
-
-| Retailer | Product | Price | Fees | Final delivered cost | ETA | Source |
-| ... | ... | ~~₹70~~ ₹66 | ₹30 delivery + ₹6 handling | **₹102** | 12 min | qbuys-live |
-
-## Swiggy Instamart
-- Amul Taaza Toned Milk 1L — ₹66 (MRP ~~₹70~~), delivery ₹30, handling ₹6,
-  **final ₹102**, ETA 12 min, in stock, serviceable.
-- Data source: qbuys-live (fetched 2026-10-24T09:30:00Z)
-- https://www.swiggy.com/instamart/...
-
-...
-
-Data sources: Instamart/Blinkit/Zepto — qbuys-live; Amazon India — offline-demo-catalog
-(demo values, may differ from the app; never presented as live prices).
-
-Best overall: Zepto — lowest final delivered cost (₹99).
-Cheapest: Zepto at ₹99. Fastest: Blinkit at 8 min.
-Amazon saves ₹5 but takes up to 3 days to a remote PIN; Zepto delivers in 11 minutes for ₹5 more.
-
-(No order is placed. If you ask to check out, the agent asks your approval via
-request_purchase_confirmation, then hands you the retailer's own link.)
+QuickCart Advisor — backend=openai model=google/gemma-4-12b base-url=http://localhost:1235/v1 qbuys=(disabled) data=offline-demo-catalog (always-on)
+Every offer is labeled by data source: "qbuys-live" = live qbuys service (opt-in); "offline-demo-catalog" = bundled demo data (never live prices).
 ```
+
+| Retailer | Product | Price | Fees + taxes | Final delivered cost | ETA | Stock | Source |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Blinkit** ✅ | Amul Taaza Milk 1L (Pouch) | ₹66.00 (MRP ~~₹70.00~~) | ₹25.00 del + ₹4.00 platform + ₹1.49 handling | **₹117.49** | 10 min | In stock | `offline-demo-catalog` |
+| Zepto | Amul Taaza Milk 1L (Pouch) | ₹67.00 | ₹30.00 del + ₹9.99 platform + ₹0.99 handling | **₹124.98** | 16 min | In stock | `offline-demo-catalog` |
+| Swiggy Instamart | Amul Taaza Milk 1L (Pouch) | ₹68.00 | ₹30.00 del + ₹6.00 platform + ₹1.99 handling | **₹133.99** | 12 min | In stock | `offline-demo-catalog` |
+| Amazon India | Amul Taaza Milk 1L (Pouch) | ₹69.00 | ₹40.00 delivery | — | ~1 day | **Out of stock** | `offline-demo-catalog` |
+
+```
+Best overall: Blinkit (₹117.49), delivered in 10 min.
+Cheapest: Blinkit (₹117.49).
+Fastest: Blinkit (10 min).
+
+Why: Saves ₹7.49 vs the next best, Zepto (₹124.98).
+Fee note: Blinkit adds ₹55.49 in fees/taxes (≈47% of the total).
+Caveat: these are offline demo catalog numbers, not live prices — verify on the app before buying.
+
+(No order is placed. If you ask to check out, the agent asks your approval
+via request_purchase_confirmation, then hands you the retailer's own link.)
+```
+
+> Ask for a membership in the prompt — e.g. *"…I have Amazon Prime"* — and the comparison re-runs with Prime's free-delivery applied to Amazon's offer (and fees recomputed deterministically in Go).
 
 ---
 
