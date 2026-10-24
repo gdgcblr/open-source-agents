@@ -11,6 +11,7 @@ from agent import (
     GDGEventMarketingAgent,
     build_demo_content,
     build_demo_event,
+    fetch_upcoming_events,
     main,
 )
 from ui import run_demo_generation, run_live_generation
@@ -29,13 +30,14 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
     def test_ui_live_generation_uses_agent_and_returns_drafts(self):
         event = {"title": "Upcoming event"}
         assets = {"linkedin": "post", "twitter": "tweet", "email_newsletter": "email"}
+        options = {"channels": ["linkedin"]}
         with patch("ui.genai.Client") as client_factory, patch(
             "ui.GDGEventMarketingAgent"
         ) as agent_factory:
             agent_factory.return_value.fetch_latest_event.return_value = event
             agent_factory.return_value.generate_content.return_value = assets
 
-            result = run_live_generation("123", "test-key", "test-model")
+            result = run_live_generation("123", "test-key", "test-model", event, options)
 
         client_factory.assert_called_once_with(api_key="test-key")
         agent_factory.assert_called_once_with(
@@ -43,6 +45,7 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
             client_factory.return_value,
             "test-model",
         )
+        agent_factory.return_value.generate_content.assert_called_once_with(event, **options)
         self.assertEqual(result, (event, assets))
 
     def test_demo_event_and_content_are_fictional_samples(self):
@@ -106,13 +109,34 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
 
         get.assert_called_once_with(
             "https://gdg.community.dev/api/event/",
-            params={"chapter": "123", "status": "Published"},
+            params={"chapter": "123", "status": "Published", "page_size": 1},
             timeout=30,
         )
         response.raise_for_status.assert_called_once_with()
         self.assertEqual(event["title"], "Community AI Night")
         self.assertEqual(event["speakers"], "Alex")
         self.assertEqual(event["location"], "Bengaluru")
+
+    def test_fetch_upcoming_events_sorts_dates_and_skips_invalid_or_past(self):
+        response = Mock()
+        response.json.return_value = {
+            "results": [
+                {"title": "Later", "start_date": "2099-12-01T18:00:00+00:00"},
+                {"title": "Past", "start_date": "2000-01-01T18:00:00Z"},
+                {"title": "Sooner", "start_date": "2099-11-01T18:00:00Z"},
+                {"title": "Invalid", "start_date": "not-a-date"},
+                {"title": "Missing date"},
+            ]
+        }
+        with patch("agent.requests.get", return_value=response) as get:
+            events = fetch_upcoming_events("123", limit=5)
+
+        self.assertEqual([event["title"] for event in events], ["Sooner", "Later"])
+        get.assert_called_once_with(
+            "https://gdg.community.dev/api/event/",
+            params={"chapter": "123", "status": "Published", "page_size": 5},
+            timeout=30,
+        )
 
     def test_fetch_latest_event_returns_empty_dict_when_no_upcoming_events(self):
         response = Mock()
@@ -146,6 +170,35 @@ class GDGEventMarketingAgentTests(unittest.TestCase):
             self.assertEqual(call.kwargs["model"], "test-model")
             self.assertIsInstance(call.kwargs["config"], types.GenerateContentConfig)
             self.assertIn("Community AI Night", call.kwargs["contents"])
+
+    def test_generate_content_supports_selected_channels_and_preferences(self):
+        models = Mock()
+        models.generate_content.return_value = SimpleNamespace(text="Generated draft")
+        agent = GDGEventMarketingAgent("123", SimpleNamespace(models=models), "test-model")
+
+        assets = agent.generate_content(
+            {"title": "Community AI Night"},
+            tone="Energetic",
+            audience="First-time attendees",
+            call_to_action="Register today",
+            custom_instructions="Keep it accessible",
+            channels=["linkedin"],
+        )
+
+        self.assertEqual(assets, {"linkedin": "Generated draft"})
+        self.assertEqual(models.generate_content.call_count, 1)
+        prompt = models.generate_content.call_args.kwargs["contents"]
+        self.assertIn("Tone: Energetic", prompt)
+        self.assertIn("Audience: First-time attendees", prompt)
+        self.assertIn("Call to action: Register today", prompt)
+        self.assertIn("Keep it accessible", prompt)
+
+    def test_generate_content_rejects_empty_or_unknown_channel_selection(self):
+        agent = GDGEventMarketingAgent("123", Mock(), "test-model")
+        with self.assertRaises(ValueError):
+            agent.generate_content({}, channels=[])
+        with self.assertRaises(ValueError):
+            agent.generate_content({}, channels=["unknown"])
 
 
 if __name__ == "__main__":

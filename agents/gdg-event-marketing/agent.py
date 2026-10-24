@@ -7,6 +7,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 import requests
 from dotenv import load_dotenv
@@ -17,6 +18,11 @@ from prompts import GDG_SYSTEM_PROMPT, LINKEDIN_PROMPT, TWITTER_PROMPT, EMAIL_PR
 
 DEFAULT_MODEL = "gemini-3.8-flash"
 DEMO_CHAPTER_ID = "DEMO-CHAPTER-001 (fictional)"
+CHANNEL_PROMPTS = {
+    "linkedin": LINKEDIN_PROMPT,
+    "twitter": TWITTER_PROMPT,
+    "email_newsletter": EMAIL_PROMPT,
+}
 
 
 def build_demo_event() -> dict:
@@ -65,6 +71,47 @@ def build_demo_content(event: dict) -> dict:
         ),
     }
 
+
+def fetch_upcoming_events(chapter_id: str, limit: int = 20) -> list[dict]:
+    """Fetch and sort published future events for a GDG Community chapter."""
+    response = requests.get(
+        "https://gdg.community.dev/api/event/",
+        params={"chapter": chapter_id, "status": "Published", "page_size": limit},
+        timeout=30,
+    )
+    response.raise_for_status()
+    events = []
+    now = datetime.now(timezone.utc)
+    for item in response.json().get("results", []):
+        start_date = item.get("start_date")
+        if not start_date:
+            continue
+        try:
+            parsed_date = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if parsed_date.tzinfo is None:
+            parsed_date = parsed_date.replace(tzinfo=timezone.utc)
+        if parsed_date <= now:
+            continue
+        speakers = item.get("speakers") or []
+        events.append((parsed_date, {
+            "id": item.get("id"),
+            "chapter_id": chapter_id,
+            "title": item.get("title") or "Untitled event",
+            "date_time": start_date,
+            "speakers": ", ".join(
+                speaker.get("name", "")
+                for speaker in speakers
+                if isinstance(speaker, dict)
+            ),
+            "description": item.get("description_short") or item.get("description") or "",
+            "url": item.get("url") or "",
+            "location": item.get("city") or "Online",
+        }))
+    return [event for _date, event in sorted(events, key=lambda item: item[0])]
+
+
 class GDGEventMarketingAgent:
     def __init__(self, chapter_id: str, client: genai.Client, model_name: str):
         self.chapter_id = chapter_id
@@ -72,48 +119,42 @@ class GDGEventMarketingAgent:
         self.model_name = model_name
 
     def fetch_latest_event(self) -> dict:
-        """Fetch the latest published event from the GDG Community (Bevy) API."""
-        response = requests.get(
-            "https://gdg.community.dev/api/event/",
-            params={"chapter": self.chapter_id, "status": "Published"},
-            timeout=30,
-        )
-        response.raise_for_status()
-        events = response.json().get("results", [])
-        now = datetime.now(timezone.utc)
-        upcoming_events = [
-            event
-            for event in events
-            if event.get("start_date")
-            and datetime.fromisoformat(event["start_date"].replace("Z", "+00:00")) > now
-        ]
-        if not upcoming_events:
-            return {}
+        """Fetch the nearest upcoming published event."""
+        events = fetch_upcoming_events(self.chapter_id, limit=1)
+        return events[0] if events else {}
 
-        latest = min(
-            upcoming_events,
-            key=lambda event: datetime.fromisoformat(
-                event["start_date"].replace("Z", "+00:00")
-            ),
-        )
-        speakers = latest.get("speakers") or []
-        return {
-            "title": latest.get("title"),
-            "date_time": latest.get("start_date"),
-            "speakers": ", ".join(speaker.get("name", "") for speaker in speakers),
-            "description": latest.get("description_short", latest.get("description", "")),
-            "url": latest.get("url"),
-            "location": latest.get("city") or "Online",
-        }
+    def fetch_upcoming_events(self, limit: int = 20) -> list[dict]:
+        return fetch_upcoming_events(self.chapter_id, limit)
 
-    def generate_content(self, event_data: dict) -> dict:
+    def generate_content(
+        self,
+        event_data: dict,
+        tone: str = "Friendly and welcoming",
+        audience: str = "GDG community members and people curious about the topic",
+        call_to_action: str = "Encourage readers to learn more using the event link",
+        custom_instructions: str = "",
+        channels: Optional[List[str]] = None,
+    ) -> dict:
         """Generate marketing assets for all channels using the LLM."""
+        selected_channels = channels if channels is not None else list(CHANNEL_PROMPTS)
+        invalid_channels = set(selected_channels) - set(CHANNEL_PROMPTS)
+        if invalid_channels:
+            raise ValueError(f"Unsupported channels: {', '.join(sorted(invalid_channels))}")
+        if not selected_channels:
+            raise ValueError("Select at least one channel.")
+
         formatted_data = json.dumps(event_data, indent=2)
 
-        def generate(prompt: str) -> str:
+        def generate(channel: str) -> str:
+            prompt = CHANNEL_PROMPTS[channel]
+            instructions = (
+                f"\nTone: {tone}\nAudience: {audience}\n"
+                f"Call to action: {call_to_action}\n"
+                f"Additional organizer guidance: {custom_instructions or 'None'}\n"
+            )
             response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=prompt.format(event_data=formatted_data),
+                contents=prompt.format(event_data=formatted_data) + instructions,
                 config=types.GenerateContentConfig(
                     system_instruction=GDG_SYSTEM_PROMPT,
                 ),
@@ -121,11 +162,9 @@ class GDGEventMarketingAgent:
             if not response.text:
                 raise RuntimeError("Gemini returned an empty response.")
             return response.text
-
         return {
-            "linkedin": generate(LINKEDIN_PROMPT),
-            "twitter": generate(TWITTER_PROMPT),
-            "email_newsletter": generate(EMAIL_PROMPT),
+            channel: generate(channel)
+            for channel in selected_channels
         }
 
 

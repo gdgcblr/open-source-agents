@@ -19,8 +19,13 @@ review and edit.
 ### Key Features
 
 - Fetches the nearest future published event for a chapter ID.
+- Lists upcoming events so organizers can choose the right event.
+- Lets organizers edit event facts before generating, or use a fully custom event.
 - Generates LinkedIn, X, and email newsletter drafts with Gemini.
-- Provides a Tkinter desktop UI with separate draft tabs and copy-to-clipboard.
+- Adds audience, tone, call-to-action, extra guidance, and channel-selection controls.
+- Provides editable drafts, per-channel regeneration, word/character counts,
+  copy-to-clipboard, and Markdown/text export.
+- Keeps network work off the UI thread and presents actionable validation/errors.
 - Includes offline demo mode with fictional event data; no credentials or network
   are needed to explore the interface.
 - Never publishes content to social media or writes drafts to files.
@@ -164,8 +169,12 @@ python ui.py --demo
 
 Choose **Offline demo** to explore without a key or network. Choose **Live**,
 enter a chapter ID and Gemini key (or configure them in `.env`), then click
-**Generate drafts**. Copy a selected draft with **Copy selected draft**. Review
-and edit generated copy before using it; the app never posts content.
+**Find events** to choose from upcoming chapter events, or select **Live:
+custom event** to enter one manually. Edit the fetched event details, select
+channels, set a tone, audience, and call to action, then click **Generate
+drafts**. Edit drafts in-place, regenerate a selected channel, copy it, or save
+all drafts as Markdown/text. Review generated copy before using it; the app
+never posts content.
 
 ### Offline CLI demo
 
@@ -271,9 +280,9 @@ copy button without using network access or credentials.
 
 ## Future Improvements
 
-- [ ] Let organizers select from multiple upcoming chapter events.
-- [ ] Add editable event details before generation.
-- [ ] Add optional export of reviewed drafts to a user-selected file.
+- [ ] Add localization and chapter-specific brand voice profiles.
+- [ ] Add more social channels and configurable platform limits.
+- [ ] Add scheduled campaign calendars and opt-in reminders.
 
 ---
 
