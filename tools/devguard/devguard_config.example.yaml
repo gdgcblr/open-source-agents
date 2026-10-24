@@ -1,0 +1,23 @@
+# DevGuard Policy Configuration Example
+# -----------------------------------------------------------------------------
+# Default decision when no rule matches: 'allow', 'ask', or 'deny' (default: deny)
+default_policy: ask
+
+# Commands allowed to run without prompting
+allow:
+  - ["git", "status"]
+  - ["git", "diff"]
+  - ["git", "log"]
+  - ["python3", "-m", "pytest"]
+  - ["echo"]
+
+# Commands requiring explicit user confirmation before running
+ask:
+  - ["git", "commit"]
+  - ["git", "push"]
+
+# Commands that are unconditionally refused
+deny:
+  - ["git", "reset", "--hard"]
+  - ["git", "clean", "-fdx"]
+

@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`devguard/`](devguard/) | Deterministic command permission manager and AI commit message generator | CLI Utility / Developer Tools | Community |
