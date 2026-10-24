@@ -39,7 +39,7 @@ for row in "${SCENARIOS[@]}"; do
   echo "=== $name: expect $service + /$cause/"
   ./lab/chaos.sh reset >/dev/null
   wait_for 240 no_alerts || echo "  (alerts still firing after reset; continuing)"
-  sleep 30   # let a clean baseline window accumulate
+  sleep 120  # let the previous fault age out of the 2-minute "now" window
   ./lab/chaos.sh "$name" >/dev/null
   if ! wait_for 240 some_alert; then echo "  FAIL: no alert fired"; continue; fi
 

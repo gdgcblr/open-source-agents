@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"time"
 
 	"google.golang.org/adk/v2/agent"
@@ -27,37 +28,46 @@ type signal struct {
 
 type serviceHealth struct {
 	Service  string   `json:"service"`
-	Version  string   `json:"version,omitempty"`
+	Version  string   `json:"running_version,omitempty"`
 	Restarts int      `json:"restarts_last_30m"`
 	Signals  []signal `json:"signals"`
 	Abnormal []string `json:"abnormal_signals,omitempty"`
+	// NewLogs are WARN/ERROR patterns that are new or increasing versus the
+	// previous 5 minutes; steady noise is left out on purpose.
+	NewLogs []logPattern `json:"new_or_increasing_log_patterns,omitempty"`
 }
 
 type healthOutput struct {
-	Now      string          `json:"now"`
-	Method   string          `json:"method"`
-	Services []serviceHealth `json:"services"`
+	Now      string            `json:"now"`
+	Method   string            `json:"method"`
+	Services []serviceHealth   `json:"services"`
+	Queries  map[string]string `json:"queries"` // signal -> PromQL, so evidence can be re-run
+
 }
 
 type healthSpec struct {
 	name   string
 	expr   string  // must aggregate "by (service ...)"
 	minAbs float64 // ignore changes while "now" is below this
+	// dropIsBad marks signals where a fall is a problem (traffic). For
+	// latency, errors and memory a fall is recovery, not an incident.
+	dropIsBad bool
 }
 
 var healthSpecs = []healthSpec{
-	{"requests_per_sec", `sum by (service) (rate(http_requests_total[1m]))`, 0.5},
-	{"error_ratio_5xx", `(sum by (service) (rate(http_requests_total{code=~"5.."}[1m])) or sum by (service) (rate(http_requests_total[1m])) * 0) / sum by (service) (rate(http_requests_total[1m]))`, 0.01},
-	{"p99_latency_seconds", `histogram_quantile(0.99, sum by (service, le) (rate(http_request_duration_seconds_bucket[1m])))`, 0.05},
-	{"memory_rss_mb", `max by (service) (process_resident_memory_bytes) / 1e6`, 1},
-	{"downstream_p99_seconds", `histogram_quantile(0.99, sum by (service, target, le) (rate(downstream_request_duration_seconds_bucket[1m])))`, 0.05},
-	{"downstream_error_ratio", `(sum by (service, target) (rate(downstream_request_duration_seconds_count{outcome="error"}[1m])) or sum by (service, target) (rate(downstream_request_duration_seconds_count[1m])) * 0) / sum by (service, target) (rate(downstream_request_duration_seconds_count[1m]))`, 0.01},
+	{"requests_per_sec", `sum by (service) (rate(http_requests_total[1m]))`, 0.5, true},
+	{"error_ratio_5xx", `(sum by (service) (rate(http_requests_total{code=~"5.."}[1m])) or sum by (service) (rate(http_requests_total[1m])) * 0) / sum by (service) (rate(http_requests_total[1m]))`, 0.01, false},
+	{"p99_latency_seconds", `histogram_quantile(0.99, sum by (service, le) (rate(http_request_duration_seconds_bucket[1m])))`, 0.05, false},
+	{"memory_rss_mb", `max by (service) (process_resident_memory_bytes) / 1e6`, 1, false},
+	{"downstream_p99_seconds", `histogram_quantile(0.99, sum by (service, target, le) (rate(downstream_request_duration_seconds_bucket[1m])))`, 0.05, false},
+	{"downstream_error_ratio", `(sum by (service, target) (rate(downstream_request_duration_seconds_count{outcome="error"}[1m])) or sum by (service, target) (rate(downstream_request_duration_seconds_count[1m])) * 0) / sum by (service, target) (rate(downstream_request_duration_seconds_count[1m]))`, 0.01, false},
 }
 
 func (t triageTools) serviceHealth(ctx agent.Context, _ noInput) (healthOutput, error) {
 	out := healthOutput{
-		Now:    clock(time.Now()),
-		Method: "now = average of the last 2 minutes; baseline = median of the hour before the last 5 minutes, so an incident shorter than ~30 minutes cannot hide in it",
+		Now:     clock(time.Now()),
+		Queries: map[string]string{},
+		Method:  "now = average of the last 2 minutes; baseline = median of the hour before the last 5 minutes, so an incident shorter than ~30 minutes cannot hide in it",
 	}
 	byService := map[string]*serviceHealth{}
 	get := func(svc string) *serviceHealth {
@@ -70,6 +80,7 @@ func (t triageTools) serviceHealth(ctx agent.Context, _ noInput) (healthOutput, 
 	}
 
 	for _, spec := range healthSpecs {
+		out.Queries[spec.name] = spec.expr
 		nowRes, err := t.prom.instant(ctx, fmt.Sprintf("avg_over_time((%s)[2m:15s])", spec.expr))
 		if err != nil {
 			return out, fmt.Errorf("%s: %w", spec.name, err)
@@ -95,7 +106,7 @@ func (t triageTools) serviceHealth(ctx agent.Context, _ noInput) (healthOutput, 
 			if !ok || math.IsNaN(b) {
 				b = now
 			}
-			sig := signal{Name: name, Now: round(now), Baseline: round(b), Verdict: verdict(now, b, spec.minAbs)}
+			sig := signal{Name: name, Now: round(now), Baseline: round(b), Verdict: verdict(now, b, spec.minAbs, spec.dropIsBad)}
 			h := get(v.Metric["service"])
 			h.Signals = append(h.Signals, sig)
 			if sig.Verdict != "normal" {
@@ -115,6 +126,18 @@ func (t triageTools) serviceHealth(ctx agent.Context, _ noInput) (healthOutput, 
 		}
 	}
 
+	if logs, err := t.logPatterns(ctx, logInput{Minutes: 5}); err == nil {
+		for _, p := range logs.Patterns {
+			if !strings.HasPrefix(p.Trend, "NEW") && !strings.HasPrefix(p.Trend, "INCREASING") {
+				continue
+			}
+			if h := get(p.Service); len(h.NewLogs) < 3 {
+				h.NewLogs = append(h.NewLogs, p)
+				h.Abnormal = append(h.Abnormal, "log: "+p.Message+" ("+p.Trend+")")
+			}
+		}
+	}
+
 	for _, h := range byService {
 		if h.Restarts > 0 {
 			h.Abnormal = append(h.Abnormal, fmt.Sprintf("restarted %d time(s)", h.Restarts))
@@ -127,7 +150,7 @@ func (t triageTools) serviceHealth(ctx agent.Context, _ noInput) (healthOutput, 
 
 // verdict compares a reading with its baseline. Small absolute values are
 // never abnormal, so 0.001 -> 0.003 errors does not count as "3x".
-func verdict(now, base, minAbs float64) string {
+func verdict(now, base, minAbs float64, dropIsBad bool) string {
 	if now < minAbs && base < minAbs {
 		return "normal"
 	}
@@ -138,8 +161,10 @@ func verdict(now, base, minAbs float64) string {
 	switch {
 	case r >= 1.5:
 		return fmt.Sprintf("ABNORMAL: %.1fx baseline", r)
-	case r <= 0.67:
+	case r <= 0.67 && dropIsBad:
 		return fmt.Sprintf("ABNORMAL: dropped to %.2fx baseline", r)
+	case r <= 0.67:
+		return "normal (lower than baseline: improving or recovering)"
 	default:
 		return "normal"
 	}

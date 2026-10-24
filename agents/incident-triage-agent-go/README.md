@@ -37,6 +37,7 @@
                           │  BeforeTool: budget + query validation
                           │  AfterTool:  secret / PII redaction
                           ├─► get_firing_alerts     Prometheus /api/v1/alerts
+                          ├─► service_health        golden signals per service, verdict vs. 1h median
                           ├─► list_metrics          metric catalogue
                           ├─► prom_query_summary    min/avg/max/last + change point
                           ├─► compare_to_baseline   now vs. N minutes ago, verdict
@@ -47,7 +48,7 @@
                 Markdown report  +  runs/<name>.json audit trail
 ```
 
-The tools do the arithmetic in Go and return summaries, never raw datapoints, so the model spends its tokens on reasoning. The instructions encode an on-call procedure: find the symptom, quantify it, separate victim from cause, check changes, check logs while ignoring baseline noise, check resources, then confirm against the baseline.
+The tools do the arithmetic in Go and return summaries, never raw datapoints, so the model spends its tokens on reasoning. `service_health` is the key one: in a single call it returns every service's request rate, 5xx ratio, p99 latency, calls to downstream services, memory, restarts and version, each compared with the median of the previous hour (excluding the last 5 minutes, so an ongoing incident cannot hide in its own baseline) and marked `normal` or `ABNORMAL`. That is what lets even a 4B local model triage correctly: it reasons over verdicts instead of writing PromQL. The instructions encode an on-call procedure: find the symptom, quantify it, separate victim from cause, check changes, check logs while ignoring baseline noise, check resources, then confirm against the baseline.
 
 ### The lab (`lab/`)
 A two-service shop (`checkout` → `payments`) with fault switches, so every incident has a known root cause:
@@ -66,7 +67,9 @@ A two-service shop (`checkout` → `payments`) with fault switches, so every inc
 ## Prerequisites
 - Go 1.26.10+ (`go version`)
 - Docker with Compose v2
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), **or** an OpenAI-compatible model server such as [Ollama](https://ollama.com)
+- A model, either:
+  - a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey), **or**
+  - a local open-weights model via [Ollama](https://ollama.com) (fully offline; tested with `qwen3:4b-instruct`, 2.5 GB)
 
 ---
 
@@ -78,8 +81,14 @@ cd agents/incident-triage-agent-go
 # 1. Start the lab (first build takes a few minutes)
 docker compose -f lab/docker-compose.yml up -d --build
 
-# 2. Configure the model
+# 2a. Gemini
 cp .env.example .env        # then put your key in .env
+
+# 2b. ...or a local model, nothing leaves your machine
+brew install ollama         # or see ollama.com/download
+OLLAMA_CONTEXT_LENGTH=32768 ollama serve &   # the default context is too small for the tool schemas
+ollama pull qwen3:4b-instruct
+export MODEL_PROVIDER=openai MODEL_NAME=qwen3:4b-instruct
 ```
 
 Grafana is at http://localhost:3000 (anonymous, read-only use), Prometheus at http://localhost:9090.
@@ -131,7 +140,34 @@ go run . triage "Triage the alerts that are firing right now."
 ```
 
 ### Example Output
-_To be replaced with a real run before merge (`runs/latency.md`)._
+A real run on a local `qwen3:4b-instruct` (Apple M4 Pro), latency fault injected into `payments`. Both services were alerting:
+
+```text
+▶ triage started (model openai/qwen3:4b-instruct, timeout 4m0s)
+  [   3s] → get_firing_alerts {}
+  [   3s] → service_health {}
+  [   3s] → recent_changes {"minutes":30}
+  [   3s] → known_baselines {}
+■ done in 10.7s · 4 tool calls · 4033 in / 527 out tokens
+```
+
+```markdown
+## Most likely root cause
+payments: p99 latency 25x baseline. Confidence: high.
+
+## Evidence
+- `p99_latency_seconds` for payments is 2.485s (ABNORMAL: 25.2x baseline) — observed in service_health.
+- `downstream_p99_seconds (calls to payments)` for checkout is 2.485s (ABNORMAL: 25.2x baseline) — observed in service_health.
+- `p99_latency_seconds` for checkout is 2.485s (ABNORMAL: 24.9x baseline) — observed in service_health.
+- No recent deploys or restarts in the last 30 minutes — confirmed by recent_changes.
+
+## Ruled out
+- No version changes or restarts in the last 30 minutes, so a deploy is not the cause.
+- The "card declined" and "exchange-rate refresh failed" logs are known baselines — background noise.
+- Memory RSS is stable (normal) in both services — memory leak or OOM crash is ruled out.
+```
+
+Checkout alerted too, but the agent identified it as the victim: its slowness is entirely its calls to payments.
 
 ---
 

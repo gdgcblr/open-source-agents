@@ -40,7 +40,7 @@ func (t triageTools) all() ([]tool.Tool, error) {
 		}, t.firingAlerts)),
 		add(functiontool.New(functiontool.Config{
 			Name:        "service_health",
-			Description: "START HERE. Golden signals for every service (request rate, 5xx error ratio, p99 latency, calls to downstream services, memory, restarts, version), each compared with its median over the previous hour and marked normal or ABNORMAL.",
+			Description: "START HERE. Golden signals for every service (request rate, 5xx error ratio, p99 latency, calls to downstream services, memory, restarts, version, new log error patterns), each compared with its median over the previous hour and marked normal or ABNORMAL.",
 		}, t.serviceHealth)),
 		add(functiontool.New(functiontool.Config{
 			Name:        "list_metrics",
@@ -328,13 +328,13 @@ type logInput struct {
 }
 
 type logPattern struct {
-	Service  string `json:"service"`
-	Level    string `json:"level"`
-	Message  string `json:"message"`
+	Service  string  `json:"service"`
+	Level    string  `json:"level"`
+	Message  string  `json:"message"`
 	Recent   float64 `json:"recent_per_min"`
 	Previous float64 `json:"previous_window_per_min"`
-	Trend    string `json:"trend"`
-	Sample   string `json:"sample,omitempty"`
+	Trend    string  `json:"trend"`
+	Sample   string  `json:"sample,omitempty"`
 }
 
 type logOutput struct {
@@ -440,27 +440,28 @@ func (t triageTools) recentChanges(ctx agent.Context, in changesInput) (changesO
 	if err != nil {
 		return out, err
 	}
-	type span struct {
-		version     string
-		first, last time.Time
+	// Rebuild each service's version timeline sample by sample, so rollbacks
+	// (back to a version seen earlier) are detected too.
+	type point struct {
+		at      time.Time
+		version string
 	}
-	byService := map[string][]span{}
+	byService := map[string][]point{}
 	for _, r := range res {
-		if len(r.Values) == 0 {
-			continue
-		}
 		svc := r.Metric["service"]
-		byService[svc] = append(byService[svc], span{r.Metric["version"], r.Values[0].time(), r.Values[len(r.Values)-1].time()})
+		for _, v := range r.Values {
+			byService[svc] = append(byService[svc], point{v.time(), r.Metric["version"]})
+		}
 	}
-	for svc, spans := range byService {
-		sort.Slice(spans, func(i, j int) bool { return spans[i].first.Before(spans[j].first) })
-		for i := 1; i < len(spans); i++ {
-			if spans[i].version == spans[i-1].version {
+	for svc, pts := range byService {
+		sort.SliceStable(pts, func(i, j int) bool { return pts[i].at.Before(pts[j].at) })
+		for i := 1; i < len(pts); i++ {
+			if pts[i].version == pts[i-1].version || pts[i].at.Equal(pts[i-1].at) {
 				continue
 			}
 			out.Changes = append(out.Changes, change{
-				Time: clock(spans[i].first), Kind: "deploy",
-				Detail: fmt.Sprintf("%s changed version %s -> %s", svc, spans[i-1].version, spans[i].version),
+				Time: clock(pts[i].at), Kind: "deploy",
+				Detail: fmt.Sprintf("%s changed version %s -> %s", svc, pts[i-1].version, pts[i].version),
 			})
 		}
 	}

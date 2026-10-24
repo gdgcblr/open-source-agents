@@ -91,6 +91,7 @@ var redactions = []struct {
 	re   *regexp.Regexp
 	repl string
 }{
+	{regexp.MustCompile(`(?i)\b(bearer|basic)\s+[A-Za-z0-9._~+/=-]+`), `$1 [REDACTED]`},
 	{regexp.MustCompile(`(?i)\b(bearer|token|api[_-]?key|secret|password|passwd|authorization)(["':=\s]+)[^\s"',}]+`), `$1$2[REDACTED]`},
 	{regexp.MustCompile(`\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b`), `[REDACTED_JWT]`},
 	{regexp.MustCompile(`\b(AKIA|ASIA)[A-Z0-9]{16}\b`), `[REDACTED_AWS_KEY]`},
