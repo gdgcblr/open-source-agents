@@ -11,10 +11,7 @@
 | **What it ranks on** | Final delivered cost (price − discount + all fees + taxes) — membership-aware — plus delivery ETA |
 | **Safety** | HITL approval gate before any checkout/subscribe/pay · deterministic Go math (LLM never computes) |
 
-> **Hackathon note (time constraint).** There is no real-time public API for the Indian quick-commerce sites. To ship a *fully working, reproducible* agent within the hackathon window, Phase 1 deliberately runs on a **bundled offline demo catalog** — deterministic, zero-network, clearly labeled — so the entire workflow (identify → serviceability → offers → ranking → approval) demonstrates end-to-end with no setup. See **[Demo catalog](#demo-catalog-the-phase-1-data-source)** for exactly what it contains, and **[Phase 2](#future-improvements-phase-2)** for the real-Internet / MCP plan.
-
-
-**Phase 1 (current)**: a **bundled offline demo catalog always powers every local run** — zero external calls, deterministic, clearly labeled. **Phase 2 (roadmap)**: real Internet prices via web sources and/or **[MCP](https://modelcontextprotocol.io/) servers**, with qbuys as an optional live adapter. See [Data sources & phases](#data-sources--phases).
+> **Hackathon note (time constraint).** There is no real-time public API for the Indian quick-commerce sites. To ship a *fully working, reproducible* agent within the hackathon window, **Phase 1 deliberately runs on a bundled offline demo catalog** — deterministic, zero-network, clearly labeled — so the entire workflow (identify → serviceability → offers → ranking → approval) demonstrates end-to-end with no setup. **Phase 2 (roadmap)** adds real Internet prices via web sources and/or **[MCP](https://modelcontextprotocol.io/) servers**, with qbuys as an optional live adapter today. See **[Demo catalog](#demo-catalog-the-phase-1-data-source)** for exactly what it contains, and **[Future Improvements (Phase 2)](#future-improvements-phase-2)** for the plan.
 
 ---
 
