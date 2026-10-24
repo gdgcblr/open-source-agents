@@ -1,0 +1,27 @@
+[project]
+name = "pr-draft-agent"
+version = "0.1.0"
+description = "Turn validated staged Git changes into an editable, template-aware PR draft."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "google-adk==2.13.0",
+    "google-genai>=2.30,<3",
+    "python-dotenv>=1,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
