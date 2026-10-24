@@ -1,0 +1,84 @@
+name: Contribution Mentor CI
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: agents/contribution-mentor/go.mod
+          cache-dependency-path: agents/contribution-mentor/go.mod
+
+      - name: Enforce contribution scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        shell: bash
+        run: |
+          git fetch origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
+          changed_files="$(git diff --name-only "origin/$BASE_REF...HEAD")"
+          failed=0
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              agents/contribution-mentor/*|agents/README.md|.github/workflows/contribution-mentor-ci.yml)
+                ;;
+              *)
+                echo "::error::File is outside the Contribution Mentor scope: $file"
+                failed=1
+                ;;
+            esac
+          done <<< "$changed_files"
+          exit "$failed"
+
+      - name: Check Go formatting
+        working-directory: agents/contribution-mentor
+        shell: bash
+        run: |
+          unformatted="$(find . -type f -name '*.go' -print0 | xargs -0 gofmt -l)"
+          if [ -n "$unformatted" ]; then
+            echo "$unformatted"
+            echo "::error::Run gofmt on the files listed above."
+            exit 1
+          fi
+
+      - name: Run Go tests
+        working-directory: agents/contribution-mentor
+        run: go test ./...
+
+      - name: Run go vet
+        working-directory: agents/contribution-mentor
+        run: go vet ./...
+
+      - name: Build Go packages
+        working-directory: agents/contribution-mentor
+        run: go build ./...
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate documentation and secret hygiene
+        run: python3 agents/contribution-mentor/scripts/validate_ci.py
+
+      - name: Validate Docker Compose configuration
+        working-directory: agents/contribution-mentor
+        run: docker compose --env-file .env.example config --quiet
+
+      - name: Build Docker image
+        run: docker build -t contribution-mentor:ci agents/contribution-mentor

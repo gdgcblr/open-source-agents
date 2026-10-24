@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contribution Mentor</title>
+  <style>
+    :root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; }
+    body { max-width: 900px; margin: 3rem auto; padding: 0 1.25rem; }
+    h1 { margin-bottom: .25rem; }
+    .muted { color: #777; }
+    label { display: block; margin: 1.25rem 0 .4rem; font-weight: 600; }
+    input, textarea, button { box-sizing: border-box; font: inherit; }
+    input, textarea { width: 100%; padding: .7rem; border: 1px solid #8888; border-radius: .4rem; }
+    textarea { min-height: 7rem; resize: vertical; }
+    button { padding: .65rem 1rem; margin: .7rem .5rem .3rem 0; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .65; }
+    .notice { padding: .8rem 1rem; border-left: 4px solid #d29b25; background: #d29b2518; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; border-radius: .4rem; background: #8882; min-height: 3rem; }
+    .error { color: #d33; }
+  </style>
+</head>
+<body>
+  <h1>Contribution Mentor</h1>
+  <p class="muted">Analyze a local repository with your configured model, then run its Go checks when you choose.</p>
+  <p class="notice">Repository code and selected files may be sent to the model provider configured in .env. Running tests or vet executes code from that repository on this computer. Only run checks on code you trust.</p>
+
+  <label for="repository">Local repository path</label>
+  <input id="repository" type="text" placeholder="E:\go\src\dodoPayments" autocomplete="off">
+
+  <label for="question">Ask the mentor</label>
+  <textarea id="question">Explain how this repository is tested. Suggest focused tests for its most important workflows.</textarea>
+  <button id="ask" type="button">Analyze repository</button>
+  <button class="check" data-check="test" type="button">Run go test ./...</button>
+  <button class="check" data-check="vet" type="button">Run go vet ./...</button>
+
+  <h2 id="result-title" hidden></h2>
+  <pre id="result" aria-live="polite">Enter a repository path to get started.</pre>
+  <script>
+    const repository = document.querySelector("#repository");
+    const question = document.querySelector("#question");
+    const result = document.querySelector("#result");
+    const resultTitle = document.querySelector("#result-title");
+    const controls = [...document.querySelectorAll("button")];
+    repository.value = localStorage.getItem("contribution-mentor-repository") || "";
+
+    async function request(path, data) {
+      if (!repository.value.trim()) {
+        result.textContent = "Enter the path to a local repository first.";
+        result.className = "error";
+        return;
+      }
+      controls.forEach(button => button.disabled = true);
+      result.className = "";
+      result.textContent = "Working...";
+      localStorage.setItem("contribution-mentor-repository", repository.value.trim());
+      try {
+        const response = await fetch(path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repository: repository.value.trim(), ...data })
+        });
+        const body = await response.text();
+        if (!response.ok) throw new Error(body || `Request failed (${response.status})`);
+        const parsed = JSON.parse(body);
+        resultTitle.hidden = false;
+        if (parsed.answer !== undefined) {
+          resultTitle.textContent = "Agent analysis";
+          result.textContent = parsed.answer;
+        } else {
+          resultTitle.textContent = `${parsed.command} — ${parsed.exitCode === 0 ? "passed" : "failed"}`;
+          result.textContent = parsed.output || "(no output)";
+          if (parsed.truncated) result.textContent += "\n\n[Output truncated at 1 MiB]";
+        }
+      } catch (error) {
+        resultTitle.hidden = false;
+        resultTitle.textContent = "Request failed";
+        result.textContent = error.message;
+        result.className = "error";
+      } finally {
+        controls.forEach(button => button.disabled = false);
+      }
+    }
+
+    document.querySelector("#ask").addEventListener("click", () =>
+      request("/api/ask", { question: question.value }));
+    document.querySelectorAll(".check").forEach(button =>
+      button.addEventListener("click", () => request("/api/check", { check: button.dataset.check })));
+  </script>
+</body>
+</html>

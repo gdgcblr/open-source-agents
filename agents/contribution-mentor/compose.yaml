@@ -1,0 +1,51 @@
+services:
+  ollama:
+    image: ${OLLAMA_IMAGE:?Set OLLAMA_IMAGE in .env to use the Ollama provider}
+    profiles: ["ollama"]
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  model-init:
+    image: ${OLLAMA_IMAGE:?Set OLLAMA_IMAGE in .env to use the Ollama provider}
+    profiles: ["ollama"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: ${OLLAMA_SERVER_HOST:?Set OLLAMA_SERVER_HOST in .env}
+      LLM_MODEL: ${LLM_MODEL:?Set LLM_MODEL in .env}
+    entrypoint: ["ollama"]
+    command: ["pull", "${LLM_MODEL:?Set LLM_MODEL in .env}"]
+    restart: "no"
+
+  mentor:
+    build: .
+    environment:
+      LLM_PROVIDER: ${LLM_PROVIDER:?Set LLM_PROVIDER in .env}
+      LLM_BASE_URL: ${LLM_BASE_URL:?Set LLM_BASE_URL in .env}
+      LLM_MODEL: ${LLM_MODEL:?Set LLM_MODEL in .env}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      QUESTION: ${QUESTION}
+      GITHUB_REPO: ${GITHUB_REPO}
+      EXPERIENCE: ${EXPERIENCE}
+      ISSUE: ${ISSUE}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      IMPLEMENT: ${IMPLEMENT}
+    volumes:
+      - type: bind
+        source: ${PROJECT_DIR:?Set PROJECT_DIR in .env}
+        target: /workspace
+        read_only: ${READ_ONLY:-true}
+    user: "${CONTAINER_USER:-65532:65532}"
+    command: ["-repo", "/workspace", "-issue", "${ISSUE}"]
+
+volumes:
+  ollama_data:
