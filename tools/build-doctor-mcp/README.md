@@ -30,6 +30,7 @@ Its differentiators are:
 4. BuildDoctor returns evidence, ranked hypotheses, missing information, and a safe remediation plan.
 5. The developer reviews and applies a change using their normal coding agent or editor.
 6. The developer supplies the original and new results to `verify_resolution`; only deterministic before/after evidence can mark the issue verified.
+7. The developer may use `compare_diagnoses` for trend reporting; only structured fields are compared, not stored raw logs.
 
 BuildDoctor is therefore a diagnostic gate and verification companion, not another autonomous code editor.
 
@@ -42,6 +43,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `analyze_alert`: normalize provider alerts from New Relic, CubeAPM, Prometheus, OpenTelemetry, or custom webhooks.
 - `inspect_ci_annotations`: extract GitHub/GitLab/Azure-style error and warning annotations from CI output.
 - `inspect_api_error`: normalize common JSON API error envelopes with status, message, request ID, and retry guidance.
+- `compare_diagnoses`: compare structured results across runs without retaining or re-reading raw logs.
 - `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
 - Deterministic categories for compilation, dependencies, tests, runtime/API, configuration, permissions, network/TLS, resources, data/schema, CI/container, and concurrency/state failures.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
@@ -255,7 +257,7 @@ The tests run without an API key and verify generic failure analysis, multi-lang
 
 - Add provider-specific webhook signature adapters behind an optional gateway.
 - Add client-confirmed workspace roots and per-tool permission policies.
-- Add historical diagnosis comparison without storing raw logs.
+- Add per-tool permission policies and client-confirmed workspace grants.
 
 ## Completed MVP Milestones
 
