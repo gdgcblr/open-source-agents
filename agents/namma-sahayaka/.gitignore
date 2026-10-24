@@ -36,3 +36,12 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+
+# Video Render Caches & Temporary Frames
+.hyperframes/
+.thumbnails/
+.waveform-cache/
+media/video/.hyperframes/
+media/video/renders/
+media/video/capture/
+

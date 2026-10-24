@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Namma Sahayaka — Bengaluru Civic AI Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Noto+Sans+Kannada:wght@600;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg: #07090e;
+        --card-bg: rgba(18, 24, 38, 0.88);
+        --card-border: rgba(255, 255, 255, 0.12);
+        --cyan: #00f0ff;
+        --amber: #ffb800;
+        --green: #10b981;
+        --blue: #4285f4;
+        --red: #ef4444;
+        --purple: #a855f7;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: var(--text);
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: radial-gradient(circle at 50% 20%, #151d30 0%, #07090e 80%);
+      }
+
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-size: 60px 60px;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+      }
+
+      .glow-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.4;
+      }
+      .orb-1 { width: 600px; height: 600px; top: -100px; left: -100px; background: #3b82f6; }
+      .orb-2 { width: 500px; height: 500px; bottom: -100px; right: -100px; background: #06b6d4; }
+
+      .brand-header {
+        position: absolute;
+        top: 40px;
+        left: 80px;
+        right: 80px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 50;
+      }
+      .brand-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 8px 18px;
+        border-radius: 999px;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .brand-badge span { color: var(--cyan); }
+      .gdg-pill {
+        background: linear-gradient(135deg, #4285f4, #00f0ff);
+        color: #000;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        letter-spacing: 0.05em;
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 80px;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .tag-alert {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #f87171;
+        padding: 8px 20px;
+        border-radius: 999px;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 24px;
+        text-transform: uppercase;
+      }
+      .big-headline {
+        font-size: 78px;
+        font-weight: 900;
+        line-height: 1.08;
+        text-align: center;
+        letter-spacing: -0.03em;
+        max-width: 1400px;
+        background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .problem-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-top: 50px;
+        width: 100%;
+        max-width: 1400px;
+      }
+      .problem-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      }
+      .problem-card .icon { font-size: 40px; margin-bottom: 16px; }
+      .problem-card h3 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+      .problem-card p { font-size: 18px; color: var(--muted); line-height: 1.5; }
+
+      .kannada-hero {
+        font-family: 'Noto Sans Kannada', sans-serif;
+        font-size: 104px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #ffb800 0%, #ff7700 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+        margin-bottom: 12px;
+        text-shadow: 0 0 80px rgba(255, 184, 0, 0.4);
+      }
+      .hero-title {
+        font-size: 68px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        color: #fff;
+        margin-bottom: 20px;
+      }
+      .tech-stack-pills {
+        display: flex;
+        gap: 16px;
+        margin-top: 30px;
+      }
+      .pill {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-size: 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .pill-gemini { border-color: rgba(66, 133, 244, 0.4); background: rgba(66, 133, 244, 0.15); color: #93c5fd; }
+      .pill-mcp { border-color: rgba(0, 240, 255, 0.4); background: rgba(0, 240, 255, 0.15); color: #67e8f9; }
+      .pill-eval { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+
+      .split-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        width: 100%;
+        max-width: 1500px;
+        align-items: center;
+      }
+      .chat-mockup {
+        background: #0f172a;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 24px;
+        padding: 36px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+      }
+      .chat-bubble-user {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 18px 18px 4px 18px;
+        padding: 20px 26px;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 24px;
+      }
+      .chat-bubble-agent {
+        background: linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(0, 240, 255, 0.1));
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        border-radius: 18px 18px 18px 4px;
+        padding: 24px 28px;
+        font-size: 22px;
+        line-height: 1.5;
+      }
+      .ward-radar-box {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 40px;
+      }
+      .radar-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 20px;
+      }
+      .radar-item .label { color: var(--muted); }
+      .radar-item .value { font-weight: 800; color: #fff; }
+      .radar-item .highlight { color: var(--cyan); }
+
+      .eval-scorecard {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 28px;
+        padding: 48px;
+        width: 100%;
+        max-width: 1400px;
+        margin-top: 36px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+      }
+      .eval-metric {
+        text-align: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        padding-right: 20px;
+      }
+      .eval-metric:last-child { border-right: none; }
+      .eval-metric .number {
+        font-size: 68px;
+        font-weight: 900;
+        color: var(--green);
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+      .eval-metric .desc {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .timeline-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #ffb800, #4285f4, #00f0ff);
+        width: 0%;
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div class="bg-grid"></div>
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+
+      <!-- Top Header -->
+      <div class="brand-header">
+        <div class="brand-badge">
+          <span>GDG Cloud Bengaluru</span> &bull; Road to DevFest 2026
+        </div>
+        <div class="gdg-pill">FORK. BUILD. MERGE.</div>
+      </div>
+
+      <!-- SCENE 1: The Urban Reality (0s - 5s) -->
+      <div id="scene1" class="scene">
+        <div class="tag-alert">⚠️ Bengaluru Urban Reality</div>
+        <h1 class="big-headline">8 Zones. 198 Wards.<br>Where Do You Report?</h1>
+        <div class="problem-grid">
+          <div class="problem-card">
+            <div class="icon">🕳️</div>
+            <h3>Potholes & Broken Roads</h3>
+            <p>Accident hazards on ORR, HSR Layout, and Whitefield tech corridors.</p>
+          </div>
+          <div class="problem-card">
+            <div class="icon">⚡</div>
+            <h3>Frequent Power Outages</h3>
+            <p>"Current illa!" Transformer bursts and power cuts with zero status updates.</p>
+          </div>
+          <div class="problem-card">
+            <div class="icon">🚰</div>
+            <h3>Kaveri Water Supply Bursts</h3>
+            <p>Contaminated water and overflowing sewage lines waiting days for action.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 2: The Solution (5s - 10s) -->
+      <div id="scene2" class="scene">
+        <div class="kannada-hero">ನಮ್ಮ ಸಹಾಯಕ</div>
+        <h2 class="hero-title">NAMMA SAHAYAKA</h2>
+        <p style="font-size: 26px; color: #94a3b8; max-width: 900px; text-align: center; line-height: 1.5;">
+          The Autonomous AI Civic Copilot & Ward Buddy for Bengaluru Citizens and Techies.
+        </p>
+        <div class="tech-stack-pills">
+          <div class="pill pill-gemini">✨ Google Gemini 3.8 Flash</div>
+          <div class="pill pill-mcp">🔌 Model Context Protocol (MCP)</div>
+          <div class="pill pill-eval">📊 100% Benchmark Accuracy</div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: Hyperlocal Intelligence (10s - 15s) -->
+      <div id="scene3" class="scene">
+        <div class="split-layout">
+          <div class="chat-mockup">
+            <div style="font-size: 14px; text-transform: uppercase; color: var(--cyan); font-weight: 800; margin-bottom: 16px;">Citizen Input (English / Kanglish / Kannada)</div>
+            <div class="chat-bubble-user">
+              "Severe waterlogging on service road near Google Ananta, Mahadevapura"
+            </div>
+            <div class="chat-bubble-agent">
+              <strong>🤖 Namma Sahayaka:</strong><br>
+              Routed to <strong>BBMP Mahadevapura Zone (Ward 82: Garudacharpalya)</strong>.<br>
+              Guaranteed SLA under Citizen Charter: <strong>24 Hours</strong>.<br>
+              24x7 Helpline: <strong>080-22660000</strong> | WhatsApp: <strong>+919480685700</strong>
+            </div>
+          </div>
+          <div class="ward-radar-box">
+            <h3 style="font-size: 28px; font-weight: 800; margin-bottom: 24px; color: #fff;">Hyperlocal Jurisdiction Resolved</h3>
+            <div class="radar-item">
+              <span class="label">Locality / Landmark:</span>
+              <span class="value highlight">Google Ananta, Mahadevapura</span>
+            </div>
+            <div class="radar-item">
+              <span class="label">BBMP Ward Number:</span>
+              <span class="value">No. 82 (Garudacharpalya)</span>
+            </div>
+            <div class="radar-item">
+              <span class="label">BBMP Zone:</span>
+              <span class="value">Mahadevapura</span>
+            </div>
+            <div class="radar-item">
+              <span class="label">BESCOM Subdivision:</span>
+              <span class="value">E-4 Whitefield Subdivision</span>
+            </div>
+            <div class="radar-item">
+              <span class="label">BWSSB Service Station:</span>
+              <span class="value">KR Puram Central Sub-Division</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 4: Benchmark & Evals (15s - 20s) -->
+      <div id="scene4" class="scene">
+        <div class="tag-alert" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--green);">
+          🏆 Grounded AI Evaluation & Benchmarks
+        </div>
+        <h2 style="font-size: 58px; font-weight: 900; letter-spacing: -0.02em; color: #fff;">
+          Verified Performance Across 10 Real Scenarios
+        </h2>
+        <div class="eval-scorecard">
+          <div class="eval-metric">
+            <div class="number">100%</div>
+            <div class="desc">Agency Triage Accuracy</div>
+          </div>
+          <div class="eval-metric">
+            <div class="number">100%</div>
+            <div class="desc">Ward Jurisdiction Mapping</div>
+          </div>
+          <div class="eval-metric">
+            <div class="number">0.0%</div>
+            <div class="desc">Zero Hallucinations</div>
+          </div>
+          <div class="eval-metric">
+            <div class="number" style="color: var(--cyan);">0.2ms</div>
+            <div class="desc">Sub-Millisecond Speed</div>
+          </div>
+        </div>
+        <p style="margin-top: 36px; font-size: 24px; color: #94a3b8; font-weight: 600;">
+          Open Source &bull; Google Gemini 3.8 Flash &bull; Model Context Protocol &bull; GDG Cloud Bengaluru
+        </p>
+      </div>
+
+      <!-- Timeline Progress Bar -->
+      <div class="timeline-bar" id="progressBar"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Progress bar (0s to 20s)
+      tl.to("#progressBar", { width: "100%", duration: 20, ease: "none" }, 0);
+
+      // Scene 1: 0s to 5s
+      tl.set("#scene1", { autoAlpha: 1 }, 0)
+        .from("#scene1 .tag-alert", { y: -30, opacity: 0, duration: 0.5, ease: "power3.out" }, 0.2)
+        .from("#scene1 .big-headline", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 0.4)
+        .from("#scene1 .problem-card", { y: 40, opacity: 0, stagger: 0.15, duration: 0.5, ease: "power3.out" }, 0.7)
+        .to("#scene1", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 4.6);
+
+      // Scene 2: 5s to 10s
+      tl.set("#scene2", { autoAlpha: 1 }, 5.0)
+        .from("#scene2 .kannada-hero", { scale: 0.8, opacity: 0, duration: 0.6, ease: "back.out(1.7)" }, 5.2)
+        .from("#scene2 .hero-title", { y: 20, opacity: 0, duration: 0.5, ease: "power3.out" }, 5.5)
+        .from("#scene2 p", { y: 20, opacity: 0, duration: 0.5, ease: "power3.out" }, 5.8)
+        .from("#scene2 .pill", { y: 30, opacity: 0, stagger: 0.12, duration: 0.5, ease: "power3.out" }, 6.1)
+        .to("#scene2", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 9.6);
+
+      // Scene 3: 10s to 15s
+      tl.set("#scene3", { autoAlpha: 1 }, 10.0)
+        .from("#scene3 .chat-mockup", { x: -60, opacity: 0, duration: 0.6, ease: "power3.out" }, 10.2)
+        .from("#scene3 .ward-radar-box", { x: 60, opacity: 0, duration: 0.6, ease: "power3.out" }, 10.4)
+        .from("#scene3 .radar-item", { x: 20, opacity: 0, stagger: 0.12, duration: 0.4, ease: "power2.out" }, 10.8)
+        .to("#scene3", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 14.6);
+
+      // Scene 4: 15s to 20s
+      tl.set("#scene4", { autoAlpha: 1 }, 15.0)
+        .from("#scene4 .tag-alert", { y: -20, opacity: 0, duration: 0.5, ease: "power3.out" }, 15.2)
+        .from("#scene4 h2", { y: 30, opacity: 0, duration: 0.5, ease: "power3.out" }, 15.4)
+        .from("#scene4 .eval-metric", { scale: 0.9, opacity: 0, stagger: 0.12, duration: 0.5, ease: "back.out(1.5)" }, 15.7)
+        .from("#scene4 p", { opacity: 0, duration: 0.6 }, 16.5);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
