@@ -23,7 +23,7 @@ Its differentiators are evidence-linked hypotheses, language and API neutrality,
 3. Submit the failure output and project path for diagnosis.
 4. Review the evidence, ranked root causes, missing evidence, and remediation plan.
 5. Apply a change manually or with a separate coding agent.
-6. Submit the new result; BuildDoctor marks the issue verified only when the supplied evidence supports that conclusion.
+6. Submit the original and new results to the MCP `verify_resolution` tool; BuildDoctor marks the issue verified only when deterministic before/after evidence supports that conclusion.
 
 This makes BuildDoctor a diagnostic gate and verification companion, not another autonomous code editor.
 
@@ -135,7 +135,7 @@ Next steps:
 Verification: pending: no verification run was supplied
 ```
 
-The analyzer reports what deterministic rules and evidence support. It does not claim that a suggested fix worked until a new build or test result is supplied.
+The analyzer reports what deterministic rules and evidence support. One signal establishes an observed failure, not a root cause. A suggested fix remains unconfirmed until a new result is supplied and verified.
 
 ## How to Test
 

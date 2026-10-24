@@ -29,7 +29,7 @@ Its differentiators are:
 3. The client calls `summarize_diagnosis` with the failure output and project path.
 4. BuildDoctor returns evidence, ranked hypotheses, missing information, and a safe remediation plan.
 5. The developer reviews and applies a change using their normal coding agent or editor.
-6. The developer supplies the new result for a second diagnosis; only then can the issue be marked verified.
+6. The developer supplies the original and new results to `verify_resolution`; only deterministic before/after evidence can mark the issue verified.
 
 BuildDoctor is therefore a diagnostic gate and verification companion, not another autonomous code editor.
 
@@ -38,6 +38,7 @@ BuildDoctor is therefore a diagnostic gate and verification companion, not anoth
 - `analyze_failure`: classify common compilation, dependency, test, runtime, and API failure signals.
 - `inspect_project`: read bounded content from recognized project manifests without executing code.
 - `summarize_diagnosis`: combine failure evidence and project metadata in one JSON response.
+- `verify_resolution`: compare supplied before/after output and report `verified` only when deterministic success evidence is present.
 - Versioned diagnostic responses with hypotheses, confidence, evidence gaps, remediation, and verification state.
 - Deterministic signal IDs and scores make classification inspectable and reproducible for the same input.
 - Standard MCP stdio transport for desktop and editor clients.
@@ -181,7 +182,7 @@ The response is JSON with this shape:
 }
 ```
 
-Classification is deterministic: matching rules emit stable signal IDs and weights, categories are ranked by total score, and confidence is capped when evidence is weak or categories tie. The model may explain the returned result, but it is not allowed to invent evidence or promote a pending verification to success.
+Classification is deterministic: matching rules emit stable signal IDs and weights, categories are ranked by total score, and confidence is capped when evidence is weak or categories tie. A probable cause requires multiple matching signals; root-cause status remains unconfirmed until a follow-up result. The model may explain the returned result, but it is not allowed to invent evidence or promote a pending verification to success.
 
 ## How to Test
 
