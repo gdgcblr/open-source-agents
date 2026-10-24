@@ -1,1 +1,4 @@
 pytest>=8.0,<9.0
+# Optional: install only for the selected integration.
+# google-genai>=1.0
+# google-adk>=1.0

@@ -1,70 +1,33 @@
 # Invoice Validation Agent
 
-A lightweight Python tool that validates invoice data, detects duplicate invoices, and identifies incorrect totals using deterministic business rules.
+Deterministic invoice validation with optional local Ollama or cloud Gemini explanations. The deterministic result is always the source of truth: explanations cannot alter `APPROVED`/`REJECTED`, invent fields, or authorize payment.
 
-## Overview
+## Data flow
 
-### Problem Statement & Intended Users
-- **Problem:** Manual invoice checks can miss duplicate invoices, missing fields, and incorrect totals.
-- **Intended Users:** Developers, accounts-payable teams, and AI automation builders.
+`Invoice JSON -> validate_invoice() -> structured result -> optional explanation -> JSON output`
 
-### Key Features
-- Required-field validation.
-- Duplicate detection using invoice number and vendor.
-- Subtotal, tax, and total verification.
-- Structured JSON results with issue codes and severity.
-- Automated tests and built-in demo scenarios.
+The base validator uses only Python's standard library. AI integrations are lazy and optional.
 
-## Technical Stack
-- **Language & Runtime:** Python 3.10+
-- **Core Library:** Standard Python library
-- **Testing:** pytest
-- **Models:** None required for core validation.
-- **External APIs:** None.
-
-## Architecture & Data Flow
-
-```text
-Invoice JSON
-    |
-    v
-Required-field validation
-    |
-    v
-Duplicate detection
-    |
-    v
-Amount verification
-    |
-    v
-Structured JSON report
-```
-
-## Prerequisites
-- Python 3.10+
-- pip
-
-## Installation & Setup
-
-From the repository root:
+## Install
 
 ```bash
 cd agents/invoice-validation-agent
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pytest -q
 ```
 
-## Configuration & Environment Variables
+Install `google-genai` for Gemini or `google-adk` for the optional ADK entry point; both are optional.
 
-No environment variables or API keys are required.
-
-## How to Run
+## CLI
 
 ```bash
 python main.py --case valid
 python main.py --case duplicate
 python main.py --case mismatch
+python main.py --case mismatch --explain --provider ollama
+python main.py --input invoice.json --explain --provider gemini
 ```
 
 To validate a JSON file:
@@ -73,38 +36,50 @@ To validate a JSON file:
 python main.py --input invoice.json
 ```
 
-The input file must contain an `invoice` object and may include a `known_invoices` array.
+The input file must contain an `invoice` object and may include `known_invoices`. With `--explain`, `ai_explanation` is separate from the deterministic result.
 
 ## Example Input & Output
 
-A valid invoice returns a result with `"status": "APPROVED"` and no issues.
+## Ollama
+
+Install Ollama and obtain a model separately (Python never downloads models):
+
+```bash
+ollama pull gemma3:1b
+export OLLAMA_MODEL=gemma3:1b
+python main.py --case mismatch --explain --provider ollama
+```
+
+`OLLAMA_BASE_URL` defaults to `http://localhost:11434`; invoice data stays local with Ollama.
 
 A duplicate invoice or incorrect total returns `"status": "REJECTED"` with a specific issue code.
 
-## How to Test
+## Gemini and ADK
 
 ```bash
-pytest -q
+pip install google-genai
+export GEMINI_API_KEY='your-key'
+export GEMINI_MODEL=gemini-2.5-flash
+python main.py --case mismatch --explain --provider gemini
 ```
 
-The test suite covers valid invoices, duplicate detection, total mismatches, and missing required fields.
+Cloud processing sends invoice data to Google; keys are never printed. Install `google-adk` and use `adk_agent.py` as the separate ADK app entry point. Its tool calls the same deterministic validator and the base suite does not claim an ADK runtime test without that optional package and credentials.
 
-## Known Limitations
-- Accepts structured JSON only; PDF extraction is not implemented.
-- Duplicate detection uses the supplied invoice list, not a database.
-- Does not verify purchase orders against an external accounting system.
-- An approved result means implemented checks passed; it is not authorization to pay.
+## Testing and limitations
 
-## Security & Privacy Considerations
-- Invoice data is processed locally.
-- No external API calls are made.
-- Never commit real invoices, credentials, or `.env` files.
+```bash
+python -m pytest -v
+python run_governance.py
+python -m compileall -q .
+```
 
-## Future Improvements
-- [ ] Optional Gemma-powered explanations.
-- [ ] PDF invoice extraction.
-- [ ] Purchase-order integration.
-- [ ] Interactive web interface.
+The governance runner emits machine-readable JSON with case IDs, policies, expected/actual outcomes, and summary counts. It covers decision integrity, grounded explanations, prompt-injection resilience, required fields, dates, amounts, duplicates, and totals. It is an offline deterministic harness; it is not certification, comprehensive safety testing, or regulatory compliance. AI failures preserve validation output. PDF extraction, external PO verification, and database lookup are not implemented. An approved result is not payment authorization.
+
+The normal test suite requires no credentials, network, or live model. Ollama and Gemini integrations are implemented but live end-to-end calls are environment-dependent and were not exercised by the offline suite. ADK is isolated and likewise requires installing `google-adk` and configuring its runtime.
+
+## Security and privacy
+
+Invoice content is untrusted data, never an instruction source. Ollama is local only when `OLLAMA_BASE_URL` points to a local server. Gemini processing may transmit invoice data to Google. Do not commit real invoices, credentials, `.env` files, or provider logs; API keys are not included in governance reports. Provider explanations cannot change deterministic status, issue codes, amounts, duplicate results, or authorize payment.
 
 ## License
 

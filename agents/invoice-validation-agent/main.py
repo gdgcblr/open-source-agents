@@ -2,12 +2,16 @@
 
 import argparse
 import json
-from decimal import Decimal, InvalidOperation
+import re
+from datetime import date
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 
 
 def validate_invoice(invoice: dict, known_invoices: list | None = None) -> dict:
     """Validate invoice fields, totals, and duplicate identifiers."""
+    if not isinstance(invoice, dict):
+        return _input_error("Invoice must be a JSON object.")
     known_invoices = known_invoices or []
     issues = []
 
@@ -25,6 +29,16 @@ def validate_invoice(invoice: dict, known_invoices: list | None = None) -> dict:
                 "message": f"Required field '{field}' is missing."
             })
 
+    raw_date = invoice.get("invoice_date")
+    if raw_date not in (None, ""):
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(raw_date)):
+                raise ValueError
+            date.fromisoformat(str(raw_date))
+        except ValueError:
+            issues.append({"code": "INVALID_DATE", "field": "invoice_date", "severity": "error",
+                           "message": "Invoice date must be a valid calendar date in YYYY-MM-DD format."})
+
     invoice_number = str(invoice.get("invoice_number", "")).strip().casefold()
     vendor = str(invoice.get("vendor", "")).strip().casefold()
 
@@ -41,6 +55,7 @@ def validate_invoice(invoice: dict, known_invoices: list | None = None) -> dict:
             })
             break
 
+    arithmetic_facts = None
     try:
         subtotal = Decimal(str(invoice["subtotal"]))
         tax = Decimal(str(invoice["tax"]))
@@ -49,7 +64,16 @@ def validate_invoice(invoice: dict, known_invoices: list | None = None) -> dict:
         if not all(value.is_finite() and value >= 0 for value in (subtotal, tax, total)):
             raise InvalidOperation
 
-        if (subtotal + tax).quantize(Decimal("0.01")) != total.quantize(Decimal("0.01")):
+        expected_total = (subtotal + tax).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        stated_total = total.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        arithmetic_facts = {
+            "subtotal": _money(subtotal),
+            "tax": _money(tax),
+            "expected_total": _money(expected_total),
+            "stated_total": _money(stated_total),
+            "signed_difference": _money(stated_total - expected_total),
+        }
+        if expected_total != stated_total:
             issues.append({
                 "code": "TOTAL_MISMATCH",
                 "field": "total",
@@ -65,7 +89,7 @@ def validate_invoice(invoice: dict, known_invoices: list | None = None) -> dict:
                 "message": "Amounts must be valid, non-negative decimal numbers."
             })
 
-    return {
+    result = {
         "invoice_number": invoice.get("invoice_number"),
         "vendor": invoice.get("vendor"),
         "status": "REJECTED" if issues else "APPROVED",
@@ -77,6 +101,36 @@ def validate_invoice(invoice: dict, known_invoices: list | None = None) -> dict:
             "Resolve the reported issues before considering approval."
         )
     }
+    if arithmetic_facts is not None:
+        result["verified_arithmetic"] = arithmetic_facts
+    return result
+
+
+def _money(value: Decimal) -> str:
+    """Format a Decimal fact without allowing the model to do arithmetic."""
+    return f"{value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP):.2f}"
+
+
+def _input_error(message: str) -> dict:
+    return {"status": "REJECTED", "issue_count": 1, "issues": [{
+        "code": "INVALID_INPUT", "field": "input", "severity": "error", "message": message
+    }], "approval_note": "The input could not be validated; no payment decision was made."}
+
+
+def load_input(path: Path) -> dict:
+    """Load the CLI envelope and return a predictable result for bad files."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError) as exc:
+        return _input_error(f"Unable to read input file: {type(exc).__name__}.")
+    except json.JSONDecodeError:
+        return _input_error("Input file is not valid JSON.")
+    if not isinstance(data, dict) or not isinstance(data.get("invoice"), dict):
+        return _input_error("Input must contain an 'invoice' JSON object.")
+    known = data.get("known_invoices", [])
+    if not isinstance(known, list) or not all(isinstance(item, dict) for item in known):
+        return _input_error("'known_invoices' must be a list of JSON objects.")
+    return validate_invoice(data["invoice"], known)
 
 
 def sample_invoices() -> dict:
@@ -114,17 +168,19 @@ def main() -> None:
         help="Select a built-in demonstration case."
     )
     parser.add_argument("--input", type=Path, help="Optional path to invoice JSON.")
+    parser.add_argument("--explain", action="store_true", help="Request an optional AI explanation.")
+    parser.add_argument("--provider", choices=["ollama", "gemini"], help="AI provider (requires --explain).")
     args = parser.parse_args()
 
     if args.input:
-        data = json.loads(args.input.read_text(encoding="utf-8"))
+        result = load_input(args.input)
     else:
         data = sample_invoices()[args.case]
-
-    result = validate_invoice(
-        data["invoice"],
-        data.get("known_invoices", [])
-    )
+        result = validate_invoice(data["invoice"], data.get("known_invoices", []))
+    if args.explain:
+        from providers import explain_result
+        invoice = data.get("invoice", {}) if args.input is None else {}
+        result["ai_explanation"] = explain_result(invoice, result, args.provider)
     print(json.dumps(result, indent=2))
 
 
