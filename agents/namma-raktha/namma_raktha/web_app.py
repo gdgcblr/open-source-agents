@@ -109,7 +109,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
   <!-- Google Product App Bar -->
   <header class="bg-white border-b border-[#e0e2ec] sticky top-0 z-40">
-    <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <div class="relative w-10 h-10 rounded-2xl bg-[#fce8e6] flex items-center justify-center text-[#d93025] shadow-sm">
           <span class="material-symbols-outlined text-2xl text-[#d93025] material-symbols-fill">bloodtype</span>
@@ -124,7 +124,24 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
       </div>
       
-      <button onclick="openDonorModal()" class="rounded-full bg-[#d3e3fd] hover:bg-[#c2d7fc] text-[#041e49] font-medium text-xs px-3.5 py-2 transition flex items-center gap-1.5 shadow-sm">
+      <!-- Desktop Header Actions -->
+      <div class="hidden md:flex items-center gap-3 text-xs font-medium">
+        <div class="flex items-center gap-2 bg-[#f0f4f9] px-3.5 py-1.5 rounded-full text-[#444746]">
+          <span class="w-2 h-2 rounded-full bg-[#1e8e3e] animate-pulse"></span>
+          <span>Bengaluru 24/7 Grid Active</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-[#0b57d0] bg-[#e8f0fe] px-3.5 py-1.5 rounded-full font-bold">
+          <span class="material-symbols-outlined text-sm">local_hospital</span>
+          <span>14 Blood Centres</span>
+        </div>
+        <button onclick="openDonorModal()" class="rounded-full bg-[#0b57d0] hover:bg-[#0842a0] text-white font-medium text-xs px-4 py-2 transition flex items-center gap-1.5 shadow-sm">
+          <span class="material-symbols-outlined text-base">person_add</span>
+          <span>Register Donor</span>
+        </button>
+      </div>
+
+      <!-- Mobile Register Button -->
+      <button onclick="openDonorModal()" class="md:hidden rounded-full bg-[#d3e3fd] hover:bg-[#c2d7fc] text-[#041e49] font-medium text-xs px-3.5 py-2 transition flex items-center gap-1.5 shadow-sm">
         <span class="material-symbols-outlined text-base">person_add</span>
         <span>Register</span>
       </button>
@@ -132,7 +149,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </header>
 
   <!-- Main Container -->
-  <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-4 space-y-4">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-4 md:py-6">
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+      <!-- Left Column: Operations, Requisition & Triage -->
+      <div class="w-full lg:w-[480px] xl:w-[520px] shrink-0 space-y-4">
 
     <!-- Emergency Dispatch Banner -->
     <div class="bg-[#d93025] text-white rounded-2xl p-3.5 shadow-sm flex items-center justify-between">
@@ -346,31 +367,94 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </div>
 
     </div>
-
-    <!-- Live Emergency Requisitions Feed -->
-    <div class="m3-card p-5">
-      <div class="flex justify-between items-center mb-3">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#d93025] animate-pulse"></span>
-            <h2 class="text-sm font-bold text-[#1f1f1f]">Live Emergency Requests</h2>
-            <span id="openCountBadge" class="text-[10px] font-bold bg-[#fce8e6] text-[#b3261e] px-2.5 py-0.5 rounded-full">Loading...</span>
-          </div>
-          <p class="text-[11px] text-[#444746] font-medium mt-0.5">Active hospital requisitions across Bengaluru. Tap below to accept and coordinate donation.</p>
-        </div>
-        <button onclick="loadEmergencies()" class="w-8 h-8 rounded-full hover:bg-[#f1f3f4] text-[#444746] flex items-center justify-center transition" title="Refresh Feed">
-          <span class="material-symbols-outlined text-lg">refresh</span>
-        </button>
-      </div>
-
-      <div id="emergenciesFeed" class="space-y-3">
-        <div class="text-center py-4 text-xs text-[#444746]">
-          <span class="material-symbols-outlined animate-spin text-xl text-[#0b57d0]">progress_activity</span>
-          <p class="mt-1">Loading live emergency requisitions...</p>
-        </div>
-      </div>
     </div>
 
+    <!-- Right Column: Live City Requisitions & Operations Console -->
+    <div class="flex-1 min-w-0 w-full space-y-4">
+      
+      <!-- Desktop Quick Stats Grid (hidden on mobile) -->
+      <div class="hidden md:grid grid-cols-3 gap-3">
+        <div class="m3-card p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#fce8e6] text-[#b3261e] flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl material-symbols-fill">emergency</span>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-[#444746] uppercase tracking-wider">Active Requests</div>
+            <div class="text-base font-bold text-[#1f1f1f] flex items-center gap-1.5">
+              <span id="statOpenCount">10</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 bg-[#fce8e6] text-[#b3261e] rounded-full">Citywide</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m3-card p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#e8f0fe] text-[#0b57d0] flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">domain</span>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-[#444746] uppercase tracking-wider">24/7 Verified Banks</div>
+            <div class="text-base font-bold text-[#1f1f1f] flex items-center gap-1.5">
+              <span>14 Centres</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 bg-[#e6f4ea] text-[#137333] rounded-full">5 Zones</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m3-card p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#e6f4ea] text-[#137333] flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">groups</span>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold text-[#444746] uppercase tracking-wider">Voluntary Donors</div>
+            <div class="text-base font-bold text-[#1f1f1f] flex items-center gap-1.5">
+              <span id="statDonorCount">10+</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 bg-[#e8f0fe] text-[#0b57d0] rounded-full">Platelets Ready</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Emergency Requisitions Feed -->
+      <div class="m3-card p-5">
+        <div class="flex justify-between items-center mb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#d93025] animate-pulse"></span>
+              <h2 class="text-sm font-bold text-[#1f1f1f]">Live Emergency Requests</h2>
+              <span id="openCountBadge" class="text-[10px] font-bold bg-[#fce8e6] text-[#b3261e] px-2.5 py-0.5 rounded-full">Loading...</span>
+            </div>
+            <p class="text-[11px] text-[#444746] font-medium mt-0.5">Active hospital requisitions across Bengaluru. Tap below to accept and coordinate donation.</p>
+          </div>
+          <button onclick="loadEmergencies()" class="w-8 h-8 rounded-full hover:bg-[#f1f3f4] text-[#444746] flex items-center justify-center transition" title="Refresh Feed">
+            <span class="material-symbols-outlined text-lg">refresh</span>
+          </button>
+        </div>
+
+        <!-- Quick Filter Chips -->
+        <div class="flex items-center gap-1.5 mb-3.5 overflow-x-auto no-scrollbar pb-0.5 text-xs font-medium">
+          <button onclick="setEmergencyFilter('all')" id="fltAll" class="px-3 py-1 rounded-full bg-[#0b57d0] text-white text-[11px] font-bold shadow-xs transition flex items-center gap-1">All Cases</button>
+          <button onclick="setEmergencyFilter('critical')" id="fltCritical" class="px-3 py-1 rounded-full bg-[#f1f3f4] hover:bg-[#e0e2ec] text-[#444746] text-[11px] font-medium transition flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#d93025]"></span> Critical (&lt;2h)
+          </button>
+          <button onclick="setEmergencyFilter('platelet')" id="fltPlatelet" class="px-3 py-1 rounded-full bg-[#f1f3f4] hover:bg-[#e0e2ec] text-[#444746] text-[11px] font-medium transition flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs text-[#0b57d0]">water_drop</span> Platelets (SDP)
+          </button>
+          <button onclick="setEmergencyFilter('bombay')" id="fltBombay" class="px-3 py-1 rounded-full bg-[#f1f3f4] hover:bg-[#e0e2ec] text-[#444746] text-[11px] font-medium transition flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#b3261e]"></span> Bombay (hh)
+          </button>
+        </div>
+
+        <div id="emergenciesFeed" class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          <div class="col-span-full text-center py-6 text-xs text-[#444746]">
+            <span class="material-symbols-outlined animate-spin text-xl text-[#0b57d0]">progress_activity</span>
+            <p class="mt-1">Loading live emergency requisitions...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
   </main>
 
   <!-- Sticky Bottom Bar for Mobile -->
@@ -659,12 +743,44 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     }
 
+    let currentFilter = 'all';
+
+    function setEmergencyFilter(filter) {
+      currentFilter = filter;
+      const filters = ['all', 'critical', 'platelet', 'bombay'];
+      filters.forEach(f => {
+        const btnId = 'flt' + f.charAt(0).toUpperCase() + f.slice(1);
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        if (f === filter) {
+          btn.className = "px-3 py-1 rounded-full bg-[#0b57d0] text-white text-[11px] font-bold shadow-xs transition flex items-center gap-1";
+        } else {
+          btn.className = "px-3 py-1 rounded-full bg-[#f1f3f4] hover:bg-[#e0e2ec] text-[#444746] text-[11px] font-medium transition flex items-center gap-1";
+        }
+      });
+      renderEmergencies(currentEmergencies);
+    }
+
     async function loadEmergencies() {
       try {
         const res = await fetch('/api/emergencies');
         const data = await res.json();
         currentEmergencies = data;
         renderEmergencies(data);
+
+        // Update desktop quick stats
+        const openCount = data.filter(e => e.status === 'OPEN').length;
+        const statOpen = document.getElementById('statOpenCount');
+        if (statOpen) statOpen.textContent = openCount;
+
+        try {
+          const countRes = await fetch('/api/donors_count');
+          const countData = await countRes.json();
+          const statDonor = document.getElementById('statDonorCount');
+          if (statDonor && countData.count !== undefined) {
+            statDonor.textContent = countData.count + '+';
+          }
+        } catch (e) {}
       } catch (err) {
         console.error("Error loading emergencies:", err);
       }
@@ -693,17 +809,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const countBadge = document.getElementById('openCountBadge');
       if (!container) return;
 
-      const openCount = list.filter(e => e.status === 'OPEN').length;
+      const fullList = list || [];
+      const openCount = fullList.filter(e => e.status === 'OPEN').length;
       if (countBadge) {
         countBadge.textContent = `${openCount} Open`;
       }
+      const statOpen = document.getElementById('statOpenCount');
+      if (statOpen) statOpen.textContent = openCount;
 
-      if (!list || list.length === 0) {
-        container.innerHTML = '<p class="text-xs text-[#444746] italic p-2">No active emergency requests right now.</p>';
+      let filteredList = fullList;
+      if (currentFilter === 'critical') {
+        filteredList = filteredList.filter(e => e.urgency && e.urgency.includes('CRITICAL'));
+      } else if (currentFilter === 'platelet') {
+        filteredList = filteredList.filter(e => e.component && (e.component.toLowerCase().includes('platelet') || e.component.toLowerCase().includes('sdp')));
+      } else if (currentFilter === 'bombay') {
+        filteredList = filteredList.filter(e => e.blood_group && e.blood_group.toLowerCase().includes('bombay'));
+      }
+
+      if (!filteredList || filteredList.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center py-6 text-xs text-[#444746] italic">No active emergency requests match this filter.</div>';
         return;
       }
 
-      container.innerHTML = list.map(item => {
+      container.innerHTML = filteredList.map(item => {
         const isOpen = (item.status === 'OPEN');
         const isCritical = item.urgency && item.urgency.includes('CRITICAL');
         
