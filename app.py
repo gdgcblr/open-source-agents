@@ -1,12 +1,63 @@
-from dotenv import load_dotenv
-load_dotenv()
 import streamlit as st
 import json
 import os
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from jury import evaluate_turn
 
-st.set_page_config(page_title="The Illustrated Primer", page_icon="📖", layout="wide")
+# Load API keys from .env
+load_dotenv()
+
+st.set_page_config(
+    page_title="The Illustrated Primer",
+    page_icon="📖",
+    layout="wide"
+)
+
+# Custom Storybook Styling
+# Custom Storybook Styling with forced dark text & message card backgrounds
+st.markdown("""
+<style>
+    .stApp { 
+        background-color: #fcfbf7; 
+        color: #1a1615 !important; 
+        font-family: 'Georgia', serif; 
+    }
+    
+    /* Force all chat message bubbles and text to be clearly visible */
+    [data-testid="stChatMessage"] {
+        background-color: #f3efe6 !important;
+        border: 1px solid #e2dacd !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    [data-testid="stChatMessage"] * {
+        color: #1a1615 !important;
+    }
+    
+    /* Ensure markdown and paragraph text in the main canvas are dark */
+    .stMarkdown, p, span, li, label {
+        color: #1a1615 !important;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4 { 
+        font-family: 'Georgia', serif; 
+        color: #2b1f1d !important; 
+    }
+
+    /* Preserve clean dark styling in the sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #1a1c23 !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #f0f0f0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ----------------- LIVE STATE MANAGEMENT -----------------
 STATE_FILE = "student_profile.json"
@@ -22,20 +73,36 @@ DEFAULT_STATE = {
     "last_observation": "Initial profile initialized."
 }
 
-def get_or_create_profile():
+def get_or_create_profile() -> dict:
     if not os.path.exists(STATE_FILE):
         with open(STATE_FILE, "w") as f:
             json.dump(DEFAULT_STATE, f, indent=2)
     with open(STATE_FILE, "r") as f:
         return json.load(f)
 
-def save_profile(profile_data):
+def save_profile(profile_data: dict) -> None:
     with open(STATE_FILE, "w") as f:
         json.dump(profile_data, f, indent=2)
 
+def update_learning_ledger(skill: str, success: bool, note: str) -> str:
+    """Updates learner progress when they demonstrate mastery or struggle."""
+    curr = get_or_create_profile()
+    if success:
+        if skill in curr["struggles"]:
+            curr["struggles"].remove(skill)
+        if skill not in curr["mastered"]:
+            curr["mastered"].append(skill)
+    else:
+        if skill not in curr["struggles"]:
+            curr["struggles"].append(skill)
+    curr["last_observation"] = note
+    save_profile(curr)
+    return f"Updated ledger for '{skill}'. Active struggles: {curr['struggles']}. Mastered: {curr['mastered']}"
+
+# Initialize profile
 profile = get_or_create_profile()
 
-# ----------------- SIDEBAR: Primer Memory -----------------
+# ----------------- SIDEBAR: MEMORY & JURY SCORECARD -----------------
 with st.sidebar:
     st.title("🧠 Primer Memory")
     st.caption("Live Epistemic State & ZPD")
@@ -54,48 +121,59 @@ with st.sidebar:
     for m in profile.get("mastered", []):
         st.markdown(f"- 🟢 `{m}`")
         
-    st.info(f"**Audit Note:**\n{profile.get('last_observation', 'None')}")
+    st.caption(f"**Audit Note:** {profile.get('last_observation', 'None')}")
 
-# ----------------- MAIN UI -----------------
+    # --- Socratic Jury Scorecard ---
+    st.divider()
+    st.subheader("⚖️ Socratic Jury Scorecard")
+    st.caption("Real-Time Pedagogical Alignment & Audit")
+
+    if "latest_audit" in st.session_state and st.session_state.latest_audit:
+        audit = st.session_state.latest_audit
+        s_score = audit.get("socratic_score", 5)
+        w_score = audit.get("warmth_score", 5)
+
+        col1, col2 = st.columns(2)
+        col1.metric("Socratic Rigor", f"{s_score}/5", delta="Guided" if s_score >= 4 else "Direct")
+        col2.metric("Warmth", f"{w_score}/5", delta="Gentle" if w_score >= 4 else "Cool")
+
+        st.write(f"**Scaffolding Quality:** `{audit.get('scaffolding_level', 'High')}`")
+        
+        if audit.get("mastery_detected"):
+            st.success("🎯 Mastery Detected by Jury!")
+
+        st.info(f"💡 **Jury Rationale:**\n{audit.get('feedback', 'No notes.')}")
+    else:
+        st.caption("Awaiting child's first question to audit...")
+
+# ----------------- MAIN BOOK CHAT INTERFACE -----------------
 st.title("📖 A Young Lady's Illustrated Primer")
 st.caption("“It continually reshaped itself around who she was becoming.” — The Diamond Age")
 
-# Initialize client
+# Initialize Gemini Client
 client = genai.Client()
 
-# Tool definitions
-def update_learning_ledger(skill: str, success: bool, note: str) -> str:
-    """Updates learner progress when they demonstrate mastery or struggle."""
-    curr = get_or_create_profile()
-    if success:
-        if skill in curr["struggles"]:
-            curr["struggles"].remove(skill)
-        if skill not in curr["mastered"]:
-            curr["mastered"].append(skill)
-    else:
-        if skill not in curr["struggles"]:
-            curr["struggles"].append(skill)
-    curr["last_observation"] = note
-    save_profile(curr)
-    return f"Updated {skill}. Struggles: {curr['struggles']}. Mastered: {curr['mastered']}"
-
-# Chat history initialization
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Welcome back, Nell. The Clockwork Valley is quiet today, but the forest gears are turning. What shall we explore together?"}
+        {
+            "role": "assistant",
+            "content": "Welcome back, Nell. The Clockwork Valley is quiet today, but the forest gears are turning. What shall we explore together?"
+        }
     ]
 
-# Render existing messages
+# Display conversation history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
 # User Chat Input
 if user_prompt := st.chat_input("Speak to the Primer..."):
+    # 1. Render user message
     st.session_state.messages.append({"role": "user", "content": user_prompt})
     with st.chat_message("user"):
         st.write(user_prompt)
 
+    # 2. Generate response from the Primer
     with st.chat_message("assistant"):
         with st.spinner("The Primer turns its pages..."):
             system_instruction = f"""
@@ -108,16 +186,15 @@ if user_prompt := st.chat_input("Speak to the Primer..."):
             - Interests: {', '.join(profile['interests'])}
             - Active Struggles: {', '.join(profile['struggles'])}
             
-            Directives:
-            1. Never give answers directly. Guide the child with questions, sensory clues, and micro-stories.
-            2. If the child gets an answer right or shows mastery, call `update_learning_ledger`.
-            3. Tone: Warm, literary, patient, and curious.
+            Core Directives:
+            1. Never give answers directly to math, phonics, or logic problems.
+            2. Guide the child using sensory metaphors, interactive storytelling, and breakdown questions.
+            3. If the child gets an answer right or demonstrates mastery, call `update_learning_ledger`.
+            4. Keep the tone warm, literary, patient, and curious.
             """
-            
-            # Format history for Gemini
-            contents = []
-            for m in st.session_state.messages:
-                contents.append(m["content"])
+
+            # Build chat history for context
+            contents = [m["content"] for m in st.session_state.messages]
 
             try:
                 response = client.models.generate_content(
@@ -129,20 +206,22 @@ if user_prompt := st.chat_input("Speak to the Primer..."):
                     )
                 )
 
-                # Check if model wants to call the tool
                 reply_text = ""
+                # Handle autonomous tool calling
                 if response.function_calls:
+                    tool_res_msg = ""
                     for call in response.function_calls:
                         args = call.args
-                        tool_res = update_learning_ledger(
+                        tool_res_msg = update_learning_ledger(
                             skill=args.get("skill", ""),
                             success=args.get("success", False),
                             note=args.get("note", "")
                         )
-                    # Get final conversational reply following the tool call
+                    
+                    # Generate natural final response acknowledging the result
                     followup = client.models.generate_content(
                         model="gemini-3.8-flash",
-                        contents=contents + [f"System: Tool execution completed. {tool_res}. Now respond to the child Socraticly."]
+                        contents=contents + [f"System: Tool execution completed. {tool_res_msg}. Now respond to the child Socraticly."]
                     )
                     reply_text = followup.text
                 else:
@@ -150,7 +229,15 @@ if user_prompt := st.chat_input("Speak to the Primer..."):
 
                 st.write(reply_text)
                 st.session_state.messages.append({"role": "assistant", "content": reply_text})
-                st.rerun()
 
             except Exception as e:
-                st.error(f"Error communicating with the Primer: {e}")
+                reply_text = f"The pages fluttered: {e}"
+                st.error(reply_text)
+                st.session_state.messages.append({"role": "assistant", "content": reply_text})
+
+    # 3. Asynchronous LLM-as-a-Jury Evaluation
+    with st.spinner("Jury evaluating pedagogy & alignment..."):
+        st.session_state.latest_audit = evaluate_turn(user_prompt, reply_text)
+
+    # 4. Rerun to dynamically refresh the sidebar state and scorecard
+    st.rerun()
