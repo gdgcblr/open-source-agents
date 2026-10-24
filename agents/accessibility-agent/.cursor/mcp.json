@@ -1,0 +1,76 @@
+{
+  "name": "accessibility-agent",
+  "displayName": "Accessibility Agent MCP Server",
+  "description": "Local Model Context Protocol server for the Accessibility Agent.",
+  "auth": {
+    "type": "none"
+  },
+  "tools": [
+    {
+      "name": "audit",
+      "displayName": "Audit Page for Accessibility Issues",
+      "description": "Audits a given URL for accessibility issues using Axe-core.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to audit."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "description": "Accessibility audit report in JSON format."
+          }
+        }
+      }
+    },
+    {
+      "name": "fix_a11y_issue",
+      "displayName": "Fix Accessibility Issue",
+      "description": "Suggests and applies fixes for a given accessibility issue.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "description": "The path to the file containing the issue."
+          },
+          "lineNumber": {
+            "type": "number",
+            "description": "The line number of the issue."
+          },
+          "issueDescription": {
+            "type": "string",
+            "description": "Description of the accessibility issue."
+          }
+        },
+        "required": [
+          "filePath",
+          "lineNumber",
+          "issueDescription"
+        ]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "suggestion": {
+            "type": "string",
+            "description": "Suggested fix for the issue."
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Whether the fix was applied successfully."
+          }
+        }
+      }
+    }
+  ]
+}

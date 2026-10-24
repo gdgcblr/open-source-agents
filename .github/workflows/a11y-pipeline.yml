@@ -1,0 +1,87 @@
+name: Accessibility Audit & Remediation
+
+on:
+  push:
+    paths:
+      - 'agents/accessibility-agent/**'
+      - '.github/workflows/a11y-agent.yml'
+      - 'demo/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'agents/accessibility-agent/**'
+      - '.github/workflows/a11y-agent.yml'
+      - 'demo/**'
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  audit-and-fix:
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/fix-a11y'))
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: agents/accessibility-agent
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies & Browsers
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+          npx playwright install chromium --with-deps
+
+      - name: Build Agent
+        run: npm run build
+
+      - name: Start Demo HTTP Server
+        run: |
+          if [ -d "demo" ]; then
+            npx --yes http-server demo -p 8080 &
+          elif [ -d "../../demo" ]; then
+            npx --yes http-server ../../demo -p 8080 &
+          else
+            npx --yes http-server . -p 8080 &
+          fi
+          sleep 4
+          curl -I http://127.0.0.1:8080/ || exit 1
+
+      - name: Run Audit on demo/index.html
+        env:
+          # Standard environment variables
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TARGET_URL: "http://127.0.0.1:8080/"
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || '' }}
+          FIX_REQUESTED: ${{ contains(github.event.comment.body, '/fix-a11y') }}
+
+          # Mappings with underscores for @actions/core (core.getInput)
+          INPUT_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PREVIEW_URL: "http://127.0.0.1:8080/"
+        run: |
+          if npm run | grep -q "ci:run"; then
+            npm run ci:run
+          else
+            node dist/ci/github-action.js
+          fi

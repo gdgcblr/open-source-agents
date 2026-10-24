@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility Issue Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        .hidden-text { display: none; }
+        .contrast-issue { background-color: #f0f0f0; color: #f5f5f5; padding: 10px; margin-bottom: 10px; }
+        .image-no-alt img { width: 100px; height: 100px; }
+        .empty-link a { display: block; width: 50px; height: 50px; background-color: #007bff; }
+        .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: -999; }
+        .skip-link:focus { position: static; width: auto; height: auto; overflow: visible; }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <div class="container">
+        <h1>Welcome to the Accessibility Issue Demo!</h1>
+            <button tabindex='-1'>Inaccessible button</button>
+            <div type='button'>Semantic error</div>
+
+        <!-- Issue 1: Image without alt text -->
+        <div class="image-no-alt">
+            <h2>Image without Alt Text</h2>
+            <img src="https://via.placeholder.com/150">
+            <p>This image is missing an `alt` attribute, making it inaccessible to screen reader users.</p>
+        </div>
+
+        <!-- Issue 2: Low contrast text -->
+        <div class="contrast-issue">
+            <h2>Low Contrast Text</h2>
+            <p>This text has very low contrast with its background, making it difficult for users with visual impairments to read.</p>
+        </div>
+
+        <!-- Issue 3: Empty link -->
+        <div class="empty-link">
+            <h2>Empty Link</h2>
+            <a href="#"></a>
+            <p>This link has no accessible name or content, making its purpose unclear to assistive technologies.</p>
+        </div>
+
+        <!-- Issue 4: Missing form label -->
+        <form>
+            <h2>Missing Form Label</h2>
+            <input type="text" id="username">
+            <p>This input field is missing an associated `label` element.</p>
+        </form>
+
+        <!-- Issue 5: Heading levels skipped -->
+        <h1>Level 1 Heading</h1>
+        <h4>Level 4 Heading (skipped h2, h3)</h4>
+        <p>Heading levels should be used hierarchically.</p>
+
+        <!-- Issue 6: Redundant link title -->
+        <h2>Redundant Link Title</h2>
+        <a href="#" title="Click here">Click here</a>
+        <p>The link text and title are identical, creating redundant information for screen reader users.</p>
+
+        <!-- Issue 7: Button without accessible name -->
+        <h2>Button without Accessible Name</h2>
+        <button></button>
+        <p>This button has no accessible name, making it unusable for screen reader users.</p>
+
+        <!-- Issue 8: Input with color only for meaning -->
+        <h2>Color Only for Meaning</h2>
+        <p style="color: red;">Error: Something went wrong!</p>
+        <p>This error message relies solely on color to convey meaning, which is inaccessible to colorblind users.</p>
+
+        <!-- Issue 9: Incorrect role usage -->
+        <h2>Incorrect Role Usage</h2>
+        <div role="button">Clickable Div</div>
+        <p>Using a `div` with `role="button"` requires manual handling of keyboard interactions which is often missed.</p>
+
+        <!-- Issue 10: Missing language attribute on HTML element -->
+        <h2>Missing Language Attribute</h2>
+        <!-- The lang="en" is present on the <html> tag, but this is an example of what it would look like if missing -->
+        <p>The `lang` attribute on the `<html>` tag specifies the human language of the page, important for screen readers.</p>
+
+        <main id="main-content">
+            <h2>Main Content Area</h2>
+            <p>This is the main content of the page. The skip link should jump here.</p>
+        </main>
+    </div>
+</body>
+</html>
