@@ -83,7 +83,7 @@ The pass/fail facts come only from the deterministic Python checks. The model's 
    # then set GOOGLE_API_KEY in .env
    ```
 
-4. **Make sure the target branch is available for the scope check.** If you cloned your fork, add the main repo as `upstream`:
+4. **Make sure the target branch is available for the scope check.** If you cloned your fork, add the main repo as `upstream`. Skip the first command if `git remote -v` already lists `upstream`.
    ```bash
    git remote add upstream https://github.com/gdgcblr/open-source-agents.git
    git fetch upstream
@@ -103,7 +103,7 @@ The pass/fail facts come only from the deterministic Python checks. The model's 
 
 ## How to Run
 
-Run these from `agents/contribution-reviewer`. The project path can be relative to this folder or to the repository root.
+Run these from `agents/contribution-reviewer`. The project path can be relative to this folder or to the repository root. `agents/weather-agent` below stands for your own project folder. To try the tool right away, review this project itself: `python main.py agents/contribution-reviewer --checks-only`.
 
 ```bash
 # Full AI review of a contribution
@@ -148,24 +148,35 @@ Verdict: Needs changes
 
 (This is real output: the tool caught its own unedited README during development.)
 
-Without `--checks-only`, the agent turns check results like these into a review shaped like this (illustrative, for a hypothetical `agents/weather-agent`):
+### Example AI review
+Without `--checks-only`, the agent turns the check results into a full review. This is a real run of `python main.py agents/contribution-reviewer` on gemini-3.8-flash, shortened:
 
 ```markdown
-**Verdict**: Needs changes
+### Verdict
+**Ready for review**
 
-| Checklist item | Status | Reason |
-| :--- | :--- | :--- |
-| Directory & Naming | ✅ | `agents/weather-agent` is kebab-case and descriptive |
-| Documentation | ❌ | README still contains template placeholders such as "[Project Name]" |
-| Reproducible Setup | ⚠️ | Can't be verified statically; run the setup steps in a fresh venv |
-| Example Usage | ❌ | The Example Input & Output section is unchanged from the template |
-| Dependencies Declared | ✅ | requirements.txt present |
-| Secrets & Security | ✅ | No secrets or forbidden files in the files git will commit |
-| Scope Limitation | ✅ | All changes are inside agents/weather-agent/ |
+Every deterministic check passed, dependencies are declared, secrets scanning found
+no issues, the scope is strictly confined to `agents/contribution-reviewer`, and the
+README is thorough and well-crafted.
 
-**Fixes**
-1. Replace the "[Project Name]" title and the one-sentence summary ...
+### PR Checklist
+| Checklist Item | Status | Reason |
+| :--- | :---: | :--- |
+| Directory & Naming | ✅ | `agents/contribution-reviewer` follows kebab-case naming under the `agents/` directory. |
+| Documentation | ✅ | README is complete, contains all required template sections, and has zero leftover template placeholders. |
+| Reproducible Setup | ⚠️ | Cannot be verified statically. Please verify in a clean environment by running `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt && pytest`. |
+| Example Usage | ✅ | Clear CLI commands and sample terminal outputs provided. |
+| Dependencies Declared | ✅ | `requirements.txt` is present and includes all required runtime dependencies. |
+| Secrets & Security | ✅ | No committed secrets or forbidden files found across scanned git-tracked files. |
+| Scope Limitation | ✅ | All modified and added files are within `agents/contribution-reviewer/`. |
+
+### Fixes
+1. Handle existing `upstream` remote in setup: in step 4 of Installation & Setup,
+   running `git remote add upstream ...` will error out if the remote already exists.
+...
 ```
+
+Both suggestions from this run that were valid have been applied: the `upstream` step above, and this real sample replacing an illustrative one. The run also suggested, wrongly, that `gemini-3.8-flash` was a typo for an older model. That's why the agent's instructions now tell it not to judge model names or versions from its own training knowledge.
 
 ---
 

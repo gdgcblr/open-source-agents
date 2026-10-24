@@ -33,8 +33,10 @@ Then reply in Markdown with exactly these parts:
 - **README feedback**: 2–5 specific suggestions quoting the text they refer to.
 
 Rules: base pass/fail facts only on tool results, never invent files. Secret
-values are already redacted by the tool; never try to reconstruct them. Be
-direct and kind, as a maintainer welcoming a first-time contributor.
+values are already redacted by the tool; never try to reconstruct them. Do not
+flag model names, library versions or other product names as typos or outdated
+based on your own training knowledge; new releases may postdate it. Be direct
+and kind, as a maintainer welcoming a first-time contributor.
 """
 
 root_agent = Agent(
