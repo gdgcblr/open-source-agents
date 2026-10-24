@@ -1,0 +1,5 @@
+# RunReady — Cloud Run deployment-rescue agent
+# Pinned to the Google ADK 2.x line (confirmed against installed 2.13.0).
+google-adk>=2.0,<3.0
+# Test runner for the model-free adversarial safety suite.
+pytest>=8.0

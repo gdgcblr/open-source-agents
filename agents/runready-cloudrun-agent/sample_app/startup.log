@@ -1,0 +1,10 @@
+2026-10-24T09:14:02.118Z Starting new instance for service runready-sample
+2026-10-24T09:14:02.884Z Starting uvicorn on 0.0.0.0:8080
+2026-10-24T09:14:03.201Z Traceback (most recent call last):
+2026-10-24T09:14:03.201Z   File "/usr/local/lib/python3.12/site-packages/uvicorn/importer.py", line 24, in import_from_string
+2026-10-24T09:14:03.201Z     module = importlib.import_module(module_str)
+2026-10-24T09:14:03.202Z   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+2026-10-24T09:14:03.202Z     return _bootstrap._gcd_import(name[level:], package, level)
+2026-10-24T09:14:03.203Z ModuleNotFoundError: No module named 'main'
+2026-10-24T09:14:03.205Z Error: Container failed to start. Failed to start and then listen on the port defined by the PORT environment variable.
+2026-10-24T09:14:03.800Z Default STARTUP TCP probe failed for container on port 8080.

@@ -1,0 +1,29 @@
+# Keep the build context clean: no secrets, venvs, caches, or VCS metadata.
+# Mirrors .gitignore's denylist.
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Secrets — must never enter the image.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# VCS / editor / OS.
+.git/
+.gitignore
+.idea/
+.vscode/
+.DS_Store
