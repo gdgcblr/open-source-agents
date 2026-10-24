@@ -1,0 +1,31 @@
+{
+  "name": "scam-message-shield",
+  "version": "0.1.0",
+  "description": "Google ADK agent that explains whether an SMS, WhatsApp or email message is a scam, in the user's own language.",
+  "type": "module",
+  "main": "src/agent.ts",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "check": "tsx src/cli.ts",
+    "eval": "tsx src/eval.ts",
+    "chat": "adk run src/agent.ts",
+    "web": "adk web src/agent.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/adk": "^2.3.0",
+    "@google/genai": "^1.52.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@google/adk-devtools": "^2.3.0",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

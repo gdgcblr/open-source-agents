@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`scam-message-shield`](scam-message-shield/README.md) | Explains whether an SMS/WhatsApp/email message is a scam (fake KYC, digital arrest, UPI tricks, look-alike links) and what to do, in the user's language. | Google ADK (TypeScript), Gemini Flash-Lite / Flash | [@abhisekmishra1709](https://github.com/abhisekmishra1709) |
