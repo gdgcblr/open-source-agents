@@ -1,0 +1,7 @@
+google-adk>=2.13,<3
+litellm>=1.84,<1.106.3  # ADK's adapter for Ollama-served models
+mcp>=1.0  # imported by litellm 1.106 at runtime but not declared as its dependency
+httpx>=0.27
+pydantic>=2.7
+python-dotenv>=1.0
+pytest>=8.0

@@ -1,0 +1,61 @@
+# Copy to .github/workflows/pr-slop-check.yml in the repository you want to protect.
+#
+# Default: runs Google's open-weights Gemma 4 locally on the runner via Ollama, so no API key or
+# secret is needed. CPU-only runners take a few minutes per PR; the model download is cached.
+# For faster reviews with hosted Gemini, see the commented lines at the bottom.
+#
+# Security: `pull_request_target` lets the job comment on fork PRs. That is only safe because the
+# PR's code is NEVER checked out or executed: we check out the base branch (to get the tool) and
+# read the PR purely through the GitHub API.
+name: PR Slop Check
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write # labels
+
+env:
+  MODEL_NAME: gemma4:e2b-it-qat
+
+jobs:
+  slop-check:
+    # Skip people the repo already trusts; slop triage is for outside contributions.
+    if: ${{ !contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4 # base branch only; do not add `ref: ${{ github.event.pull_request.head.sha }}`
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tool
+        run: pip install -r tools/pr-slop-detector/requirements.txt
+
+      - name: Cache Ollama models
+        uses: actions/cache@v4
+        with:
+          path: ~/.ollama/models
+          key: ollama-${{ env.MODEL_NAME }}
+      - name: Install Ollama and pull Gemma
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          (ollama serve > /tmp/ollama.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf localhost:11434/api/tags > /dev/null && break; sleep 1; done
+          ollama pull "$MODEL_NAME"
+
+      - name: Score PR
+        working-directory: tools/pr-slop-detector
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_PROVIDER: ollama
+          # For hosted Gemini instead: delete the two Ollama steps above, then use
+          # LLM_PROVIDER: gemini
+          # MODEL_NAME: gemini-3.5-flash
+          # GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: >
+          python -m slop_detector "${{ github.repository }}#${{ github.event.pull_request.number }}"
+          --post-comment --label possible-ai-slop

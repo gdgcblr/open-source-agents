@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`pr-slop-detector`](pr-slop-detector/) | Scores GitHub PRs for low-effort AI slop with evidence; heuristics + local Gemma 4 reviewer (Ollama), CLI and GitHub Action | Google ADK / Gemma 4 via Ollama / GitHub API | [@webobite](https://github.com/webobite) |

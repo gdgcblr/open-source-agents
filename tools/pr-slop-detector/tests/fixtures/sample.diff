@@ -1,0 +1,20 @@
+diff --git a/src/calc.py b/src/calc.py
+index 1111111..2222222 100644
+--- a/src/calc.py
++++ b/src/calc.py
+@@ -1,4 +1,6 @@
+ def add(a, b):
+-    return a+b
++    # Return the sum of a and b
++    return a + b
++
+ def sub(a, b):
+     return a - b
+diff --git a/NOTES.md b/NOTES.md
+new file mode 100644
+index 0000000..3333333
+--- /dev/null
++++ b/NOTES.md
+@@ -0,0 +1,2 @@
++# Notes
++Formatting cleanup.
