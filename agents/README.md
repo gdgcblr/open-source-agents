@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`github-pr-guardian`](github-pr-guardian/) | Autonomous PR code review and security auditor agent powered by Gemini. | Python / Google Gemini | [@sourabh1005kumar](https://github.com/sourabh1005kumar) |

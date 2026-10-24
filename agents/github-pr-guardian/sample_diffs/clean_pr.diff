@@ -1,0 +1,33 @@
+diff --git a/src/service.py b/src/service.py
+new file mode 100644
+index 0000000..7b91c3d
+--- /dev/null
++++ b/src/service.py
+@@ -0,0 +1,24 @@
++import os
++import sqlite3
++from typing import Optional, Tuple
++
++def get_user_record(username: str) -> Optional[Tuple[str, str]]:
++    """Retrieve a user safely using parameterized queries."""
++    db_path = os.getenv("DATABASE_PATH", "users.db")
++    with sqlite3.connect(db_path) as conn:
++        cursor = conn.cursor()
++        cursor.execute("SELECT id, username FROM users WHERE username = ?", (username,))
++        return cursor.fetchone()
+diff --git a/tests/test_service.py b/tests/test_service.py
+new file mode 100644
+index 0000000..1c2d3e4
+--- /dev/null
++++ b/tests/test_service.py
+@@ -0,0 +1,10 @@
++import unittest
++from src.service import get_user_record
++
++class TestUserService(unittest.TestCase):
++    def test_lookup_user(self):
++        # Unit test verifying query parameterization
++        self.assertIsNone(get_user_record("nonexistent_user"))
++
++if __name__ == "__main__":
++    unittest.main()
