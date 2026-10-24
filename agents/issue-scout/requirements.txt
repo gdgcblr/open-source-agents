@@ -1,0 +1,11 @@
+# Issue Scout dependencies (Python 3.11+).
+# The deterministic core (find / inspect / related / brief --no-ai) uses only the standard library.
+
+# Google Agent Development Kit: conversational agent (adk web / adk run) and Gemini starter briefs
+google-adk>=2.13,<3
+
+# Model Context Protocol server (python -m issue_scout mcp)
+mcp>=1.10,<2
+
+# Tests
+pytest>=8
