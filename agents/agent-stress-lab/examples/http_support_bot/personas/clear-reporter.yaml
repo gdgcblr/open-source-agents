@@ -1,0 +1,10 @@
+id: clear-reporter
+description: Mira, who reports the problem and her email in one message
+traits: [concise]
+goal: Get a support ticket opened because the export button fails
+facts:
+  email: mira@example.com
+reveal:
+  email: include it in your first message
+max_turns: 4
+vars: {email: mira@example.com, tickets: 1}

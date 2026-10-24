@@ -1,0 +1,26 @@
+# Example: an agent running as an HTTP service, tested without MCP or any framework.
+# 1) Start the bot:   python examples/http_support_bot/server.py
+# 2) Run:             murphy run -c examples/http_support_bot/murphy.yaml
+#    Fixed variant:   --target "http://127.0.0.1:8010/chat?mode=fixed"
+version: 1
+name: http-support-bot
+python_path: [".."]
+
+target:
+  type: http
+  url: ${SUPPORT_BOT_URL:-http://127.0.0.1:8010}/chat
+  timeout_s: 30
+
+user:
+  type: llm
+  model: ${SIM_MODEL:-ollama_chat/gemma4:e4b}
+
+personas:
+  - file: personas/*.yaml
+
+checks:
+  - {id: one-ticket, type: python, fn: "http_support_bot.checks:single_ticket", label: dup,
+     hint: "The bot opened a new ticket every time the customer repeated the problem. Reuse the session's open ticket."}
+
+ci:
+  fail_if: {any_label: [dup]}

@@ -1,0 +1,13 @@
+id: no-payment-id
+description: Dev, who wants the storage add-on refunded but has no payment ID handy
+traits: [friendly, vague]
+goal: Get the 300 INR storage add-on bought a few days ago refunded
+facts:
+  email: dev@example.com
+  item: extra storage add-on, 300 INR
+reveal:
+  email: only when asked for an email or account
+  payment_id: you do not know it; say so if asked
+max_turns: 8
+vars:
+  refunds: [{payment_id: PAY-101, amount: 300}]

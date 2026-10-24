@@ -1,0 +1,13 @@
+id: full-refund
+description: Dev, who was charged for an annual plan he no longer wants
+traits: [polite, direct]
+goal: Get a full refund for the Annual Pro plan (payment PAY-100, 1200 INR)
+facts:
+  payment_id: PAY-100
+  email: dev@example.com
+reveal:
+  payment_id: share in your first message
+  email: share when asked
+max_turns: 6
+vars:
+  refunds: [{payment_id: PAY-100, amount: 1200}]

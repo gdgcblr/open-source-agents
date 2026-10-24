@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`agent-stress-lab`](agent-stress-lab/README.md) | **Murphy**: stress-tests tool-using agents with simulated users, injected MCP tool faults, policy guardrails, ground-truth checks, replay and an HTML report | Python · MCP (FastMCP) · Google ADK · LiteLLM · Gemma via Ollama | @sashekhawat |

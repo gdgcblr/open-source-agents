@@ -1,0 +1,17 @@
+id: changes-mind
+description: Priya, who starts returning the sneakers but then decides to return the rain jacket instead
+traits: [indecisive, friendly]
+goal: Return ONLY the rain jacket (order A07); keep the sneakers
+facts:
+  email: priya@example.com
+  first_item: running sneakers (order A12)
+  final_item: rain jacket, size M (order A07)
+reveal:
+  email: share when asked
+behavior:
+  - In your first message, ask to return the running sneakers.
+  - In your second or third message, change your mind - keep the sneakers, return the rain jacket instead.
+  - If a pickup for the sneakers was already booked, insist it is cancelled.
+max_turns: 8
+vars:
+  pickups: [{order_id: A07, item_sku: JKT-11}]

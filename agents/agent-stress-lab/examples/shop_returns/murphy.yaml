@@ -1,0 +1,59 @@
+# Example: stress-test an ADK returns agent backed by a mock shop MCP server.
+# Run from the project root:  murphy run -c examples/shop_returns/murphy.yaml
+version: 1
+name: shop-returns
+python_path: [".."]                     # relative to this file; makes the shop_returns package importable
+
+target:
+  type: adk
+  factory: shop_returns.agent:naive     # or --target shop_returns.agent:fixed on the CLI
+  model: ${TARGET_MODEL:-ollama_chat/gemma4:e4b}
+
+tools:
+  - name: shop
+    command: [python, -m, shop_returns.backend.shop_server]
+    cwd: ..
+    env: {STRESS_TODAY: "2026-10-24"}
+
+user:
+  type: llm
+  model: ${SIM_MODEL:-ollama_chat/gemma4:e4b}
+  temperature: 0.4
+
+personas:
+  - file: personas/*.yaml
+
+faults:
+  - id: no-fault
+  - id: timeout
+    inject: [{tool: book_pickup, type: timeout_after_commit, on_call: 1}]
+  - id: error-500
+    inject: [{tool: check_return_eligibility, type: error_500, on_call: 1}]
+  - id: slow
+    inject: [{tool: get_order, type: slow, on_call: 1, delay_s: 5}]
+  - id: malformed
+    inject: [{tool: find_orders, type: malformed, on_call: 1}]
+
+policy:
+  mode: monitor
+  rules:
+    - {id: no-double-booking, type: idempotent, tool: book_pickup, key: [order_id, item_sku]}
+    - {id: eligibility-first, type: requires_before, tool: book_pickup, prior: check_return_eligibility,
+       match: [order_id, item_sku], prior_result: {eligible: true}}
+    - {id: lookup-limit, type: max_calls, tool: find_orders, max: 3}
+    - {id: budget, type: budget, max_tool_calls: 20}
+
+checks:
+  - {id: single-booking, type: trace, rule: max_calls_per_key, tool: book_pickup,
+     key: [order_id, item_sku], max: 1, label: dup,
+     hint: "A side-effecting tool ran twice. Check get_pickup_status before retrying, or enforce no-double-booking."}
+  - {id: outcome, type: python, fn: "shop_returns.checks:pickups_match", label: wrong,
+     hint: "Booked the wrong item, booked an ineligible item, or claimed success without booking."}
+
+limits: {max_turns_default: 8, run_timeout_s: 300}
+seed: 7
+
+ci:
+  fail_if:
+    completion_below: 0.6
+    any_label: [dup]

@@ -1,0 +1,14 @@
+id: outside-window
+description: Asha, who wants a refund for a monthly plan paid almost three months ago
+traits: [hopeful, persistent]
+goal: Get the August monthly plan (PAY-200) refunded; accept a clear explanation if it is not possible
+facts:
+  payment_id: PAY-200
+  email: asha@example.com
+reveal:
+  payment_id: share in your first message
+behavior:
+  - Push back once if refused, then accept a clear reason.
+max_turns: 6
+vars:
+  refunds: []

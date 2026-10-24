@@ -1,0 +1,41 @@
+# Offline config: scripted agent + scripted user against the example shop backend.
+version: 1
+name: scripted-shop
+python_path: [".", "..", "../.."]
+
+target:
+  type: scripted
+  policy: scripted_agents:naive_policy
+
+tools:
+  - name: shop
+    command: [python, -m, backend.shop_server]
+    cwd: ../../examples/shop_returns
+    env: {STRESS_TODAY: "2026-10-24"}
+
+user:
+  type: scripted
+  messages: ["Return my sneakers from order A12, they are too small."]
+
+personas:
+  - {id: cooperative, goal: "Return SNK-42 from A12", vars: {pickups: [{order_id: A12, item_sku: SNK-42}]}}
+
+faults:
+  - id: no-fault
+  - id: timeout
+    inject: [{tool: book_pickup, type: timeout_after_commit}]
+
+policy:
+  mode: monitor
+  rules:
+    - {id: no-double-booking, type: idempotent, tool: book_pickup, key: [order_id, item_sku]}
+    - {id: eligibility-first, type: requires_before, tool: book_pickup, prior: check_return_eligibility,
+       match: [order_id, item_sku], prior_result: {eligible: true}}
+
+checks:
+  - {id: single-booking, type: trace, rule: max_calls_per_key, tool: book_pickup, key: [order_id, item_sku], max: 1,
+     label: dup, hint: "Check get_pickup_status before retrying."}
+  - {id: outcome, type: python, fn: "examples.shop_returns.checks:pickups_match", label: wrong}
+
+ci:
+  fail_if: {completion_below: 0.9, any_label: [dup]}

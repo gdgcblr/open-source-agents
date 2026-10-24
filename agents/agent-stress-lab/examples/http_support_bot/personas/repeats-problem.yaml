@@ -1,0 +1,14 @@
+id: repeats-problem
+description: Ravi, whose app crashes on login, and who repeats himself when he is not sure he was heard
+traits: [anxious, repetitive]
+goal: Get a support ticket opened for the app crashing on login
+facts:
+  email: ravi@example.com
+reveal:
+  email: share when asked
+behavior:
+  - Describe the crash in your first message.
+  - After you give your email, describe the problem once more in different words ("it still crashes when I log in").
+  - Stop once you have a ticket number.
+max_turns: 5
+vars: {email: ravi@example.com, tickets: 1}

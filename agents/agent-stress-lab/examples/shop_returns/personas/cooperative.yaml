@@ -1,0 +1,14 @@
+id: cooperative
+description: Priya, a calm customer who has her order details ready
+traits: [polite, clear]
+goal: Return the size-9 running sneakers from order A12 because they are too small
+facts:
+  order_id: A12
+  email: priya@example.com
+  item: running sneakers, size 9
+reveal:
+  order_id: share in your first message
+  email: share when asked
+max_turns: 6
+vars:
+  pickups: [{order_id: A12, item_sku: SNK-42}]
