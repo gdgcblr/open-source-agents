@@ -131,12 +131,14 @@ agents/pr-sentinel/
 │   │   ├── security.js      # SecuritySentinel agent implementation
 │   │   ├── compliance.js    # ComplianceAuditor agent implementation
 │   │   ├── quality.js       # QualityCritic agent implementation
+│   │   ├── blast.js         # BlastRadiusPredictor agent implementation (Showstopper)
 │   │   └── patcher.js       # PatchSynthesizer agent implementation
 │   ├── tools/
 │   │   ├── secrets.js       # Regex & entropy secret scanner (Gemini, OpenAI, AWS, GitHub)
 │   │   ├── compliance.js    # CONTRIBUTING.md validator, isolation & template checker
 │   │   ├── git.js           # Git diff extractor, unified diff parser, file tree crawler
 │   │   ├── ast.js           # Static AST pattern analyzer (eval, exec, unhandled exceptions)
+│   │   ├── blast.js         # Call-graph reverse dependency & ripple impact analyzer
 │   │   └── patcher.js       # Unified diff generator & line replacement patch creator
 │   ├── models/
 │   │   ├── gemini.js        # Google GenAI SDK integration with JSON response formatting
@@ -148,6 +150,7 @@ agents/pr-sentinel/
     ├── secrets.test.js      # Unit tests for credential detection and masking
     ├── compliance.test.js   # Unit tests for repository guidelines and isolation
     ├── git.test.js          # Unit tests for diff parsing and patch generation
+    ├── blast.test.js        # Unit tests for reverse dependency call-graph & blast scoring
     └── agents.test.js       # Integration tests for multi-agent pipeline orchestration
 ```
 
