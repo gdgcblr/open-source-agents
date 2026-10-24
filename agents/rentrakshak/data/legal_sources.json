@@ -1,0 +1,32 @@
+{
+  "sources": [
+    {
+      "title": "The Karnataka Rent Control Act, 1961 (India Code)",
+      "url": "https://www.indiacode.nic.in/",
+      "section": "Act overview — applicability varies by property type and area",
+      "date_checked": "2026-03-01",
+      "scope": "Karnataka rental regulation (historical rent control framework; not all premises covered)",
+      "explanation": "Use as a starting reference; confirm whether the Act applies to your property class and location with a qualified professional."
+    },
+    {
+      "title": "Karnataka Stamp Act — stamp duty on instruments",
+      "url": "https://www.indiacode.nic.in/",
+      "section": "Stamp duty on lease/rent agreements",
+      "date_checked": "2026-03-01",
+      "scope": "Karnataka",
+      "explanation": "Rental agreements may require appropriate stamp duty; verify current rates on official Karnataka revenue sources."
+    },
+    {
+      "title": "Model Tenancy Act (Government of India — reference model)",
+      "url": "https://mohua.gov.in/",
+      "section": "Policy reference for states adopting model tenancy frameworks",
+      "date_checked": "2026-03-01",
+      "scope": "India — adoption by states varies",
+      "explanation": "Not automatically binding in Karnataka unless enacted in state law; use for general tenancy practice expectations."
+    }
+  ],
+  "practical_notes": [
+    "RentRakshak does not state a universal Karnataka deposit cap — terms depend on agreement and applicable law.",
+    "Police verification and registration requirements may apply depending on locality and agreement type; confirm with official sources."
+  ]
+}

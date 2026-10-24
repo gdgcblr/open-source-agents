@@ -1,0 +1,38 @@
+# RentRakshak — Docker workflows
+# Build once:   docker compose build
+# Run tests:    docker compose run --rm test
+# Safety report: docker compose run --rm cli
+# Seed DB:      docker compose run --rm seed
+
+services:
+  test:
+    build: .
+    image: rentrakshak:local
+    command: ["pytest", "-q"]
+
+  cli:
+    build: .
+    image: rentrakshak:local
+    environment:
+      RENTRAKSHAK_DB_PATH: /data/rentrakshak.db
+    volumes:
+      - rentrakshak-data:/data
+    command:
+      [
+        "python",
+        "main.py",
+        "--listing",
+        "@tests/fixtures/suspicious_listing.txt",
+      ]
+
+  seed:
+    build: .
+    image: rentrakshak:local
+    environment:
+      RENTRAKSHAK_DB_PATH: /data/rentrakshak.db
+    volumes:
+      - rentrakshak-data:/data
+    command: ["python", "scripts/seed_demo_data.py"]
+
+volumes:
+  rentrakshak-data:

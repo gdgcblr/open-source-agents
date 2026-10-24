@@ -1,0 +1,4 @@
+# Local Gemma via Ollama (install on top of requirements.txt)
+-r requirements.txt
+google-adk[extensions]>=1.39.0
+mcp>=1.0.0
