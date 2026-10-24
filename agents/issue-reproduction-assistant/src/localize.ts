@@ -49,7 +49,7 @@ export function locate(files: ContextFile[], signals: IssueSignals): CandidateLo
     }
 
     if (signals.filePaths.some((wanted) => pathMatches(file.path, wanted))) {
-      score += 15;
+      score += 25;
       reasons.push("path mentioned in the issue");
     }
 
@@ -91,6 +91,11 @@ export function locate(files: ContextFile[], signals: IssueSignals): CandidateLo
     if (baseName && !GENERIC_NAMES.has(baseName) && keywords.has(baseName)) {
       score += 6;
       reasons.push(`file name matches "${baseName}"`);
+    }
+
+    if (score > 0 && /\.(md|mdx|txt|rst)$/i.test(lowerPath) && !reasons.includes("path mentioned in the issue")) {
+      score = Math.ceil(score * 0.4);
+      reasons.push("documentation file (down-weighted)");
     }
 
     if (score > 0) {

@@ -12,7 +12,7 @@ export interface AppConfig {
 type ProviderFactory = (config: AppConfig) => ModelProvider;
 
 const DEFAULT_MODELS: Record<string, string> = {
-  gemini: "gemini-2.5-flash",
+  gemini: "gemini-3.8-flash",
   ollama: "gemma3",
 };
 

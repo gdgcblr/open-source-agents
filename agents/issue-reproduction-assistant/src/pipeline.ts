@@ -6,6 +6,7 @@ import {
   type Confidence,
   type ReproductionReport,
 } from "./report.js";
+import { detectSetup, type ProjectSetup } from "./setup.js";
 import { readRepositoryFiles, type ContextFile } from "./repository-context.js";
 import { describeMissingInformation, extractSignals, questionsForMissingInformation, type IssueSignals } from "./signals.js";
 
@@ -23,6 +24,7 @@ export interface Investigation {
   existingTests: string[];
   history: Record<string, CommitInfo[]>;
   report: ReproductionReport;
+  setup: ProjectSetup;
 }
 
 export interface InvestigateOptions {
@@ -75,6 +77,20 @@ export function buildOfflineReport(
   };
 }
 
+/** Head of the file, plus windows around evidence lines for files too large to include whole. */
+function excerptFor(file: ContextFile, candidate: CandidateLocation): string {
+  if (file.content.length <= MAX_PROMPT_FILE_CHARS) {
+    return file.content;
+  }
+  const lines = file.content.split("\n");
+  const head = file.content.slice(0, 1_500);
+  const windows = candidate.evidence
+    .slice(0, 3)
+    .map((item) => `... (lines ${Math.max(1, item.line - 3)}-${item.line + 3})\n${lines.slice(Math.max(0, item.line - 4), item.line + 3).join("\n")}`)
+    .join("\n");
+  return `${head}\n${windows}`.slice(0, MAX_PROMPT_FILE_CHARS);
+}
+
 function buildPrompt(
   issueText: string,
   signals: IssueSignals,
@@ -86,9 +102,9 @@ function buildPrompt(
   const byPath = new Map(files.map((file) => [file.path, file]));
   const excerpts = candidates
     .slice(0, MAX_PROMPT_FILES)
-    .map((candidate) => byPath.get(candidate.path))
-    .filter((file): file is ContextFile => Boolean(file))
-    .map((file) => `### ${file.path}\n\`\`\`\n${file.content.slice(0, MAX_PROMPT_FILE_CHARS)}\n\`\`\``)
+    .map((candidate) => ({ file: byPath.get(candidate.path), candidate }))
+    .filter((item): item is { file: ContextFile; candidate: CandidateLocation } => Boolean(item.file))
+    .map(({ file, candidate }) => `### ${file.path}\n\`\`\`\n${excerptFor(file, candidate)}\n\`\`\``)
     .join("\n\n");
 
   const located = candidates
@@ -151,7 +167,8 @@ export async function investigate(options: InvestigateOptions): Promise<Investig
     }
   }
 
-  const base = { signals, candidates, existingTests, history, warnings: [] as string[] };
+  const setup = await detectSetup(repositoryPath);
+  const base = { signals, candidates, existingTests, history, setup, warnings: [] as string[] };
   if (!provider) {
     return { ...base, mode: "offline", report: buildOfflineReport(issueText, signals, candidates, existingTests) };
   }

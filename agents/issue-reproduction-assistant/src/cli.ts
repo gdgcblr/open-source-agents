@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 import "dotenv/config";
-import { readFile, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import path from "node:path";
+import { renderReportHtml } from "./html.js";
 import { investigate } from "./pipeline.js";
 import { redactSensitiveContent } from "./repository-context.js";
+import { issueToText } from "./github.js";
 import { investigateGithubIssue, renderInvestigation, resolveProvider } from "./service.js";
 
 const MAX_ISSUE_CHARACTERS = 20_000;
@@ -15,11 +19,13 @@ interface CliOptions {
   allowUpload: boolean;
   json: boolean;
   outPath?: string;
+  htmlDir?: string;
+  open: boolean;
   help: boolean;
 }
 
 function parseArguments(args: string[]): CliOptions {
-  const options: CliOptions = { allowUpload: false, json: false, help: false };
+  const options: CliOptions = { allowUpload: false, json: false, open: false, help: false };
   const value = (index: number, flag: string): string => {
     const next = args[index];
     if (!next || next.startsWith("--")) {
@@ -35,6 +41,12 @@ function parseArguments(args: string[]): CliOptions {
       case "--issue": options.issuePath = value(++index, argument); break;
       case "--repo": options.repositoryPath = value(++index, argument); break;
       case "--out": options.outPath = value(++index, argument); break;
+      case "--html": {
+        const next = args[index + 1];
+        options.htmlDir = next && !next.startsWith("--") ? args[++index] : "reports";
+        break;
+      }
+      case "--open": options.open = true; options.htmlDir ??= "reports"; break;
       case "--allow-upload": options.allowUpload = true; break;
       case "--offline": options.allowUpload = false; break;
       case "--json": options.json = true; break;
@@ -62,12 +74,14 @@ Options:
   --allow-upload     Send the redacted issue + selected excerpts to the configured model.
                      Without it the agent runs offline (evidence-only; nothing leaves this machine)
   --json             Print the full investigation as JSON
+  --html [dir]       Also write a browser-ready HTML report + Markdown to <dir> (default: reports/)
+  --open             Open the HTML report in your browser (implies --html)
   --out <path>       Write the Markdown/JSON output to a file
   --help, -h         Show this help
 
 Configuration (env or .env):
   AI_PROVIDER        gemini (default) | ollama (local, e.g. Gemma)
-  AI_MODEL           Model ID (default: gemini-2.5-flash / gemma3)
+  AI_MODEL           Model ID (default: gemini-3.8-flash / gemma3)
   GEMINI_API_KEY     Gemini API key
   OLLAMA_HOST        Ollama URL (default: http://localhost:11434)
   GITHUB_TOKEN       Optional; raises GitHub API rate limits`);
@@ -82,6 +96,7 @@ async function run(): Promise<void> {
 
   let markdown: string;
   let payload: unknown;
+  let html: { content: string; slug: string } | undefined;
 
   if (options.github) {
     const result = await investigateGithubIssue({
@@ -90,6 +105,17 @@ async function run(): Promise<void> {
       repositoryPath: options.repositoryPath ? path.resolve(options.repositoryPath) : undefined,
     });
     markdown = result.markdown;
+    const { ref } = result.issue;
+    html = {
+      slug: `${ref.owner}-${ref.repo}-issue-${ref.number}`.replace(/[^A-Za-z0-9._-]/g, "-"),
+      content: renderReportHtml(result.investigation, {
+        title: result.issue.title,
+        issueUrl: result.issue.url,
+        repoUrl: `https://github.com/${ref.owner}/${ref.repo}`,
+        commit: result.commit,
+        issueText: issueToText(result.issue),
+      }),
+    };
     payload = { issue: { ...result.issue, comments: result.issue.comments.length }, ...result.investigation };
   } else if (options.issuePath && options.repositoryPath) {
     const raw = await readFile(path.resolve(options.issuePath), "utf8");
@@ -106,6 +132,13 @@ async function run(): Promise<void> {
       provider: resolveProvider(options.allowUpload),
     });
     markdown = renderInvestigation(investigation);
+    html = {
+      slug: path.basename(options.issuePath).replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9._-]/g, "-") || "report",
+      content: renderReportHtml(investigation, {
+        title: issueText.split("\n").find((line) => line.trim())?.replace(/^#+\s*/, "").slice(0, 200) ?? "Local issue",
+        issueText,
+      }),
+    };
     payload = investigation;
   } else {
     throw new Error("Provide --github <ref>, or both --issue and --repo. Use --help for usage.");
@@ -113,6 +146,19 @@ async function run(): Promise<void> {
 
   if (!options.allowUpload) {
     console.error("Running offline (no --allow-upload): no data is sent to any model provider.");
+  }
+
+  if (options.htmlDir && html) {
+    const dir = path.resolve(options.htmlDir);
+    await mkdir(dir, { recursive: true });
+    const htmlPath = path.join(dir, `${html.slug}.html`);
+    await writeFile(htmlPath, html.content, "utf8");
+    await writeFile(path.join(dir, `${html.slug}.md`), `${markdown}\n`, "utf8");
+    console.error(`HTML report: ${pathToFileURL(htmlPath).href}`);
+    if (options.open) {
+      const opener = process.platform === "darwin" ? "open" : process.platform === "win32" ? "explorer" : "xdg-open";
+      execFile(opener, [htmlPath], () => undefined);
+    }
   }
 
   const output = options.json ? JSON.stringify(payload, null, 2) : markdown;

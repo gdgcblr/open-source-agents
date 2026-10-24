@@ -7,6 +7,7 @@ import {
   type GithubIssue,
 } from "./github.js";
 import type { ModelProvider } from "./model-provider.js";
+import { getHeadCommit } from "./git-history.js";
 import { investigate, type Investigation } from "./pipeline.js";
 import { renderReportMarkdown } from "./report.js";
 
@@ -20,6 +21,7 @@ export interface GithubInvestigationResult {
   issue: GithubIssue;
   investigation: Investigation;
   markdown: string;
+  commit?: string;
 }
 
 export function resolveProvider(allowUpload: boolean | undefined): ModelProvider | undefined {
@@ -77,6 +79,7 @@ export async function investigateGithubIssue(
     return {
       issue,
       investigation,
+      commit: await getHeadCommit(request.repositoryPath ?? cloned!.path),
       markdown: renderInvestigation(investigation, { title: issue.title, url: issue.url }),
     };
   } finally {

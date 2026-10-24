@@ -46,3 +46,17 @@ export async function getFileHistory(
     return [];
   }
 }
+
+/** Current HEAD commit of a repository, or undefined if unavailable. */
+export async function getHeadCommit(repositoryPath: string): Promise<string | undefined> {
+  try {
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-c", "core.fsmonitor=false", "-C", path.resolve(repositoryPath), "rev-parse", "HEAD"],
+      { timeout: 10_000 },
+    );
+    return stdout.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}

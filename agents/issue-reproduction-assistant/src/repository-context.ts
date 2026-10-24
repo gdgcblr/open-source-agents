@@ -5,7 +5,7 @@ import { extractSignals } from "./signals.js";
 
 const MAX_FILES_TO_SCAN = 1_000;
 const MAX_FILES_TO_INCLUDE = 40;
-const MAX_FILE_BYTES = 16 * 1024;
+const MAX_FILE_BYTES = 256 * 1024;
 const MAX_CONTEXT_CHARACTERS = 50_000;
 const SUPPORTED_EXTENSIONS = new Set([
   ".c",
@@ -45,7 +45,7 @@ const IGNORED_DIRECTORIES = new Set([
   "venv",
 ]);
 const SENSITIVE_FILE_PATTERN =
-  /(^\.env(?:\.|$)|secret|credential|password|token|\.pem$|\.key$|\.p12$|\.pfx$|lock$)/i;
+  /(^\.env(?:\.|$)|secret|credential|password|token|\.pem$|\.key$|\.p12$|\.pfx$|lock$|-lock\.json$)/i;
 const SECRET_ASSIGNMENT_PATTERN =
   /(["']?(?:api[_-]?key|access[_-]?token|secret|password|client[_-]?secret)["']?\s*[:=]\s*["']?)(?!your_|example|<)([^\s"'`,;]{8,})/gi;
 const BEARER_PATTERN = /(Bearer\s+)[A-Za-z0-9._~+/=-]{12,}/gi;

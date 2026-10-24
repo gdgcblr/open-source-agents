@@ -25,7 +25,7 @@
 
 - **Language & Runtime**: TypeScript, Node.js 20+
 - **Protocols**: Model Context Protocol (`@modelcontextprotocol/sdk`), Agent2Agent (A2A, JSON-RPC over HTTP)
-- **Models**: Gemini via `@google/genai` (default `gemini-2.5-flash`); local Gemma (default `gemma3`) via Ollama
+- **Models**: Gemini via `@google/genai` (default `gemini-3.8-flash`); local Gemma (default `gemma3`) via Ollama
 - **External APIs / Tools**: GitHub REST API, `git`
 
 ## Architecture & Data Flow
@@ -66,7 +66,7 @@ cp .env.example .env     # only needed for model-assisted mode / tokens
 | Variable Name | Required | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `AI_PROVIDER` | No | `gemini` | `gemini` or `ollama` |
-| `AI_MODEL` | No | `gemini-2.5-flash` / `gemma3` | Model ID for the chosen provider; change without code changes |
+| `AI_MODEL` | No | `gemini-3.8-flash` / `gemma3` | Model ID for the chosen provider; change without code changes |
 | `GEMINI_API_KEY` | Only for `gemini` + `--allow-upload` | *None* | Gemini API key |
 | `OLLAMA_HOST` | No | `http://localhost:11434` | Ollama server URL |
 | `GITHUB_TOKEN` | No | *None* | Raises GitHub API rate limits; never logged |
@@ -90,6 +90,19 @@ AI_PROVIDER=ollama AI_MODEL=gemma3 npm start -- --github owner/repo#123 --allow-
 # Local issue file + local checkout, JSON output
 npm start -- --issue ./bug.md --repo ../my-project --json --out brief.json
 ```
+
+### Browser-ready report (HTML)
+
+```bash
+npm start -- --github "Nerajno/learnt-project#43" --html          # writes reports/<issue>.html + .md
+npm start -- --github "Nerajno/learnt-project#43" --html --open   # ...and opens it in your browser
+```
+
+The self-contained page (no scripts, escaped content, `reports/` is git-ignored) opens with **"Reproduce it from scratch"**: the exact `git clone` + commit checkout, install and start commands detected from the project (package manager, dev script, default URL), what to open and what to look for in DevTools for UI issues, followed by analysis, evidence and draft tests.
+
+#### Worked UI example
+
+[Nerajno/learnt-project#43](https://github.com/Nerajno/learnt-project/issues/43): every project screenshot 404s. The agent localizes `src/data/projects.ts` and generates the steps below; I followed them manually (clone, `npm ci`, `npm run dev`) and `curl` for `/images/screenshots/status-tracker.png` returned 404 on that commit.
 
 ### MCP server (stdio)
 
@@ -175,7 +188,8 @@ Tests use temporary git repositories, a mocked model provider and mocked `fetch`
 
 - Localization is heuristic (lexical); it can miss code that the report doesn't name, and may rank generic matches. Treat results as leads.
 - Draft tests and reproduction steps are unverified suggestions; nothing is executed.
-- Only the first 1,000 eligible text files ≤16 KB are scanned; large monorepos may be partly covered.
+- "From scratch" steps are detected for Node projects only (package.json); other ecosystems get a generic "see the README" step.
+- Only the first 1,000 eligible text files ≤256 KB are scanned; large monorepos may be partly covered.
 - Model-assisted output quality depends on the model; Gemini availability, model IDs and free-tier limits can change. The Gemini and Ollama adapters are covered by mocks and request-shape tests; Gemini was not exercised live in this repo's tests.
 - A2A support is a minimal `message/send` implementation (no streaming, tasks, or push notifications).
 - Tested on macOS with Node 24; other platforms untested. Windows may differ for path handling.
