@@ -65,6 +65,15 @@ class BuildDoctorMcpToolsTest(unittest.TestCase):
         self.assertEqual("unconfirmed", result["diagnosis"]["root_cause_status"])
         self.assertEqual("notify_and_collect_evidence_only", result["action_policy"])
 
+    def test_normalizes_nested_provider_aliases(self):
+        payload = json.dumps({"data": {"entityName": "orders-api", "conditionName": "p95 latency", "criticalValue": 900, "criticalThreshold": 500}})
+
+        result = json.loads(analyze_alert("new-relic", payload))
+
+        self.assertEqual("latency", result["alert"]["event_type"])
+        self.assertEqual("orders-api", result["alert"]["service"])
+        self.assertTrue(result["trigger"]["breached"])
+
     def test_does_not_treat_an_unbreached_alert_as_a_production_incident(self):
         payload = json.dumps({"event_type": "error_rate", "value": 1, "threshold": 5, "condition": "above"})
 

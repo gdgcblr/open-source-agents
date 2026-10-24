@@ -13,6 +13,8 @@ from typing import Any
 from defusedxml import ElementTree as SafeElementTree
 from mcp.server.fastmcp import FastMCP
 
+from build_doctor_mcp.adapters import normalize_provider_alert
+
 mcp = FastMCP("build-doctor")
 SCHEMA_VERSION = "1.1"
 _MANIFESTS = (
@@ -388,21 +390,10 @@ def _find_value(payload: Any, names: set[str]) -> Any:
 
 
 def _normalize_alert(provider: str, payload: dict[str, Any]) -> dict[str, Any]:
-    event_type = str(_find_value(payload, {"event_type", "event", "type", "alert_type", "condition_type"}) or "unknown").lower()
-    metric = str(_find_value(payload, {"metric", "metric_name", "signal", "policy_name", "condition_name"}) or "unknown")
-    normalized = {
-        "provider": provider or "unknown",
-        "event_type": event_type,
-        "service": _find_value(payload, {"service", "service_name", "entity", "application", "app_name"}),
-        "environment": _find_value(payload, {"environment", "env", "stage"}),
-        "metric": metric,
-        "value": _find_value(payload, {"value", "observed_value", "current_value", "actual"}),
-        "threshold": _find_value(payload, {"threshold", "threshold_value", "critical_threshold", "limit"}),
-        "unit": _find_value(payload, {"unit", "units"}),
-        "condition": str(_find_value(payload, {"condition", "operator", "comparison"}) or "above").lower(),
-        "timestamp": _find_value(payload, {"timestamp", "occurred_at", "opened_at", "created_at"}),
-        "correlation_id": _find_value(payload, {"correlation_id", "trace_id", "incident_id", "alert_id"}),
-    }
+    normalized = normalize_provider_alert(provider, payload)
+    normalized["event_type"] = str(normalized["event_type"]).lower()
+    normalized["metric"] = str(normalized["metric"])
+    normalized["condition"] = str(normalized["condition"]).lower()
     return {key: _redact(str(value)) if value is not None else None for key, value in normalized.items()}
 
 
