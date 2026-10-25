@@ -1,0 +1,35 @@
+{
+  "name": "pinpoint-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server that lets AI agents pin, bookmark, search and navigate messages in agent-human conversations. Local-only, zero network.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "pinpoint-mcp-server": "src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js",
+    "lint": "eslint . --max-warnings 0",
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage \"test/**/*.test.js\"",
+    "verify:offline": "node scripts/verify-offline.js",
+    "scan:secrets": "node scripts/secret-scan.js",
+    "audit:deps": "npm audit --omit=dev --audit-level=high",
+    "smoke": "node scripts/smoke.js",
+    "verify": "npm run lint && npm run test:coverage && npm run verify:offline && npm run scan:secrets && npm run audit:deps && npm run smoke",
+    "demo:core": "node scripts/demo-core.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0"
+  }
+}

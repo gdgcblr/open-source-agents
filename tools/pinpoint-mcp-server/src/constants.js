@@ -1,0 +1,33 @@
+// All limits live here (brief §6.2). Change a limit here, nowhere else.
+
+export const SCHEMA_VERSION = 1;
+export const MAX_SESSIONS = 200;
+export const MAX_MESSAGES_PER_SESSION = 5000;
+export const MAX_PINS_PER_SESSION = 300;
+export const MAX_MESSAGE_CHARS = 20000;
+export const MAX_SNIPPET_CHARS = 400;
+export const DEFAULT_SNIPPET_CHARS = 160;
+export const MAX_LABEL_CHARS = 120;
+export const MAX_NOTE_CHARS = 1000;
+export const MAX_TAGS = 10;
+export const MAX_TAG_CHARS = 32;
+export const MAX_TITLE_CHARS = 200;
+export const MAX_QUERY_CHARS = 500;
+export const MAX_LIST_LIMIT = 100;
+export const DEFAULT_LIST_LIMIT = 20;
+export const MAX_CONTEXT_WINDOW = 10;
+export const DEFAULT_CONTEXT_WINDOW = 2;
+export const FUZZY_MATCH_THRESHOLD = 0.6;
+export const SEARCH_MIN_SCORE = 0.15;
+export const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+export const MAX_STORE_BYTES = 50 * 1024 * 1024;
+export const ORDER_STEP = 100;
+export const RATE_LIMIT_WINDOW_MS = 60_000;
+export const LOCK_TIMEOUT_MS = 5_000;
+export const AMBIGUITY_MARGIN = 0.05;
+export const STORE_FILE = 'store.json';
+export const QUARANTINE_FILE = 'quarantine.json';
+export const AUDIT_FILE = 'audit.jsonl';
+export const BUNDLE_KIND = 'pinpoint-mcp-export';
+export const BUNDLE_SCHEMA_VERSION = 1;
+export const DEFAULT_EXPORT_PREFIX = 'pinpoint-export';

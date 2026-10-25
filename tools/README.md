@@ -47,4 +47,4 @@ tools/<project-slug>/
 
 | Tool Directory | Description | Category / Protocol | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`pinpoint-mcp-server`](pinpoint-mcp-server/) | MCP server for agents to pin, bookmark, search and navigate conversation messages. Local-only, zero network. | MCP (stdio) · Node.js | [@TeamAnoryx](https://github.com/TeamAnoryx) | — | — |

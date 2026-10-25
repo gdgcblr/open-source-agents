@@ -1,0 +1,31 @@
+{
+  "name": "pinpoint-agent",
+  "version": "0.1.0",
+  "description": "CLI chat agent that pins, bookmarks, searches and navigates conversation messages via the Pinpoint MCP server. Gemini or offline mock model.",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:mock": "node src/index.js --mock",
+    "demo": "node scripts/demo.js",
+    "lint": "eslint . --max-warnings 0",
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage \"test/**/*.test.js\"",
+    "scan:secrets": "node scripts/secret-scan.js",
+    "audit:deps": "npm audit --omit=dev --audit-level=high",
+    "verify": "npm run lint && npm run test:coverage && npm run scan:secrets && npm run audit:deps && npm run demo"
+  },
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "@modelcontextprotocol/sdk": "^1.32.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0"
+  }
+}

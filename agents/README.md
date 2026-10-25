@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [`pinpoint-agent`](pinpoint-agent/) | CLI chat agent that pins, bookmarks and navigates conversation messages via the Pinpoint MCP server. | Node.js · MCP client · Gemini / offline mock | [@TeamAnoryx](https://github.com/TeamAnoryx) | — | — |
