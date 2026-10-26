@@ -1,0 +1,93 @@
+"""
+main.py - CLI Interface using Google ADK Agent + In-Memory RAG
+"""
+import os
+import asyncio
+import click
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+from rag_tool import load_and_index_document
+from adk_agent import ADKScholarRunner
+from schemas import ResearchPaperArtifacts
+
+from dotenv import load_dotenv
+load_dotenv()  # Reads variables from .env into os.environ
+
+console = Console()
+# To render rich tables and panels in the console output
+def render_and_export(report: ResearchPaperArtifacts, output_dir: str):
+    # 1. Executive Summary Panel
+    header_content = f"[bold]{report.title}[/bold]\n"
+    if report.authors:
+        header_content += f"[dim]Authors: {report.authors}[/dim]\n\n"
+    header_content += report.executive_summary
+
+    console.print(Panel(header_content, title="[bold blue]ADK Executive Summary[/bold blue]", border_style="blue"))
+
+    # 2. Key Insights
+    console.print("\n[bold cyan]Key Technical Insights:[/bold cyan]")
+    for idx, insight in enumerate(report.key_insights, 1):
+        console.print(f"  [bold green]{idx}.[/bold green] {insight}")
+
+    # 3. Trade-offs & Limitations
+    console.print("\n[bold magenta]Trade-offs & Constraints:[/bold magenta]")
+    for item in report.limitations_and_tradeoffs:
+        console.print(f"  [bold red]•[/bold red] {item}")
+
+    # 4. Formatted Table via Rich
+    console.print(f"\n[bold yellow]Table: {report.comparative_table.title}[/bold yellow]")
+    r_table = Table(show_header=True, header_style="bold magenta", border_style="dim")
+    for header in report.comparative_table.headers:
+        r_table.add_column(header)
+    for row in report.comparative_table.rows:
+        r_table.add_row(*row)
+    console.print(r_table)
+
+    # 5. Mermaid Diagram Panel
+    console.print("\n[bold green]Architecture Diagram (Mermaid.js):[/bold green]")
+    console.print(Panel(report.diagram_mermaid.strip(), border_style="dim green"))
+
+    # Export disk artifacts
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, "architecture.mmd"), "w", encoding="utf-8") as f:
+        f.write(report.diagram_mermaid.strip() + "\n")
+
+    with open(os.path.join(output_dir, "summary.md"), "w", encoding="utf-8") as f:
+        f.write(f"# {report.title}\n\n## Executive Summary\n{report.executive_summary}\n\n")
+        f.write("## Key Insights\n" + "\n".join([f"- {k}" for k in report.key_insights]) + "\n\n")
+        f.write(f"## {report.comparative_table.title}\n\n")
+        f.write("| " + " | ".join(report.comparative_table.headers) + " |\n")
+        f.write("| " + " | ".join(["---"] * len(report.comparative_table.headers)) + " |\n")
+        for r in report.comparative_table.rows:
+            f.write("| " + " | ".join(r) + " |\n")
+        f.write("\n## Architecture Diagram\n```mermaid\n" + report.diagram_mermaid.strip() + "\n```\n")
+
+    console.print(f"\n[dim]Exported artifacts successfully to:[/dim] [bold]{output_dir}/[/bold]")
+
+@click.command()
+@click.argument("source", type=str)
+@click.option("--model", default="gemini-2.5-flash", help="ADK Model (e.g. gemini-2.5-flash, gemini-2.5-pro).")
+@click.option("--output-dir", default="./scholar_results", help="Destination folder for exported artifacts.")
+def main(source: str, model: str, output_dir: str):
+    """
+    scholar-agent: Research Paper Intelligence Agent built on Google ADK.
+    """
+    console.rule("[bold cyan]Google ADK Research Paper Agent[/bold cyan]")
+    
+    # Step 1: Ingest document and populate in-memory vector store
+    with console.status(f"[bold yellow]Ingesting & indexing {source}...[/bold yellow]"):
+        status = load_and_index_document(source)
+        console.print(f"[bold green]✔ Ingestion Complete:[/bold green] {status}")
+
+    # Step 2: ADK Agent execution loop (Tool calling + synthesis)
+    with console.status("[bold yellow]ADK Agent reasoning across vector tool observations...[/bold yellow]"):
+        runner = ADKScholarRunner(model_name=model)
+        report = asyncio.run(runner.analyze(source))
+
+    # Step 3: Render results
+    render_and_export(report, output_dir)
+
+if __name__ == "__main__":
+    main()

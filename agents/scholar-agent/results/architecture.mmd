@@ -1,0 +1,6 @@
+flowchart TD
+  A[User Query/Environment] --> B{Thought}
+  B --> C[Action]
+  C --> D{Observation}
+  D --> B
+  B -- Final Reasoning --> E[Response/Result]
