@@ -46,4 +46,4 @@ agents/<project-slug>/
 
 | Agent Directory | Description | Framework / Stack | Contributor |
 | :--- | :--- | :--- | :--- |
-| *(None yet)* | *Contributions will appear here once approved and merged.* | — | — |
+| [sqlbuddy](sqlbuddy/README.md) | Interactive Gemini-powered assistant for drafting, explaining, and troubleshooting SQL. | Python, Google Gemini | Community contribution |
