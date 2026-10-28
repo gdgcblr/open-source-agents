@@ -588,3 +588,203 @@ class TestUIIntegration:
         assert res["escalation_letter"] is not None
         assert len(res["timeline"]) == 3
         assert len(res["analysis"]["evidence_notes"]) == 2
+
+
+# ===================================================================
+# 12. Technical enhancements: SLA, Priority Index, Modalities, RTI & ADK Tools
+# ===================================================================
+
+class TestStatutorySLAEngine:
+    """Verifies Citizen Charter SLA turnaround calculation."""
+
+    def test_sla_within_timeframe(self):
+        from fixproof_core import calculate_sla_status
+        res = calculate_sla_status(
+            issue_category="Road Maintenance",
+            original_report_date="2026-06-01",
+            status_update_date="2026-06-02",
+        )
+        assert res["statutory_sla_days"] == 2
+        assert res["elapsed_days"] == 1
+        assert res["is_breached"] is False
+        assert res["overdue_days"] == 0
+
+    def test_sla_breached(self):
+        from fixproof_core import calculate_sla_status
+        res = calculate_sla_status(
+            issue_category="Road Maintenance",
+            original_report_date="2026-06-01",
+            status_update_date="2026-06-10",
+        )
+        assert res["statutory_sla_days"] == 2
+        assert res["elapsed_days"] == 9
+        assert res["is_breached"] is True
+        assert res["overdue_days"] == 7
+
+    def test_sla_missing_status_date(self):
+        from fixproof_core import calculate_sla_status
+        res = calculate_sla_status(
+            issue_category="Street Lighting",
+            original_report_date="2026-07-01",
+            status_update_date="",
+        )
+        assert res["statutory_sla_days"] == 1
+        assert res["elapsed_days"] is None
+        assert res["is_breached"] is False
+
+    def test_sla_default_category(self):
+        from fixproof_core import calculate_sla_status
+        res = calculate_sla_status(
+            issue_category="General Public Administration",
+            original_report_date="2026-08-01",
+            status_update_date="2026-08-05",
+        )
+        assert res["statutory_sla_days"] == 7
+        assert res["elapsed_days"] == 4
+        assert res["is_breached"] is False
+
+
+class TestCivicPriorityIndex:
+    """Verifies objective Civic Priority Index (0 - 100) scoring."""
+
+    def test_critical_priority_on_hazard_discrepancy(self):
+        from fixproof_core import assess_complaint
+        complaint = {
+            "complaint_reference": "CMP-CRIT-1",
+            "issue_category": "Road Maintenance",
+            "location": "Near Primary School",
+            "original_description": "Severe pothole causing traffic accident and fatal hazard for children.",
+            "original_report_date": "2026-06-01",
+            "authority_status": "resolved",
+            "status_update_date": "2026-07-15",
+            "resolution_note": "Closed by contractor",
+            "followup_observation": "Pothole washed away, dangerous gap exposes children to injury.",
+            "followup_observation_date": "2026-07-20",
+            "supporting_evidence": [
+                "Photo of pothole measuring 8 inches deep",
+                "Resident petition signed by 25 parents",
+            ],
+        }
+        res = assess_complaint(complaint)
+        assert res["valid"] is True
+        priority = res["analysis"]["civic_priority"]
+        assert priority["score"] >= 75
+        assert priority["level"] == "CRITICAL"
+        assert len(priority["factors"]) >= 3
+
+    def test_standard_priority_for_routine_open_complaint(self):
+        from fixproof_core import assess_complaint
+        complaint = {
+            "complaint_reference": "CMP-ROUT-1",
+            "issue_category": "Parks & Recreation",
+            "location": "Sector 3 Park",
+            "original_description": "Trimming of ornamental shrubs needed along pathway.",
+            "original_report_date": "2026-09-01",
+            "authority_status": "open",
+        }
+        res = assess_complaint(complaint)
+        assert res["valid"] is True
+        priority = res["analysis"]["civic_priority"]
+        assert priority["score"] < 25
+        assert priority["level"] == "STANDARD"
+
+    def test_score_bounded_between_zero_and_hundred(self):
+        from fixproof_core import calculate_civic_priority
+        data = {"original_description": "Extreme hazard accident fatal injury flood hospital", "issue_category": "Roads"}
+        analysis = {
+            "flags": ["DISCREPANCY: test"],
+            "sla_analysis": {"is_breached": True, "overdue_days": 100},
+            "evidence_notes": [{"index": i} for i in range(20)],
+        }
+        res = calculate_civic_priority(data, analysis)
+        assert 0 <= res["score"] <= 100
+
+
+class TestEvidenceModalityAndFingerprinting:
+    """Verifies evidence modality typing and SHA-256 fingerprinting."""
+
+    def test_evidence_modality_detection(self):
+        from fixproof_core import _detect_evidence_type
+        assert _detect_evidence_type("Photo of exposed asphalt taken on 2026-09-10") == "photograph"
+        assert _detect_evidence_type("Depth measurement showing 6 inches") == "measurement"
+        assert _detect_evidence_type("Neighborhood petition signed by 14 residents") == "petition"
+        assert _detect_evidence_type("Certified contractor work order invoice") == "document"
+        assert _detect_evidence_type("Smartphone video recording of water gushing") == "video"
+        assert _detect_evidence_type("Personal diary note on street condition") == "observation_record"
+
+    def test_sha256_fingerprint_deterministic_and_unique(self):
+        from fixproof_core import _generate_sha256_fingerprint
+        fp1 = _generate_sha256_fingerprint("Photo of pothole on 2026-09-10")
+        fp2 = _generate_sha256_fingerprint("Photo of pothole on 2026-09-10")
+        fp3 = _generate_sha256_fingerprint("Photo of pothole on 2026-09-11")
+        assert len(fp1) == 16
+        assert fp1 == fp2
+        assert fp1 != fp3
+
+
+class TestRTIAndJurisdictionResolution:
+    """Verifies statutory RTI queries and municipal jurisdiction resolution."""
+
+    def test_rti_query_generator_content(self):
+        from fixproof_core import generate_statutory_rti_queries
+        data = {
+            "complaint_reference": "CMP-RTI-TEST",
+            "issue_category": "Road Maintenance",
+            "location": "MG Road, Ward 12",
+            "authority_status": "resolved",
+        }
+        queries = generate_statutory_rti_queries(data)
+        assert len(queries) == 5
+        assert any("CMP-RTI-TEST" in q for q in queries)
+        assert any("MG Road, Ward 12" in q for q in queries)
+        assert any("work order" in q.lower() for q in queries)
+
+    def test_jurisdiction_resolution_bbmp_road(self):
+        from fixproof_core import resolve_civic_jurisdiction
+        res = resolve_civic_jurisdiction("Road Maintenance", "Indiranagar")
+        assert "BBMP" in res["department"]
+        assert "Road" in res["department"]
+        assert "Indiranagar" in res["location"]
+
+    def test_jurisdiction_resolution_bescom_lighting(self):
+        from fixproof_core import resolve_civic_jurisdiction
+        res = resolve_civic_jurisdiction("Street Lighting", "Koramangala")
+        assert "BESCOM" in res["department"] or "Electrical" in res["department"]
+
+
+class TestMultiToolAgentArchitecture:
+    """Verifies that the ADK Agent registers and supports all 4 civic tools."""
+
+    def test_agent_contains_all_four_tools(self):
+        from agent import (
+            root_agent,
+            analyse_civic_complaint,
+            calculate_municipal_sla,
+            draft_statutory_rti_query,
+            resolve_civic_jurisdiction_tool,
+        )
+        tool_names = [getattr(t, "__name__", str(t)) for t in root_agent.tools]
+        assert "analyse_civic_complaint" in tool_names
+        assert "calculate_municipal_sla" in tool_names
+        assert "draft_statutory_rti_query" in tool_names
+        assert "resolve_civic_jurisdiction_tool" in tool_names
+
+    def test_sla_tool_invocation(self):
+        from agent import calculate_municipal_sla
+        res = calculate_municipal_sla("Road Maintenance", "2026-05-01", "2026-05-10")
+        assert res["statutory_sla_days"] == 2
+        assert res["is_breached"] is True
+        assert res["overdue_days"] == 7
+
+    def test_rti_tool_invocation(self):
+        from agent import draft_statutory_rti_query
+        res = draft_statutory_rti_query("CMP-TOOL-1", "Water Supply", "Jayanagar", "closed")
+        assert res["complaint_reference"] == "CMP-TOOL-1"
+        assert "Right to Information" in res["statutory_act"]
+        assert len(res["queries"]) == 5
+
+    def test_jurisdiction_tool_invocation(self):
+        from agent import resolve_civic_jurisdiction_tool
+        res = resolve_civic_jurisdiction_tool("Solid Waste Management", "Whitefield")
+        assert "Solid Waste" in res["department"]
+        assert "Whitefield" in res["location"]

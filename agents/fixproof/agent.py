@@ -1,15 +1,21 @@
 """
 FixProof — Google ADK Agent
 ============================
-Wraps the core assessment engine as a Google ADK tool so that a language
-model can analyse civic complaints conversationally.
+Wraps the core assessment engine and civic intelligence tools as Google ADK
+tools so that a language model can analyse civic complaints conversationally.
+
+Features a multi-tool agent architecture:
+1. analyse_civic_complaint: Core discrepancy, timeline, and escalation analysis.
+2. calculate_municipal_sla: Statutory Citizen Charter turnaround compliance.
+3. draft_statutory_rti_query: Formal Right to Information (RTI) queries under Sec 6(1).
+4. resolve_civic_jurisdiction: Municipal department and escalation authority resolver.
 
 Usage:
     adk run agents/fixproof
 
 Configuration:
     Set GOOGLE_GENAI_USE_VERTEXAI and GOOGLE_API_KEY (or equivalent)
-    in a .env file.  See .env.example for details.
+    in a .env file. See .env.example for details.
 
 The core engine (fixproof_core) works completely offline without any
 model credentials.
@@ -26,7 +32,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dotenv import load_dotenv
 from google.adk.agents import Agent
 
-from fixproof_core import assess_complaint
+from fixproof_core import (
+    assess_complaint,
+    calculate_sla_status,
+    generate_statutory_rti_queries,
+    resolve_civic_jurisdiction,
+)
 
 # ---------------------------------------------------------------------------
 # Load environment variables from .env if present
@@ -34,7 +45,7 @@ from fixproof_core import assess_complaint
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 # ---------------------------------------------------------------------------
-# Tool function exposed to the ADK agent
+# Tools exposed to the ADK agent
 # ---------------------------------------------------------------------------
 
 
@@ -57,7 +68,8 @@ def analyse_civic_complaint(
     Call this tool as soon as the user supplies the required complaint fields.
     Accepts structured complaint fields and returns a full assessment
     including a chronological timeline, discrepancy flags, missing-information
-    notes, evidence classifications, and an optional draft escalation letter.
+    notes, evidence classifications, statutory SLA analysis, priority scoring,
+    and an optional draft escalation letter.
 
     Args:
         complaint_reference: Official complaint or ticket reference number.
@@ -109,6 +121,86 @@ def analyse_civic_complaint(
     return assess_complaint(complaint_data)
 
 
+def calculate_municipal_sla(
+    issue_category: str,
+    original_report_date: str,
+    status_update_date: str = "",
+) -> dict:
+    """Calculate Citizen Charter turnaround metrics, statutory SLA deadlines,
+    and overdue duration for a civic complaint.
+
+    Args:
+        issue_category: Category of civic issue (e.g. "Road Maintenance", "Street Lighting").
+        original_report_date: Date complaint was filed (YYYY-MM-DD).
+        status_update_date: Date status was updated by authority (YYYY-MM-DD). Optional.
+
+    Returns:
+        Dictionary with statutory_sla_days, elapsed_days, is_breached, overdue_days,
+        and charter_reference.
+    """
+    return calculate_sla_status(
+        issue_category=str(issue_category).strip(),
+        original_report_date=str(original_report_date).strip(),
+        status_update_date=str(status_update_date).strip() if status_update_date else "",
+    )
+
+
+def draft_statutory_rti_query(
+    complaint_reference: str,
+    issue_category: str,
+    location: str,
+    authority_status: str,
+) -> dict:
+    """Generate precision queries under Section 6(1) of the Right to Information Act, 2005
+    pertaining to physical inspection reports, contractor work orders, and resolution records.
+
+    Args:
+        complaint_reference: Official ticket or grievance number.
+        issue_category: Category of the complaint.
+        location: Location of the reported issue.
+        authority_status: Status recorded by the authority.
+
+    Returns:
+        Dictionary with structured RTI queries and statutory instructions.
+    """
+    data = {
+        "complaint_reference": str(complaint_reference).strip(),
+        "issue_category": str(issue_category).strip(),
+        "location": str(location).strip(),
+        "authority_status": str(authority_status).strip(),
+    }
+    queries = generate_statutory_rti_queries(data)
+    return {
+        "complaint_reference": data["complaint_reference"],
+        "statutory_act": "Right to Information Act, 2005 (Section 6(1))",
+        "queries": queries,
+        "submission_guidance": (
+            "Submit to the Public Information Officer (PIO) of the concerned municipal corporation. "
+            "Enclose statutory fee (e.g., Rs. 10 postal order or court fee stamp)."
+        ),
+    }
+
+
+def resolve_civic_jurisdiction_tool(
+    issue_category: str,
+    location: str,
+) -> dict:
+    """Identify the responsible municipal department, supervisory escalation authority,
+    and governing legal act for a civic issue in Bengaluru.
+
+    Args:
+        issue_category: Category of civic issue (e.g. "Road Maintenance", "Solid Waste").
+        location: Locality or ward name.
+
+    Returns:
+        Dictionary detailing primary department, escalation officer, and governing framework.
+    """
+    return resolve_civic_jurisdiction(
+        issue_category=str(issue_category).strip(),
+        location=str(location).strip(),
+    )
+
+
 # ---------------------------------------------------------------------------
 # ADK Agent definition
 # ---------------------------------------------------------------------------
@@ -141,20 +233,25 @@ AGENT_INSTRUCTION = (
     "consolidated response. Do not produce multiple piecemeal responses or repeat conversational pleasantries.\n"
     "   - Organize your response using the following structured markdown sections:\n"
     "     * ### Assessment Summary: Concise overview of complaint validity, recorded authority status, "
-    "resident follow-up status, and discrepancy status.\n"
+    "resident follow-up status, discrepancy status, and Civic Priority Index score.\n"
     "     * ### Chronological Timeline: Chronological sequence of events showing date, event description, "
     "and source label (`user_supplied_complaint`, `user_supplied_status`, or `resident_observation`).\n"
     "     * ### Discrepancy Flags: Explicitly list any flags identified by the tool, or state 'No discrepancies detected.'\n"
     "     * ### Missing Information: Explicitly list any missing information noted by the tool, or state 'None.'\n"
     "     * ### Source & Evidence Classifications: Note the classification legend and list supporting evidence descriptions "
-    "as `resident_described_evidence` (unverified).\n"
+    "as `resident_described_evidence` (unverified) with evidence modality type.\n"
     "     * ### Escalation Letter: If `escalation_letter` is generated in the tool output, display the full editable draft text "
     "and remind the resident to review and edit it before submission. If no letter was generated (e.g. no discrepancy), "
     "state that no escalation letter is warranted.\n\n"
     "4. EPISTEMIC HONESTY & OBJECTIVITY:\n"
     "   - Strictly use supplied facts. Never invent dates, official responses, or evidence.\n"
     "   - Clearly label all resident observations and user-supplied data as unverified by FixProof.\n"
-    "   - Discrepancies warrant human/independent review; never claim authority misconduct, fraud, or proven facts."
+    "   - Discrepancies warrant human/independent review; never claim authority misconduct, fraud, or proven facts.\n\n"
+    "5. CIVIC ESCALATION & RTI GUIDANCE:\n"
+    "   - If the user specifically inquires about statutory turnaround or Citizen Charter deadlines, "
+    "call `calculate_municipal_sla` to provide statutory SLA timelines.\n"
+    "   - If the user asks for legal or RTI drafting assistance, call `draft_statutory_rti_query`.\n"
+    "   - If the user asks which civic authority or officer to approach, call `resolve_civic_jurisdiction_tool`."
 )
 
 root_agent = Agent(
@@ -164,9 +261,14 @@ root_agent = Agent(
         "FixProof: an evidence-based civic complaint follow-up agent. "
         "Analyses complaints where an authority has marked an issue as "
         "resolved but a resident reports the problem persists. Builds "
-        "timelines, flags discrepancies, identifies missing information, "
-        "and drafts factual escalation letters."
+        "timelines, flags discrepancies, calculates statutory SLA breaches, "
+        "scores civic priority, and drafts factual escalation letters."
     ),
     instruction=AGENT_INSTRUCTION,
-    tools=[analyse_civic_complaint],
+    tools=[
+        analyse_civic_complaint,
+        calculate_municipal_sla,
+        draft_statutory_rti_query,
+        resolve_civic_jurisdiction_tool,
+    ],
 )
